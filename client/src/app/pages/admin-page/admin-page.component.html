@@ -1,1 +1,13 @@
-<p>admin-page works!</p>
+<mat-card class="admin-page">
+    <h1>Manage Games</h1>
+
+    <!-- TODO: Enlever ce bouton et le remplacer avec un component CreateGame à la fin de la GameList -->
+    <button mat-raised-button color="primary" (click)="onCreateGame()">Créer un nouveau jeu</button>
+
+    <app-game-list
+        [games]="games"
+        (editGame)="onEditGame($event)"
+        (deleteGame)="onDeleteGame($event)"
+        (visibilityChange)="onToggleVisibility($event)"
+    ></app-game-list>
+</mat-card>

@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 const modules = [
     MatButtonModule,
@@ -17,6 +18,7 @@ const modules = [
     MatRadioModule,
     MatToolbarModule,
     MatTooltipModule,
+    MatSlideToggleModule,
 ];
 
 /**
