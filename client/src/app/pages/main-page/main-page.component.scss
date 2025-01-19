@@ -1,44 +1,98 @@
-.container {
-    min-height: 100vh;
-    height: auto;
-}
-
-.justified {
+body {
+    margin: 0;
+    font-family: 'IM Fell English SC', serif;
+    color: #ffffff;
+    background: url('../../../assets/images/wui.png') no-repeat center center;
+background-size: cover;
+filter: brightness(1.4) saturate(2); /* Ajoute de la clarté et de la saturation */
+    background-size: cover; /* Fait en sorte que l'image occupe tout l'écran */
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
 }
 
-.button {
-    margin-top: 10px;
+/* Conteneur central */
+.center-container {
+    background: rgba(0, 0, 0, 0.4); /* Fond noir avec transparence */
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
     text-align: center;
+    max-width: 600px;
+    width: 80%;
+}
+
+/* Nom du jeu */
+.game-title {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 3rem;
+    color: #f5d35e;
+    text-shadow: 2px 2px 5px #000;
+    margin-bottom: 10px;
 }
 
 .team-name {
-    margin-top: 0.25em;
-    margin-bottom: 0.25em;
-    color: green;
+    font-size: 1.5rem;
+    color: #d3d3d3;
+    margin-bottom: 20px;
 }
 
-.header-item {
+/* Logo */
+.logo {
+    position: absolute;
+    top: 20px; /* Place le logo en haut */
+    left: 20px; /* Place le logo à gauche */
+    width: 145px;
+    height: 145px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(255, 255, 0, 0.6); /* Éclat lumineux */
+    border: 3px solid #ffcc00; /* Bordure dorée joyeuse */
+}
+
+
+
+/* Boutons */
+.button-container {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
     justify-content: center;
+}
+
+.btn {
+    padding: 15px 30px;
+    font-size: 1rem;
+    font-family: 'Press Start 2P', cursive;
+    color: #ffffff;
+    background: darkred;
+    border: 2px solid #ffffff;
+    border-radius: 8px;
+    text-transform: uppercase;
+    text-shadow: 1px 1px 3px #000;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.btn:hover {
+    background: #f5d35e;
+    color: #000000;
+    transform: scale(1.1);
+}
+
+/* Liste des noms */
+.team-list {
     text-align: center;
+    list-style-type: none;
+    padding: 0;
+    margin-top: 20px;
 }
 
-.footer-item {
-    text-align: center;
-}
-
-.footer-item p :nth-child(even) {
-    color: orange;
-}
-.footer-item p :nth-child(odd) {
-    color: blue;
-}
-
-.server-message {
-    justify-content: center;
-    width: 20%;
-    min-width: min-content;
+.team-list li {
+    font-size: 1rem;
+    margin: 5px 0;
+    color: #d3d3d3;
 }

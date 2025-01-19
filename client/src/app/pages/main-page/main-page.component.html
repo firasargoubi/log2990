@@ -1,22 +1,38 @@
-<div class="container justified">
-    <h1 class="header-item">Bienvenue au cours {{ title }}</h1>
-    <img src="https://bit.ly/3QofL1J" alt="Logo Projet" />
-    <section id="server-message" class="justified">
-        <p>Petit message du serveur : {{ message.getValue() }}</p>
-        <div class="justified">
-            <button class="button" (click)="getMessagesFromServer()">Récupérer un message du serveur</button>
-            <button class="button" (click)="sendTimeToServer()">Envoyer un message au serveur</button>
-            <button class="button" routerLink="/material">Voir la page démo Angular Material</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tile Bound</title>
+    <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+</head>
+<body>
+    <!-- Logo -->
+    <img class="logo" src="assets/images/logo.png" alt="Logo">
+
+    <!-- Conteneur central -->
+    <div class="center-container">
+        <!-- Nom du jeu -->
+        <h1 class="game-title">Tile Bound</h1>
+        <div class="team-name">209</div>
+
+        <!-- Boutons -->
+        <div class="button-container">
+            <button class="btn">Joindre</button>
+            <button class="btn">Créer</button>
+            <button class="btn">Admin</button>
         </div>
-    </section>
 
-    <button class="button" routerLink="/game">Jouer!</button>
-
-    <footer class="footer-item">
-        <h4 class="team-name">Équipe Poly</h4>
-        <p>
-            <span>Coéquipier #1</span>, <span>Coéquipier #2</span>, <span>Coéquipier #3</span>, 
-            <span>Coéquipier #4</span>, <span>Coéquipier #5</span>, <span>Coéquipier #6</span>
-        </p>
-    </footer>
-</div>
+        <!-- Liste des noms -->
+        <ul class="team-list">
+            <li>Melissa Akhenak</li>
+            <li>Firas Argoubi</li>
+            <li>Nawal Benesrighe</li>
+            <li>Yassine Essaouab</li>
+            <li>Rita Jaafri Hayani</li>
+            <li>Adam Marhraoui</li>
+        </ul>
+    </div>
+</body>
+</html>
