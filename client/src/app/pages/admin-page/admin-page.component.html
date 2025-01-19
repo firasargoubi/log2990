@@ -1,13 +1,20 @@
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
 <mat-card class="admin-page">
-    <h1>Manage Games</h1>
+  <h1>Manage Games</h1>
 
-    <!-- TODO: Enlever ce bouton et le remplacer avec un component CreateGame à la fin de la GameList -->
-    <button mat-raised-button color="primary" (click)="onCreateGame()">Créer un nouveau jeu</button>
+  <app-game-list
+    [games]="games"
+    (editGame)="onEditGame($event)"
+    (deleteGame)="onDeleteGame($event)"
+    (visibilityChange)="onToggleVisibility($event)"
+  ></app-game-list>
 
-    <app-game-list
-        [games]="games"
-        (editGame)="onEditGame($event)"
-        (deleteGame)="onDeleteGame($event)"
-        (visibilityChange)="onToggleVisibility($event)"
-    ></app-game-list>
+  <!-- Carte "+" -->
+  <mat-card class="create-game-card" (click)="onCreateGame()">
+    <div class="plus-sign">+</div>
+  </mat-card>
+
+  <!-- Bouton féérique -->
+  <button mat-raised-button class="fairy-button">Créer un nouveau jeu</button>
 </mat-card>

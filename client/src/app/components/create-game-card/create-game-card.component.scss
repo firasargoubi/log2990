@@ -1,0 +1,21 @@
+.create-game-card {
+    width: 200px; /* Même largeur que les autres cartes */
+    height: 300px; /* Même hauteur que les autres cartes */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px dashed #ccc; /* Apparence spéciale */
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:hover {
+        background-color: #f0f0f0;
+    }
+
+    .plus-sign {
+        font-size: 3rem; /* Taille du "+" */
+        color: #888; /* Couleur grise */
+    }
+}
+
