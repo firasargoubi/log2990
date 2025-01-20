@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommunicationService } from '@app/services/communication.service';
 import { Message } from '@common/message';
@@ -12,11 +12,29 @@ import { map } from 'rxjs/operators';
     styleUrls: ['./main-page.component.scss'],
     imports: [RouterLink],
 })
-export class MainPageComponent {
+export class MainPageComponent implements OnInit {
     readonly title: string = 'Tile Bound';
     message: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
-    constructor(private readonly communicationService: CommunicationService) {}
+    constructor(private readonly communicationService: CommunicationService) { }
+
+    ngOnInit(): void {
+        const btnCreate = document.getElementById('btnCreate');
+        const popup = document.getElementById('popup');
+        const closePopup = document.getElementById('closePopup');
+
+        if (btnCreate && popup && closePopup) {
+            btnCreate.addEventListener('click', () => {
+                popup.style.display = 'flex';
+            });
+
+            closePopup.addEventListener('click', () => {
+                popup.style.display = 'none';
+            });
+
+
+        }
+    }
 
     sendTimeToServer(): void {
         const newTimeMessage: Message = {

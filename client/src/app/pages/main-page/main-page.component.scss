@@ -3,9 +3,11 @@ body {
     font-family: 'IM Fell English SC', serif;
     color: #ffffff;
     background: url('../../../assets/images/wui.png') no-repeat center center;
-background-size: cover;
-filter: brightness(1.4) saturate(2); /* Ajoute de la clarté et de la saturation */
-    background-size: cover; /* Fait en sorte que l'image occupe tout l'écran */
+    background-size: cover;
+    filter: brightness(1.4) saturate(2);
+    /* Ajoute de la clarté et de la saturation */
+    background-size: cover;
+    /* Fait en sorte que l'image occupe tout l'écran */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -14,9 +16,8 @@ filter: brightness(1.4) saturate(2); /* Ajoute de la clarté et de la saturation
     overflow: hidden;
 }
 
-/* Conteneur central */
 .center-container {
-    background: rgba(0, 0, 0, 0.4); /* Fond noir avec transparence */
+    background: rgba(0, 0, 0, 0.4);
     padding: 30px;
     border-radius: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
@@ -25,7 +26,6 @@ filter: brightness(1.4) saturate(2); /* Ajoute de la clarté et de la saturation
     width: 80%;
 }
 
-/* Nom du jeu */
 .game-title {
     font-family: 'Press Start 2P', cursive;
     font-size: 3rem;
@@ -43,14 +43,15 @@ filter: brightness(1.4) saturate(2); /* Ajoute de la clarté et de la saturation
 /* Logo */
 .logo {
     position: absolute;
-    top: 20px; /* Place le logo en haut */
-    left: 20px; /* Place le logo à gauche */
+    top: 20px;
+    left: 20px;
     width: 145px;
     height: 145px;
     object-fit: cover;
     border-radius: 50%;
-    box-shadow: 0 4px 10px rgba(255, 255, 0, 0.6); /* Éclat lumineux */
-    border: 3px solid #ffcc00; /* Bordure dorée joyeuse */
+    box-shadow: 0 4px 10px rgba(255, 255, 0, 0.6);
+    /* Éclat lumineux */
+    border: 3px solid #ffcc00;
 }
 
 
@@ -95,4 +96,51 @@ filter: brightness(1.4) saturate(2); /* Ajoute de la clarté et de la saturation
     font-size: 1rem;
     margin: 5px 0;
     color: #d3d3d3;
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.popup-content {
+    font-family: 'Press Start 2P', cursive;
+    background: rgb(0, 0, 0);
+    opacity: 0.9;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    width: 500px;
+    font-size: 1rem;
+    position: relative;
+}
+
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ffffff;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 10;
+}
+
+
+
+label {
+    margin-right: 15px;
+    font-size: 1rem;
+    color: gray;
 }
