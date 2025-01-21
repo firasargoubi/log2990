@@ -1,0 +1,24 @@
+.board {
+    display: grid;
+    width: 70%; /* Fixed size for the board */
+    height: 70%; /* Fixed size for the board */
+    gap: 1px; /* Space between tiles */
+    background-color: #ccc;
+}
+
+.box {
+    display: flex;
+    width: 80%;
+    height: 80%;
+}
+
+.tools {
+    height: 20%;
+    width: 10%;
+}
+
+.debug {
+    height: 50%;
+    width: 70%;
+    font-size: 50px;
+}
