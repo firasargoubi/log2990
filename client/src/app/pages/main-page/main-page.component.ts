@@ -16,7 +16,7 @@ export class MainPageComponent implements OnInit {
     readonly title: string = 'Tile Bound';
     message: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
-    constructor(private readonly communicationService: CommunicationService) { }
+    constructor(private readonly communicationService: CommunicationService) {}
 
     ngOnInit(): void {
         const btnCreate = document.getElementById('btnCreate');
@@ -31,8 +31,6 @@ export class MainPageComponent implements OnInit {
             closePopup.addEventListener('click', () => {
                 popup.style.display = 'none';
             });
-
-
         }
     }
 
