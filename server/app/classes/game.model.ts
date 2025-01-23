@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose';
 
 const GameSchema = new Schema({
-    id: {type: Number, required: true, unique: true },
+    id: {type: String, required: true, unique: true },
     name: { type: String, required: true },
     description: { type: String, required: true },
     mode: { type: String, required: true },
