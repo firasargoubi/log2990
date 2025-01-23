@@ -1,10 +1,5 @@
 <div class="box">
-    <section class="tools">
-        <app-tile class="tile" [type]="0" (click)="copyTileType(0)"></app-tile>
-        <app-tile class="tile" [type]="1" (click)="copyTileType(1)"></app-tile>
-        <app-tile class="tile" [type]="2" (click)="copyTileType(2)"></app-tile>
-        <app-tile class="tile" [type]="3" (click)="copyTileType(3)"></app-tile>
-    </section>  
+    
     <section class="board" [style.gridTemplateColumns]="'repeat(' + size + ',2fr)'">
         @for(tile of tiles; track tile.id;) {
         <app-tile

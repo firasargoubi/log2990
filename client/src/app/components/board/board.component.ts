@@ -12,10 +12,12 @@ import { Tile } from '@app/interfaces/tile';
 })
 export class BoardComponent implements OnInit {
     @Input() size: number;
+    @Input() tool: number = -1; // Receive selected tool from parent
+
     board: Tile[] = [];
     mouseStatus: boolean = false;
     mouseState: number = -1;
-    tool: number = -1;
+    //tool: number = -1;
     // TODO : Ajouter 2 composantes outils pour la gestion des ajouts de case et objets (logique et verification)
     // TODO : Ajouter la recherche du plateau dans la base de donnees
 
@@ -56,9 +58,12 @@ export class BoardComponent implements OnInit {
         }
     }
 
-    copyTileType(type: number): void {
-        this.tool = type;
-    }
+    
+
+  copyTileType(type: number): void {
+    this.tool = type;
+  }
+  
 
     preventContextMenu(event: MouseEvent): void {
         event.preventDefault();
