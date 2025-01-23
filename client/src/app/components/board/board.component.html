@@ -1,19 +1,19 @@
 <div class="box">
     <section class="tools">
-        <app-tile class="tile" [type]="0" (click)="copyTileType(0)"></app-tile>
-        <app-tile class="tile" [type]="1" (click)="copyTileType(1)"></app-tile>
-        <app-tile class="tile" [type]="2" (click)="copyTileType(2)"></app-tile>
-        <app-tile class="tile" [type]="3" (click)="copyTileType(3)"></app-tile>
-    </section>  
+        <app-tile class="tile" [type]="0" (click)="onClickTileTool(0)"></app-tile>
+        <app-tile class="tile" [type]="1" (click)="onClickTileTool(1)"></app-tile>
+        <app-tile class="tile" [type]="2" (click)="onClickTileTool(2)"></app-tile>
+        <app-tile class="tile" [type]="3" (click)="onClickTileTool(3)"></app-tile>
+    </section>
     <section class="board" [style.gridTemplateColumns]="'repeat(' + size + ',2fr)'">
         @for(tile of tiles; track tile.id;) {
         <app-tile
             class="tile"
             [type]="tile.type"
-            (mouseup)="mouseOff()"
-            (mousedown)="mouseOn($event); modifyTile($event, tile)"
-            (mouseover)="modifyTile($event, tile)"
-            (contextmenu)="preventContextMenu($event)"
+            (contextmenu)="onRightClickBoard($event)"
+            (mouseup)="onMouseUpBoard()"
+            (mousedown)="onMouseDownBoard($event, tile)"
+            (mouseover)="onMouseOverBoard(tile)"
         ></app-tile>
         }
     </section>

@@ -1,9 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TileComponent } from '@app/components/tile/tile.component';
+import { Coordinates } from '@app/interfaces/coordinates';
 import { Tile } from '@app/interfaces/tile';
+import { MouseService } from '@app/services/mouse.service';
+import { TileService } from '@app/services/tile.service';
 
+const RIGHT_CLICK = 2;
 @Component({
     selector: 'app-board',
     imports: [TileComponent, CommonModule, FormsModule],
@@ -13,17 +17,16 @@ import { Tile } from '@app/interfaces/tile';
 export class BoardComponent implements OnInit {
     @Input() size: number;
     board: Tile[] = [];
-    mouseStatus: boolean = false;
-    mouseState: number = -1;
-    tool: number = -1;
-    // TODO : Ajouter 2 composantes outils pour la gestion des ajouts de case et objets (logique et verification)
-    // TODO : Ajouter la recherche du plateau dans la base de donnees
+    selectedTiles: Coordinates[] = [];
+    mouseService = inject(MouseService);
+    tileService = inject(TileService);
 
     get tiles(): Tile[] {
         return this.board;
     }
 
     ngOnInit(): void {
+        //  TODO : Ajouter appel au serveur avec service
         this.initializeBoard();
     }
 
@@ -36,31 +39,42 @@ export class BoardComponent implements OnInit {
         }
     }
 
-    mouseOff(): void {
-        this.mouseStatus = false;
-        this.mouseState = -1;
+    loadBoard(board: Tile[]): void {
+        this.board = board;
     }
 
-    mouseOn(event: MouseEvent): void {
-        this.mouseStatus = true;
-        this.mouseState = event.button;
+    onMouseUpBoard(): void {
+        this.mouseService.onMouseUp();
     }
 
-    modifyTile(event: MouseEvent, tile: Tile, isStart: boolean = false): void {
-        if (this.mouseStatus || isStart) {
-            if (this.mouseState === 0) {
-                tile.type = this.tool;
-            } else if (this.mouseState === 2) {
-                tile.type = -1;
+    onMouseOverBoard(tile: Tile) {
+        this.mouseService.onMouseMove({ x: tile.x, y: tile.y });
+        if (this.mouseService.mousePressed) {
+            this.modifyTile(tile);
+        }
+    }
+
+    onMouseDownBoard(event: MouseEvent, tile: Tile) {
+        this.mouseService.onMouseDown({ x: tile.x, y: tile.y });
+        if (event.button === RIGHT_CLICK) {
+            this.tileService.currentTool = -1;
+        }
+        this.modifyTile(tile);
+    }
+
+    modifyTile(coordinate: Coordinates): void {
+        for (const tile of this.board) {
+            if (coordinate.x === tile.x && coordinate.y === tile.y) {
+                tile.type = this.tileService.currentTool;
             }
         }
     }
 
-    copyTileType(type: number): void {
-        this.tool = type;
+    onRightClickBoard(event: MouseEvent): void {
+        event.preventDefault();
     }
 
-    preventContextMenu(event: MouseEvent): void {
-        event.preventDefault();
+    onClickTileTool(type: number) {
+        this.tileService.copyTileTool(type);
     }
 }
