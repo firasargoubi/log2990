@@ -1,8 +1,8 @@
-import { Component, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit } from '@angular/core';
 import { TileComponent } from '@app/components/tile/tile.component';
 import { Tile } from '@app/interfaces/tile';
-import { EventEmitter } from '@angular/core';
+import { TileService } from '@app/services/tile.service';
 
 @Component({
     selector: 'app-tile-options',
@@ -10,9 +10,10 @@ import { EventEmitter } from '@angular/core';
     templateUrl: './tile-options.component.html',
     styleUrl: './tile-options.component.scss',
 })
-export class TileOptionsComponent {
+export class TileOptionsComponent implements OnInit {
     options: Tile[] = [];
-    @Output() toolSelected = new EventEmitter<number>(); // Emit selected tool to parent
+
+    tileService = inject(TileService);
 
     get tiles(): Tile[] {
         return this.options;
@@ -24,7 +25,7 @@ export class TileOptionsComponent {
 
     initializeOptions(): void {
         this.options = [];
-        let u: number = 0;
+        let u = 0;
         for (let i = 0; i < 4; i++) {
             this.options.push({ type: u, x: i, y: 0, id: `${i}` });
             u++;
@@ -32,6 +33,6 @@ export class TileOptionsComponent {
     }
 
     selectTileOption(type: number): void {
-        this.toolSelected.emit(type); // Notify parent about the selected tool
+        this.tileService.copyTileTool(type); // Notify parent about the selected tool
     }
 }
