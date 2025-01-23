@@ -1,23 +1,21 @@
-//Un controleur gere la logique aui relie les requetes untilisateur avec les services et les données
-
 import { Router, Request, Response } from 'express';
 import { Service } from 'typedi';
-import { GameService } from '../services/game.service';
+import { GameService } from '@app/services/game.service';
 
+const CREATED_STATUS = 201;
+const NO_CONTENT_STATUS = 204;
 @Service()
-export class GameController{
-
+export class GameController {
     router: Router;
-    
-    constructor(private readonly gameService : GameService){
+    constructor(private gameService: GameService) {
         this.router = Router();
         this.configureRoutes();
     }
 
     private configureRoutes(): void {
-        this.router.post('/create', async (req: Request, res: Response)=> {
+        this.router.post('/create', async (req: Request, res: Response) => {
             const newGame = await this.gameService.createGame(req.body);
-            res.status(201).json(newGame);
+            res.status(CREATED_STATUS).json(newGame);
         });
 
         this.router.get('/all', async (req: Request, res: Response) => {
@@ -32,7 +30,7 @@ export class GameController{
 
         this.router.delete('/:id', async (req: Request, res: Response) => {
             await this.gameService.deleteGame(req.params.id);
-            res.sendStatus(204);
+            res.sendStatus(NO_CONTENT_STATUS);
         });
 
         this.router.get('/visible', async (req: Request, res: Response) => {
@@ -40,6 +38,4 @@ export class GameController{
             res.json(visibleGames);
         });
     }
-
-
 }
