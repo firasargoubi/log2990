@@ -1,5 +1,5 @@
 
-.admin-page {
+.admin-page { 
   background-image: url('/assets/background2.jpg');
   background-size: cover; 
   background-position: center; 
@@ -10,117 +10,91 @@
   font-family: 'Roboto', Arial, sans-serif; 
   height: 100vh; 
   color: #fff; 
-}
-
-.admin-page {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 16px;
   gap: 32px; 
-
-  h1 {
-    font-family: 'Press Start 2P', cursive; 
-    color: #ffcc00; 
-    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6); 
-    margin-bottom: 24px;
-    text-align: center;
-  }
-
-  //Liste des jeux 
-  app-game-list {
-    width: 100%;
-    max-width: 1200px;
-    display: flex;
-    flex-wrap: wrap; 
-    gap: 24px; 
-    justify-content: center; 
-    padding: 16px;
-    background-color: rgba(255, 255, 255, 0.8); 
-    border: 1px solid rgba(224, 224, 224, 0.8); 
-    border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); 
-  }
-
-  // création de jeu (+)
-  .create-game-card {
-    width: 200px; 
-    height: 300px; 
-    background: rgba(50, 157, 156, 0.2); 
-    border: 2px dashed #7be495; 
-    border-radius: 15px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.3s ease-in-out;
-
-    &:hover {
-      background: rgba(50, 157, 156, 0.4);
-      transform: rotate(5deg) scale(1.05); 
-      box-shadow: 0 8px 20px rgba(123, 228, 149, 0.6);
-    }
-
-    .plus-sign {
-      font-size: 3rem;
-      color: #329d9c;
-      font-weight: bold;
-      text-shadow: 0 4px 10px rgba(50, 157, 156, 0.8); 
-    }
-  }
-
-  //Cartes de jeux
-  .game-card {
-    width: 200px;
-    height: 300px;
-    background: rgba(255, 255, 255, 0.85); 
-    border: 2px solid #7be495; 
-    border-radius: 15px; 
-    box-shadow: 0 6px 20px rgba(123, 228, 149, 0.6); 
-    transition: all 0.3s ease-in-out;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-
-    &:hover {
-      transform: scale(1.05);
-      box-shadow: 0 10px 30px rgba(123, 228, 149, 0.8); 
-      border-color: #329d9c; 
-    }
-
-    h2 {
-      color: #329d9c;
-      font-size: 1.5rem;
-      text-shadow: 1px 2px 4px rgba(50, 157, 156, 0.8);
-    }
-
-    p {
-      color: #666; 
-      font-size: 1rem;
-    }
-  }
 }
 
+.admin-page h1 {
+  font-family: 'Press Start 2P', cursive; 
+  color: #ffcc00; 
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6); 
+  margin-bottom: 24px;
+  text-align: center;
+}
 
-.fairy-button {
-  background: linear-gradient(45deg, #7be495, #329d9c); 
-  color: white;
-  border: none;
+.games-container {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  flex-wrap: wrap; 
+  gap: 24px; 
+  justify-content: center; 
+  padding: 16px;
+  background-color: rgba(255, 255, 255, 0.8); 
+  border: 1px solid rgba(224, 224, 224, 0.8); 
   border-radius: 12px;
-  padding: 10px 20px;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(50, 157, 156, 0.5); 
-  transition: all 0.3s ease-in-out;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); 
+}
 
-  &:hover {
-    background: linear-gradient(45deg, #329d9c, #7be495); 
-    transform: translateY(-3px); 
-    box-shadow: 0 8px 20px rgba(50, 157, 156, 0.8); 
-  }
+.create-game-card {
+  width: 200px; 
+  height: 300px; 
+  background: rgba(50, 157, 156, 0.2); 
+  border: 2px dashed #7be495; 
+  border-radius: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.create-game-card:hover {
+  background: rgba(50, 157, 156, 0.4);
+  transform: rotate(5deg) scale(1.05); 
+  box-shadow: 0 8px 20px rgba(123, 228, 149, 0.6);
+}
+
+.create-game-card .plus-sign {
+  font-size: 3rem;
+  color: #329d9c;
+  font-weight: bold;
+  text-shadow: 0 4px 10px rgba(50, 157, 156, 0.8); 
+}
+
+.game-card {
+  width: 200px;
+  height: 300px;
+  background: rgba(255, 255, 255, 0.85); 
+  border: 2px solid #7be495; 
+  border-radius: 15px; 
+  box-shadow: 0 6px 20px rgba(123, 228, 149, 0.6); 
+  transition: all 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.game-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 30px rgba(123, 228, 149, 0.8); 
+  border-color: #329d9c; 
+}
+
+.game-card h2 {
+  color: #329d9c;
+  font-size: 1.5rem;
+  text-shadow: 1px 2px 4px rgba(50, 157, 156, 0.8);
+}
+
+.game-card p {
+  color: #666; 
+  font-size: 1rem;
 }
 
 .action-buttons {
@@ -129,7 +103,6 @@
   justify-content: center;
 }
 
-// Style commun pour tous les boutons 
 .action-buttons button {
   background: linear-gradient(45deg, #f7c4d4, #f5a8c4); 
   border: none;
@@ -141,16 +114,14 @@
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(245, 168, 196, 0.6); 
   transition: all 0.3s ease;
-
-  &:hover {
-    transform: scale(1.1); 
-    box-shadow: 0 6px 15px rgba(245, 168, 196, 0.8); 
-  }
-
-  &:active {
-    transform: scale(0.95); 
-    box-shadow: 0 2px 8px rgba(245, 168, 196, 0.5); 
-  }
 }
 
+.action-buttons button:hover {
+  transform: scale(1.1); 
+  box-shadow: 0 6px 15px rgba(245, 168, 196, 0.8); 
+}
 
+.action-buttons button:active {
+  transform: scale(0.95); 
+  box-shadow: 0 2px 8px rgba(245, 168, 196, 0.5); 
+}

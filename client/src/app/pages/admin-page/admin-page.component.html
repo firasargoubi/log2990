@@ -3,18 +3,20 @@
 <mat-card class="admin-page">
   <h1>Manage Games</h1>
 
-  <app-game-list
-    [games]="games"
-    (editGame)="onEditGame($event)"
-    (deleteGame)="onDeleteGame($event)"
-    (visibilityChange)="onToggleVisibility($event)"
-  ></app-game-list>
+  <!-- Liste des jeux et bouton aligné -->
+  <div class="games-container">
+    <app-game-list
+      [games]="games"
+      (editGame)="onEditGame($event)"
+      (deleteGame)="onDeleteGame($event)"
+      (visibilityChange)="onToggleVisibility($event)"
+    ></app-game-list>
 
-  <!-- Carte "+" -->
-  <mat-card class="create-game-card" (click)="onCreateGame()">
-    <div class="plus-sign">+</div>
-  </mat-card>
+    <!-- Carte "+" -->
+    <mat-card class="create-game-card" (click)="onCreateGame()">
+        <div class="plus-sign">+</div>
+      </mat-card>
 
-  <!-- Bouton féérique -->
-  <button mat-raised-button class="fairy-button">Créer un nouveau jeu</button>
+
+  </div>
 </mat-card>
