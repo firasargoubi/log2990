@@ -3,14 +3,17 @@ import { TestBed } from '@angular/core/testing';
 import { TileService } from './tile.service';
 
 describe('TileService', () => {
-  let service: TileService;
+    let service: TileService;
+    let tileType: number;
+    beforeEach(() => {
+        TestBed.configureTestingModule({ providers: [TileService] });
+        service = TestBed.inject(TileService);
+        tileType = 2;
+    });
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(TileService);
-  });
+    it('should copy the type of a tile and save its value', () => {
+        service.copyTileTool(tileType);
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
+        expect(service.currentTool).toEqual(tileType);
+    });
 });
