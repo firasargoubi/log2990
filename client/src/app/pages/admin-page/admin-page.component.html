@@ -1,22 +1,15 @@
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
 
 <mat-card class="admin-page">
-  <h1>Manage Games</h1>
+    <h1>Manage Games</h1>
 
-  <!-- Liste des jeux et bouton aligné -->
-  <div class="games-container">
-    <app-game-list
-      [games]="games"
-      (editGame)="onEditGame($event)"
-      (deleteGame)="onDeleteGame($event)"
-      (visibilityChange)="onToggleVisibility($event)"
-    ></app-game-list>
-
-    <!-- Carte "+" -->
-    <mat-card class="create-game-card" (click)="onCreateGame()">
-        <div class="plus-sign">+</div>
-      </mat-card>
-
-
-  </div>
+    <!-- Liste des jeux et bouton aligné -->
+    <div class="games-container">
+        <app-game-list
+            [games]="games"
+            (editGame)="onEditGame($event)"
+            (deleteGame)="onDeleteGame($event)"
+            (visibilityChange)="onToggleVisibility($event)"
+        ></app-game-list>
+    </div>
 </mat-card>

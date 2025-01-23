@@ -4,5 +4,33 @@
     gap: 16px;
     padding: 16px;
     justify-content: center;
-  }
-  
+}
+
+.create-game-card {
+    width: 500px;
+    height: 250px;
+    background: rgba(50, 157, 156, 0.2);
+    border: 2px dashed #7be495;
+    border-radius: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition:
+        background 0.3s ease-in-out,
+        transform 0.3s ease-in-out,
+        box-shadow 0.3s ease-in-out;
+
+    &:hover {
+        background: rgba(50, 157, 156, 0.4);
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(123, 228, 149, 0.6);
+    }
+
+    .plus-sign {
+        font-size: 3rem;
+        color: #329d9c;
+        font-weight: bold;
+        text-shadow: 0 4px 10px rgba(50, 157, 156, 0.8);
+    }
+}

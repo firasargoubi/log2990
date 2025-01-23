@@ -13,7 +13,7 @@ export interface Game {
     previewImage: string;
     description: string;
     lastModified: Date;
-    isVisible: boolean; 
+    isVisible: boolean;
 }
 
 @Component({

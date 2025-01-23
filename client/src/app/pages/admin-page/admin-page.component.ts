@@ -9,8 +9,6 @@ import { GameListComponent } from '@app/components/game-list/game-list.component
     imports: [GameListComponent, MatCardModule],
 })
 export class AdminPageComponent {
-   
-      
     games: Game[] = [
         // TODO: GET LES JEUX À PARTIR DU SERVEUR
         {
@@ -46,7 +44,7 @@ export class AdminPageComponent {
     ];
 
     onCreateGame() {
-        window.location.href = '/create-game'; 
+        // window.location.href = '/create-game';
     }
 
     onEditGame(game: Game) {
