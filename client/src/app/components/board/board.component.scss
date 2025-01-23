@@ -1,20 +1,39 @@
 .board {
     display: grid;
-    width: 70%; /* Fixed size for the board */
-    height: 70%; /* Fixed size for the board */
-    gap: 1px; /* Space between tiles */
+    width: 40%;
+    /* Fixed size for the board */
+    height: 40%;
+    /* Fixed size for the board */
+    gap: 1px;
+    /* Space between tiles */
     background-color: #ccc;
+    position: absolute;
+    top: 20%;
+    right: 25%;
+    cursor: pointer;
+
 }
 
 .box {
     display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     width: 80%;
     height: 80%;
 }
 
 .tools {
-    height: 20%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 10px;
     width: 10%;
+    height: 40%;
+    cursor: pointer;
+    bottom: 20%;
+    margin-top: 10%;
+    margin-left: 10%;
+    padding: 20px 50px 20px 50px;
 }
 
 .debug {
