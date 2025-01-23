@@ -1,6 +1,7 @@
 <div class="container">
     <app-sidebar id="sidebar"></app-sidebar>
     <section class="play-area-container">
-        <app-board [size]="20"></app-board>
+        <app-tile-options (toolSelected)="onToolSelected($event)"></app-tile-options>
+        <app-board [size]="10" [tool]="selectedTool"></app-board>
     </section>
 </div>

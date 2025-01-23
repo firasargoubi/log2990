@@ -16,6 +16,8 @@ const RIGHT_CLICK = 2;
 })
 export class BoardComponent implements OnInit {
     @Input() size: number;
+    @Input() tool: number = -1; // Receive selected tool from parent
+
     board: Tile[] = [];
     selectedTiles: Coordinates[] = [];
     mouseService = inject(MouseService);

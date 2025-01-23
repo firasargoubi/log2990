@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TileComponent } from './tile.component';
+import { TileOptionsComponent } from './tile-options.component';
 
-describe('TileComponent', () => {
-    let component: TileComponent;
-    let fixture: ComponentFixture<TileComponent>;
+describe('TileOptionsComponent', () => {
+    let component: TileOptionsComponent;
+    let fixture: ComponentFixture<TileOptionsComponent>;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [TileComponent],
+            imports: [TileOptionsComponent],
         }).compileComponents();
 
-        fixture = TestBed.createComponent(TileComponent);
+        fixture = TestBed.createComponent(TileOptionsComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });

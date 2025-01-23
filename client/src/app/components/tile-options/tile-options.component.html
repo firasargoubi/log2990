@@ -1,0 +1,3 @@
+<div class="tile-options">
+    <app-tile *ngFor="let option of options" class="tile" [type]="option.type" (click)="selectTileOption(option.type)"></app-tile>
+</div>
