@@ -153,3 +153,30 @@ label {
     font-size: 1rem;
     color: gray;
 }
+
+
+/* Footer styles */
+footer {
+    background-color: rgba(0, 0, 0, 0.7); /* Match the style of the title container */
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+.footer-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.team-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
