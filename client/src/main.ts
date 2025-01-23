@@ -2,18 +2,19 @@ import { provideHttpClient } from '@angular/common/http';
 import { enableProdMode } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { Routes, provideRouter, withHashLocation } from '@angular/router';
+import { AdminPageComponent } from '@app/pages/admin-page/admin-page.component';
 import { AppComponent } from '@app/pages/app/app.component';
 import { GamePageComponent } from '@app/pages/game-page/game-page.component';
 import { MainPageComponent } from '@app/pages/main-page/main-page.component';
 import { MaterialPageComponent } from '@app/pages/material-page/material-page.component';
 import { environment } from './environments/environment';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { AdminPageComponent } from '@app/pages/admin-page/admin-page.component';
 
 if (environment.production) {
     enableProdMode();
 }
+
 
 
 const routes: Routes = [

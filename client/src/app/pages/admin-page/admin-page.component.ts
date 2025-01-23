@@ -1,48 +1,31 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { Game } from '@app/components/game-card/game-card.component';
 import { GameListComponent } from '@app/components/game-list/game-list.component';
+
+const API_URL = 'http://localhost:3000/api/game';
+
 @Component({
     selector: 'app-admin-page',
     templateUrl: './admin-page.component.html',
     styleUrls: ['./admin-page.component.scss'],
     imports: [GameListComponent, MatCardModule],
 })
-export class AdminPageComponent {
-    games: Game[] = [
-        // TODO: GET LES JEUX À PARTIR DU SERVEUR
-        {
-            id: 1,
-            name: 'Jeu 1',
-            mapSize: '10x10',
-            gameMode: 'CTF',
-            previewImage: '../assets/',
-            description: 'Un jeu de survie palpitant.',
-            lastModified: new Date(),
-            isVisible: true,
-        },
-        {
-            id: 2,
-            name: 'Jeu 2',
-            mapSize: '20x20',
-            gameMode: 'CTF',
-            previewImage: '../assets/',
-            description: 'Un jeu d’exploration passionnant.',
-            lastModified: new Date(),
-            isVisible: true,
-        },
-        {
-            id: 2,
-            name: 'Jeu 2',
-            mapSize: '20x20',
-            gameMode: 'Standard',
-            previewImage: '../assets/',
-            description: 'Un jeu d’exploration passionnant.',
-            lastModified: new Date(),
-            isVisible: true,
-        },
-    ];
+export class AdminPageComponent implements OnInit {
+    games: Game[] = [];
 
+    ngOnInit(): void {
+        this.fetchGames();
+    }
+
+    async fetchGames() {
+        try {
+            const response = await fetch(`${API_URL}/all`);
+            this.games = await response.json();
+        } catch (error) {
+            console.error('Error fetching games:', error);
+        }
+    }
     onCreateGame() {
         // window.location.href = '/create-game';
     }
