@@ -7,8 +7,12 @@
 }
 
 .create-game-card {
-    width: 500px;
-    height: 250px;
+    height: auto;
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 12px;
     background: rgba(50, 157, 156, 0.2);
     border: 2px dashed #7be495;
     border-radius: 15px;

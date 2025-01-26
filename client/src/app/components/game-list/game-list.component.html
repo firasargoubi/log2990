@@ -1,4 +1,7 @@
 <div class="game-list">
+    <mat-card class="create-game-card" routerLink="/create-game">
+        <div class="plus-sign">+</div>
+    </mat-card>
     @for (game of games; track $index) {
 
     <app-game-card
@@ -9,7 +12,5 @@
     ></app-game-card>
     <!-- TODO: Créer component création de jeu, ajouter RouterLink vers vue d'édition -->
     }
-    <mat-card class="create-game-card" routerLink="/create-game">
-        <div class="plus-sign">+</div>
-    </mat-card>
+   
 </div>

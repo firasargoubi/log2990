@@ -1,19 +1,36 @@
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+/>
+
 <mat-card class="game-card">
+   
     <div class="game-preview">
         <img [src]="game.previewImage" alt="game-preview" matTooltip="{{ game.description }}" matTooltipPosition="above" />
     </div>
     <div class="game-info">
         <ul>
-            <li><strong>Game Name</strong> {{ game.name }}</li>
-            <li><strong>Map Size :</strong> {{ game.mapSize }}</li>
-            <li><strong>Gamemode :</strong> {{ game.mode }}</li>
-            <li><strong>Last edited :</strong> {{ game.lastModified | date }}</li>
+            <li>{{ game.name }}</li>
+            <li>{{ game.mapSize }}</li>
+            <li>{{ game.mode }}</li>
+            <li>{{ game.lastModified | date }}</li>
         </ul>
     </div>
     <div class="game-actions">
-        <button mat-stroked-button (click)="deleteGame()" class="action delete">delete</button>
-        <button mat-stroked-button (click)="editGame()" class="action edit">edit</button>
-        <!--TODO: ajouter routerLink vers page d'édition-->
-        <mat-slide-toggle [checked]="game.isVisible" (change)="toggleVisibility($event.checked)" class="visibility"> Visibility </mat-slide-toggle>
+        <!-- Bouton "Edit" avec une baguette magique -->
+        <button mat-icon-button (click)="editGame()" class="action edit" matTooltip="Edit">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </button>
+
+        <!-- Bouton "Delete" avec un chaudron -->
+        <button mat-icon-button (click)="deleteGame()" class="action delete" matTooltip="Delete">
+            <i class="fa-solid fa-trash"></i>
+        </button>
+    
+
+        <!-- Bouton "Visibility" avec un oeil -->
+        <button mat-icon-button (click)="toggleVisibility(game.isVisible)" class="action visibility" matTooltip="Toggle Visibility">
+            <i class="fa-solid fa-eye"></i>
+        </button>
     </div>
 </mat-card>
