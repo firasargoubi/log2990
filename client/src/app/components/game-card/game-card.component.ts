@@ -5,6 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
+const API_URL = 'http://localhost:3000/api/game';
 export interface Game {
     id: number;
     name: string;
@@ -32,11 +33,33 @@ export class GameCardComponent {
         this.edit.emit(this.game);
     }
 
-    deleteGame() {
+    async deleteGame() {
+        const response = await fetch(`${API_URL}/${this.game.id}`, {
+            method: 'DELETE',
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to delete game: ${response.statusText}`);
+        }
+
         this.delete.emit(this.game);
     }
 
-    toggleVisibility(isVisible: boolean) {
-        this.visibilityChange.emit({ game: this.game, isVisible });
+    async toggleVisibility(isVisible: boolean) {
+        this.game.isVisible = isVisible;
+        const response = await fetch(`${API_URL}/${this.game.id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ isVisible }), // Only send the visibility update
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to update visibility: ${response.statusText}`);
+        }
+
+        const updatedGameResponse = await response.json();
+        this.visibilityChange.emit(updatedGameResponse);
     }
 }

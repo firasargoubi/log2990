@@ -22,24 +22,17 @@ export class AdminPageComponent implements OnInit {
         const response = await fetch(`${API_URL}/all`);
         this.games = await response.json();
     }
-    onCreateGame() {
-        // window.location.href = '/create-game';
-    }
 
     onEditGame(game: Game) {
         return game;
-        // TODO: Implémenter  l'édition d’un jeu avec serveur et bdd
+        // TODO: Implémenter  l'édition d’un jeu avec serveur, bdd et vue d'édition
     }
 
-    onDeleteGame(game: Game) {
-        this.games = this.games.filter((g) => g.id !== game.id);
-        // TODO: Implémenter  la supression d’un jeu avec serveur et bdd
+    onDeleteGame() {
+        this.fetchGames();
     }
 
-    onToggleVisibility(event: { game: Game; isVisible: boolean }) {
-        const game = this.games.find((g) => g.id === event.game.id);
-        if (game) {
-            game.isVisible = event.isVisible;
-        } // TODO: Implémenter la gestion de la visibilité d’un jeu avec serveur et bdd
+    onToggleVisibility() {
+        this.fetchGames();
     }
 }
