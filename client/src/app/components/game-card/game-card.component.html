@@ -1,10 +1,6 @@
-<link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
 <mat-card class="game-card">
-   
     <div class="game-preview">
         <img [src]="game.previewImage" alt="game-preview" matTooltip="{{ game.description }}" matTooltipPosition="above" />
     </div>
@@ -26,10 +22,15 @@
         <button mat-icon-button (click)="deleteGame()" class="action delete" matTooltip="Delete">
             <i class="fa-solid fa-trash"></i>
         </button>
-    
 
         <!-- Bouton "Visibility" avec un oeil -->
-        <button mat-icon-button (click)="toggleVisibility(game.isVisible)" class="action visibility" matTooltip="Toggle Visibility">
+        <button
+            mat-icon-button
+            [class]="{ invisible: !game.isVisible }"
+            (click)="toggleVisibility(!game.isVisible)"
+            class="action visibility"
+            matTooltip="Toggle Visibility"
+        >
             <i class="fa-solid fa-eye"></i>
         </button>
     </div>
