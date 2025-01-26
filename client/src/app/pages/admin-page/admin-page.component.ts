@@ -19,12 +19,8 @@ export class AdminPageComponent implements OnInit {
     }
 
     async fetchGames() {
-        try {
-            const response = await fetch(`${API_URL}/all`);
-            this.games = await response.json();
-        } catch (error) {
-            console.error('Error fetching games:', error);
-        }
+        const response = await fetch(`${API_URL}/all`);
+        this.games = await response.json();
     }
     onCreateGame() {
         // window.location.href = '/create-game';
