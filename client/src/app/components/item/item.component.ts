@@ -16,17 +16,17 @@ export class ItemComponent {
             case '1':
                 return 'Épée tranchante';
             case '2':
-                return '';
+                return 'Potion du temps';
             case '3':
-                return '';
+                return 'Baguette magique';
             case '4':
-                return '';
+                return 'Boule de crystal';
             case '5':
-                return '';
+                return 'Médecine';
             case '6':
-                return '';
+                return 'Portail';
             case '7':
-                return 'Drapeau';
+                return 'Gnome';
             default:
                 return 'Undefined';
         }
@@ -39,9 +39,17 @@ export class ItemComponent {
             case '1':
                 return 'assets/sword.png';
             case '2':
-                return 'assets/water.png';
+                return 'assets/potion.png';
             case '3':
-                return 'assets/ice2.png';
+                return 'assets/wand.png';
+            case '4':
+                return 'assets/crystal_ball.png';
+            case '5':
+                return 'assets/berry-juice.png';
+            case '6':
+                return 'assets/vortex.png';
+            case '7':
+                return 'assets/gnome.png';
             default:
                 return 'Undefined';
         }
