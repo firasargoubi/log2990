@@ -1,18 +1,41 @@
 .container {
+    width: 100%;
     height: 100%;
     display: flex;
 }
 
-.play-area-container {
-    overflow: auto;
-    flex: 1 1 auto;
+#sidebar {
+    grid-area: description;
 }
 
-.play-area {
-    display: grid;
-    outline: none;
-    height: 100vh;
+app-tile-options {
+    grid-area: tile-tool;
 }
+
+app-objects {
+    grid-area: objects;
+}
+
+app-board {
+    grid-area: game-grid;
+}
+
+.play-area-container {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    grid-template-areas:
+        'description description description'
+        'tile-tool game-grid objects'
+        'tile-tool game-grid null';
+    grid-template-columns: 1fr 3fr 1fr;
+}
+
+// .play-area {
+//     display: grid;
+//     outline: none;
+//     height: 100vh;
+// }
 
 // #sidebar {
 //     flex-basis: 350px;

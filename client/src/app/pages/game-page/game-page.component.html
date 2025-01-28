@@ -1,7 +1,6 @@
-<div class="container">
+<div class="play-area-container">
     <app-sidebar id="sidebar"></app-sidebar>
-    <section class="play-area-container">
-        <app-tile-options></app-tile-options>
-        <app-board [size]="10" [tool]="selectedTool"></app-board>
-    </section>
+    <app-tile-options />
+    <app-board [size]="10" [tool]="selectedTool" />
+    <app-objects />
 </div>

@@ -1,0 +1,29 @@
+// .objects {
+//     display: grid;
+//     grid-template-columns: auto;
+//     grid-template-rows: auto;
+//     width: 20%;
+//     border: 1px solid black;
+//     margin-right: 25px;
+//     margin-top: 50px;
+// }
+
+// .objects > .row {
+//     display: flex;
+//     flex-direction: row;
+//     justify-content: space-between;
+//     width: 100%;
+//     height: 100%;
+//     background-color: blue;
+//     border: 2px solid black;
+//     cursor: grab;
+// }
+
+.object-container {
+    background-color: grey;
+    display: grid;
+    justify-content: center;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+    border: 2px solid black;
+}
