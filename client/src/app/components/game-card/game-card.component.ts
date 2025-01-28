@@ -27,7 +27,7 @@ export class GameCardComponent {
     @Input() game!: Game;
     @Output() edit = new EventEmitter<Game>();
     @Output() delete = new EventEmitter<Game>();
-    @Output() visibilityChange = new EventEmitter<{ game: Game; isVisible: boolean }>();
+    @Output() visibilityChange = new EventEmitter<Game>();
 
     editGame() {
         this.edit.emit(this.game);

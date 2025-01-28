@@ -14,12 +14,12 @@
     </div>
     <div class="game-actions">
         <!-- Bouton "Edit" avec une baguette magique -->
-        <button mat-icon-button (click)="editGame()" class="action edit" matTooltip="Edit">
+        <button mat-icon-button (click)="editGame()" class="action edit" matTooltip="Edit" matTooltipPosition="below">
             <i class="fa-solid fa-wand-magic-sparkles"></i>
         </button>
 
         <!-- Bouton "Delete" avec un chaudron -->
-        <button mat-icon-button (click)="deleteGame()" class="action delete" matTooltip="Delete">
+        <button mat-icon-button (click)="deleteGame()" class="action delete" matTooltip="Delete" matTooltipPosition="below">
             <i class="fa-solid fa-trash"></i>
         </button>
 
@@ -30,6 +30,7 @@
             (click)="toggleVisibility(!game.isVisible)"
             class="action visibility"
             matTooltip="Toggle Visibility"
+            matTooltipPosition="below"
         >
             <i class="fa-solid fa-eye"></i>
         </button>

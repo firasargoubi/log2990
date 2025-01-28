@@ -8,7 +8,7 @@
         [game]="game"
         (edit)="editGame.emit(game)"
         (delete)="deleteGame.emit(game)"
-        (visibilityChange)="onVisibilityChange($event)"
+        (visibilityChange)="onVisibilityChange(game)"
     ></app-game-card>
     <!-- TODO: Créer component création de jeu, ajouter RouterLink vers vue d'édition -->
     }

@@ -12,9 +12,9 @@ export class GameListComponent {
     @Input() games: Game[] = [];
     @Output() editGame = new EventEmitter<Game>();
     @Output() deleteGame = new EventEmitter<Game>();
-    @Output() visibilityChange = new EventEmitter<{ game: Game; isVisible: boolean }>();
+    @Output() visibilityChange = new EventEmitter<Game>();
     // TODO: Ajouter et gérer événement de création de jeu avec nouveau component.
-    onVisibilityChange(event: { game: Game; isVisible: boolean }) {
+    onVisibilityChange(event: Game) {
         this.visibilityChange.emit(event);
     }
 }
