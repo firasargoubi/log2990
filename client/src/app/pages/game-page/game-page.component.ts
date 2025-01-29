@@ -1,33 +1,11 @@
-import { Component, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { BoardComponent } from '@app/components/board/board.component';
-import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
-import { ObjectsComponent } from '@app/components/objects/objects.component';
-import { SaveService } from '@app/services/save.service';
+import { Component } from '@angular/core';
+import { PlayAreaComponent } from '@app/components/play-area/play-area.component';
+import { SidebarComponent } from '@app/components/sidebar/sidebar.component';
 
 @Component({
     selector: 'app-game-page',
     templateUrl: './game-page.component.html',
     styleUrls: ['./game-page.component.scss'],
-    imports: [FormsModule, BoardComponent, TileOptionsComponent, ObjectsComponent],
+    imports: [SidebarComponent, PlayAreaComponent],
 })
-export class GamePageComponent {
-    saveService = inject(SaveService);
-    gameName: string = '';
-    gameDescription: string = '';
-    showErrorPopup: boolean = false;
-    errorMessage: string = '';
-
-    saveBoard() {
-        if (this.gameName && this.gameDescription) {
-            this.saveService.setActive(true);
-        } else {
-            this.errorMessage = 'An error occurred while saving the game.';
-            this.showErrorPopup = true;
-        }
-    }
-
-    closePopup() {
-        this.showErrorPopup = false;
-    }
-}
+export class GamePageComponent {}
