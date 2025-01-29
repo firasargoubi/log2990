@@ -1,0 +1,10 @@
+.object-container {
+    background-color: rgb(110, 197, 76);
+    display: grid;
+    justify-self: center;
+    align-self: center;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+    border: 2px solid black;
+    //margin: 100px 10px;
+}

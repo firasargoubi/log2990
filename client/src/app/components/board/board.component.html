@@ -1,0 +1,14 @@
+<div class="box" (mouseleave)="onMouseLeaveBoard()">
+    <section class="board" [style.--size]="size">
+        @for(row of tiles; track $index;) { @for (tile of row; track tile.id;) {
+        <app-tile
+            class="tile"
+            [type]="tile.type"
+            (contextmenu)="onRightClickBoard($event)"
+            (mouseup)="onMouseUpBoard()"
+            (mousedown)="onMouseDownBoard($event, tile)"
+            (mouseover)="onMouseOverBoard(tile)"
+        ></app-tile>
+        } }
+    </section>
+</div>
