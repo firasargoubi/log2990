@@ -1,8 +1,9 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { Game } from '@app/components/game-card/game-card.component';
 import { GameListComponent } from '@app/components/game-list/game-list.component';
-import { GameService } from '@app/services/game.service';
+
+const API_URL = 'http://localhost:3000/api/game';
 
 @Component({
     selector: 'app-admin-page',
@@ -10,24 +11,28 @@ import { GameService } from '@app/services/game.service';
     styleUrls: ['./admin-page.component.scss'],
     imports: [GameListComponent, MatCardModule],
 })
-export class AdminPageComponent {
+export class AdminPageComponent implements OnInit {
     games: Game[] = [];
-    constructor(private gameService: GameService) {
-        this.gameService.fetchGames();
-        this.games = this.gameService.gamesList;
+
+    ngOnInit(): void {
+        this.fetchGames();
     }
+
+    async fetchGames() {
+        const response = await fetch(`${API_URL}/all`);
+        this.games = await response.json();
+    }
+
     onEditGame(game: Game) {
         return game;
         // TODO: Implémenter  l'édition d’un jeu avec serveur, bdd et vue d'édition
     }
 
     onDeleteGame() {
-        this.gameService.fetchGames();
-        this.games = this.gameService.gamesList;
+        this.fetchGames();
     }
 
     onToggleVisibility() {
-        this.gameService.fetchGames();
-        this.games = this.gameService.gamesList;
+        this.fetchGames();
     }
 }
