@@ -18,7 +18,7 @@ if (environment.production) {
 
 
 const routes: Routes = [
-    { path: '', redirectTo: '/home', pathMatch: 'full' },
+    { path: '', redirectTo: '/admin', pathMatch: 'full' },
     { path: 'home', component: MainPageComponent },
     { path: 'game', component: GamePageComponent },
     { path: 'admin', component: AdminPageComponent },
