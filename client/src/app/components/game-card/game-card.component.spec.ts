@@ -70,11 +70,11 @@ describe('GameCardComponent', () => {
         const deleteButton = debugElement.query(By.css('.action.delete ')).nativeElement;
         const visibilityButton = debugElement.query(By.css('.action.visibility ')).nativeElement;
 
-        expect(editButton.getAttribute('ng-reflect-message')).toBe('Edit');
+        expect(editButton.getAttribute('ng-reflect-message')).toBe('Modifier');
         expect(editButton.getAttribute('matTooltipPosition')).toBe('below');
-        expect(deleteButton.getAttribute('ng-reflect-message')).toBe('Delete');
+        expect(deleteButton.getAttribute('ng-reflect-message')).toBe('Supprimer');
         expect(deleteButton.getAttribute('matTooltipPosition')).toBe('below');
-        expect(visibilityButton.getAttribute('ng-reflect-message')).toBe('Toggle Visibility');
+        expect(visibilityButton.getAttribute('ng-reflect-message')).toBe('Changer la visibilité');
         expect(visibilityButton.getAttribute('matTooltipPosition')).toBe('below');
     });
 

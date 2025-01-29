@@ -1,12 +1,13 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Game, GameCardComponent } from '@app/components/game-card/game-card.component';
 
 @Component({
     selector: 'app-game-list',
     templateUrl: './game-list.component.html',
     styleUrls: ['./game-list.component.scss'],
-    imports: [GameCardComponent, MatCardModule],
+    imports: [GameCardComponent, MatCardModule, MatTooltipModule],
 })
 export class GameListComponent {
     @Input() games: Game[] = [];
