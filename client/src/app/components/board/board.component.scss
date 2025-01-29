@@ -1,0 +1,15 @@
+.box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 1200px;
+    height: 100%;
+}
+
+.board {
+    display: grid;
+    background-color: #ccc;
+    grid-template-columns: repeat(var(--size), 1fr); /* Adjust the size of the board */
+    grid-template-rows: repeat(var(--size), 1fr); /* Adjust the size of the board */
+    width: 65%;
+}

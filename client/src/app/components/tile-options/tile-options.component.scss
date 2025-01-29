@@ -1,0 +1,10 @@
+.tile-options {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    height: 600px;
+    width: 100px;
+    cursor: pointer;
+}

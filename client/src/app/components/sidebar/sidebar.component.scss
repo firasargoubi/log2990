@@ -1,7 +1,51 @@
 .container {
-    height: auto;
-    min-height: 98vh;
-    border: 1px solid black;
-    padding: 0 5px 0 5px;
-    margin-right: 5px;
+    position: absolute;
+    top: 20px;
+    right: 350px;
+    width: 400px;
+    height: 120px;
+    border: 2px dotted black;
+    border-radius: 5%;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.container[contenteditable]:empty:before {
+    content: 'You can write a short description of your game here!';
+    color: #615f5f;
+}
+
+.container[contenteditable]:not(:empty) {
+    background-color: #a2ce8c;
+    border: solid #a2ce8c;
+    font-family: 'Copperplate';
+    font-size: 20px;
+    font-weight: bold;
+    color: #e9827e;
+}
+
+.name-container {
+    position: absolute;
+    top: 40px;
+    right: 780px;
+    width: 200px;
+    height: 80px;
+    border: 2px dotted black;
+    border-radius: 5%;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.name-container[contenteditable]:empty:before {
+    content: 'Enter the name of your game here!';
+    color: #615f5f;
+}
+
+.name-container[contenteditable]:not(:empty) {
+    background-color: #a2ce8c;
+    border: solid #a2ce8c;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 20px;
+    font-weight: bold;
+    color: yellow;
 }
