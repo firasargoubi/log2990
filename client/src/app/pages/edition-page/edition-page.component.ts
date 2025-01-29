@@ -11,7 +11,7 @@ import { SaveService } from '@app/services/save.service';
     styleUrls: ['./edition-page.component.scss'],
     imports: [FormsModule, BoardComponent, TileOptionsComponent, ObjectsComponent],
 })
-export class GamePageComponent {
+export class EditionPageComponent {
     saveService = inject(SaveService);
     gameName: string = '';
     gameDescription: string = '';

@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { EditionPageComponent } from './edition-page.component';
 
 describe('EditionPageComponent', () => {
