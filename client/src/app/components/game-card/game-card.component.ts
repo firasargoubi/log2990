@@ -1,11 +1,11 @@
 import { DatePipe } from '@angular/common';
-import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { GameService } from '@app/services/game.service';
 
+const API_URL = 'http://localhost:3000/api/game';
 export interface Game {
     id: number;
     name: string;
@@ -29,23 +29,39 @@ export class GameCardComponent {
     @Output() delete = new EventEmitter<Game>();
     @Output() visibilityChange = new EventEmitter<Game>();
 
-    gameService = inject(GameService);
     editGame() {
         this.edit.emit(this.game);
     }
 
-    deleteGame() {
-        try {
-            this.gameService.deleteGame(this.game.id);
-            this.delete.emit(this.game);
-        } catch (error) {}
+    async deleteGame() {
+        const response = await fetch(`${API_URL}/${this.game.id}`, {
+            method: 'DELETE',
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to delete game: ${response.statusText}`);
+        }
+
+        this.delete.emit(this.game);
     }
 
     async toggleVisibility(isVisible: boolean) {
-        try {
-            this.game.isVisible = isVisible;
-            this.gameService.toggleVisibility(this.game.id, isVisible);
-            this.visibilityChange.emit(this.game);
-        } catch (error) {}
+        this.game.isVisible = isVisible;
+        const response = await fetch(`${API_URL}/${this.game.id}`, {
+            method: 'PUT',
+            headers: {
+                // TODO: fix cette règle de lint
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ isVisible }), // Only send the visibility update
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to update visibility: ${response.statusText}`);
+        }
+
+        const updatedGameResponse = await response.json();
+        this.visibilityChange.emit(updatedGameResponse);
     }
 }
