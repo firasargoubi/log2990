@@ -50,6 +50,8 @@ export class GameCardComponent {
         const response = await fetch(`${API_URL}/${this.game.id}`, {
             method: 'PUT',
             headers: {
+                // TODO: fix cette règle de lint
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ isVisible }), // Only send the visibility update
