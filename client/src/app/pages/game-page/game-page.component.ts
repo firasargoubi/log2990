@@ -9,7 +9,7 @@ import { SaveService } from '@app/services/save.service';
     selector: 'app-game-page',
     templateUrl: './game-page.component.html',
     styleUrls: ['./game-page.component.scss'],
-    imports: [FormsModule, BoardComponent, TileOptionsComponent],
+    imports: [FormsModule, BoardComponent, TileOptionsComponent, ObjectsComponent],
 })
 export class GamePageComponent {
     saveService = inject(SaveService);

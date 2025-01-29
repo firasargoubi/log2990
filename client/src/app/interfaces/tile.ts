@@ -3,4 +3,6 @@ export interface Tile {
     x: number;
     y: number;
     id: string;
+    seen?: boolean;
+    selected?: boolean;
 }

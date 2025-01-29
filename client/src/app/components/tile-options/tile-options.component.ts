@@ -31,7 +31,13 @@ export class TileOptionsComponent implements OnInit {
         }
     }
 
-    selectTileOption(type: number): void {
-        this.tileService.copyTileTool(type); // Notify parent about the selected tool
+    selectTileOption(tile: Tile): void {
+        this.tileService.copyTileTool(tile.type);
+        this.setAllTilesUnselected();
+        tile.selected = true;
+    }
+
+    setAllTilesUnselected(): void {
+        this.options.forEach((tile) => (tile.selected = false));
     }
 }
