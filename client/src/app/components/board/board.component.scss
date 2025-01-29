@@ -1,31 +1,15 @@
-.board {
-    display: grid;
-    width: 40%;
-    /* Fixed size for the board */
-    height: 40%;
-    /* Fixed size for the board */
-    gap: 1px;
-    /* Space between tiles */
-    background-color: #ccc;
-    position: absolute;
-    top: 20%;
-    right: 25%;
-    cursor: pointer;
-
-}
-
 .box {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    width: 80%;
-    height: 80%;
+    justify-content: center;
+    align-items: center;
+    width: 1200px;
+    height: 100%;
 }
 
-
-
-.debug {
-    height: 50%;
-    width: 70%;
-    font-size: 50px;
+.board {
+    display: grid;
+    background-color: #ccc;
+    grid-template-columns: repeat(var(--size), 1fr); /* Adjust the size of the board */
+    grid-template-rows: repeat(var(--size), 1fr); /* Adjust the size of the board */
+    width: 65%;
 }

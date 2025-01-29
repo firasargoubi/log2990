@@ -1,7 +1,28 @@
 <div class="container">
-    <app-sidebar id="sidebar"></app-sidebar>
-    <section class="play-area-container">
-        <app-tile-options></app-tile-options>
-        <app-board [size]="10" [tool]="selectedTool"></app-board>
+    <section class="game-info-container">
+        <input type="text" [(ngModel)]="gameName" placeholder="Enter game name" class="input-field" />
+        <textarea [(ngModel)]="gameDescription" placeholder="Enter game description" class="textarea-field"></textarea>
+        <button class="button" (click)="saveBoard()">
+            <img src="assets/save.png" alt="Save" class="save-icon" />
+        </button>
     </section>
+    <section class="main-content">
+        <div class="tile-tools left">
+            <app-tile-options></app-tile-options>
+        </div>
+        <div class="board-container">
+            <app-board [size]="10"></app-board>
+        </div>
+        <div class="tile-tools right">
+            <app-tile-options></app-tile-options>
+        </div>
+    </section>
+    @if (showErrorPopup) {
+        <div class="popup">
+            <div class="popup-content">
+                <span class="close" (click)="closePopup()">&times;</span>
+                <p>{{ errorMessage }}</p>
+            </div>
+        </div>
+    }
 </div>

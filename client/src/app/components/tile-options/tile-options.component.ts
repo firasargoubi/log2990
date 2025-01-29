@@ -25,10 +25,9 @@ export class TileOptionsComponent implements OnInit {
 
     initializeOptions(): void {
         this.options = [];
-        let u = 0;
-        for (let i = 0; i < 4; i++) {
-            this.options.push({ type: u, x: i, y: 0, id: `${i}` });
-            u++;
+
+        for (let i = 1; i < 6; i++) {
+            this.options.push({ type: i, x: i, y: 0, id: `${i}` });
         }
     }
 

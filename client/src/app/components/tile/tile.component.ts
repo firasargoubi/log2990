@@ -21,6 +21,12 @@ export class TileComponent {
                 return 'assets/water.png';
             case 3:
                 return 'assets/ice2.png';
+            case 4:
+                return 'assets/wall.png';
+            case 5:
+                return 'assets/door_c.png';
+            case 6:
+                return 'assets/door_o.png';
             default:
                 return 'assets/grass.png';
         }

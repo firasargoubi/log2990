@@ -22,6 +22,10 @@ export class MouseService {
         }
     }
 
+    onMouseLeave() {
+        this.onMouseUp();
+    }
+
     onMouseUp(): Coordinates[] {
         this.mousePressed = false;
         return this.curCoordinates;

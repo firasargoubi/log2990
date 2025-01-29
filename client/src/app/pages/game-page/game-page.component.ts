@@ -1,20 +1,32 @@
-import { Component } from '@angular/core';
-import { PlayAreaComponent } from '@app/components/play-area/play-area.component';
-import { SidebarComponent } from '@app/components/sidebar/sidebar.component';
+import { Component, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { BoardComponent } from '@app/components/board/board.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
+import { SaveService } from '@app/services/save.service';
 
 @Component({
     selector: 'app-game-page',
     templateUrl: './game-page.component.html',
     styleUrls: ['./game-page.component.scss'],
-    imports: [SidebarComponent, PlayAreaComponent, BoardComponent, TileOptionsComponent],
+    imports: [FormsModule, BoardComponent, TileOptionsComponent],
 })
 export class GamePageComponent {
-    selectedTool: number = -1; // Store the selected tool
+    saveService = inject(SaveService);
+    gameName: string = '';
+    gameDescription: string = '';
+    showErrorPopup: boolean = false;
+    errorMessage: string = '';
 
-    onToolSelected(tool: number): void {
-        this.selectedTool = tool;
-        console.log(`Tool selected: ${tool}`);
+    saveBoard() {
+        if (this.gameName && this.gameDescription) {
+            this.saveService.setActive(true);
+        } else {
+            this.errorMessage = 'An error occurred while saving the game.';
+            this.showErrorPopup = true;
+        }
+    }
+
+    closePopup() {
+        this.showErrorPopup = false;
     }
 }

@@ -1,6 +1,6 @@
-<div class="box">
-    <section class="board" [style.gridTemplateColumns]="'repeat(' + size + ',2fr)'">
-        @for(tile of tiles; track tile.id;) {
+<div class="box" (mouseleave)="onMouseLeaveBoard()">
+    <section class="board" [style.--size]="size">
+        @for(row of tiles; track $index;) { @for (tile of row; track tile.id;) {
         <app-tile
             class="tile"
             [type]="tile.type"
@@ -9,6 +9,6 @@
             (mousedown)="onMouseDownBoard($event, tile)"
             (mouseover)="onMouseOverBoard(tile)"
         ></app-tile>
-        }
+        } }
     </section>
 </div>
