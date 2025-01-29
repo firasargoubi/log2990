@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BoardComponent } from '@app/components/board/board.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
+import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { SaveService } from '@app/services/save.service';
 
 @Component({
