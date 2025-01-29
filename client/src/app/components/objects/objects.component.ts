@@ -10,9 +10,9 @@ import { ItemComponent } from '@app/components/item/item.component';
 })
 export class ObjectsComponent {
     range: number[] = [];
-
     constructor() {
-        this.range = this.generateRange(0, 7);
+        const MAX_OBJECTS = 7;
+        this.range = this.generateRange(0, MAX_OBJECTS);
     }
 
     generateRange(start: number, end: number): number[] {

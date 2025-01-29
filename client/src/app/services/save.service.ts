@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { Tile } from '@app/interfaces/tile';
-import {TileTypes} from '@app/interfaces/tileTypes';
-
+import { TileTypes } from '@app/interfaces/tileTypes';
 
 export interface SaveMessage {
     doors: boolean;
@@ -18,7 +17,7 @@ export interface SaveMessage {
 })
 export class SaveService {
     board: Tile[][] = [];
-    private saveActive = new Subject<boolean>();
+    saveActive = new Subject<boolean>();
     isActive$ = this.saveActive.asObservable();
 
     saveBoard(board: Tile[][]): boolean {

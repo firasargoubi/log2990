@@ -30,9 +30,9 @@ export class BoardComponent implements OnInit {
         this.saveService.isActive$.pipe(takeUntilDestroyed()).subscribe((isActive: boolean) => {
             if (isActive) {
                 if (this.saveService.saveBoard(this.board)) {
-                    console.log('Board saved successfully');
+                    //  TODO: Add success message
                 } else {
-                    console.log('Board could not be saved');
+                    //  TODO: Add error message
                 }
             }
         });

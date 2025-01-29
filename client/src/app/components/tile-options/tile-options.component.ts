@@ -25,8 +25,8 @@ export class TileOptionsComponent implements OnInit {
 
     initializeOptions(): void {
         this.options = [];
-
-        for (let i = 1; i < 6; i++) {
+        const MAX_TILE = 6;
+        for (let i = 1; i < MAX_TILE; i++) {
             this.options.push({ type: i, x: i, y: 0, id: `${i}` });
         }
     }
