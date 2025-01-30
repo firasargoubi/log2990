@@ -5,7 +5,6 @@ import { Game } from '@app/interfaces/game.model';
 
 const API_URL = 'http://localhost:3000/api/game';
 
-
 @Injectable({
     providedIn: 'root',
 })

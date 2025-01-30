@@ -11,6 +11,16 @@
     border-radius: 10px;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
     box-sizing: border-box;
+    background: linear-gradient(120deg, #2ecc71, #a8d5a2, #ffd700); 
+}
+
+h2 {
+    font-family: 'Press Start 2P', cursive;
+    color: #ffcc00;
+    font-size: 20px; 
+    line-height: 1.2; 
+    margin-bottom: 10px; 
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
 }
 
 /* Style global du formulaire */
@@ -29,7 +39,8 @@ input[type='number'] {
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 18px;
-    background: #f9f9f9;
+    background: #d4f4be;;
+    border: 2px solid #88aa66;
     transition:
         border-color 0.3s ease,
         box-shadow 0.3s ease;
@@ -42,7 +53,7 @@ input[type='number'] {
     }
 }
 
-/* Grille des avatars */
+
 .avatar-grid {
     display: flex;
     flex-direction: column;
@@ -51,7 +62,7 @@ input[type='number'] {
 
 .avatars {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); /* Ajusté pour meilleure disposition */
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); 
     gap: 15px;
     justify-content: center;
 }
@@ -72,12 +83,12 @@ input[type='number'] {
     }
 
     &.selected {
-        border-color: #246509;
+        border-color: #4cad26;
         box-shadow: 0 0 5px rgba(36, 101, 9, 0.5);
     }
 }
 
-/* Ajustement des champs de statistiques */
+
 .stats {
     display: grid;
     grid-template-columns: 1fr 3fr;

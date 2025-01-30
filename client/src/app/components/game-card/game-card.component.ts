@@ -29,14 +29,12 @@ export class GameCardComponent {
     async deleteGame() {
         this.gameService.deleteGame(this.game.id).subscribe({
             next: () => this.delete.emit(this.game),
-            error: (err) => console.error('Failed to delete game:', err),
         });
     }
 
     toggleVisibility(isVisible: boolean) {
         this.gameService.updateVisibility(this.game.id, isVisible).subscribe({
             next: (updatedGame) => this.visibilityChange.emit(updatedGame),
-            error: (err) => console.error('Failed to update visibility:', err),
         });
     }
 }
