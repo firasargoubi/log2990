@@ -30,7 +30,9 @@ input[type='number'] {
     border-radius: 6px;
     font-size: 18px;
     background: #f9f9f9;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transition:
+        border-color 0.3s ease,
+        box-shadow 0.3s ease;
 
     &:focus {
         border-color: #007bff;
@@ -60,7 +62,9 @@ input[type='number'] {
     border-radius: 8px;
     cursor: pointer;
     border: 3px solid transparent;
-    transition: transform 0.2s ease, border-color 0.3s ease;
+    transition:
+        transform 0.2s ease,
+        border-color 0.3s ease;
 
     &:hover {
         transform: scale(1.1);
@@ -101,7 +105,9 @@ button {
     border-radius: 6px;
     font-size: 18px;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    transition:
+        background-color 0.3s ease,
+        transform 0.2s ease;
 }
 
 button:first-of-type {

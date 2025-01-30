@@ -1,22 +1,21 @@
-<h2>Formulaire du jeu : </h2>
+<h2>Formulaire du jeu :</h2>
 
 <form (ngSubmit)="closeDialog()">
     <div>
         <label for="name">Nom:</label>
         <input id="name" type="text" formControlName="name" placeholder="Enter name" (input)="inputName($event)" required />
-        <div *ngIf="form.get('name')?.invalid && form.get('name')?.touched" class="error">Name is required.</div>
+
+        @if (form.get('name')?.invalid && form.get('name')?.touched) {
+        <div class="error">Name is required.</div>
+        }
     </div>
 
     <div class="avatar-grid">
         <label>Choisi ton avatar: </label>
         <div class="avatars">
-            <img
-                *ngFor="let avatar of avatars"
-                [src]="avatar"
-                [class.selected]="form.get('avatar')?.value === avatar"
-                (click)="selectAvatar(avatar)"
-                alt="Avatar"
-            />
+            @for (avatar of avatars; track avatar) {
+            <img [src]="avatar" [class.selected]="form.get('avatar')?.value === avatar" (click)="selectAvatar(avatar)" alt="Avatar" />
+            }
         </div>
     </div>
 
@@ -36,7 +35,6 @@
         <label for="defense">Défense:</label>
         <input id="defense" type="number" formControlName="defense" min="0" />
     </div>
-
 
     <div class="actions">
         <button type="button" (click)="cancel()">Annuler</button>
