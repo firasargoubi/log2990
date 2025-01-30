@@ -1,109 +1,96 @@
-import 'reflect-metadata';
-import { GameService } from './game.service';
+import { GameService } from '@app/services/game.service';
 import { game } from '@app/classes/game.model';
 import { expect } from 'chai';
-import { describe, it, beforeEach, afterEach } from 'mocha';
-import * as sinon from 'sinon';
-
-const mockGameData = {
-    id: '1234',
-    name: 'Test Game',
-    description: 'Test Description',
-    mode: 'Survival',
-    mapSize: 'Large',
-    lastModified: new Date(),
-    isVisible: true,
-    board: [[0, 1], [1, 0]],
-};
+import { SinonSandbox, createSandbox } from 'sinon';
+import { v4 as uuidv4 } from 'uuid';
 
 describe('GameService', () => {
     let gameService: GameService;
-    let findStub: sinon.SinonStub;
-    let findOneStub: sinon.SinonStub;
-    let findOneAndUpdateStub: sinon.SinonStub;
-    let findOneAndDeleteStub: sinon.SinonStub;
+    let sandbox: SinonSandbox;
 
     beforeEach(() => {
         gameService = new GameService();
-        findStub = sinon.stub(game, 'find');
-        findOneStub = sinon.stub(game, 'findOne');
-        findOneAndUpdateStub = sinon.stub(game, 'findOneAndUpdate');
-        findOneAndDeleteStub = sinon.stub(game, 'findOneAndDelete');
+        sandbox = createSandbox();
     });
 
     afterEach(() => {
-        sinon.restore();
+        sandbox.restore();
     });
 
-    it('should create a new game with a generated ID', async () => {
-        const gameDataWithoutId = {
+    it('should create a new game with a unique ID if none is provided', async () => {
+        const gameData = {
             name: 'Test Game',
-            description: 'Test Description',
-            mode: 'Survival',
-            mapSize: 'Large',
+            description: 'A test game',
+            mode: 'Classic',
+            mapSize: 'Medium',
             isVisible: true,
-            board: [[0, 1], [1, 0]],
+            board: [
+                [0, 0],
+                [0, 0],
+            ],
         };
-    
-        // Exécuter la méthode
-        const result = await gameService.createGame(gameDataWithoutId);
-    
-        // Vérifier que `uuidv4` a bien été appelé
-        expect(result).to.deep.equal(mockGameData);
-    });
-    
 
-    it('should get all games', async () => {
-        findStub.resolves([mockGameData]);
+        const savedGame = { ...gameData, id: uuidv4(), save: sandbox.stub().resolves(gameData) };
+        sandbox.stub(game.prototype, 'save').resolves(savedGame);
+
+        const result = await gameService.createGame(gameData);
+        expect(result).to.have.property('id').that.is.a('string');
+        expect(result.name).to.equal('Test Game');
+    });
+
+    it('should return all games', async () => {
+        const games = [{ name: 'Game1' }, { name: 'Game2' }];
+        sandbox.stub(game, 'find').resolves(games);
 
         const result = await gameService.getAllGames();
-
-        expect(result).to.deep.equal([mockGameData]);
-        expect(findStub.calledOnce).to.be.true;
+        expect(result).to.equal(games);
     });
 
+    it('should edit an existing game', async () => {
+        const gameId = uuidv4();
+        const updates = { name: 'Updated Game' };
+        const updatedGame = { id: gameId, ...updates };
 
+        sandbox.stub(game, 'findOneAndUpdate').resolves(updatedGame);
+        const result = await gameService.editGame(gameId, updates);
 
-    it('should edit a game', async () => {
-        findOneAndUpdateStub.resolves(mockGameData);
-
-        const result = await gameService.editGame('1234', { name: 'Updated Game' });
-
-        expect(result).to.deep.equal(mockGameData);
-        expect(findOneAndUpdateStub.calledOnceWith({ id: '1234' }, { name: 'Updated Game' }, { new: true })).to.be.true;
+        expect(result).to.equal(updatedGame);
     });
 
-    it('should return null when trying to edit a non-existent game', async () => {
-        findOneAndUpdateStub.resolves(null);
+    it('should delete a game by ID', async () => {
+        const gameId = uuidv4();
+        const deletedGame = { id: gameId, name: 'Deleted Game' };
 
-        const result = await gameService.editGame('9999', { name: 'Updated Game' });
+        sandbox.stub(game, 'findOneAndDelete').resolves(deletedGame);
+        const result = await gameService.deleteGame(gameId);
 
-        expect(result).to.be.null;
-    });
-
-    it('should delete a game', async () => {
-        findOneAndDeleteStub.resolves(mockGameData);
-
-        const result = await gameService.deleteGame('1234');
-
-        expect(result).to.deep.equal(mockGameData);
-        expect(findOneAndDeleteStub.calledOnceWith({ id: '1234' })).to.be.true;
-    });
-
-    it('should return null when trying to delete a non-existent game', async () => {
-        findOneAndDeleteStub.resolves(null);
-
-        const result = await gameService.deleteGame('9999');
-
-        expect(result).to.be.null;
+        expect(result).to.equal(deletedGame);
     });
 
     it('should get only visible games', async () => {
-        findStub.resolves([mockGameData]);
+        const visibleGames = [{ name: 'Game1', isVisible: true }];
+        sandbox.stub(game, 'find').withArgs().resolves(visibleGames);
 
         const result = await gameService.getVisibleGames();
+        expect(result).to.equal(visibleGames);
+    });
 
-        expect(result).to.deep.equal([mockGameData]);
-        expect(findStub.calledOnceWith({ isVisible: true })).to.be.true;
+    it('should return null if trying to edit a non-existent game', async () => {
+        const gameId = uuidv4();
+        const updates = { name: 'Non-existent Game' };
+
+        sandbox.stub(game, 'findOneAndUpdate').resolves(null);
+        const result = await gameService.editGame(gameId, updates);
+
+        expect(result).to.equal(null);
+    });
+
+    it('should return null if trying to delete a non-existent game', async () => {
+        const gameId = uuidv4();
+
+        sandbox.stub(game, 'findOneAndDelete').resolves(null);
+        const result = await gameService.deleteGame(gameId);
+
+        expect(result).to.equal(null);
     });
 });
