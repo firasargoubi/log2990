@@ -1,0 +1,9 @@
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+
+<div class="admin-page">
+    <div class="games-container">
+        <div>
+            <app-game-card *ngFor="let game of games" [game]="game" (click)="onBoxClick(game)"></app-game-card>
+        </div>
+    </div>
+</div>

@@ -10,6 +10,7 @@ import { MainPageComponent } from '@app/pages/main-page/main-page.component';
 import { MaterialPageComponent } from '@app/pages/material-page/material-page.component';
 import { environment } from './environments/environment';
 import { EditionPageComponent } from '@app/pages/edition-page/edition-page.component';
+import { CreatePageComponent } from '@app/pages/create-page/create-page.component';
 
 if (environment.production) {
     enableProdMode();
@@ -23,6 +24,7 @@ const routes: Routes = [
     { path: 'edit', component: EditionPageComponent },
     { path: 'material', component: MaterialPageComponent },
     {path:'admin', component: AdminPageComponent},
+    {path:'create', component: CreatePageComponent},
     { path: '**', redirectTo: '/home' },
 ];
 

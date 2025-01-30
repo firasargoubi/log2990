@@ -1,0 +1,45 @@
+<h2>Configure Box {{ data.boxId }}</h2>
+
+<form (ngSubmit)="closeDialog()">
+    <div>
+        <label for="name">Nom:</label>
+        <input id="name" type="text" formControlName="name" placeholder="Enter name" (input)="inputName($event)" required />
+        <div *ngIf="form.get('name')?.invalid && form.get('name')?.touched" class="error">Name is required.</div>
+    </div>
+
+    <div class="avatar-grid">
+        <label>Choisi ton avatar: </label>
+        <div class="avatars">
+            <img
+                *ngFor="let avatar of avatars"
+                [src]="avatar"
+                [class.selected]="form.get('avatar')?.value === avatar"
+                (click)="selectAvatar(avatar)"
+                alt="Avatar"
+            />
+        </div>
+    </div>
+
+    <div class="stats">
+        <label for="life">Vie:</label>
+        <input id="life" type="number" formControlName="life" min="0" />
+    </div>
+    <div class="stats">
+        <label for="speed">Vitesse:</label>
+        <input id="speed" type="number" formControlName="speed" min="0" />
+    </div>
+    <div class="stats">
+        <label for="attack">Attaque:</label>
+        <input id="attack" type="number" formControlName="attack" min="0" />
+    </div>
+    <div class="stats">
+        <label for="defense">Défense:</label>
+        <input id="defense" type="number" formControlName="defense" min="0" />
+    </div>
+
+
+    <div class="actions">
+        <button type="button" (click)="cancel()">Annuler</button>
+        <button mat-button [disabled]="!formValid$" (click)="save()">Enregistrer</button>
+    </div>
+</form>
