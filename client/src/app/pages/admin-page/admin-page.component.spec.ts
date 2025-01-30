@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AdminPageComponent } from './admin-page.component';
+import { HttpClient, HttpHandler } from '@angular/common/http';
+import { ActivatedRoute } from '@angular/router';
+import { of } from 'rxjs';
 
 describe('AdminPageComponent', () => {
     let component: AdminPageComponent;
@@ -9,6 +12,14 @@ describe('AdminPageComponent', () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [AdminPageComponent],
+            providers: [
+                HttpClient,
+                HttpHandler,
+                {
+                    provide: ActivatedRoute,
+                    useValue: { data: of({ games: [] }) },
+                },
+            ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(AdminPageComponent);

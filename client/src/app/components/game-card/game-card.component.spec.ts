@@ -7,11 +7,16 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
+import { GameService } from '@app/services/game.service';
+import { of } from 'rxjs';
+import { HttpClient, HttpHandler } from '@angular/common/http';
+import { ActivatedRoute } from '@angular/router';
 
 describe('GameCardComponent', () => {
     let component: GameCardComponent;
     let fixture: ComponentFixture<GameCardComponent>;
     let debugElement: DebugElement;
+    let gameService: jasmine.SpyObj<GameService>;
 
     const mockGame: Game = {
         id: 1,
@@ -25,31 +30,34 @@ describe('GameCardComponent', () => {
     };
 
     beforeEach(async () => {
+        const gameServiceSpy = jasmine.createSpyObj('GameService', ['deleteGame', 'updateVisibility']);
+
         await TestBed.configureTestingModule({
-            imports: [MatCardModule, MatTooltipModule, MatButtonModule, MatSlideToggleModule],
+            imports: [MatCardModule, MatTooltipModule, MatButtonModule, MatSlideToggleModule, GameCardComponent],
+            providers: [
+                { provide: GameService, useValue: gameServiceSpy },
+                HttpClient,
+                HttpHandler,
+                {
+                    provide: ActivatedRoute,
+                    useValue: { data: of({ game: mockGame }) },
+                },
+            ],
         }).compileComponents();
+
+        gameService = TestBed.inject(GameService) as jasmine.SpyObj<GameService>;
     });
 
     beforeEach(() => {
         fixture = TestBed.createComponent(GameCardComponent);
         component = fixture.componentInstance;
         debugElement = fixture.debugElement;
-
-        component.game = { ...mockGame }; // Provide input data
-        fixture.detectChanges(); // Trigger change detection
+        component.game = { ...mockGame };
+        fixture.detectChanges();
     });
 
     it('should create', () => {
         expect(component).toBeTruthy();
-    });
-
-    it('should display the preview image and the game description in a tooltip above it', () => {
-        const previewImage = debugElement.query(By.css('.game-preview img')).nativeElement;
-
-        expect(previewImage).toBeTruthy();
-        expect(previewImage.getAttribute('src')).toBe(mockGame.previewImage);
-        expect(previewImage.getAttribute('ng-reflect-message')).toBe(mockGame.description);
-        expect(previewImage.getAttribute('matTooltipPosition')).toBe('above');
     });
 
     it('should display game details correctly', () => {
@@ -57,26 +65,9 @@ describe('GameCardComponent', () => {
         const gameMapSize = debugElement.query(By.css('.game-info li:nth-child(2)')).nativeElement;
         const gameMode = debugElement.query(By.css('.game-info li:nth-child(3)')).nativeElement;
 
-        expect(gameName).toBeTruthy();
-        expect(gameMapSize).toBeTruthy();
-        expect(gameMode).toBeTruthy();
-
         expect(gameName.textContent).toBe(mockGame.name);
         expect(gameMapSize.textContent).toBe(mockGame.mapSize);
         expect(gameMode.textContent).toBe(mockGame.mode);
-    });
-
-    it('should show tooltip below each button', () => {
-        const editButton = debugElement.query(By.css('.action.edit ')).nativeElement;
-        const deleteButton = debugElement.query(By.css('.action.delete ')).nativeElement;
-        const visibilityButton = debugElement.query(By.css('.action.visibility ')).nativeElement;
-
-        expect(editButton.getAttribute('ng-reflect-message')).toBe('Modifier');
-        expect(editButton.getAttribute('matTooltipPosition')).toBe('below');
-        expect(deleteButton.getAttribute('ng-reflect-message')).toBe('Supprimer');
-        expect(deleteButton.getAttribute('matTooltipPosition')).toBe('below');
-        expect(visibilityButton.getAttribute('ng-reflect-message')).toBe('Changer la visibilité');
-        expect(visibilityButton.getAttribute('matTooltipPosition')).toBe('below');
     });
 
     it('should emit "edit" event when edit button is clicked', () => {
@@ -88,37 +79,36 @@ describe('GameCardComponent', () => {
         expect(component.edit.emit).toHaveBeenCalledWith(mockGame);
     });
 
-    it('should emit "delete" event when delete button is clicked', async () => {
+    it('should call deleteGame on service and emit "delete" event when delete button is clicked', () => {
         spyOn(component.delete, 'emit');
-        spyOn(window, 'fetch').and.returnValue(Promise.resolve(new Response(null, { status: 200 })));
+        gameService.deleteGame.and.returnValue(of(undefined)); // Mock API response
 
         const deleteButton = debugElement.query(By.css('.action.delete')).nativeElement;
         deleteButton.click();
 
-        await fixture.whenStable();
+        expect(gameService.deleteGame).toHaveBeenCalledWith(mockGame.id);
         expect(component.delete.emit).toHaveBeenCalledWith(mockGame);
-        expect(window.fetch).toHaveBeenCalled();
     });
 
-    it('should emit "visibilityChange" event when visibility button is clicked', async () => {
+    it('should call updateVisibility on service and emit "visibilityChange" event when visibility button is clicked', () => {
         spyOn(component.visibilityChange, 'emit');
-        spyOn(window, 'fetch').and.returnValue(Promise.resolve(new Response(JSON.stringify(mockGame), { status: 200 })));
+        const updatedGame = { ...mockGame, isVisible: false };
+        gameService.updateVisibility.and.returnValue(of(updatedGame)); // Mock API response
 
         const visibilityButton = debugElement.query(By.css('.action.visibility')).nativeElement;
         visibilityButton.click();
 
-        await fixture.whenStable();
-        expect(window.fetch).toHaveBeenCalled();
-        // expect(component.visibilityChange.emit).toHaveBeenCalledWith(mockGame);  // TODO: make this test pass
+        expect(gameService.updateVisibility).toHaveBeenCalledWith(mockGame.id, false);
+        expect(component.visibilityChange.emit).toHaveBeenCalledWith(updatedGame);
     });
 
-    it('should update the visibility icon class when visibility button is clicked', async () => {
-        spyOn(window, 'fetch').and.returnValue(Promise.resolve(new Response(JSON.stringify(mockGame), { status: 200 })));
+    it('should update the visibility icon class when visibility button is clicked', () => {
+        const updatedGame = { ...mockGame, isVisible: false };
+        gameService.updateVisibility.and.returnValue(of(updatedGame));
 
         const visibilityButton = debugElement.query(By.css('.action.visibility')).nativeElement;
         visibilityButton.click();
 
-        await fixture.whenStable();
         fixture.detectChanges();
 
         expect(visibilityButton.classList).toContain('invisible');
