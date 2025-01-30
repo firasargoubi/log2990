@@ -12,7 +12,7 @@ export class TileService {
     }
 
     modifyTile(tile: Tile) {
-        if (this.currentTool >= TileTypes.DoorClosed) {
+        if (this.currentTool === TileTypes.DoorClosed || this.currentTool === TileTypes.DoorOpen) {
             tile.type = tile.type === TileTypes.DoorClosed ? TileTypes.DoorOpen : TileTypes.DoorClosed;
         } else {
             tile.type = this.currentTool;

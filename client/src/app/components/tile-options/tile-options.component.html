@@ -1,5 +1,12 @@
-<div class="tile-options">
-    @for (option of options; track $index) {
-        <app-tile class="tileOption" [type]="option.type" [ngStyle] = "{transform : option.selected === undefined || option.selected === false ? 'scale(1)' : 'scale(1.2)'}" (click)="selectTileOption(option)"></app-tile>
-    }
+<div class="container">
+    <div class="tile-options">
+        @for (option of options; track $index) {
+        <app-tile
+            class="tile"
+            [type]="option.type"
+            [ngStyle]="{ transform: option.selected === undefined || option.selected === false ? 'scale(0.5)' : 'scale(0.7)' }"
+            (click)="selectTileOption(option)"
+        ></app-tile>
+        }
+    </div>
 </div>

@@ -1,0 +1,16 @@
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+<mat-card class="create-page">
+    <div class="title-container">
+        <img src="assets/images/gnome.png" alt="character-left" class="character" />
+        <h1>Créer une partie</h1>
+        <img src="assets/images/gnome.png" alt="character-right" class="character" />
+    </div>
+    <div class="games-container">
+        <a routerLink="/main" class="logo-link">
+            <img class="logo" src="assets/images/logo.png" alt="Logo" />
+        </a>
+        @for (game of games; track game) {
+        <app-game-creation-card [game]="game" (click)="onBoxClick(game)"></app-game-creation-card>
+        }
+    </div>
+</mat-card>

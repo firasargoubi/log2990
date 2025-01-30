@@ -1,0 +1,110 @@
+.admin-page {
+    background: linear-gradient(120deg, #2ecc71, #a8d5a2, #ffd700); 
+    background-size: 200% 200%;
+    animation: animatedGradient 6s ease-in-out infinite;
+    margin: 0;
+    padding: 16px;
+    font-family: 'Press Start 2P', cursive;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+    height: 100vh;
+    overflow-y: auto;
+}
+@keyframes animatedGradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.admin-page h1 {
+    font-family: 'Press Start 2P', cursive;
+    color: #ffcc00;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.games-container {
+    width: 90%;
+    max-width: 1200px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: center;
+    padding: 16px;
+    border-radius: 16px;
+    overflow-y: auto;
+    max-height: 70vh;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #ffcc00;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #ff6600;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+.title-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.title-container .character {
+    width: 150px;
+    height: auto;
+    object-fit: contain;
+    animation: bounce 3s infinite;
+}
+
+@keyframes bounce {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.logo {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 145px;
+    height: 145px;
+    object-fit: cover;
+    border-radius: 50%;
+    
+}
+
+.logo-link {
+    display: inline-block;
+    cursor: pointer; /* Assure que le curseur change en mode clic */
+}
+
+
+
+.logo:hover {
+    transform: scale(1.1); /* Effet visuel pour montrer qu'il est cliquable */
+}

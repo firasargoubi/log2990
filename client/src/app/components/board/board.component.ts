@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { TileComponent } from '@app/components/tile/tile.component';
 import { Coordinates } from '@app/interfaces/coordinates';
 import { Tile } from '@app/interfaces/tile';
+import { ErrorService } from '@app/services/error.service';
 import { MouseService } from '@app/services/mouse.service';
 import { SaveService } from '@app/services/save.service';
 import { TileService } from '@app/services/tile.service';
@@ -27,15 +28,17 @@ export class BoardComponent implements OnInit {
     mouseService = inject(MouseService);
     tileService = inject(TileService);
     saveService = inject(SaveService);
+    errorService = inject(ErrorService);
 
     constructor() {
-        this.saveService.isActive$.pipe(takeUntilDestroyed()).subscribe((isActive: boolean) => {
+        this.saveService.isSave$.pipe(takeUntilDestroyed()).subscribe((isActive: boolean) => {
             if (isActive) {
-                if (this.saveService.saveBoard(this.board)) {
-                    //  TODO: Add success message
-                } else {
-                    //  TODO: Add error message
-                }
+                this.saveService.saveBoard(this.board);
+            }
+        });
+        this.saveService.isReset$.pipe(takeUntilDestroyed()).subscribe((isActive: boolean) => {
+            if (isActive) {
+                this.initializeBoard();
             }
         });
     }

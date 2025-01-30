@@ -1,99 +1,36 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Tile Bound</title>
+        <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Press+Start+2P&display=swap" rel="stylesheet" />
+    </head>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tile Bound</title>
-    <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Press+Start+2P&display=swap"
-        rel="stylesheet">
+    <body>
+        <!-- Logo -->
+        <img class="logo" src="assets/images/logo.png" alt="Logo" />
 
-</head>
+        <!-- Conteneur central -->
+        <div class="center-container">
+            <!-- Nom du jeu -->
+            <h1 class="game-title">Tile Bound</h1>
+            <div class="team-name">209</div>
 
-<body>
-    <!-- Logo -->
-    <img class="logo" src="assets/images/logo.png" alt="Logo">
-
-    <!-- Conteneur central -->
-    <div class="center-container">
-        <!-- Nom du jeu -->
-        <h1 class="game-title">Tile Bound</h1>
-        <div class="team-name">209</div>
-
-        <!-- Boutons -->
-        <div class="button-container">
-            <button class="btn" routerLink="/game">Join</button>
-            <button id="btnCreate" class="btn" onclick="openPopup()">Create</button>
-            <button class="btn" routerLink="/admin">Admin</button>
+            <!-- Boutons -->
+            <div class="button-container">
+                <button class="btn" routerLink="/join">Jouer</button>
+                <button routerLink="/create" class="btn">Creer</button>
+                <button class="btn" routerLink="/admin">Administrer</button>
+            </div>
         </div>
 
-    </div>
-
-
-    <div id="popup" class="popup">
-        <div class="popup-content">
-            <span id="closePopup" class="close-btn">&times;</span>
-            <h2>Create a game</h2>
-            <form>
-
-                <br>
-                <br>
-                Choose a Mode :
-                <br>
-                <br>
-                <div>
-                    <label>
-                        <input type="radio" id="modeClassic" name="gameMode" value="classic" required>
-                        Classic
-                    </label>
-                    <label>
-                        <input type="radio" id="modeCapture" name="gameMode" value="capture-the-flag">
-                        Capture the Flag
-                    </label>
-                </div>
-
-                <br>
-                <br>
-
-                Choose a card Size :
-                <br>                
-                <br>
-
-
-                <div>
-                    <label>
-                        <input type="radio" id="sizeSmall" name="mapSize" value="small" required>
-                        Small
-                    </label>
-                    <label>
-                        <input type="radio" id="sizeMedium" name="mapSize" value="medium">
-                        Medium
-                    </label>
-                    <label>
-                        <input type="radio" id="sizeBig" name="mapSize" value="big">
-                        Big
-                    </label>
-                </div>
-                <br>
-                <br>
-                <br>
-                <button type="submit" class="btn">Submit</button>
-            </form>
-        </div>
-    </div>
-
-    <footer>
-        <div class="footer-container">
-            <ul class="team-list">
-                Melissa Akhenak, 
-                Firas Argoubi, 
-                Nawal Benesrighe, 
-                Yassine Essaouab, 
-                Rita Jaafri Hayani, 
-                Adam Marhraoui
-            </ul>
-        </div>
-    </footer>
-    
-
-</body>
+        <footer>
+            <div class="footer-container">
+                <ul class="team-list">
+                    Melissa Akhenak, Firas Argoubi, Nawal Benesrighe, Yassine Essaouab, Rita Jaafri Hayani, Adam Marhraoui
+                </ul>
+            </div>
+        </footer>
+    </body>
+</html>
