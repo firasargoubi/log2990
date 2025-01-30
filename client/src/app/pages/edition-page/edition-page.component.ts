@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { BoardComponent } from '@app/components/board/board.component';
 import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
@@ -12,7 +13,7 @@ import { SaveService } from '@app/services/save.service';
     selector: 'app-game-page',
     templateUrl: './edition-page.component.html',
     styleUrls: ['./edition-page.component.scss'],
-    imports: [FormsModule, BoardComponent, TileOptionsComponent, ObjectsComponent],
+    imports: [FormsModule, BoardComponent, TileOptionsComponent, ObjectsComponent, RouterLink],
 })
 export class EditionPageComponent {
     saveService = inject(SaveService);

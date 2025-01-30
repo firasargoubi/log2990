@@ -1,18 +1,24 @@
 .container {
-    height: 100%;
+    background: linear-gradient(120deg, #2ecc71, #a8d5a2, #ffd700);
+    background-size: 200% 200%;
+    animation: animatedGradient 6s ease-in-out infinite;
+    font-family: 'Press Start 2P', cursive;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    height: 100%;
+    width: 100%;
 }
 
 .game-info-container {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    padding: 20px;
     background-color: #f0f0f0;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+    margin-bottom: 30px;
+    width: 50%;
 }
 
 .input-field {
@@ -49,21 +55,22 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    flex-grow: 1;
+    height: 80%;
 }
 
 .tile-tools {
-    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 25%;
+    height: 25%;
 }
 
 .board-container {
-    flex: 2;
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 60%;
 }
 
 .popup {
@@ -93,4 +100,36 @@
     right: 10px;
     font-size: 24px;
     cursor: pointer;
+}
+
+@keyframes animatedGradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Logo */
+.logo {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 145px;
+    height: 145px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.logo-link {
+    display: inline-block;
+    cursor: pointer; /* Assure que le curseur change en mode clic */
+}
+
+.logo:hover {
+    transform: scale(1.1); /* Effet visuel pour montrer qu'il est cliquable */
 }

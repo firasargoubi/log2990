@@ -1,0 +1,86 @@
+.game-card {
+    height: auto;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border: 2px solid rgba(139, 69, 19, 0.8);
+    border-radius: 16px;
+    background: linear-gradient(145deg, #3d2f2f, #5a3d3d);
+    box-shadow:
+        0 10px 20px rgba(0, 0, 0, 0.4),
+        inset 0 5px 10px rgba(255, 255, 255, 0.1);
+    font-family: 'Press Start 2P', cursive;
+    color: #ffffff;
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+
+    &:hover {
+        transform: translateY(-8px);
+        box-shadow:
+            0 20px 30px rgba(0, 0, 0, 0.5),
+            0 6px 12px rgba(0, 0, 0, 0.3);
+        border: 2px solid #ffcc00;
+    }
+
+    .game-preview {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        height: 150px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.1);
+
+        img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+    }
+
+    .game-info ul li {
+        font-size: 12px;
+    }
+
+    .game-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+    }
+
+    .action {
+        font-size: 24px; /* Taille des icônes */
+        color: #ffffff;
+        background: none;
+        border: none;
+        cursor: pointer;
+        transition:
+            transform 0.3s ease,
+            color 0.3s ease;
+
+        &:hover {
+            transform: scale(1.2);
+            color: #ff4d4d;
+        }
+
+        &.edit i {
+            color: #58e4ff;
+        }
+
+        &.delete i {
+            color: #ff4d4d;
+        }
+
+        &.visibility i {
+            color: #92fe9d;
+        }
+        &.invisible i {
+            color: #ff4d4d;
+        }
+    }
+}

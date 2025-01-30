@@ -1,0 +1,147 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px;
+    width: 100%;
+    max-width: 700px; /* Augmenté pour éviter que le contenu soit tronqué */
+    max-height: 90vh; /* Empêche le débordement de l'écran */
+    overflow-y: auto; /* Ajoute un scroll si nécessaire */
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    box-sizing: border-box;
+    background: linear-gradient(120deg, #2ecc71, #a8d5a2, #ffd700); 
+}
+
+h2 {
+    font-family: 'Press Start 2P', cursive;
+    color: #ffcc00;
+    font-size: 20px; 
+    line-height: 1.2; 
+    margin-bottom: 10px; 
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* Style global du formulaire */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+}
+
+/* Champs input */
+input[type='text'],
+input[type='number'] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 18px;
+    background: #d4f4be;;
+    border: 2px solid #88aa66;
+    transition:
+        border-color 0.3s ease,
+        box-shadow 0.3s ease;
+
+    &:focus {
+        border-color: #007bff;
+        background: #fff;
+        outline: none;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    }
+}
+
+
+.avatar-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.avatars {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); 
+    gap: 15px;
+    justify-content: center;
+}
+
+.avatars img {
+    width: 90px;
+    height: 95px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition:
+        transform 0.2s ease,
+        border-color 0.3s ease;
+
+    &:hover {
+        transform: scale(1.1);
+        border-color: #ddd;
+    }
+
+    &.selected {
+        border-color: #4cad26;
+        box-shadow: 0 0 5px rgba(36, 101, 9, 0.5);
+    }
+}
+
+
+.stats {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    gap: 12px;
+    align-items: center;
+}
+
+label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Boutons */
+.actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+button {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 6px;
+    font-size: 18px;
+    cursor: pointer;
+    transition:
+        background-color 0.3s ease,
+        transform 0.2s ease;
+}
+
+button:first-of-type {
+    background-color: #f8f9fa;
+    color: #333;
+    border: 1px solid #ccc;
+
+    &:hover {
+        background-color: #e2e6ea;
+    }
+}
+
+button:last-of-type {
+    background-color: #007bff;
+    color: white;
+
+    &:hover {
+        background-color: #0056b3;
+        transform: scale(1.05);
+    }
+
+    &:disabled {
+        background-color: #c4c4c4;
+        cursor: not-allowed;
+    }
+}

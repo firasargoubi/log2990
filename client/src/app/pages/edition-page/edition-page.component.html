@@ -1,7 +1,10 @@
 <div class="container">
     <section class="game-info-container">
-        <input type="text" [(ngModel)]="gameName" placeholder="Enter game name" class="input-field" maxlength="20" />
-        <textarea [(ngModel)]="gameDescription" placeholder="Enter game description" class="textarea-field" maxlength="100"></textarea>
+        <a routerLink="/main" class="logo-link">
+            <img class="logo" src="assets/images/logo.png" alt="Logo" />
+        </a>
+        <input type="text" [(ngModel)]="gameName" placeholder="Entrer le nom du jeu" class="input-field" maxlength="20" />
+        <textarea [(ngModel)]="gameDescription" placeholder="Entrer une description" class="textarea-field" maxlength="100"></textarea>
         <button class="button" (click)="saveBoard()">
             <img src="assets/save.png" alt="Save" class="save-icon" />
         </button>
@@ -9,17 +12,19 @@
             <img src="assets/reset-icon.png" alt="Reset" class="save-icon" />
         </button>
     </section>
+
     <section class="main-content">
-        <div class="tile-tools left">
+        <div class="tile-tools">
             <app-tile-options></app-tile-options>
         </div>
         <div class="board-container">
             <app-board [size]="10"></app-board>
         </div>
-        <div class="object-tools right">
-            <app-objects />
+        <div class="object-tools">
+            <app-objects></app-objects>
         </div>
     </section>
+
     @if (showErrorPopup) {
     <div class="popup">
         <div class="popup-content">
