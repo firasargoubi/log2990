@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
-import { Game } from '@app/components/game-card/game-card.component';
+import { Game } from '@app/interfaces/game.model';
 import { GameListComponent } from '@app/components/game-list/game-list.component';
 
 const API_URL = 'http://localhost:3000/api/game';

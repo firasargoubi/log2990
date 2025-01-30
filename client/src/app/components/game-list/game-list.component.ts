@@ -1,7 +1,8 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Game, GameCardComponent } from '@app/components/game-card/game-card.component';
+import { GameCardComponent } from '@app/components/game-card/game-card.component';
+import { Game } from '@app/interfaces/game.model';
 
 @Component({
     selector: 'app-game-list',

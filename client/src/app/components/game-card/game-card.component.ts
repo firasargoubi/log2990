@@ -1,22 +1,12 @@
 import { DatePipe } from '@angular/common';
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { RouterLink } from '@angular/router';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
-
-const API_URL = 'http://localhost:3000/api/game';
-export interface Game {
-    id: number;
-    name: string;
-    mapSize: string;
-    mode: string;
-    previewImage: string;
-    description: string;
-    lastModified: Date;
-    isVisible: boolean;
-}
+import { RouterLink } from '@angular/router';
+import { Game } from '@app/interfaces/game.model';
+import { GameService } from '@app/services/game.service';
 
 @Component({
     selector: 'app-game-card',
@@ -30,39 +20,23 @@ export class GameCardComponent {
     @Output() delete = new EventEmitter<Game>();
     @Output() visibilityChange = new EventEmitter<Game>();
 
+    constructor(private gameService: GameService) {}
+
     editGame() {
         this.edit.emit(this.game);
     }
 
     async deleteGame() {
-        const response = await fetch(`${API_URL}/${this.game.id}`, {
-            method: 'DELETE',
+        this.gameService.deleteGame(this.game.id).subscribe({
+            next: () => this.delete.emit(this.game),
+            error: (err) => console.error('Failed to delete game:', err),
         });
-
-        if (!response.ok) {
-            throw new Error(`Failed to delete game: ${response.statusText}`);
-        }
-
-        this.delete.emit(this.game);
     }
 
-    async toggleVisibility(isVisible: boolean) {
-        this.game.isVisible = isVisible;
-        const response = await fetch(`${API_URL}/${this.game.id}`, {
-            method: 'PUT',
-            headers: {
-                // TODO: fix cette règle de lint
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ isVisible }), // Only send the visibility update
+    toggleVisibility(isVisible: boolean) {
+        this.gameService.updateVisibility(this.game.id, isVisible).subscribe({
+            next: (updatedGame) => this.visibilityChange.emit(updatedGame),
+            error: (err) => console.error('Failed to update visibility:', err),
         });
-
-        if (!response.ok) {
-            throw new Error(`Failed to update visibility: ${response.statusText}`);
-        }
-
-        const updatedGameResponse = await response.json();
-        this.visibilityChange.emit(updatedGameResponse);
     }
 }
