@@ -1,75 +1,89 @@
-import { Router, Request, Response } from 'express';
-import { Service } from 'typedi';
+import { GameController } from '@app/controllers/game.controller';
 import { GameService } from '@app/services/game.service';
+import { expect } from 'chai';
+import * as express from 'express';
+import * as sinon from 'sinon'; // Créer des mocks et stubs
+import * as request from 'supertest'; // Tester les routes HTTP
 
+const OK = 200;
 const CREATED_STATUS = 201;
 const NO_CONTENT_STATUS = 204;
-const NOT_FOUND_STATUS = 404;
-const BAD_REQUEST_STATUS = 400;
-const SERVER_ERROR_STATUS = 500;
 
-@Service()
-export class GameController {
-    router: Router;
-    constructor(private gameService: GameService) {
-        this.router = Router();
-        this.configureRoutes();
-    }
+describe('GameController', () => {
+    const baseMockGame = {
+        _id: '1234567890abcdef',
+        id: '1',
+        name: 'Test Game',
+        description: 'A test game description',
+        mode: 'Survival',
+        mapSize: 'Large',
+        lastModified: new Date().toISOString(),
+        isVisible: true,
+        board: [
+            [0, 1],
+            [1, 0],
+        ],
+    };
 
-    private configureRoutes(): void {
-        this.router.post('/create', async (req: Request, res: Response) => {
-            try {
-                if (!req.body.name || !req.body.board) {
-                    return res.status(BAD_REQUEST_STATUS).json({ error: 'Name and board are required' });
-                }
-                const newGame = await this.gameService.createGame(req.body);
-                return res.status(CREATED_STATUS).json(newGame);
-            } catch (error) {
-                return res.status(SERVER_ERROR_STATUS).json({ error: error.message });
-            }
-        });
+    let mockGame: typeof baseMockGame;
+    let gameServiceStub: sinon.SinonStubbedInstance<GameService>;
+    let gameController: GameController;
+    let app: express.Application;
 
-        this.router.get('/all', async (_req: Request, res: Response) => {
-            try {
-                const games = await this.gameService.getAllGames();
-                return res.json(games);
-            } catch (error) {
-                return res.status(SERVER_ERROR_STATUS).json({ error: error.message });
-            }
-        });
+    beforeEach(() => {
+        mockGame = { ...baseMockGame };
+        gameServiceStub = sinon.createStubInstance(GameService);
+        gameController = new GameController(gameServiceStub as unknown as GameService);
+        app = express();
+        app.use(express.json());
+        app.use('/game', gameController.router);
+    });
 
+    afterEach(() => {
+        sinon.restore();
+    });
 
-        this.router.put('/:id', async (req: Request, res: Response) => {
-            try {
-                const updatedGame = await this.gameService.editGame(req.params.id, req.body);
-                if (!updatedGame) {
-                    return res.status(NOT_FOUND_STATUS).json({ error: 'Game not found' });
-                }
-                return res.json(updatedGame);
-            } catch (error) {
-                return res.status(SERVER_ERROR_STATUS).json({ error: error.message });
-            }
-        });
+    it('POST /game/create should create a new game', async () => {
+        gameServiceStub.createGame.resolves(mockGame as any);
+        const response = await request(app).post('/game/create').send(mockGame);
+        expect(response.status).to.equal(CREATED_STATUS);
+        expect(response.body).to.deep.equal(mockGame);
+        expect(gameServiceStub.createGame.calledOnce).to.be.true;
+    });
 
-        this.router.delete('/:id', async (req: Request, res: Response) => {
-            try {
-                const deletedGame = await this.gameService.deleteGame(req.params.id);
-                if (!deletedGame) {
-                    return res.status(NOT_FOUND_STATUS).json({ error: 'Game not found' });
-                }
-                return res.sendStatus(NO_CONTENT_STATUS);
-            } catch (error) {
-                return res.status(SERVER_ERROR_STATUS).json({ error: error.message });
-            }
-        });
+    it('GET /game/all should return all games', async () => {
+        const mockGames = [mockGame, { ...mockGame, id: '2', name: 'Another Game' }];
+        const mockGamesWithISODate = mockGames.map((game) => ({
+            ...game,
+            lastModified: new Date(game.lastModified).toISOString(),
+        }));
+        gameServiceStub.getAllGames.resolves(mockGames as any);
+        const response = await request(app).get('/game/all');
 
-        this.router.get('/visible', async (_req: Request, res: Response) => {
-            try {
-                const visibleGames = await this.gameService.getVisibleGames();
-                return res.json(visibleGames);
-            } catch (error) {
-                return res.status(SERVER_ERROR_STATUS).json({ error: error.message });
-            }
-        });
-    }
-}
+        expect(response.status).to.equal(OK);
+        expect(response.body).to.deep.equal(mockGamesWithISODate);
+        expect(gameServiceStub.getAllGames.calledOnce).to.be.true;
+    });
+
+    it('PATCH /game/:id should update a game', async () => {
+        const updatedGame = {
+            ...mockGame,
+            name: 'Another Game',
+            lastModified: new Date().toISOString(),
+        };
+        gameServiceStub.editGame.resolves(updatedGame as any);
+        const response = await request(app)
+        .patch(`/game/${mockGame.id}`)
+        .send({ name: 'Updated Game' });
+        expect(response.status).to.equal(OK);
+        expect(response.body).to.deep.equal(updatedGame);
+        expect(gameServiceStub.editGame.calledOnceWith(mockGame.id, { name: 'Updated Game' })).to.be.true;
+    });
+
+    it('DELETE /game/:id should delete a game', async () => {
+        gameServiceStub.deleteGame.resolves();
+        const response = await request(app).delete(`/game/${mockGame.id}`);
+        expect(response.status).to.equal(NO_CONTENT_STATUS);
+        expect(gameServiceStub.deleteGame.calledOnceWith(mockGame.id)).to.be.true;
+    });
+});

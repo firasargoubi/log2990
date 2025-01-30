@@ -23,7 +23,7 @@ export class GameController {
             res.json(games);
         });
 
-        this.router.put('/:id', async (req: Request, res: Response) => {
+        this.router.patch('/:id', async (req: Request, res: Response) => {
             const updatedGame = await this.gameService.editGame(req.params.id, req.body);
             res.json(updatedGame);
         });
