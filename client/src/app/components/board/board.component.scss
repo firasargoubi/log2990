@@ -2,8 +2,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 1200px;
-    height: 100%;
 }
 
 .board {
@@ -12,4 +10,5 @@
     grid-template-columns: repeat(var(--size), 1fr); /* Adjust the size of the board */
     grid-template-rows: repeat(var(--size), 1fr); /* Adjust the size of the board */
     width: 65%;
+    height: 65%;
 }
