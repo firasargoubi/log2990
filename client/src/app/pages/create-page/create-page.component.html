@@ -1,9 +1,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
 
-<div class="admin-page">
+<h1 class="page-title">Créer un jeu</h1>
+<mat-card class="create-page">
     <div class="games-container">
-        <div>
-            <app-game-card *ngFor="let game of games" [game]="game" (click)="onBoxClick(game)"></app-game-card>
-        </div>
+        <app-game-creation-card *ngFor="let game of games" [game]="game" (click)="onBoxClick(game)"></app-game-creation-card>
     </div>
-</div>
+</mat-card>
