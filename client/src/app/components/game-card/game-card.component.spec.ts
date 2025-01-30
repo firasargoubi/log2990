@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Game, GameCardComponent } from './game-card.component';
+import { GameCardComponent } from './game-card.component';
+import { Game } from '@app/interfaces/game.model';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule } from '@angular/material/button';

@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-expressions */
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 import { GameController } from '@app/controllers/game.controller';
 import { GameService } from '@app/services/game.service';
 import { expect } from 'chai';
@@ -33,7 +35,7 @@ describe('GameController', () => {
     beforeEach(() => {
         mockGame = { ...baseMockGame };
         gameServiceStub = sinon.createStubInstance(GameService);
-        gameController = new GameController(gameServiceStub as unknown as GameService);
+        gameController = new GameController(gameServiceStub as GameService);
         app = express();
         app.use(express.json());
         app.use('/game', gameController.router);
@@ -44,6 +46,7 @@ describe('GameController', () => {
     });
 
     it('POST /game/create should create a new game', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         gameServiceStub.createGame.resolves(mockGame as any);
         const response = await request(app).post('/game/create').send(mockGame);
         expect(response.status).to.equal(CREATED_STATUS);
@@ -57,6 +60,7 @@ describe('GameController', () => {
             ...game,
             lastModified: new Date(game.lastModified).toISOString(),
         }));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         gameServiceStub.getAllGames.resolves(mockGames as any);
         const response = await request(app).get('/game/all');
 
@@ -71,10 +75,9 @@ describe('GameController', () => {
             name: 'Another Game',
             lastModified: new Date().toISOString(),
         };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         gameServiceStub.editGame.resolves(updatedGame as any);
-        const response = await request(app)
-        .patch(`/game/${mockGame.id}`)
-        .send({ name: 'Updated Game' });
+        const response = await request(app).patch(`/game/${mockGame.id}`).send({ name: 'Updated Game' });
         expect(response.status).to.equal(OK);
         expect(response.body).to.deep.equal(updatedGame);
         expect(gameServiceStub.editGame.calledOnceWith(mockGame.id, { name: 'Updated Game' })).to.be.true;
