@@ -2,18 +2,20 @@ import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 const DEFAULT_STAT_VALUE = 4;
+const FOUR_VALUE_DICE = 4;
+const SIX_VALUE_DICE = 6;
 
 @Component({
     selector: 'app-box-form-dialog',
     templateUrl: './box-form-dialog.component.html',
     styleUrls: ['./box-form-dialog.component.scss'],
-    imports: [CommonModule],
+    imports: [CommonModule, RouterModule],
 })
 export class BoxFormDialogComponent {
     form: FormGroup;
-
     avatars = [
         'assets/perso/1.png',
         'assets/perso/2.png',
@@ -30,6 +32,12 @@ export class BoxFormDialogComponent {
     ];
 
     formValid$: boolean = false;
+    attributeClicked$: boolean = false;
+    diceClicked$: boolean = false;
+    life: number = DEFAULT_STAT_VALUE;
+    speed: number = DEFAULT_STAT_VALUE;
+    attack: number;
+    defense: number;
     constructor(
         public dialogRef: MatDialogRef<BoxFormDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: { boxId: number },
@@ -65,6 +73,31 @@ export class BoxFormDialogComponent {
     inputName(event: Event) {
         const inputName = (event.target as HTMLInputElement).value;
         this.form.get('name')?.setValue(inputName);
+    }
+
+    increase(attribute: string) {
+        if (!this.attributeClicked$) {
+            this.form.get(attribute)?.setValue(this.form.get(attribute)?.value + 2);
+            if (attribute === 'life') {
+                this.life += 2;
+            } else if (attribute === 'speed') {
+                this.speed += 2;
+            }
+            this.attributeClicked$ = true;
+        }
+    }
+
+    pickDice(attribute: string) {
+        if (attribute === 'attack') {
+            this.form.get('attack')?.setValue(SIX_VALUE_DICE);
+            this.attack = 6;
+            this.defense = 4;
+        } else {
+            this.form.get('defense')?.setValue(FOUR_VALUE_DICE);
+            this.defense = 6;
+            this.attack = 4;
+        }
+        this.diceClicked$ = true;
     }
 
     save(): void {

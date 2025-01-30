@@ -11,11 +11,11 @@ import { MaterialPageComponent } from '@app/pages/material-page/material-page.co
 import { environment } from './environments/environment';
 import { EditionPageComponent } from '@app/pages/edition-page/edition-page.component';
 import { CreatePageComponent } from '@app/pages/create-page/create-page.component';
+import { WaitingPageComponent } from '@app/pages/waiting-page/waiting-page.component';
 
 if (environment.production) {
     enableProdMode();
 }
-
 
 
 const routes: Routes = [
@@ -25,6 +25,7 @@ const routes: Routes = [
     { path: 'material', component: MaterialPageComponent },
     {path:'admin', component: AdminPageComponent},
     {path:'create', component: CreatePageComponent},
+    {path: 'waiting', component: WaitingPageComponent},
     { path: '**', redirectTo: '/home' },
 ];
 
