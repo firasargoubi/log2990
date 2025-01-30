@@ -1,6 +1,7 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { RouterLink } from '@angular/router';
 import { GameCardComponent } from '@app/components/game-card/game-card.component';
 import { Game } from '@app/interfaces/game.model';
 
@@ -8,7 +9,7 @@ import { Game } from '@app/interfaces/game.model';
     selector: 'app-game-list',
     templateUrl: './game-list.component.html',
     styleUrls: ['./game-list.component.scss'],
-    imports: [GameCardComponent, MatCardModule, MatTooltipModule],
+    imports: [GameCardComponent, MatCardModule, MatTooltipModule, RouterLink],
 })
 export class GameListComponent {
     @Input() games: Game[] = [];

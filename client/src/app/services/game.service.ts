@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Injectable } from '@angular/core';
 import { Game } from '@app/interfaces/game.model';
+import { Observable } from 'rxjs';
 
 const API_URL = 'http://localhost:3000/api/game';
 
@@ -17,5 +17,13 @@ export class GameService {
 
     updateVisibility(gameId: number, isVisible: boolean): Observable<Game> {
         return this.http.put<Game>(`${API_URL}/${gameId}`, { isVisible });
+    }
+
+    fetchGames() {
+        return this.http.get<Game[]>(`${API_URL}/all`);
+    }
+
+    fetchVisibleGames() {
+        return this.http.get<Game[]>(`${API_URL}/visible`);
     }
 }

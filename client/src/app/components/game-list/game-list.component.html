@@ -1,5 +1,5 @@
 <div class="game-list">
-    <mat-card class="create-game-card" routerLink="/create-game" matTooltip="Créer un jeu" matTooltipPosition="above">
+    <mat-card class="create-game-card" routerLink="/edit" matTooltip="Créer un jeu" matTooltipPosition="above">
         <div class="plus-sign">+</div>
     </mat-card>
     @for (game of games; track $index) {
@@ -12,5 +12,4 @@
     ></app-game-card>
     <!-- TODO: Créer component création de jeu, ajouter RouterLink vers vue d'édition -->
     }
-   
 </div>

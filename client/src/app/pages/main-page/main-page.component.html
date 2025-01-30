@@ -1,48 +1,36 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Tile Bound</title>
+        <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Press+Start+2P&display=swap" rel="stylesheet" />
+    </head>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tile Bound</title>
-    <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Press+Start+2P&display=swap"
-        rel="stylesheet">
+    <body>
+        <!-- Logo -->
+        <img class="logo" src="assets/images/logo.png" alt="Logo" />
 
-</head>
+        <!-- Conteneur central -->
+        <div class="center-container">
+            <!-- Nom du jeu -->
+            <h1 class="game-title">Tile Bound</h1>
+            <div class="team-name">209</div>
 
-<body>
-    <!-- Logo -->
-    <img class="logo" src="assets/images/logo.png" alt="Logo">
-
-    <!-- Conteneur central -->
-    <div class="center-container">
-        <!-- Nom du jeu -->
-        <h1 class="game-title">Tile Bound</h1>
-        <div class="team-name">209</div>
-
-        <!-- Boutons -->
-        <div class="button-container">
-            <button class="btn"  routerLink="/edit">Jouer</button>
-            <button  routerLink="/create" class="btn" >Creer</button>
-            <button class="btn" routerLink="/admin">Administrer</button>
+            <!-- Boutons -->
+            <div class="button-container">
+                <button class="btn" routerLink="/join">Jouer</button>
+                <button routerLink="/create" class="btn">Creer</button>
+                <button class="btn" routerLink="/admin">Administrer</button>
+            </div>
         </div>
 
-    </div>
-
-
-
-    <footer>
-        <div class="footer-container">
-            <ul class="team-list">
-                Melissa Akhenak, 
-                Firas Argoubi, 
-                Nawal Benesrighe, 
-                Yassine Essaouab, 
-                Rita Jaafri Hayani, 
-                Adam Marhraoui
-            </ul>
-        </div>
-    </footer>
-    
-
-</body>
+        <footer>
+            <div class="footer-container">
+                <ul class="team-list">
+                    Melissa Akhenak, Firas Argoubi, Nawal Benesrighe, Yassine Essaouab, Rita Jaafri Hayani, Adam Marhraoui
+                </ul>
+            </div>
+        </footer>
+    </body>
+</html>
