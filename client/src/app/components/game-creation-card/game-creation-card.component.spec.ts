@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { GameCreation, GameCreationCardComponent } from './game-creation-card.component';
+import { GameCreationCardComponent } from './game-creation-card.component';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,7 +9,7 @@ describe('GameCardComponent', () => {
     let component: GameCreationCardComponent;
     let fixture: ComponentFixture<GameCreationCardComponent>;
 
-    const mockGame: GameCreation = {
+    const mockGame = {
         id: 1,
         name: 'Test Game',
         mapSize: 'Large',
