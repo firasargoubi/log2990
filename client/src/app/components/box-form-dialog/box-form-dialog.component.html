@@ -3,7 +3,7 @@
 <form (ngSubmit)="closeDialog()">
     <div>
         <label for="name">Nom:</label>
-        <input id="name" type="text" formControlName="name" placeholder="Enter name" (input)="inputName($event)" required />
+        <input id="name" type="text" formControlName="name" placeholder="Entrez le nom" (input)="inputName($event)" required />
 
         @if (form.get('name')?.invalid && form.get('name')?.touched) {
         <div class="error">Name is required.</div>
