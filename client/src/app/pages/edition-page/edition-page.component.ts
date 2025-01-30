@@ -45,6 +45,9 @@ export class EditionPageComponent {
                 this.errorService.addMessage(`Error: ${key} name is not respected.\n`);
             }
         }
+        if (!this.showErrorPopup) {
+            this.errorService.addMessage('Game saved successfully.\n');
+        }
     }
 
     resetBoard() {
