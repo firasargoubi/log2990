@@ -1,9 +1,10 @@
 import { Component, Input } from '@angular/core';
 import { TileTypes } from '@app/interfaces/tileTypes';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 @Component({
     selector: 'app-tile',
-    imports: [],
-    template: '<div class = "tile"><img [src] = "image" ></div>',
+    imports: [DragDropModule],
+    template: '<div class = "tile" ><img [src] = "image" ></div>',
     styleUrl: './tile.component.scss',
 })
 

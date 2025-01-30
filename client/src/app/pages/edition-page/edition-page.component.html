@@ -10,12 +10,12 @@
         <div class="tile-tools left">
             <app-tile-options></app-tile-options>
         </div>
-        <div class="board-container">
-            <app-board [size]="10"></app-board>
-        </div>
-        <div class="object-tools right">
-            <app-objects/>
-        </div>
+            <div class="board-container">
+                <app-board [size]="10"></app-board>
+            </div>
+            <div class="object-tools right">
+                <app-objects/>
+            </div>
     </section>
     @if (showErrorPopup) {
         <div class="popup">

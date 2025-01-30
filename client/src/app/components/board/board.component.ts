@@ -8,11 +8,13 @@ import { Tile } from '@app/interfaces/tile';
 import { MouseService } from '@app/services/mouse.service';
 import { SaveService } from '@app/services/save.service';
 import { TileService } from '@app/services/tile.service';
+import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
+import { ItemComponent } from '@app/components/item/item.component';
 
 const RIGHT_CLICK = 2;
 @Component({
     selector: 'app-board',
-    imports: [TileComponent, CommonModule, FormsModule],
+    imports: [TileComponent, CommonModule, FormsModule, DragDropModule, ItemComponent],
     templateUrl: './board.component.html',
     styleUrl: './board.component.scss',
 })
@@ -99,5 +101,9 @@ export class BoardComponent implements OnInit {
 
     onClickTileTool(type: number) {
         this.tileService.copyTileTool(type);
+    }
+
+    drop(event: CdkDragDrop<ItemComponent>) {
+        console.log(event);
     }
 }
