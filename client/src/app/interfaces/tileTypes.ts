@@ -3,7 +3,7 @@ export enum TileTypes {
     Mud = 1,
     Water = 2,
     Ice = 3,
-    Wall = 4,
-    DoorClosed = 5,
-    DoorOpen = 6,
+    DoorClosed = 4,
+    DoorOpen = 5,
+    Wall = 6,
 }
