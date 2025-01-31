@@ -16,7 +16,7 @@ export class GameService {
     }
 
     updateVisibility(gameId: number, isVisible: boolean): Observable<Game> {
-        return this.http.put<Game>(`${API_URL}/${gameId}`, { isVisible });
+        return this.http.patch<Game>(`${API_URL}/${gameId}`, { isVisible });
     }
 
     fetchGames() {
