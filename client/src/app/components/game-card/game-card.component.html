@@ -26,7 +26,7 @@
         <!-- Bouton "Visibility" avec un oeil -->
         <button
             mat-icon-button
-            [class]="{ invisible: game.isVisible }"
+            [class]="{ invisible: !game.isVisible }"
             (click)="toggleVisibility(!game.isVisible)"
             class="action visibility"
             matTooltip="Changer la visibilité"

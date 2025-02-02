@@ -1,5 +1,5 @@
 export interface Game {
-    id: number;
+    id: string;
     name: string;
     mapSize: string;
     mode: string;
@@ -7,4 +7,5 @@ export interface Game {
     description: string;
     lastModified: Date;
     isVisible: boolean;
+    board: number[][];
 }
