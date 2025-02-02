@@ -5,7 +5,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
 import { RouterLink } from '@angular/router';
 import { BoxFormDialogComponent } from '@app/components/box-form-dialog/box-form-dialog.component';
-import { GameCreation, GameCreationCardComponent } from '@app/components/game-creation-card/game-creation-card.component';
+import { Game } from '@app/interfaces/game.model';
+import { GameCreationCardComponent } from '@app/components/game-creation-card/game-creation-card.component';
 import { GameService } from '@app/services/game.service';
 
 @Component({
@@ -16,7 +17,7 @@ import { GameService } from '@app/services/game.service';
     styleUrls: ['./create-page.component.scss'],
 })
 export class CreatePageComponent implements OnInit {
-    @Input() games!: GameCreation[];
+    @Input() games!: Game[];
     gameService = inject(GameService);
 
     constructor(private dialog: MatDialog) {}
@@ -33,7 +34,7 @@ export class CreatePageComponent implements OnInit {
         });
     }
 
-    onBoxClick(game: GameCreation): void {
+    onBoxClick(game: Game): void {
         const dialogRef = this.dialog.open(BoxFormDialogComponent, {
             width: '400px',
             data: { boxId: game.id, game },

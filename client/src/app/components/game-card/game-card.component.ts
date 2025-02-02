@@ -42,7 +42,10 @@ export class GameCardComponent {
 
     toggleVisibility(isVisible: boolean) {
         this.gameService.updateVisibility(this.game.id, isVisible).subscribe({
-            next: (updatedGame) => this.visibilityChange.emit(updatedGame),
+            next: (updatedGame) => {
+                this.game = updatedGame; // <-- Update local game state
+                this.visibilityChange.emit(updatedGame);
+            },
         });
     }
 }
