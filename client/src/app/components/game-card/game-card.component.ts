@@ -7,6 +7,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 import { Game } from '@app/interfaces/game.model';
 import { GameService } from '@app/services/game.service';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDeleteComponent } from '../confirm-delete/confirm-delete.component';
 
 @Component({
     selector: 'app-game-card',
@@ -20,16 +22,22 @@ export class GameCardComponent {
     @Output() delete = new EventEmitter<Game>();
     @Output() visibilityChange = new EventEmitter<Game>();
 
-    constructor(private gameService: GameService) {}
+    constructor(private gameService: GameService, private dialog: MatDialog) {}
 
     editGame() {
         this.edit.emit(this.game);
     }
 
     async deleteGame() {
-        this.gameService.deleteGame(this.game.id).subscribe({
-            next: () => this.delete.emit(this.game),
+        const dialiogRef = this.dialog.open(ConfirmDeleteComponent);
+        dialiogRef.afterClosed().subscribe((result) => {
+            if (result) {
+                this.gameService.deleteGame(this.game.id).subscribe({
+                    next: () => this.delete.emit(this.game),
+                });
+            }
         });
+          
     }
 
     toggleVisibility(isVisible: boolean) {

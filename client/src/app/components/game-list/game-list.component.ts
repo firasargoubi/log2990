@@ -1,15 +1,17 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { RouterLink } from '@angular/router';
-import { GameCardComponent } from '@app/components/game-card/game-card.component';
 import { Game } from '@app/interfaces/game.model';
+import { ViewChild } from '@angular/core';
+import { ModalCreationComponent } from '../modal-creation/modal-creation.component';
+import { GameCardComponent } from '../game-card/game-card.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
     selector: 'app-game-list',
     templateUrl: './game-list.component.html',
     styleUrls: ['./game-list.component.scss'],
-    imports: [GameCardComponent, MatCardModule, MatTooltipModule, RouterLink],
+    imports: [ MatCardModule, MatTooltipModule, GameCardComponent, ModalCreationComponent, CommonModule],
 })
 export class GameListComponent {
     @Input() games: Game[] = [];
@@ -19,5 +21,15 @@ export class GameListComponent {
     // TODO: Ajouter et gérer événement de création de jeu avec nouveau component.
     onVisibilityChange(event: Game) {
         this.visibilityChange.emit(event);
+    }
+
+    @ViewChild('modal') modal!: ModalCreationComponent;
+
+    openModal() {
+        this.modal.open();
+    }
+
+    handleModalSubmit(data: { mode: string; size: string }) {
+        console.log('Données reçues :', data);
     }
 }

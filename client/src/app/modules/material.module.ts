@@ -8,6 +8,10 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { AppComponent } from "@app/pages/app/app.component";
+import { ModalCreationComponent } from '@app/components/modal-creation/modal-creation.component';
+import { GameListComponent } from '@app/components/game-list/game-list.component';
+
 
 const modules = [
     MatButtonModule,
@@ -19,6 +23,11 @@ const modules = [
     MatToolbarModule,
     MatTooltipModule,
     MatSlideToggleModule,
+    AppComponent,
+    ModalCreationComponent,
+    GameListComponent,
+    
+    ModalCreationComponent,
 ];
 
 /**
