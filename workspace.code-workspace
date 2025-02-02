@@ -14,7 +14,6 @@
         }
     ],
     "settings": {
-        "typescript.tsdk": "client\\node_modules\\typescript\\lib",
-        "liveServer.settings.multiRootWorkspaceName": "LOG2990-209"
+        "typescript.tsdk": "client\\node_modules\\typescript\\lib"
     }
 }
