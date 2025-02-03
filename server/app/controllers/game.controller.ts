@@ -1,13 +1,17 @@
-import { Router, Request, Response } from 'express';
+import { GameService, GameData} from '@app/services/game.service';
+import { Request, Response, Router } from 'express';
+import { Server as SocketIOServer } from 'socket.io';
 import { Service } from 'typedi';
-import { GameService } from '@app/services/game.service';
 
 const CREATED_STATUS = 201;
 const NO_CONTENT_STATUS = 204;
 @Service()
 export class GameController {
     router: Router;
-    constructor(private gameService: GameService) {
+    constructor(
+        private gameService: GameService,
+        private io: SocketIOServer,
+    ) {
         this.router = Router();
         this.configureRoutes();
     }
@@ -15,6 +19,7 @@ export class GameController {
     private configureRoutes(): void {
         this.router.post('/create', async (req: Request, res: Response) => {
             const newGame = await this.gameService.createGame(req.body);
+            this.io.emit('gameCreated', newGame);
             res.status(CREATED_STATUS).json(newGame);
         });
 
@@ -25,11 +30,17 @@ export class GameController {
 
         this.router.patch('/:id', async (req: Request, res: Response) => {
             const updatedGame = await this.gameService.editGame(req.params.id, req.body);
+            if (updatedGame) {
+                this.io.emit('gameUpdated', updatedGame);
+            }
             res.json(updatedGame);
         });
 
         this.router.delete('/:id', async (req: Request, res: Response) => {
-            await this.gameService.deleteGame(req.params.id);
+            const deletedGame = this.gameService.deleteGame(req.params.id);
+            if (deletedGame) {
+                this.io.emit('gameDeleted', deletedGame);
+            }
             res.sendStatus(NO_CONTENT_STATUS);
         });
 
