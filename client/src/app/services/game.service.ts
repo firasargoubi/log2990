@@ -11,12 +11,16 @@ const API_URL = 'http://localhost:3000/api/game';
 export class GameService {
     constructor(private http: HttpClient) {}
 
-    deleteGame(gameId: number): Observable<void> {
+    deleteGame(gameId: string): Observable<void> {
         return this.http.delete<void>(`${API_URL}/${gameId}`);
     }
 
-    updateVisibility(gameId: number, isVisible: boolean): Observable<Game> {
-        return this.http.put<Game>(`${API_URL}/${gameId}`, { isVisible });
+    updateVisibility(gameId: string, isVisible: boolean): Observable<Game> {
+        return this.http.patch<Game>(`${API_URL}/${gameId}`, { isVisible });
+    }
+
+    updateGame(gameId: string, gameModif: Partial<Game>): Observable<Game> {
+        return this.http.patch<Game>(`${API_URL}/${gameId}`, gameModif);
     }
 
     fetchGames() {
@@ -25,5 +29,13 @@ export class GameService {
 
     fetchVisibleGames() {
         return this.http.get<Game[]>(`${API_URL}/visible`);
+    }
+
+    fetchGameById(gameId: string) {
+        return this.http.get<Game>(`${API_URL}/${gameId}`);
+    }
+
+    createGame(game: Game): Observable<Game> {
+        return this.http.post<Game>(`${API_URL}/create`, game);
     }
 }

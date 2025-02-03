@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { SaveMessage } from '@app/interfaces/saveMessage';
 import { Tile } from '@app/interfaces/tile';
 import { TileTypes } from '@app/interfaces/tileTypes';
 import { Subject } from 'rxjs';
+import { GameService } from './game.service';
 
 const WANTED_TILE_PERCENTAGE = 0.5;
 @Injectable({
@@ -12,10 +13,12 @@ export class SaveService {
     board: Tile[][] = [];
     countSeen: number = 0;
     currentStatus: Partial<SaveMessage>;
+    validBoard: boolean = false;
     saveActive = new Subject<boolean>();
     resetActive = new Subject<boolean>();
     isSave$ = this.saveActive.asObservable();
     isReset$ = this.resetActive.asObservable();
+    gameService = inject(GameService);
 
     get boardSize(): number {
         return this.board.length * this.board[0].length;
@@ -33,13 +36,37 @@ export class SaveService {
         return count;
     }
 
-    saveBoard(board: Tile[][]): void {
+    get intBoard(): number[][] {
+        const board: number[][] = [];
+        for (const row of this.board) {
+            const newRow: number[] = [];
+            for (const tile of row) {
+                newRow.push(tile.type);
+            }
+            board.push(newRow);
+        }
+        return board;
+    }
+
+    verifyBoard(board: Tile[][]): void {
         this.board = board;
         this.currentStatus = {
             doors: this.verifyDoors(),
             minTerrain: this.verifyTilePercentage(),
             accessible: this.verifyAccessible(),
         };
+    }
+
+    saveGame(name: string, description: string, mode: string, mapSize: string, id: string): void {
+        if (!id) {
+            this.gameService
+                .createGame({ name, description, mode, mapSize, board: this.intBoard, id, isVisible: true, lastModified: new Date() })
+                .subscribe();
+        } else {
+            this.gameService
+                .updateGame(id, { name, description, mode, mapSize, board: this.intBoard, id, isVisible: true, lastModified: new Date() })
+                .subscribe();
+        }
     }
 
     verifyDoors(): boolean {
@@ -91,8 +118,6 @@ export class SaveService {
         this.board[i][j].seen = true;
         this.countSeen++;
         this.verifyAccessibleDFS(i, j);
-        console.log(this.countSeen);
-        console.log(this.boardTerrainTiles);
         this.resetSeen();
         return this.countSeen === this.boardTerrainTiles;
     }
@@ -133,16 +158,11 @@ export class SaveService {
         return i >= 0 && i < this.board.length && j >= 0 && j < this.board.length && this.board[i][j].type !== TileTypes.Wall;
     }
 
-    loadBoard(): void {
-        this.board = [[]];
-        // TODO : Ajouter avec les services de chargement
-    }
-
-    setSaveActive(value: boolean) {
+    alertBoardForVerification(value: boolean) {
         this.saveActive.next(value);
     }
 
-    setResetActive(value: boolean) {
+    alertBoardForReset(value: boolean) {
         this.resetActive.next(value);
     }
 }

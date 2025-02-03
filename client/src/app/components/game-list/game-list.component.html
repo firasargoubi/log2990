@@ -1,12 +1,12 @@
 <div class="game-list">
-    <mat-card class="create-game-card" routerLink="/edit" matTooltip="Créer un jeu" matTooltipPosition="above">
+    <mat-card class="create-game-card" (click)="onCreateGame()" matTooltip="Créer un jeu" matTooltipPosition="above">
         <div class="plus-sign">+</div>
     </mat-card>
     @for (game of games; track $index) {
 
     <app-game-card
         [game]="game"
-        (edit)="editGame.emit(game)"
+        (edit)="onEditGame(game)"
         (delete)="deleteGame.emit(game)"
         (visibilityChange)="onVisibilityChange(game)"
     ></app-game-card>

@@ -1,7 +1,9 @@
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { ItemComponent } from '@app/components/item/item.component';
 import { TileComponent } from '@app/components/tile/tile.component';
 import { Coordinates } from '@app/interfaces/coordinates';
 import { Tile } from '@app/interfaces/tile';
@@ -9,8 +11,7 @@ import { ErrorService } from '@app/services/error.service';
 import { MouseService } from '@app/services/mouse.service';
 import { SaveService } from '@app/services/save.service';
 import { TileService } from '@app/services/tile.service';
-import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
-import { ItemComponent } from '@app/components/item/item.component';
+import { GameService } from '@app/services/game.service';
 
 const RIGHT_CLICK = 2;
 @Component({
@@ -20,8 +21,9 @@ const RIGHT_CLICK = 2;
     styleUrl: './board.component.scss',
 })
 export class BoardComponent implements OnInit {
+    @Input() sizeStr: string;
     @Input() size: number;
-    @Input() id: number = 0;
+    @Input() id: string = '';
     board: Tile[][] = [];
     selectedTiles: Coordinates[] = [];
     toolSaved: number = -1;
@@ -29,11 +31,12 @@ export class BoardComponent implements OnInit {
     tileService = inject(TileService);
     saveService = inject(SaveService);
     errorService = inject(ErrorService);
+    gameService = inject(GameService);
 
     constructor() {
         this.saveService.isSave$.pipe(takeUntilDestroyed()).subscribe((isActive: boolean) => {
             if (isActive) {
-                this.saveService.saveBoard(this.board);
+                this.saveService.verifyBoard(this.board);
             }
         });
         this.saveService.isReset$.pipe(takeUntilDestroyed()).subscribe((isActive: boolean) => {
@@ -53,12 +56,26 @@ export class BoardComponent implements OnInit {
 
     initializeBoard(): void {
         this.board = [];
-        for (let i = 0; i < this.size; i++) {
-            const row: Tile[] = [];
-            for (let j = 0; j < this.size; j++) {
-                row.push({ type: -1, x: i, y: j, id: `${i}-${j}` });
+        if (this.id) {
+            this.gameService.fetchGameById(this.id).subscribe({
+                next: (game) => {
+                    for (let i = 0; i < this.size; i++) {
+                        const row: Tile[] = [];
+                        for (let j = 0; j < this.size; j++) {
+                            row.push({ type: game.board[i][j], x: i, y: j, id: `${i}-${j}` });
+                        }
+                        this.board.push(row);
+                    }
+                },
+            });
+        } else {
+            for (let i = 0; i < this.size; i++) {
+                const row: Tile[] = [];
+                for (let j = 0; j < this.size; j++) {
+                    row.push({ type: -1, x: i, y: j, id: `${i}-${j}` });
+                }
+                this.board.push(row);
             }
-            this.board.push(row);
         }
     }
 

@@ -1,6 +1,6 @@
 import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { Component, ViewChildren, QueryList } from '@angular/core';
+import { Component } from '@angular/core';
 import { ItemComponent } from '@app/components/item/item.component';
 
 @Component({
