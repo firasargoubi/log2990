@@ -1,5 +1,5 @@
 <div class="game-list">
-    <mat-card class="create-game-card" routerLink="/edit" matTooltip="Créer un jeu" matTooltipPosition="above">
+    <mat-card class="create-game-card" (click)="openCreateDialog()" matTooltip="Créer un jeu" matTooltipPosition="above">
         <div class="plus-sign">+</div>
     </mat-card>
     @for (game of games; track $index) {
