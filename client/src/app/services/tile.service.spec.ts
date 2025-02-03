@@ -15,8 +15,6 @@ describe('TileService', () => {
         expect(service).toBeTruthy();
     });
 
-
-
     it('should toggle door state when modifying a door tile', () => {
         service.copyTileTool(TileTypes.DoorClosed);
 
@@ -31,9 +29,7 @@ describe('TileService', () => {
     });
 
     it('should set tile type to the copied tool if it is not a door', () => {
-
         const tile: Tile = { type: TileTypes.Wall, x: 3, y: 3, id: '3-3' };
         service.modifyTile(tile);
-
     });
 });

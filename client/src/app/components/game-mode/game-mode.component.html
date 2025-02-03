@@ -1,5 +1,3 @@
-
-`
 <h2 mat-dialog-title>Création / édition d'un jeu</h2>
 <mat-dialog-content>
     <div class="mode-section">
@@ -9,7 +7,7 @@
             <mat-radio-button value="capture">Capture the Flag</mat-radio-button>
         </mat-radio-group>
     </div>
-    
+
     <div class="size-section">
         <h3>Choisir la taille</h3>
         <mat-radio-group [(ngModel)]="selectedMode.size">
@@ -23,4 +21,3 @@
     <button mat-button (click)="onCancel()">Annuler</button>
     <button mat-raised-button color="primary" (click)="onConfirm()">Confirmer</button>
 </mat-dialog-actions>
-`

@@ -6,6 +6,7 @@ describe('TileOptionsComponent', () => {
     let component: TileOptionsComponent;
     let fixture: ComponentFixture<TileOptionsComponent>;
     let tileServiceSpy: jasmine.SpyObj<TileService>;
+    const MAX_TILE_OPTIONS = 5;
 
     beforeEach(async () => {
         tileServiceSpy = jasmine.createSpyObj('TileService', ['copyTileTool']);
@@ -26,7 +27,7 @@ describe('TileOptionsComponent', () => {
 
     it('should initialize tile options', () => {
         component.initializeOptions();
-        expect(component.options.length).toBe(5); // Since MAX_TILE is 6 (1 to 5)
+        expect(component.options.length).toBe(MAX_TILE_OPTIONS); // Since MAX_TILE is 6 (1 to 5)
         expect(component.options[0]).toEqual({ type: 1, x: 1, y: 0, id: '1' });
     });
 

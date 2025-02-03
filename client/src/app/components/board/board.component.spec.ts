@@ -12,6 +12,7 @@ describe('BoardComponent', () => {
     let mouseServiceSpy: jasmine.SpyObj<MouseService>;
     let saveServiceSpy: jasmine.SpyObj<SaveService>;
     let tileServiceSpy: jasmine.SpyObj<TileService>;
+    const BOARD_SIZE = 5;
 
     beforeEach(async () => {
         // Mock Services
@@ -20,12 +21,12 @@ describe('BoardComponent', () => {
         tileServiceSpy = jasmine.createSpyObj('TileService', ['modifyTile', 'copyTileTool'], { currentTool: -1 });
 
         await TestBed.configureTestingModule({
-            imports: [BoardComponent], 
+            imports: [BoardComponent],
             providers: [
                 { provide: MouseService, useValue: mouseServiceSpy },
                 { provide: SaveService, useValue: saveServiceSpy },
-                { provide: TileService, useValue: tileServiceSpy }
-            ]
+                { provide: TileService, useValue: tileServiceSpy },
+            ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(BoardComponent);
@@ -40,15 +41,12 @@ describe('BoardComponent', () => {
     });
 
     it('should initialize board with correct dimensions', () => {
-        expect(component.board.length).toBe(5);
-        expect(component.board[0].length).toBe(5);
+        expect(component.board.length).toBe(BOARD_SIZE);
+        expect(component.board[0].length).toBe(BOARD_SIZE);
     });
 
     it('should load an existing board properly', () => {
-        const mockBoard: Tile[][] = [
-            [{ type: 0, x: 0, y: 0, id: '0-0' }],
-            [{ type: 1, x: 1, y: 1, id: '1-1' }]
-        ];
+        const mockBoard: Tile[][] = [[{ type: 0, x: 0, y: 0, id: '0-0' }], [{ type: 1, x: 1, y: 1, id: '1-1' }]];
         component.loadBoard(mockBoard);
         expect(component.board).toEqual(mockBoard);
     });
@@ -97,8 +95,9 @@ describe('BoardComponent', () => {
     });
 
     it('should copy tile tool when calling onClickTileTool', () => {
-        component.onClickTileTool(3);
-        expect(tileServiceSpy.copyTileTool).toHaveBeenCalledWith(3);
+        const tileToolId = 3;
+        component.onClickTileTool(tileToolId);
+        expect(tileServiceSpy.copyTileTool).toHaveBeenCalledWith(tileToolId);
     });
 
     it('should call onMouseUp when mouse is released', () => {

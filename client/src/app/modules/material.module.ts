@@ -8,7 +8,6 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { RouterLink } from '@angular/router';
 
 const modules = [
     MatButtonModule,
@@ -20,7 +19,6 @@ const modules = [
     MatToolbarModule,
     MatTooltipModule,
     MatSlideToggleModule,
-    RouterLink
 ];
 
 /**
