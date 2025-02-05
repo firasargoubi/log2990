@@ -4,20 +4,25 @@ import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { Game } from '@app/interfaces/game.model';
 
 describe('GameCardComponent', () => {
     let component: GameCreationCardComponent;
     let fixture: ComponentFixture<GameCreationCardComponent>;
 
-    const mockGame = {
-        id: 1,
+    const mockGame: Game = {
+        id: '1',
         name: 'Test Game',
         mapSize: 'Large',
-        mode: 'Survival',
+        mode: 'CTF',
         previewImage: 'https://via.placeholder.com/150',
         description: 'A test game description',
         lastModified: new Date(),
         isVisible: true,
+        board: [
+            [0, 0],
+            [0, 0],
+        ],
     };
 
     beforeEach(async () => {

@@ -35,7 +35,8 @@ export class GameService {
     }
 
     async deleteGame(id: string) {
-        return await game.findOneAndDelete({ id });
+        const deletedGame = await game.findOneAndDelete({ id });
+        return deletedGame ? true : null;
     }
 
     async getVisibleGames() {

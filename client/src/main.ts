@@ -22,6 +22,8 @@ const routes: Routes = [
     { path: '', redirectTo: '/home', pathMatch: 'full' },
     { path: 'home', component: MainPageComponent },
     { path: 'edit/:id', component: EditionPageComponent },
+    { path: 'join', component: EditionPageComponent },
+
     { path: 'material', component: MaterialPageComponent },
     {path:'admin', component: AdminPageComponent},
     {path:'create', component: CreatePageComponent},
