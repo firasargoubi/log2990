@@ -29,7 +29,10 @@ export class EditionPageComponent {
     errorService = inject(ErrorService);
     gameService = inject(GameService);
 
-    constructor(private route: ActivatedRoute, private router: Router) {
+    constructor(
+        private route: ActivatedRoute,
+        private router: Router,
+    ) {
         this.errorService.message$.pipe(takeUntilDestroyed()).subscribe((message: string) => {
             this.errorMessage += message;
             this.showErrorPopup = true;

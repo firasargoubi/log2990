@@ -30,6 +30,10 @@ export class GameService {
         return await game.findOneAndUpdate({ id }, updates, { new: true });
     }
 
+    async getGameById(id: string) {
+        return await game.findOne({ id });
+    }
+
     async deleteGame(id: string) {
         return await game.findOneAndDelete({ id });
     }

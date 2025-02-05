@@ -23,6 +23,11 @@ export class GameController {
             res.json(games);
         });
 
+        this.router.get('/:id', async (req: Request, res: Response) => {
+            const games = await this.gameService.getGameById(req.params.id);
+            res.json(games);
+        });
+
         this.router.patch('/:id', async (req: Request, res: Response) => {
             const updatedGame = await this.gameService.editGame(req.params.id, req.body);
             res.json(updatedGame);
