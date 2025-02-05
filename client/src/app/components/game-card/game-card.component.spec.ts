@@ -19,14 +19,18 @@ describe('GameCardComponent', () => {
     let gameService: jasmine.SpyObj<GameService>;
 
     const mockGame: Game = {
-        id: 1,
+        id: '1',
         name: 'Test Game',
         mapSize: 'Large',
-        mode: 'Survival',
+        mode: 'CTF',
         previewImage: 'https://via.placeholder.com/150',
         description: 'A test game description',
         lastModified: new Date(),
         isVisible: true,
+        board: [
+            [0, 0],
+            [0, 0],
+        ],
     };
 
     beforeEach(async () => {

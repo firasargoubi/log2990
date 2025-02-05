@@ -64,7 +64,7 @@ describe('GameService', () => {
         sandbox.stub(game, 'findOneAndDelete').resolves(deletedGame);
         const result = await gameService.deleteGame(gameId);
 
-        expect(result).to.equal(deletedGame);
+        expect(result).to.equal(true);
     });
 
     it('should get only visible games', async () => {
