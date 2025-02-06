@@ -31,8 +31,7 @@ describe('BoardComponent', () => {
 
         fixture = TestBed.createComponent(BoardComponent);
         component = fixture.componentInstance;
-        component.size = 5; // Set board size for testing
-        component.initializeBoard(); // Ensure board is initialized before tests
+        component.initializeBoard();
         fixture.detectChanges();
     });
 
@@ -51,10 +50,10 @@ describe('BoardComponent', () => {
         expect(component.board).toEqual(mockBoard);
     });
 
-    it('should call saveBoard method when save service is active', () => {
+    it('should call saveGame method when save service is active', () => {
         component.ngOnInit();
-        component.saveService.saveBoard(component.board);
-        expect(saveServiceSpy.saveBoard).toHaveBeenCalledWith(component.board);
+        component.saveService.saveGame(component.game);
+        expect(saveServiceSpy.saveGame).toHaveBeenCalledWith(component.game);
     });
 
     it('should call modifyTile when mouse is pressed and moves over a tile', () => {

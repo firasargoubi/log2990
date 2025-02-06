@@ -1,11 +1,10 @@
-import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { MatDialogRef } from '@angular/material/dialog';
 import { RouterModule } from '@angular/router';
 
 const DEFAULT_STAT_VALUE = 4;
-const FOUR_VALUE_DICE = 4;
 const SIX_VALUE_DICE = 6;
 
 @Component({
@@ -34,14 +33,11 @@ export class BoxFormDialogComponent {
     formValid$: boolean = false;
     attributeClicked$: boolean = false;
     diceClicked$: boolean = false;
-    life: number = DEFAULT_STAT_VALUE;
-    speed: number = DEFAULT_STAT_VALUE;
-    attack: number;
-    defense: number;
-    constructor(
-        public dialogRef: MatDialogRef<BoxFormDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: { boxId: number },
-    ) {
+    private _life: number = DEFAULT_STAT_VALUE;
+    private _speed: number = DEFAULT_STAT_VALUE;
+    private _attack: number = DEFAULT_STAT_VALUE;
+    private _defense: number = DEFAULT_STAT_VALUE;
+    constructor(public dialogRef: MatDialogRef<BoxFormDialogComponent>) {
         this.form = new FormGroup({
             name: new FormControl('Player', [Validators.required]),
             avatar: new FormControl(this.avatars[0], [Validators.required]),
@@ -54,6 +50,38 @@ export class BoxFormDialogComponent {
         this.form.statusChanges.subscribe(() => {
             this.formValid$ = this.form.valid;
         });
+    }
+
+    get life(): number {
+        return this._life;
+    }
+
+    get speed(): number {
+        return this._speed;
+    }
+
+    get attack(): number {
+        return this._attack;
+    }
+
+    get defense(): number {
+        return this._defense;
+    }
+
+    set life(value: number) {
+        this._life = value;
+    }
+
+    set speed(value: number) {
+        this._speed = value;
+    }
+
+    set attack(value: number) {
+        this._attack = value;
+    }
+
+    set defense(value: number) {
+        this._defense = value;
     }
 
     closeDialog(): void {
@@ -70,14 +98,16 @@ export class BoxFormDialogComponent {
         this.form.get('avatar')?.setValue(avatar);
     }
 
-    inputName(event: Event) {
+    inputName(event: Event): void {
         const inputName = (event.target as HTMLInputElement).value;
         this.form.get('name')?.setValue(inputName);
     }
 
-    increase(attribute: string) {
+    increase(attribute: string): void {
         if (!this.attributeClicked$) {
-            this.form.get(attribute)?.setValue(this.form.get(attribute)?.value + 2);
+            const formControl = this.form.get(attribute);
+            const currentValue = formControl?.value;
+            formControl?.setValue(currentValue + 2);
             if (attribute === 'life') {
                 this.life += 2;
             } else if (attribute === 'speed') {
@@ -87,13 +117,13 @@ export class BoxFormDialogComponent {
         }
     }
 
-    pickDice(attribute: string) {
+    pickDice(attribute: string): void {
         if (attribute === 'attack') {
             this.form.get('attack')?.setValue(SIX_VALUE_DICE);
             this.attack = 6;
             this.defense = 4;
         } else {
-            this.form.get('defense')?.setValue(FOUR_VALUE_DICE);
+            this.form.get('defense')?.setValue(SIX_VALUE_DICE);
             this.defense = 6;
             this.attack = 4;
         }

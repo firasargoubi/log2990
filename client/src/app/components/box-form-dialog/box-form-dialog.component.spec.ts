@@ -25,7 +25,8 @@ describe('BoxFormDialogComponent', () => {
         dialogRefSpy = jasmine.createSpyObj('MatDialogRef', ['close']);
 
         await TestBed.configureTestingModule({
-            imports: [BoxFormDialogComponent, CommonModule, RouterModule, ReactiveFormsModule, FormsModule],
+            imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule],
+            declarations: [BoxFormDialogComponent],
             providers: [
                 { provide: MatDialogRef, useValue: dialogRefSpy },
                 { provide: MAT_DIALOG_DATA, useValue: { boxId: 1 } },
