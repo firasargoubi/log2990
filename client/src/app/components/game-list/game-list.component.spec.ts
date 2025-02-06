@@ -5,6 +5,8 @@ import { HttpClient, HttpHandler } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { Game } from '@app/interfaces/game.model';
+import { GameModeDialogComponent } from '@app/components/game-mode/game-mode.component';
+import { MatDialogRef } from '@angular/material/dialog';
 
 describe('GameListComponent', () => {
     let component: GameListComponent;
@@ -132,5 +134,37 @@ describe('GameListComponent', () => {
 
         const gameCards = fixture.nativeElement.querySelectorAll('app-game-card');
         expect(gameCards.length).toBe(2);
+    });
+    it('should open the create dialog when openCreateDialog is called', () => {
+        const dialogSpy = spyOn(component['dialog'], 'open').and.returnValue({
+            afterClosed: () => of(true),
+        } as MatDialogRef<GameModeDialogComponent>);
+
+        component.openCreateDialog();
+
+        expect(dialogSpy).toHaveBeenCalledWith(GameModeDialogComponent, {
+            width: '400px',
+        });
+    });
+
+    it('should navigate to edit page with correct query params when dialog is closed with result', () => {
+        const routerSpy = spyOn(component['router'], 'navigate');
+        spyOn(component['dialog'], 'open').and.returnValue({
+            afterClosed: () => of({ type: 'Classic', size: 'Medium' }),
+        } as MatDialogRef<GameModeDialogComponent>);
+
+        component.openCreateDialog();
+
+        expect(routerSpy).toHaveBeenCalledWith(['/edit'], {
+            queryParams: { mode: 'Classic', size: 'Medium' },
+        });
+    });
+
+    it('should not navigate when dialog is closed without result', () => {
+        const routerSpy = spyOn(component['router'], 'navigate');
+
+        component.openCreateDialog();
+
+        expect(routerSpy).not.toHaveBeenCalled();
     });
 });
