@@ -7,7 +7,7 @@ import { FormsModule } from '@angular/forms';
 
 interface GameMode {
     type: 'classic' | 'capture';
-    size: 'petite' | 'moyenne' | 'grande';
+    size: 'small' | 'medium' | 'large';
 }
 
 @Component({
@@ -19,7 +19,7 @@ interface GameMode {
 export class GameModeDialogComponent {
     selectedMode: GameMode = {
         type: 'classic',
-        size: 'moyenne',
+        size: 'medium',
     };
 
     constructor(private dialogRef: MatDialogRef<GameModeDialogComponent>) {}

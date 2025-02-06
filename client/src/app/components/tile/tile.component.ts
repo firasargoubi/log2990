@@ -16,8 +16,6 @@ export class TileComponent {
         switch (this.type) {
             case TileTypes.Grass:
                 return 'assets/grass.png';
-            case TileTypes.Mud:
-                return 'assets/mud.png';
             case TileTypes.Water:
                 return 'assets/water.png';
             case TileTypes.Ice:

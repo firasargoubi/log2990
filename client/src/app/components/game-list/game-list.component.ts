@@ -24,9 +24,21 @@ export class GameListComponent {
     ) {}
     // TODO: Ajouter et gérer événement de création de jeu avec nouveau component.
 
-    constructor(private router: Router) {}
-
     onVisibilityChange(event: Game) {
         this.visibilityChange.emit(event);
+    }
+    openCreateDialog() {
+        const dialogRef = this.dialog.open(GameModeDialogComponent, {
+            width: '400px',
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result) {
+                // Naviguer vers la page d'édition avec les paramètres
+                this.router.navigate(['/edit'], {
+                    queryParams: { mode: result.type, size: result.size },
+                });
+            }
+        });
     }
 }

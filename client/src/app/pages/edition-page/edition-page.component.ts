@@ -25,6 +25,7 @@ export class EditionPageComponent {
     gameName: string = '';
     gameDescription: string = '';
     showErrorPopup: boolean = false;
+    saveState: boolean = false;
     errorMessage: string = '';
     errorService = inject(ErrorService);
     gameService = inject(GameService);
@@ -38,6 +39,8 @@ export class EditionPageComponent {
             this.showErrorPopup = true;
         });
         this.id = this.route.snapshot.params['id'];
+        this.gameMode = this.route.snapshot.queryParams['mode'] || 'normal';
+        this.gameMapSize = this.route.snapshot.queryParams['size'] || 'large';
         this.loadGame();
     }
 
@@ -70,6 +73,7 @@ export class EditionPageComponent {
         }
         if (!this.showErrorPopup) {
             this.saveService.saveGame(this.gameName, this.gameDescription, this.gameMode, this.gameMapSize, this.id);
+            this.saveState= true;
             this.errorService.addMessage('Game saved successfully.\n');
         }
     }
@@ -79,22 +83,27 @@ export class EditionPageComponent {
     }
 
     loadGame() {
-        this.gameService.fetchGameById(this.id).subscribe({
-            next: (gameSearched) => {
-                this.id = gameSearched.id;
-                this.gameName = gameSearched.name;
-                this.gameDescription = gameSearched.description;
-                this.gameMode = gameSearched.mode;
-                this.gameMapSize = gameSearched.mapSize;
-            },
-        });
+        if (this.id) {
+            this.gameService.fetchGameById(this.id).subscribe({
+                next: (gameSearched) => {
+                    this.gameName = gameSearched.name;
+                    this.gameDescription = gameSearched.description;
+                    this.gameMode = gameSearched.mode;
+                    this.gameMapSize = gameSearched.mapSize;
+                },
+            });
+        } else {
+            this.gameName = '';
+            this.gameDescription = '';
+        }
     }
 
     closePopup() {
         this.errorMessage = '';
         this.showErrorPopup = false;
-        if (this.errorMessage === 'Game saved successfully.\n') {
+        if (this.saveState) {
             this.router.navigate(['/admin']);
         }
+        this.saveState = false;
     }
 }

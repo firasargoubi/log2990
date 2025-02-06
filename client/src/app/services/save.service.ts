@@ -86,14 +86,14 @@ export class SaveService {
 
     verifyConnectingDoors(i: number, j: number): boolean {
         return (
-            (this.board[i - 1][j].type < TileTypes.Wall &&
-                this.board[i + 1][j].type < TileTypes.Wall &&
+            (this.board[i - 1][j].type < TileTypes.DoorClosed &&
+                this.board[i + 1][j].type < TileTypes.DoorClosed &&
                 this.board[i][j - 1].type === TileTypes.Wall &&
                 this.board[i][j + 1].type === TileTypes.Wall) ||
             (this.board[i - 1][j].type === TileTypes.Wall &&
                 this.board[i + 1][j].type === TileTypes.Wall &&
-                this.board[i][j - 1].type < TileTypes.Wall &&
-                this.board[i][j + 1].type < TileTypes.Wall)
+                this.board[i][j - 1].type < TileTypes.DoorClosed &&
+                this.board[i][j + 1].type < TileTypes.DoorClosed)
         );
     }
 

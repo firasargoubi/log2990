@@ -6,7 +6,7 @@
 
     <app-game-card
         [game]="game"
-        (edit)="onEditGame(game)"
+        (edit)="editGame.emit(game)"
         (delete)="deleteGame.emit(game)"
         (visibilityChange)="onVisibilityChange(game)"
     ></app-game-card>
