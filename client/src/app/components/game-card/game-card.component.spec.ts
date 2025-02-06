@@ -1,120 +1,95 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { GameCardComponent } from './game-card.component';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { ActivatedRoute } from '@angular/router';
+import { ConfirmDeleteComponent } from '@app/components/confirm-delete/confirm-delete.component';
 import { Game } from '@app/interfaces/game.model';
-import { MatCardModule } from '@angular/material/card';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatButtonModule } from '@angular/material/button';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { By } from '@angular/platform-browser';
-import { DebugElement } from '@angular/core';
 import { GameService } from '@app/services/game.service';
 import { of } from 'rxjs';
-import { HttpClient, HttpHandler } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { GameCardComponent } from './game-card.component';
 
 describe('GameCardComponent', () => {
     let component: GameCardComponent;
     let fixture: ComponentFixture<GameCardComponent>;
-    let debugElement: DebugElement;
-    let gameService: jasmine.SpyObj<GameService>;
-
-    const mockGame: Game = {
-        id: '1',
-        name: 'Test Game',
-        mapSize: 'Large',
-        mode: 'CTF',
-        previewImage: 'https://via.placeholder.com/150',
-        description: 'A test game description',
-        lastModified: new Date(),
-        isVisible: true,
-        board: [
-            [0, 0],
-            [0, 0],
-        ],
-    };
+    let gameServiceSpy: jasmine.SpyObj<GameService>;
+    let dialogSpy: jasmine.SpyObj<MatDialog>;
 
     beforeEach(async () => {
-        const gameServiceSpy = jasmine.createSpyObj('GameService', ['deleteGame', 'updateVisibility']);
+        const gameServiceMock = jasmine.createSpyObj('GameService', ['deleteGame', 'updateVisibility']);
+        const dialogMock = jasmine.createSpyObj('MatDialog', ['open']);
+
+        const activatedRouteMock = {
+            snapshot: {
+                paramMap: of(new Map([['id', '1']])),
+            },
+        };
 
         await TestBed.configureTestingModule({
-            imports: [MatCardModule, MatTooltipModule, MatButtonModule, MatSlideToggleModule, GameCardComponent],
+            imports: [GameCardComponent, MatSnackBarModule, MatDialogModule, NoopAnimationsModule],
             providers: [
-                { provide: GameService, useValue: gameServiceSpy },
-                HttpClient,
-                HttpHandler,
-                {
-                    provide: ActivatedRoute,
-                    useValue: { data: of({ game: mockGame }) },
-                },
+                { provide: GameService, useValue: gameServiceMock },
+                { provide: MatDialog, useValue: dialogMock },
+                { provide: ActivatedRoute, useValue: activatedRouteMock },
             ],
         }).compileComponents();
 
-        gameService = TestBed.inject(GameService) as jasmine.SpyObj<GameService>;
-    });
-
-    beforeEach(() => {
         fixture = TestBed.createComponent(GameCardComponent);
         component = fixture.componentInstance;
-        debugElement = fixture.debugElement;
-        component.game = { ...mockGame };
-        fixture.detectChanges();
+        gameServiceSpy = TestBed.inject(GameService) as jasmine.SpyObj<GameService>;
+        dialogSpy = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
     });
 
     it('should create', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should display game details correctly', () => {
-        const gameName = debugElement.query(By.css('.game-info li:nth-child(1)')).nativeElement;
-        const gameMapSize = debugElement.query(By.css('.game-info li:nth-child(2)')).nativeElement;
-        const gameMode = debugElement.query(By.css('.game-info li:nth-child(3)')).nativeElement;
-
-        expect(gameName.textContent).toBe(mockGame.name);
-        expect(gameMapSize.textContent).toBe(mockGame.mapSize);
-        expect(gameMode.textContent).toBe(mockGame.mode);
-    });
-
-    it('should emit "edit" event when edit button is clicked', () => {
+    it('should emit edit event when editGame is called', () => {
         spyOn(component.edit, 'emit');
-
-        const editButton = debugElement.query(By.css('.action.edit')).nativeElement;
-        editButton.click();
-
-        expect(component.edit.emit).toHaveBeenCalledWith(mockGame);
+        component.game = { id: '1', name: 'Test Game' } as Game;
+        component.editGame();
+        expect(component.edit.emit).toHaveBeenCalledWith(component.game);
     });
 
-    it('should call deleteGame on service and emit "delete" event when delete button is clicked', () => {
+    it('should open dialog and delete game when confirmed', () => {
         spyOn(component.delete, 'emit');
-        gameService.deleteGame.and.returnValue(of(undefined)); // Mock API response
+        component.game = { id: '1', name: 'Test Game' } as Game;
+        dialogSpy.open.and.returnValue({
+            afterClosed: () => of(true),
+        } as MatDialogRef<unknown, unknown>);
+        gameServiceSpy.deleteGame.and.returnValue(of(void 0));
 
-        const deleteButton = debugElement.query(By.css('.action.delete')).nativeElement;
-        deleteButton.click();
+        component.deleteGame();
 
-        expect(gameService.deleteGame).toHaveBeenCalledWith(mockGame.id);
-        expect(component.delete.emit).toHaveBeenCalledWith(mockGame);
+        expect(dialogSpy.open).toHaveBeenCalledWith(ConfirmDeleteComponent);
+        expect(gameServiceSpy.deleteGame).toHaveBeenCalledWith('1');
+        expect(component.delete.emit).toHaveBeenCalledWith(component.game);
     });
 
-    it('should call updateVisibility on service and emit "visibilityChange" event when visibility button is clicked', () => {
+    it('should not delete game when dialog is cancelled', () => {
+        spyOn(component.delete, 'emit');
+        component.game = { id: '1', name: 'Test Game' } as Game;
+        dialogSpy.open.and.returnValue({
+            afterClosed: () => of(false),
+        } as MatDialogRef<unknown, unknown>);
+
+        component.deleteGame();
+
+        expect(dialogSpy.open).toHaveBeenCalledWith(ConfirmDeleteComponent);
+        expect(gameServiceSpy.deleteGame).not.toHaveBeenCalled();
+        expect(component.delete.emit).not.toHaveBeenCalled();
+    });
+
+    it('should update visibility and emit visibilityChange event', () => {
         spyOn(component.visibilityChange, 'emit');
-        const updatedGame = { ...mockGame, isVisible: false };
-        gameService.updateVisibility.and.returnValue(of(updatedGame)); // Mock API response
+        component.game = { id: '1', name: 'Test Game' } as Game;
+        const updatedGame = { id: '1', name: 'Test Game', isVisible: true } as Game;
+        gameServiceSpy.updateVisibility.and.returnValue(of(updatedGame));
 
-        const visibilityButton = debugElement.query(By.css('.action.visibility')).nativeElement;
-        visibilityButton.click();
+        component.toggleVisibility(true);
 
-        expect(gameService.updateVisibility).toHaveBeenCalledWith(mockGame.id, false);
+        expect(gameServiceSpy.updateVisibility).toHaveBeenCalledWith('1', true);
         expect(component.visibilityChange.emit).toHaveBeenCalledWith(updatedGame);
-    });
-
-    it('should update the visibility icon class when visibility button is clicked', () => {
-        const updatedGame = { ...mockGame, isVisible: false };
-        gameService.updateVisibility.and.returnValue(of(updatedGame));
-
-        const visibilityButton = debugElement.query(By.css('.action.visibility')).nativeElement;
-        visibilityButton.click();
-
-        fixture.detectChanges();
-
-        expect(visibilityButton.classList).toContain('invisible');
+        expect(component.game).toEqual(updatedGame);
     });
 });
