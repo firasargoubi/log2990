@@ -1,11 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { GameCardComponent } from '@app/components/game-card/game-card.component';
-import { Game } from '@app/interfaces/game.model';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { GameModeDialogComponent } from '@app/components/game-mode/game-mode.component';
+import { Game } from '@app/interfaces/game.model';
 
 @Component({
     selector: 'app-game-list',

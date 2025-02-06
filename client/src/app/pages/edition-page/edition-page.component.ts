@@ -10,20 +10,20 @@ import { Game } from '@app/interfaces/game.model';
 import { SaveMessage } from '@app/interfaces/saveMessage';
 import { ErrorService } from '@app/services/error.service';
 import { GameService } from '@app/services/game.service';
-import { ImageService } from '@app/services/image.service';
 import { SaveService } from '@app/services/save.service';
 
 @Component({
     selector: 'app-game-page',
     templateUrl: './edition-page.component.html',
     styleUrls: ['./edition-page.component.scss'],
-    imports: [FormsModule, BoardComponent, TileOptionsComponent, ObjectsComponent, RouterLink, DragDropModule],
+    imports: [BoardComponent, TileOptionsComponent, ObjectsComponent, RouterLink, DragDropModule, FormsModule],
 })
 export class EditionPageComponent {
-    game: Game;
+    // @ViewChild('board', { static: false }) boardElement: ElementRef;
     showErrorPopup: boolean = false;
     saveSuccessful: boolean = false;
     errorMessage: string = '';
+    game: Game;
 
     constructor(
         private route: ActivatedRoute,
@@ -31,7 +31,6 @@ export class EditionPageComponent {
         private gameService: GameService,
         private saveService: SaveService,
         private errorService: ErrorService,
-        private imageService: ImageService,
     ) {
         this.errorService.message$.pipe(takeUntilDestroyed()).subscribe((message: string) => {
             this.errorMessage += message;
@@ -45,21 +44,8 @@ export class EditionPageComponent {
         this.loadGame();
     }
 
-    get mapSize(): number {
-        switch (this.game.mapSize) {
-            case 'small':
-                return 10;
-            case 'medium':
-                return 15;
-            case 'large':
-                return 20;
-            default:
-                return 10;
-        }
-    }
-
     async saveBoard() {
-        this.game.previewImage = await this.imageService.captureComponent(this.boardElement.nativeElement);
+        // this.game.previewImage = await this.imageService.captureComponent(this.boardElement.nativeElement);
         if (!this.game.name) {
             this.errorService.addMessage('Error: Game name is required.\n');
         }
@@ -77,8 +63,8 @@ export class EditionPageComponent {
             }
         }
         if (!this.showErrorPopup) {
-            this.saveService.saveGame(this.gameName, this.gameDescription, this.gameMode, this.gameMapSize, this.id);
-            this.saveState = true;
+            this.saveService.saveGame(this.game);
+            this.saveSuccessful = true;
             this.errorService.addMessage('Game saved successfully.\n');
         }
     }
@@ -95,8 +81,6 @@ export class EditionPageComponent {
                 },
             });
         } else {
-            this.game.name = '';
-            this.game.description = '';
             this.game.name = '';
             this.game.description = '';
         }

@@ -6,12 +6,13 @@ import { FormsModule } from '@angular/forms';
 import { ItemComponent } from '@app/components/item/item.component';
 import { TileComponent } from '@app/components/tile/tile.component';
 import { Coordinates } from '@app/interfaces/coordinates';
+import { Game } from '@app/interfaces/game.model';
 import { Tile } from '@app/interfaces/tile';
 import { ErrorService } from '@app/services/error.service';
+import { GameService } from '@app/services/game.service';
 import { MouseService } from '@app/services/mouse.service';
 import { SaveService } from '@app/services/save.service';
 import { TileService } from '@app/services/tile.service';
-import { GameService } from '@app/services/game.service';
 
 const RIGHT_CLICK = 2;
 @Component({
@@ -21,9 +22,7 @@ const RIGHT_CLICK = 2;
     styleUrl: './board.component.scss',
 })
 export class BoardComponent implements OnInit {
-    @Input() sizeStr: string;
-    @Input() size: number;
-    @Input() id: string = '';
+    @Input() game: Game;
     board: Tile[][] = [];
     selectedTiles: Coordinates[] = [];
     toolSaved: number = -1;
@@ -46,6 +45,19 @@ export class BoardComponent implements OnInit {
         });
     }
 
+    get mapSize(): number {
+        switch (this.game.mapSize) {
+            case 'small':
+                return 10;
+            case 'medium':
+                return 15;
+            case 'large':
+                return 20;
+            default:
+                return 10;
+        }
+    }
+
     get tiles(): Tile[][] {
         return this.board;
     }
@@ -56,22 +68,18 @@ export class BoardComponent implements OnInit {
 
     initializeBoard(): void {
         this.board = [];
-        if (this.id) {
-            this.gameService.fetchGameById(this.id).subscribe({
-                next: (game) => {
-                    for (let i = 0; i < this.size; i++) {
-                        const row: Tile[] = [];
-                        for (let j = 0; j < this.size; j++) {
-                            row.push({ type: game.board[i][j], x: i, y: j, id: `${i}-${j}` });
-                        }
-                        this.board.push(row);
-                    }
-                },
-            });
-        } else {
-            for (let i = 0; i < this.size; i++) {
+        if (this.game.id) {
+            for (let i = 0; i < this.mapSize; i++) {
                 const row: Tile[] = [];
-                for (let j = 0; j < this.size; j++) {
+                for (let j = 0; j < this.mapSize; j++) {
+                    row.push({ type: this.game.board[i][j], x: i, y: j, id: `${i}-${j}` });
+                }
+                this.board.push(row);
+            }
+        } else {
+            for (let i = 0; i < this.mapSize; i++) {
+                const row: Tile[] = [];
+                for (let j = 0; j < this.mapSize; j++) {
                     row.push({ type: -1, x: i, y: j, id: `${i}-${j}` });
                 }
                 this.board.push(row);
