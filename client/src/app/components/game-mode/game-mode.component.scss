@@ -1,12 +1,5 @@
-.mat-mdc-dialog-container {
-    --mdc-dialog-container-color: #543d46;
-    border-radius: 15px;
-    padding: 20px;
-    color: white;
-}
-
 h2[mat-dialog-title] {
-    color: #ffd700;
+    color: #3f783f;
     font-family: 'Press Start 2P', cursive;
     text-align: center;
     margin-bottom: 30px;
@@ -20,8 +13,9 @@ h2[mat-dialog-title] {
     margin-bottom: 20px;
 }
 
-h3 {
-    color: #ffd700;
+h6 {
+    color: #125d0c;
+    font-family: 'Press Start 2P';
     margin-bottom: 15px;
 }
 
@@ -32,17 +26,7 @@ h3 {
 }
 
 .mat-radio-button {
-    color: white;
-
-    &.mat-radio-checked {
-        .mat-radio-outer-circle {
-            border-color: #ffd700;
-        }
-
-        .mat-radio-inner-circle {
-            background-color: #ffd700;
-        }
-    }
+    color: #125d0c;
 }
 
 .mat-dialog-actions {
@@ -59,7 +43,7 @@ button {
     padding: 10px 20px;
 
     &[color='primary'] {
-        background: #ffd700;
-        color: #543d46;
+        background: #125d0c;
+        color: #ffffff;
     }
 }

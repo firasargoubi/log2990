@@ -17,18 +17,18 @@ const SIX_VALUE_DICE = 6;
 export class BoxFormDialogComponent {
     form: FormGroup;
     avatars = [
-        'assets/perso/1.png',
-        'assets/perso/2.png',
-        'assets/perso/3.png',
-        'assets/perso/4.png',
-        'assets/perso/5.png',
-        'assets/perso/6.png',
-        'assets/perso/7.png',
-        'assets/perso/8.png',
-        'assets/perso/9.png',
-        'assets/perso/10.png',
-        'assets/perso/11.png',
-        'assets/perso/12.png',
+        'assets/perso/1.jpg',
+        'assets/perso/2.jpg',
+        'assets/perso/3.jpg',
+        'assets/perso/4.jpg',
+        'assets/perso/5.jpg',
+        'assets/perso/6.jpg',
+        'assets/perso/7.jpg',
+        'assets/perso/8.jpg',
+        'assets/perso/9.jpg',
+        'assets/perso/10.jpg',
+        'assets/perso/11.jpg',
+        'assets/perso/12.jpg',
     ];
 
     formValid$: boolean = false;
