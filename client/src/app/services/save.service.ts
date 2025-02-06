@@ -1,8 +1,10 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { SaveMessage } from '@app/interfaces/saveMessage';
 import { Tile } from '@app/interfaces/tile';
 import { TileTypes } from '@app/interfaces/tileTypes';
 import { Subject } from 'rxjs';
+import { GameService } from './game.service';
+import { Game } from '@app/interfaces/game.model';
 
 const WANTED_TILE_PERCENTAGE = 0.5;
 @Injectable({
@@ -12,10 +14,12 @@ export class SaveService {
     board: Tile[][] = [];
     countSeen: number = 0;
     currentStatus: Partial<SaveMessage>;
+    validBoard: boolean = false;
     saveActive = new Subject<boolean>();
     resetActive = new Subject<boolean>();
     isSave$ = this.saveActive.asObservable();
     isReset$ = this.resetActive.asObservable();
+    gameService = inject(GameService);
 
     get boardSize(): number {
         return this.board.length * this.board[0].length;
@@ -33,13 +37,40 @@ export class SaveService {
         return count;
     }
 
-    saveBoard(board: Tile[][]): void {
+    get intBoard(): number[][] {
+        const board: number[][] = [];
+        for (const row of this.board) {
+            const newRow: number[] = [];
+            for (const tile of row) {
+                newRow.push(tile.type);
+            }
+            board.push(newRow);
+        }
+        return board;
+    }
+
+    verifyBoard(board: Tile[][]): void {
         this.board = board;
         this.currentStatus = {
             doors: this.verifyDoors(),
             minTerrain: this.verifyTilePercentage(),
             accessible: this.verifyAccessible(),
         };
+    }
+
+    saveGame(game: Game): void {
+        const gameData: Game = {
+            ...game,
+            board: this.intBoard, // Ensure board data is included
+            lastModified: new Date(),
+            isVisible: true,
+        };
+
+        if (!game.id) {
+            this.gameService.createGame(gameData).subscribe();
+        } else {
+            this.gameService.updateGame(game.id, gameData).subscribe();
+        }
     }
 
     verifyDoors(): boolean {
@@ -59,14 +90,14 @@ export class SaveService {
 
     verifyConnectingDoors(i: number, j: number): boolean {
         return (
-            (this.board[i - 1][j].type < TileTypes.Wall &&
-                this.board[i + 1][j].type < TileTypes.Wall &&
+            (this.board[i - 1][j].type < TileTypes.DoorClosed &&
+                this.board[i + 1][j].type < TileTypes.DoorClosed &&
                 this.board[i][j - 1].type === TileTypes.Wall &&
                 this.board[i][j + 1].type === TileTypes.Wall) ||
             (this.board[i - 1][j].type === TileTypes.Wall &&
                 this.board[i + 1][j].type === TileTypes.Wall &&
-                this.board[i][j - 1].type < TileTypes.Wall &&
-                this.board[i][j + 1].type < TileTypes.Wall)
+                this.board[i][j - 1].type < TileTypes.DoorClosed &&
+                this.board[i][j + 1].type < TileTypes.DoorClosed)
         );
     }
 
@@ -91,8 +122,6 @@ export class SaveService {
         this.board[i][j].seen = true;
         this.countSeen++;
         this.verifyAccessibleDFS(i, j);
-        console.log(this.countSeen);
-        console.log(this.boardTerrainTiles);
         this.resetSeen();
         return this.countSeen === this.boardTerrainTiles;
     }
@@ -133,16 +162,11 @@ export class SaveService {
         return i >= 0 && i < this.board.length && j >= 0 && j < this.board.length && this.board[i][j].type !== TileTypes.Wall;
     }
 
-    loadBoard(): void {
-        this.board = [[]];
-        // TODO : Ajouter avec les services de chargement
-    }
-
-    setSaveActive(value: boolean) {
+    alertBoardForVerification(value: boolean) {
         this.saveActive.next(value);
     }
 
-    setResetActive(value: boolean) {
+    alertBoardForReset(value: boolean) {
         this.resetActive.next(value);
     }
 }

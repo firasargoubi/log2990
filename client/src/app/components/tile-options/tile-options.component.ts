@@ -27,7 +27,7 @@ export class TileOptionsComponent implements OnInit {
     initializeOptions(): void {
         this.options = [];
         const MAX_TILE = 6;
-        for (let i = 1; i <= MAX_TILE; i++) {
+        for (let i = TileTypes.Water; i <= MAX_TILE; i++) {
             if (i !== TileTypes.DoorOpen) this.options.push({ type: i, x: i, y: 0, id: `${i}` });
         }
     }

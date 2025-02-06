@@ -1,14 +1,17 @@
-import { Component, inject } from '@angular/core';
+import { DragDropModule } from '@angular/cdk/drag-drop';
+import { Component, ElementRef, inject, ViewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { BoardComponent } from '@app/components/board/board.component';
 import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
+import { ImageService } from '@app/image.service';
+import { Game } from '@app/interfaces/game.model';
 import { SaveMessage } from '@app/interfaces/saveMessage';
 import { ErrorService } from '@app/services/error.service';
+import { GameService } from '@app/services/game.service';
 import { SaveService } from '@app/services/save.service';
-import { DragDropModule } from '@angular/cdk/drag-drop';
 
 @Component({
     selector: 'app-game-page',
@@ -17,46 +20,109 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
     imports: [FormsModule, BoardComponent, TileOptionsComponent, ObjectsComponent, RouterLink, DragDropModule],
 })
 export class EditionPageComponent {
-    saveService = inject(SaveService);
-    gameName: string = '';
-    gameDescription: string = '';
-    showErrorPopup: boolean = false;
-    errorMessage: string = '';
-    errorService = inject(ErrorService);
+    @ViewChild('board', { static: false }) boardElement: ElementRef;
+    game: Game = {
+        id: '',
+        name: '',
+        mapSize: 'small',
+        mode: 'normal',
+        previewImage: '',
+        description: '',
+        lastModified: new Date(),
+        isVisible: true,
+        board: [],
+    };
 
-    constructor() {
+    showErrorPopup: boolean = false;
+    saveState: boolean = false;
+    gameLoaded: boolean = false;
+    errorMessage: string = '';
+
+    saveService = inject(SaveService);
+    errorService = inject(ErrorService);
+    gameService = inject(GameService);
+    imageService = inject(ImageService);
+
+    constructor(
+        private route: ActivatedRoute,
+        private router: Router,
+    ) {
         this.errorService.message$.pipe(takeUntilDestroyed()).subscribe((message: string) => {
             this.errorMessage += message;
             this.showErrorPopup = true;
         });
+        this.gameLoaded = false;
+        this.game.id = this.route.snapshot.params['id'];
+        this.game.mode = this.route.snapshot.queryParams['mode'] || 'normal';
+        this.game.mapSize = this.route.snapshot.queryParams['size'] || 'large';
+
+        this.loadGame();
     }
 
-    saveBoard() {
-        if (!this.gameName) {
+    get mapSize(): number {
+        switch (this.game.mapSize) {
+            case 'small':
+                return 10;
+            case 'medium':
+                return 15;
+            case 'large':
+                return 20;
+            default:
+                return 10;
+        }
+    }
+
+    async saveBoard() {
+        if (!this.game.name) {
             this.errorService.addMessage('Error: Game name is required.\n');
         }
-        if (!this.gameDescription) {
+        if (!this.game.description) {
             this.errorService.addMessage('Error: Game description is required.\n');
         }
-        this.saveService.setSaveActive(true);
+
+        this.saveService.alertBoardForVerification(true);
         const saveStatus = this.saveService.currentStatus;
+
         let key: keyof SaveMessage;
         for (key in saveStatus) {
             if (!saveStatus[key]) {
                 this.errorService.addMessage(`Error: ${key} name is not respected.\n`);
             }
         }
+
         if (!this.showErrorPopup) {
+            this.game.previewImage = await this.imageService.captureComponent(this.boardElement.nativeElement);
+            this.saveService.saveGame(this.game);
+            this.saveState = true;
             this.errorService.addMessage('Game saved successfully.\n');
         }
     }
 
     resetBoard() {
-        this.saveService.setResetActive(true);
+        this.saveService.alertBoardForReset(true);
+    }
+
+    loadGame() {
+        if (this.game.id) {
+            this.gameService.fetchGameById(this.game.id).subscribe({
+                next: (gameSearched) => {
+                    this.game = gameSearched;
+                    this.gameLoaded = true;
+                },
+            });
+        } else {
+            this.game.name = '';
+            this.game.description = '';
+            this.gameLoaded = true;
+        }
     }
 
     closePopup() {
         this.errorMessage = '';
         this.showErrorPopup = false;
+        if (this.saveState) {
+            this.router.navigate(['/admin']);
+        }
+        this.saveState = false;
     }
 }

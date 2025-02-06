@@ -2,28 +2,39 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Game } from '@app/interfaces/game.model';
 import { Observable } from 'rxjs';
-
-const API_URL = 'http://localhost:3000/api/game';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
     providedIn: 'root',
 })
 export class GameService {
+    private readonly baseUrl: string = environment.serverUrl;
     constructor(private http: HttpClient) {}
 
-    deleteGame(gameId: number): Observable<void> {
-        return this.http.delete<void>(`${API_URL}/${gameId}`);
+    deleteGame(gameId: string): Observable<void> {
+        return this.http.delete<void>(`${this.baseUrl}/${gameId}`);
     }
 
-    updateVisibility(gameId: number, isVisible: boolean): Observable<Game> {
-        return this.http.put<Game>(`${API_URL}/${gameId}`, { isVisible });
+    updateGame(gameId: string, gameModif: Partial<Game>): Observable<Game> {
+        return this.http.patch<Game>(`${this.baseUrl}/${gameId}`, gameModif);
+    }
+    updateVisibility(gameId: string, isVisible: boolean): Observable<Game> {
+        return this.http.patch<Game>(`${this.baseUrl}/${gameId}`, { isVisible });
     }
 
     fetchGames() {
-        return this.http.get<Game[]>(`${API_URL}/all`);
+        return this.http.get<Game[]>(`${this.baseUrl}/all`);
     }
 
     fetchVisibleGames() {
-        return this.http.get<Game[]>(`${API_URL}/visible`);
+        return this.http.get<Game[]>(`${this.baseUrl}/visible`);
+    }
+
+    fetchGameById(gameId: string) {
+        return this.http.get<Game>(`${this.baseUrl}/${gameId}`);
+    }
+
+    createGame(game: Game): Observable<Game> {
+        return this.http.post<Game>(`${this.baseUrl}/create`, game);
     }
 }
