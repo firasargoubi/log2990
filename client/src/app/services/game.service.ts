@@ -1,21 +1,25 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Game } from '@app/interfaces/game.model';
-import { Observable, throwError } from 'rxjs';
+import { Observable, EMPTY } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
+import { NotificationService } from './notification.service';
 
 @Injectable({
     providedIn: 'root',
 })
 export class GameService {
+    notificationService = inject(NotificationService);
     private readonly baseUrl: string = environment.serverUrl;
+
     constructor(private http: HttpClient) {}
 
     deleteGame(gameId: string): Observable<void> {
         return this.http.delete<void>(`${this.baseUrl}/${gameId}`).pipe(
             catchError(() => {
-                return throwError(() => new Error('Impossible de supprimer le jeu'));
+                this.notificationService.showError('Impossible de supprimer le jeu');
+                return EMPTY; // Prevents errors from propagating
             }),
         );
     }
@@ -23,10 +27,12 @@ export class GameService {
     updateGame(gameId: string, gameModif: Partial<Game>): Observable<Game> {
         return this.http.patch<Game>(`${this.baseUrl}/${gameId}`, gameModif);
     }
+
     updateVisibility(gameId: string, isVisible: boolean): Observable<Game> {
         return this.http.patch<Game>(`${this.baseUrl}/${gameId}`, { isVisible }).pipe(
             catchError(() => {
-                return throwError(() => new Error('Impossible de modifier la visibilité.'));
+                this.notificationService.showError('Impossible de modifier la visibilité.');
+                return EMPTY;
             }),
         );
     }
@@ -34,24 +40,36 @@ export class GameService {
     fetchGames(): Observable<Game[]> {
         return this.http.get<Game[]>(`${this.baseUrl}/all`).pipe(
             catchError(() => {
-                return throwError(() => new Error('Impossible de récupérer les jeux'));
+                this.notificationService.showError('Impossible de récupérer les jeux');
+                return EMPTY;
             }),
         );
     }
 
-    fetchVisibleGames() {
+    fetchVisibleGames(): Observable<Game[]> {
         return this.http.get<Game[]>(`${this.baseUrl}/visible`).pipe(
             catchError(() => {
-                return throwError(() => new Error('Impossible de récupérer les jeux visibles.'));
+                this.notificationService.showError('Impossible de récupérer les jeux visibles.');
+                return EMPTY;
             }),
         );
     }
 
-    fetchGameById(gameId: string) {
-        return this.http.get<Game>(`${this.baseUrl}/${gameId}`);
+    fetchGameById(gameId: string): Observable<Game> {
+        return this.http.get<Game>(`${this.baseUrl}/${gameId}`).pipe(
+            catchError(() => {
+                this.notificationService.showError('Impossible de récupérer les détails du jeu.');
+                return EMPTY;
+            }),
+        );
     }
 
     createGame(game: Game): Observable<Game> {
-        return this.http.post<Game>(`${this.baseUrl}/create`, game);
+        return this.http.post<Game>(`${this.baseUrl}/create`, game).pipe(
+            catchError(() => {
+                this.notificationService.showError('Impossible de créer le jeu.');
+                return EMPTY;
+            }),
+        );
     }
 }
