@@ -1,12 +1,13 @@
-import { v4 as uuidv4 } from 'uuid';
-import { Service } from 'typedi';
 import { game } from '@app/classes/game.model';
+import { Service } from 'typedi';
+import { v4 as uuidv4 } from 'uuid';
 
 interface GameData {
     id?: string;
     name: string;
     description: string;
     mode: string;
+    previewImage: string;
     mapSize: string;
     lastModified?: Date;
     isVisible: boolean;
@@ -28,6 +29,10 @@ export class GameService {
 
     async editGame(id: string, updates: Partial<GameData>) {
         return await game.findOneAndUpdate({ id }, updates, { new: true });
+    }
+
+    async getGameById(id: string) {
+        return await game.findOne({ id });
     }
 
     async deleteGame(id: string) {

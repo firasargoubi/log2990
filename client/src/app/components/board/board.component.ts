@@ -1,10 +1,15 @@
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { ItemComponent } from '@app/components/item/item.component';
 import { TileComponent } from '@app/components/tile/tile.component';
 import { Coordinates } from '@app/interfaces/coordinates';
+import { Game } from '@app/interfaces/game.model';
 import { Tile } from '@app/interfaces/tile';
+import { ErrorService } from '@app/services/error.service';
+import { GameService } from '@app/services/game.service';
 import { MouseService } from '@app/services/mouse.service';
 import { SaveService } from '@app/services/save.service';
 import { TileService } from '@app/services/tile.service';
@@ -12,30 +17,55 @@ import { TileService } from '@app/services/tile.service';
 const RIGHT_CLICK = 2;
 @Component({
     selector: 'app-board',
-    imports: [TileComponent, CommonModule, FormsModule],
+    imports: [TileComponent, CommonModule, FormsModule, DragDropModule, ItemComponent],
     templateUrl: './board.component.html',
     styleUrl: './board.component.scss',
 })
 export class BoardComponent implements OnInit {
-    @Input() size: number;
-    @Input() id: number = 0;
+    @Input() game: Game = {
+        id: '',
+        name: '',
+        mapSize: 'small',
+        mode: 'normal',
+        previewImage: '',
+        description: '',
+        lastModified: new Date(),
+        isVisible: true,
+        board: [],
+    };
     board: Tile[][] = [];
     selectedTiles: Coordinates[] = [];
     toolSaved: number = -1;
     mouseService = inject(MouseService);
     tileService = inject(TileService);
     saveService = inject(SaveService);
+    errorService = inject(ErrorService);
+    gameService = inject(GameService);
 
     constructor() {
-        this.saveService.isActive$.pipe(takeUntilDestroyed()).subscribe((isActive: boolean) => {
+        this.saveService.isSave$.pipe(takeUntilDestroyed()).subscribe((isActive: boolean) => {
             if (isActive) {
-                if (this.saveService.saveBoard(this.board)) {
-                    //  TODO: Add success message
-                } else {
-                    //  TODO: Add error message
-                }
+                this.saveService.verifyBoard(this.board);
             }
         });
+        this.saveService.isReset$.pipe(takeUntilDestroyed()).subscribe((isActive: boolean) => {
+            if (isActive) {
+                this.initializeBoard();
+            }
+        });
+    }
+
+    get mapSize(): number {
+        switch (this.game.mapSize) {
+            case 'small':
+                return 10;
+            case 'medium':
+                return 15;
+            case 'large':
+                return 20;
+            default:
+                return 10;
+        }
     }
 
     get tiles(): Tile[][] {
@@ -48,12 +78,22 @@ export class BoardComponent implements OnInit {
 
     initializeBoard(): void {
         this.board = [];
-        for (let i = 0; i < this.size; i++) {
-            const row: Tile[] = [];
-            for (let j = 0; j < this.size; j++) {
-                row.push({ type: -1, x: i, y: j, id: `${i}-${j}` });
+        if (this.game.id) {
+            for (let i = 0; i < this.mapSize; i++) {
+                const row: Tile[] = [];
+                for (let j = 0; j < this.mapSize; j++) {
+                    row.push({ type: this.game.board[i][j], x: i, y: j, id: `${i}-${j}` });
+                }
+                this.board.push(row);
             }
-            this.board.push(row);
+        } else {
+            for (let i = 0; i < this.mapSize; i++) {
+                const row: Tile[] = [];
+                for (let j = 0; j < this.mapSize; j++) {
+                    row.push({ type: -1, x: i, y: j, id: `${i}-${j}` });
+                }
+                this.board.push(row);
+            }
         }
     }
 
@@ -99,5 +139,9 @@ export class BoardComponent implements OnInit {
 
     onClickTileTool(type: number) {
         this.tileService.copyTileTool(type);
+    }
+
+    drop(event: CdkDragDrop<ItemComponent>) {
+        console.log(event);
     }
 }

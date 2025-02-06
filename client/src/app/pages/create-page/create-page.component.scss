@@ -1,8 +1,10 @@
 
 .create-page {
-    background: linear-gradient(120deg, #2ecc71, #a8d5a2, #ffd700); 
-    background-size: 200% 200%;
-    animation: animatedGradient 6s ease-in-out infinite;
+    // background: linear-gradient(120deg, #2ecc71, #a8d5a2, #ffd700); 
+    // background-size: 200% 200%;
+    // animation: animatedGradient 6s ease-in-out infinite;
+    background: url('../../../assets/images/aw.png') no-repeat center center;
+    background-size: cover;
     margin: 0;
     padding: 16px;
     font-family: 'Press Start 2P', cursive;
@@ -14,20 +16,9 @@
     overflow-y: auto;
 }
 
-@keyframes animatedGradient {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
-}
 .create-page h1 {
     font-family: 'Press Start 2P', cursive;
-    color: #ffcc00;
+    color: white;
     text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
     margin-bottom: 24px;
     text-align: center;
@@ -42,12 +33,6 @@
     margin-bottom: 16px;
 }
 
-.title-container .character {
-    width: 150px;
-    height: auto;
-    object-fit: contain;
-    animation: bounce 3s infinite;
-}
 
 .games-container {
     width: 90%;

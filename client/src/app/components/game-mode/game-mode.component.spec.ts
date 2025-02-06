@@ -24,7 +24,7 @@ describe('GameModeDialogComponent', () => {
         expect(component).toBeTruthy();
     });
     it('should have default selectedMode as classic and moyenne', () => {
-        expect(component.selectedMode).toEqual({ type: 'classic', size: 'moyenne' });
+        expect(component.selectedMode).toEqual({ type: 'classic', size: 'medium' });
     });
 
     it('should close the dialog on cancel', () => {
@@ -34,12 +34,12 @@ describe('GameModeDialogComponent', () => {
 
     it('should close the dialog with selectedMode on confirm', () => {
         component.onConfirm();
-        expect(component['dialogRef'].close).toHaveBeenCalledWith({ type: 'classic', size: 'moyenne' });
+        expect(component['dialogRef'].close).toHaveBeenCalledWith({ type: 'classic', size: 'medium' });
     });
 
     it('should update selectedMode when a new mode is selected', () => {
-        component.selectedMode = { type: 'capture', size: 'grande' };
+        component.selectedMode = { type: 'capture', size: 'large' };
         fixture.detectChanges();
-        expect(component.selectedMode).toEqual({ type: 'capture', size: 'grande' });
+        expect(component.selectedMode).toEqual({ type: 'capture', size: 'large' });
     });
 });

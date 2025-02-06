@@ -1,6 +1,6 @@
-import { Router, Request, Response } from 'express';
-import { Service } from 'typedi';
 import { GameService } from '@app/services/game.service';
+import { Request, Response, Router } from 'express';
+import { Service } from 'typedi';
 
 const CREATED_STATUS = 201;
 const NO_CONTENT_STATUS = 204;
@@ -34,6 +34,18 @@ export class GameController {
                 res.status(BAD_REQUEST_STATUS).json({ error: error.message });
             }
         });
+        this.router.get('/visible', async (req: Request, res: Response) => {
+            try {
+                const visibleGames = await this.gameService.getVisibleGames();
+                res.status(OK_STATUS).json(visibleGames);
+            } catch (error) {
+                res.status(BAD_REQUEST_STATUS).json({ error: error.message });
+            }
+        });
+        this.router.get('/:id', async (req: Request, res: Response) => {
+            const games = await this.gameService.getGameById(req.params.id);
+            res.json(games);
+        });
 
         this.router.patch('/:id', async (req: Request, res: Response) => {
             try {
@@ -56,15 +68,6 @@ export class GameController {
                 } else {
                     res.status(NOT_FOUND_STATUS).json({ error: 'Game not found' });
                 }
-            } catch (error) {
-                res.status(BAD_REQUEST_STATUS).json({ error: error.message });
-            }
-        });
-
-        this.router.get('/visible', async (req: Request, res: Response) => {
-            try {
-                const visibleGames = await this.gameService.getVisibleGames();
-                res.status(OK_STATUS).json(visibleGames);
             } catch (error) {
                 res.status(BAD_REQUEST_STATUS).json({ error: error.message });
             }

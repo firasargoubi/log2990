@@ -5,6 +5,7 @@ const gameSchema = new Schema({
     name: { type: String, required: true },
     description: { type: String, required: true },
     mode: { type: String, required: true },
+    previewImage: { type: String, required: true },
     mapSize: { type: String, required: true },
     lastModified: { type: Date, default: Date.now },
     isVisible: { type: Boolean, required: true },

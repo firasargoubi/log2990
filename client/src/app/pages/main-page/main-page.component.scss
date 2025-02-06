@@ -2,9 +2,9 @@ body {
     margin: 0;
     font-family: 'IM Fell English SC', serif;
     color: #ffffff;
-    background: url('../../../assets/images/wui.png') no-repeat center center;
+    background: url('../../../assets/images/back.png') no-repeat center center;
     background-size: cover;
-    filter: brightness(1.4) saturate(2);
+    //filter: saturate(1.5);
     /* Ajoute de la clarté et de la saturation */
     background-size: cover;
     /* Fait en sorte que l'image occupe tout l'écran */
@@ -17,29 +17,27 @@ body {
 }
 
 .center-container {
-    background: rgba(0, 0, 0, 0.4);
     padding: 30px;
     border-radius: 15px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
     text-align: center;
     max-width: 600px;
     width: 80%;
 
     /* From https://css.glass */
-    background: rgba(10, 0, 0, 0.35);
+    background: rgba(255, 255, 255, 0.37);
     border-radius: 16px;
-    box-shadow: 0 4px 30px rgba(49, 49, 49, 0.1);
+    box-shadow: 0 4px 30px rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(12.5px);
     -webkit-backdrop-filter: blur(12.5px);
-    border: 1px solid rgba(10, 0, 0, 0.37);
+    border: 1px solid rgba(255, 255, 255, 0.37);
 
 }
 
 .game-title {
     font-family: 'Press Start 2P', cursive;
     font-size: 3rem;
-    color: #f5d35e;
-    text-shadow: 2px 2px 5px #000;
+    color: #ffffff;
+    text-shadow: 2px 2px 5px #002c62;
     margin-bottom: 10px;
 }
 
@@ -60,7 +58,7 @@ body {
     border-radius: 50%;
     box-shadow: 0 4px 10px rgba(255, 255, 0, 0.6);
     /* Éclat lumineux */
-    border: 3px solid #ffcc00;
+    border: 3px solid #56f884;
 }
 
 
@@ -78,18 +76,18 @@ body {
     font-size: 1rem;
     font-family: 'Press Start 2P', cursive;
     color: #ffffff;
-    background: darkred;
+    background: rgb(6, 118, 2);
     border: 2px solid #ffffff;
     border-radius: 8px;
     text-transform: uppercase;
-    text-shadow: 1px 1px 3px #000;
+    text-shadow: 1px 1px 3px #ffffff;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .btn:hover {
-    background: #f5d35e;
-    color: #000000;
+    background: #ac6c48;
+    color: #ffffff;
     transform: scale(1.1);
 }
 
@@ -107,44 +105,6 @@ body {
     color: #d3d3d3;
 }
 
-.popup {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.4);
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.popup-content {
-    font-family: 'Press Start 2P', cursive;
-    background: rgb(0, 0, 0);
-    opacity: 0.9;
-    padding: 20px;
-    border-radius: 8px;
-    text-align: center;
-    width: 500px;
-    font-size: 1rem;
-    position: relative;
-}
-
-
-.close-btn {
-    position: absolute;
-    top: 10px;
-    right: 20px;
-    font-size: 2rem;
-    font-weight: bold;
-    color: #ffffff;
-    background: none;
-    border: none;
-    cursor: pointer;
-    z-index: 10;
-}
 
 
 

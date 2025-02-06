@@ -1,7 +1,10 @@
 .container {
-    background: linear-gradient(120deg, #2ecc71, #a8d5a2, #ffd700);
-    background-size: 200% 200%;
-    animation: animatedGradient 6s ease-in-out infinite;
+    // background: linear-gradient(120deg, #2ecc71, #a8d5a2, #ffd700);
+    // background-size: 200% 200%;
+    // animation: animatedGradient 6s ease-in-out infinite;
+    background: url('../../../assets/images/water2.png') no-repeat center center;
+    //filter: saturate(0.7);
+    background-size: cover;
     font-family: 'Press Start 2P', cursive;
     display: flex;
     flex-direction: column;

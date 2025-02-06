@@ -1,7 +1,10 @@
 .admin-page {
-    background: linear-gradient(120deg, #2ecc71, #a8d5a2, #ffd700); 
-    background-size: 200% 200%;
-    animation: animatedGradient 6s ease-in-out infinite;
+    // background: linear-gradient(120deg, #2ecc71, #a8d5a2, #ffd700);
+    // background-size: 200% 200%;
+    // animation: animatedGradient 6s ease-in-out infinite;
+    background: url('../../../assets/images/aw.png') no-repeat center center;
+    //filter:  saturate(0.7);
+    background-size: cover;
     margin: 0;
     padding: 16px;
     font-family: 'Press Start 2P', cursive;
@@ -12,21 +15,10 @@
     height: 100vh;
     overflow-y: auto;
 }
-@keyframes animatedGradient {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
-}
 
 .admin-page h1 {
     font-family: 'Press Start 2P', cursive;
-    color: #ffcc00;
+    color: #ffffff;
     text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
     margin-bottom: 24px;
     text-align: center;
@@ -43,6 +35,9 @@
     border-radius: 16px;
     overflow-y: auto;
     max-height: 70vh;
+    background: rgba(255, 255, 255, 0.37);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(255, 255, 255, 0.1);
 }
 
 ::-webkit-scrollbar {
@@ -50,12 +45,8 @@
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #ffcc00;
+    background: #816a5e;
     border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #ff6600;
 }
 
 ::-webkit-scrollbar-track {
@@ -70,23 +61,6 @@
     margin-bottom: 16px;
 }
 
-.title-container .character {
-    width: 150px;
-    height: auto;
-    object-fit: contain;
-    animation: bounce 3s infinite;
-}
-
-@keyframes bounce {
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-10px);
-    }
-}
-
 .logo {
     position: absolute;
     top: 20px;
@@ -95,15 +69,12 @@
     height: 145px;
     object-fit: cover;
     border-radius: 50%;
-    
 }
 
 .logo-link {
     display: inline-block;
     cursor: pointer; /* Assure que le curseur change en mode clic */
 }
-
-
 
 .logo:hover {
     transform: scale(1.1); /* Effet visuel pour montrer qu'il est cliquable */

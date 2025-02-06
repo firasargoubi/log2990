@@ -20,6 +20,9 @@ export class GameService {
         );
     }
 
+    updateGame(gameId: string, gameModif: Partial<Game>): Observable<Game> {
+        return this.http.patch<Game>(`${this.baseUrl}/${gameId}`, gameModif);
+    }
     updateVisibility(gameId: string, isVisible: boolean): Observable<Game> {
         return this.http.patch<Game>(`${this.baseUrl}/${gameId}`, { isVisible }).pipe(
             catchError(() => {
@@ -42,5 +45,13 @@ export class GameService {
                 return throwError(() => new Error('Impossible de récupérer les jeux visibles.'));
             }),
         );
+    }
+
+    fetchGameById(gameId: string) {
+        return this.http.get<Game>(`${this.baseUrl}/${gameId}`);
+    }
+
+    createGame(game: Game): Observable<Game> {
+        return this.http.post<Game>(`${this.baseUrl}/create`, game);
     }
 }

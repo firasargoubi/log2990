@@ -1,5 +1,5 @@
 <div class="box" (mouseleave)="onMouseLeaveBoard()">
-    <section class="board" [style.--size]="size">
+    <section class="board" [style.--size]="mapSize">
         @for(row of tiles; track $index;) { @for (tile of row; track tile.id;) {
         <app-tile
             class="tile"
