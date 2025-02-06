@@ -5,8 +5,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
 import { RouterLink } from '@angular/router';
 import { BoxFormDialogComponent } from '@app/components/box-form-dialog/box-form-dialog.component';
-import { Game } from '@app/interfaces/game.model';
 import { GameCreationCardComponent } from '@app/components/game-creation-card/game-creation-card.component';
+import { Game } from '@app/interfaces/game.model';
 import { GameService } from '@app/services/game.service';
 
 @Component({

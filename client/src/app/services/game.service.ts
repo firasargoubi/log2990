@@ -15,8 +15,6 @@ export class GameService {
         return this.http.delete<void>(`${this.baseUrl}/${gameId}`);
     }
 
-
-
     updateGame(gameId: string, gameModif: Partial<Game>): Observable<Game> {
         return this.http.patch<Game>(`${this.baseUrl}/${gameId}`, gameModif);
     }

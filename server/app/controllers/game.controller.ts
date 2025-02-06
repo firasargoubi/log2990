@@ -1,6 +1,6 @@
-import { Router, Request, Response } from 'express';
-import { Service } from 'typedi';
 import { GameService } from '@app/services/game.service';
+import { Request, Response, Router } from 'express';
+import { Service } from 'typedi';
 
 const CREATED_STATUS = 201;
 const NO_CONTENT_STATUS = 204;
