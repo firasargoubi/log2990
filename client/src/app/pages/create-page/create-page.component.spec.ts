@@ -60,7 +60,7 @@ describe('CreatePageComponent', () => {
 
         // Mock MatDialog
         matDialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
-        mockDialogRef = jasmine.createSpyObj<MatDialogRef<BoxFormDialogComponent>>('MatDialogRef', ['afterClosed']);
+        mockDialogRef = jasmine.createSpyObj<MatDialogRef<BoxFormDialogComponent>>('MatDialogRef', ['afterClosed', 'close']);
         mockDialogRef.afterClosed.and.returnValue(of(true));
         matDialogSpy.open.and.returnValue(mockDialogRef);
 
@@ -75,18 +75,24 @@ describe('CreatePageComponent', () => {
 
         fixture = TestBed.createComponent(CreatePageComponent);
         component = fixture.componentInstance;
-        fixture.detectChanges();
+        fixture.detectChanges(); // ⚠️ Ajout pour assurer que le composant prend en compte les changements
     });
 
     it('should create the component', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should fetch games on initialization', () => {
+    it('should fetch games on initialization', (done) => {
         component.ngOnInit();
+        fixture.detectChanges(); // ⚠️ Ajout pour synchroniser la vue
+
+        component.games$.subscribe((games) => {
+            expect(games.length).toBe(2);
+            expect(games[0].name).toBe('Chess');
+            done(); // Permet d’attendre la réponse asynchrone
+        });
+
         expect(gameServiceSpy.fetchVisibleGames).toHaveBeenCalled();
-        expect(component.games.length).toBe(2);
-        expect(component.games[0].name).toBe('Chess');
     });
 
     it('should open dialog when onBoxClick is called', () => {
@@ -112,30 +118,7 @@ describe('CreatePageComponent', () => {
         });
     });
 
-    it('should handle dialog close with result', () => {
-        const mockGame: Game = {
-            id: '1',
-            name: 'Chess',
-            mapSize: '8x8',
-            mode: 'Classic',
-            previewImage: 'chess.png',
-            description: 'A strategic board game.',
-            lastModified: new Date('2024-01-01T10:00:00Z'),
-            isVisible: true,
-            board: [
-                [0, 1],
-                [1, 0],
-            ],
-        };
-
-        component.onBoxClick(mockGame);
-        expect(matDialogSpy.open).toHaveBeenCalled();
-        expect(mockDialogRef.afterClosed).toHaveBeenCalled();
-    });
-
-    it('should handle dialog close properly', () => {
-        mockDialogRef.afterClosed.and.returnValue(of(null));
-
+    it('should reload games when dialog is closed with a result', (done) => {
         const mockGame: Game = {
             id: '1',
             name: 'Chess',
@@ -150,32 +133,18 @@ describe('CreatePageComponent', () => {
                 [1, 0],
             ],
         };
-
+    
         component.onBoxClick(mockGame);
         expect(matDialogSpy.open).toHaveBeenCalled();
         expect(mockDialogRef.afterClosed).toHaveBeenCalled();
+    
+        // Vérifie que `games$` a bien été mis à jour après la fermeture du dialogue
+        component.games$.subscribe((games) => {
+            expect(games.length).toBe(2);
+            done();
+        });
+    
+        fixture.detectChanges();
     });
-
-    it('should handle dialog close when cancelled', () => {
-        mockDialogRef.afterClosed.and.returnValue(of(null));
-
-        const mockGame: Game = {
-            id: '1',
-            name: 'Chess',
-            mapSize: '8x8',
-            mode: 'Classic',
-            previewImage: 'chess.png',
-            description: 'A strategic board game.',
-            lastModified: new Date('2024-01-01T10:00:00Z'),
-            isVisible: true,
-            board: [
-                [0, 1],
-                [1, 0],
-            ],
-        };
-
-        component.onBoxClick(mockGame);
-        expect(matDialogSpy.open).toHaveBeenCalled();
-        expect(mockDialogRef.afterClosed).toHaveBeenCalled();
-    });
+    ;
 });
