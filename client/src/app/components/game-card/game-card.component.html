@@ -1,0 +1,47 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+<mat-card class="game-card">
+    <div class="game-preview">
+        <img alt="game-preview" src="{{ game.previewImage }}" matTooltip="{{ game.description }}" matTooltipPosition="above" />
+    </div>
+    <div class="game-info">
+        <ul>
+            <li>{{ game.name }}</li>
+            <li>{{ game.mapSize }}</li>
+            <li>{{ game.mode }}</li>
+            <li>{{ game.lastModified | date }}</li>
+        </ul>
+    </div>
+    <div class="game-actions">
+        <!-- Bouton "Edit" avec une baguette magique -->
+        <button
+            mat-icon-button
+            (click)="editGame()"
+            [disabled]="isLoading"
+            class="action edit"
+            matTooltip="Modifier"
+            matTooltipPosition="below"
+            routerLink="/edit/{{ game.id }}"
+        >
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </button>
+
+        <!-- Bouton "Delete" avec un chaudron -->
+        <button mat-icon-button (click)="deleteGame()" [disabled]="isLoading" class="action delete" matTooltip="Supprimer" matTooltipPosition="below">
+            <i class="fa-solid fa-trash"></i>
+        </button>
+
+        <!-- Bouton "Visibility" avec un oeil -->
+        <button
+            mat-icon-button
+            [class]="{ invisible: !game.isVisible }"
+            (click)="toggleVisibility(!game.isVisible)"
+            [disabled]="isLoading"
+            class="action visibility"
+            matTooltip="Changer la visibilité"
+            matTooltipPosition="below"
+        >
+            <i class="fa-solid fa-eye"></i>
+        </button>
+    </div>
+</mat-card>

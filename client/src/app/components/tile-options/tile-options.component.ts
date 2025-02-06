@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { TileComponent } from '@app/components/tile/tile.component';
 import { Tile } from '@app/interfaces/tile';
+import { TileTypes } from '@app/interfaces/tileTypes';
 import { TileService } from '@app/services/tile.service';
 
 @Component({
@@ -25,9 +26,9 @@ export class TileOptionsComponent implements OnInit {
 
     initializeOptions(): void {
         this.options = [];
-
-        for (let i = 1; i < 6; i++) {
-            this.options.push({ type: i, x: i, y: 0, id: `${i}` });
+        const MAX_TILE = 6;
+        for (let i = TileTypes.Water; i <= MAX_TILE; i++) {
+            if (i !== TileTypes.DoorOpen) this.options.push({ type: i, x: i, y: 0, id: `${i}` });
         }
     }
 

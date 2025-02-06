@@ -1,5 +1,6 @@
 import { HttpException } from '@app/classes/http.exception';
 import { DateController } from '@app/controllers/date.controller';
+import { GameController } from './controllers/game.controller';
 import { ExampleController } from '@app/controllers/example.controller';
 import * as cookieParser from 'cookie-parser';
 import * as cors from 'cors';
@@ -18,6 +19,7 @@ export class Application {
     constructor(
         private readonly exampleController: ExampleController,
         private readonly dateController: DateController,
+        private readonly gameController: GameController,
     ) {
         this.app = express();
 
@@ -41,6 +43,7 @@ export class Application {
         this.app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerJSDoc(this.swaggerOptions)));
         this.app.use('/api/example', this.exampleController.router);
         this.app.use('/api/date', this.dateController.router);
+        this.app.use('/api/game', this.gameController.router);
         this.app.use('/', (req, res) => {
             res.redirect('/api/docs');
         });
@@ -49,8 +52,8 @@ export class Application {
 
     private config(): void {
         // Middlewares configuration
-        this.app.use(express.json());
-        this.app.use(express.urlencoded({ extended: true }));
+        this.app.use(express.json({ limit: '50mb' })); // Allow larger payloads (adjust size as necessary)
+        this.app.use(express.urlencoded({ limit: '50mb', extended: true }));
         this.app.use(cookieParser());
         this.app.use(cors());
     }

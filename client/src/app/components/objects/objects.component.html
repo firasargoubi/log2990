@@ -1,3 +1,9 @@
-<div class="object-container">
-<app-item *ngFor="let number of range" type="{{ number }}" />
+<div class="object-container" >
+    <div cdkDropList (cdkDropListDropped)="drop($event)">
+        <app-item *ngFor="let number of range" type="{{ number }}" (mouseenter)="setTooltip(number)" (mouseleave)="clearTooltip()" />
+    </div>
+</div>
+
+<div class="tooltip-container" *ngIf="tooltipText">
+    <p>{{ tooltipText }}</p>
 </div>

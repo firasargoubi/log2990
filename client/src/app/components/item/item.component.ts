@@ -1,8 +1,9 @@
 import { Component, Input } from '@angular/core';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 @Component({
     selector: 'app-item',
-    imports: [],
+    imports: [DragDropModule],
     templateUrl: './item.component.html',
     styleUrl: './item.component.scss',
 })
@@ -24,9 +25,9 @@ export class ItemComponent {
             case '5':
                 return 'Médecine';
             case '6':
-                return 'Portail';
+                return 'Point de départ';
             case '7':
-                return 'Gnome';
+                return 'Gnome mystère';
             default:
                 return 'Undefined';
         }

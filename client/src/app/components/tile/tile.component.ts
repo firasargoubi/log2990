@@ -1,9 +1,10 @@
 import { Component, Input } from '@angular/core';
-
+import { TileTypes } from '@app/interfaces/tileTypes';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 @Component({
     selector: 'app-tile',
-    imports: [],
-    template: '<div class = "tile"><img [src] = "image" ></div>',
+    imports: [DragDropModule],
+    template: '<div class = "tile" ><img [src] = "image" ></div>',
     styleUrl: './tile.component.scss',
 })
 
@@ -13,19 +14,17 @@ export class TileComponent {
 
     get image(): string {
         switch (this.type) {
-            case 0:
+            case TileTypes.Grass:
                 return 'assets/grass.png';
-            case 1:
-                return 'assets/mud.png';
-            case 2:
+            case TileTypes.Water:
                 return 'assets/water.png';
-            case 3:
+            case TileTypes.Ice:
                 return 'assets/ice2.png';
-            case 4:
+            case TileTypes.Wall:
                 return 'assets/wall.png';
-            case 5:
+            case TileTypes.DoorClosed:
                 return 'assets/door_c.png';
-            case 6:
+            case TileTypes.DoorOpen:
                 return 'assets/door_o.png';
             default:
                 return 'assets/grass.png';

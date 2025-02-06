@@ -1,0 +1,44 @@
+<h2>Formulaire du jeu :</h2>
+
+<form (ngSubmit)="closeDialog()">
+    <div>
+        <label for="name">Nom:</label>
+        <input id="name" type="text" formControlName="name" placeholder="Entrez le nom" maxlength="20" (input)="inputName($event)" required />
+
+        @if (form.get('name')?.invalid && form.get('name')?.touched) {
+        <div class="error">Name is required.</div>
+        }
+    </div>
+
+    <div class="avatar-grid">
+        <label>Choisi ton avatar: </label>
+        <div class="avatars">
+            @for (avatar of avatars; track avatar) {
+            <img [src]="avatar" [class.selected]="form.get('avatar')?.value === avatar" (click)="selectAvatar(avatar)" alt="Avatar" />
+            }
+        </div>
+    </div>
+
+    <div class="stats">
+        <button id="life" type="button" [disabled]="attributeClicked$" (click)="increase('life')">+2 Vie</button>
+        <span>Vie : {{ life }}</span>
+    </div>
+    <div class="stats">
+        <button id="speed" type="button" [disabled]="attributeClicked$" (click)="increase('speed')">+2 Vitesse</button>
+        <span>Rapidité : {{ speed }}</span>
+    </div>
+
+    <div class="stats">
+        <button id="attack" type="button" [disabled]="diceClicked$" (click)="pickDice('attack')">+6 Attack</button>
+        <span>Attaque: {{ attack }}</span>
+    </div>
+    <div class="stats">
+        <button id="defense" type="button" [disabled]="diceClicked$" (click)="pickDice('defense')">+6 Defense</button>
+        <span>Défense: {{ defense }}</span>
+    </div>
+
+    <div class="actions">
+        <button type="button" (click)="cancel()">Annuler</button>
+        <button mat-button type="submit" [disabled]="!formValid$" (click)="save()" [routerLink]="'/waiting'">Enregistrer</button>
+    </div>
+</form>
