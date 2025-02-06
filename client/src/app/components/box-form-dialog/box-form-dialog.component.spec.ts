@@ -1,20 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BoxFormDialogComponent } from './box-form-dialog.component';
+import { ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { Routes, provideRouter } from '@angular/router';
+import { BoxFormDialogComponent } from './box-form-dialog.component';
 
-const DEFAULT_NAME = 'Player';
-const DEFAULT_LIFE = 4;
-const DEFAULT_SPEED = 4;
-const DEFAULT_AVATAR = 'assets/perso/1.png';
-const NEW_AVATAR = 'assets/perso/5.png';
-const NEW_NAME = 'New Name';
-const INCREASED_LIFE = 6;
-const ATTACK_VALUE = 6;
-const DEFENSE_VALUE = 4;
+const routes: Routes = [];
 
 describe('BoxFormDialogComponent', () => {
     let component: BoxFormDialogComponent;
@@ -23,76 +14,89 @@ describe('BoxFormDialogComponent', () => {
 
     beforeEach(async () => {
         dialogRefSpy = jasmine.createSpyObj('MatDialogRef', ['close']);
-
         await TestBed.configureTestingModule({
-            imports: [BoxFormDialogComponent, CommonModule, RouterModule, ReactiveFormsModule, FormsModule],
+            imports: [ReactiveFormsModule, BrowserAnimationsModule, BoxFormDialogComponent],
             providers: [
                 { provide: MatDialogRef, useValue: dialogRefSpy },
                 { provide: MAT_DIALOG_DATA, useValue: { boxId: 1 } },
-                { provide: ActivatedRoute, useValue: { params: of({ id: '123' }) } },
+                provideRouter(routes),
             ],
         }).compileComponents();
+    });
 
+    beforeEach(() => {
         fixture = TestBed.createComponent(BoxFormDialogComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });
 
-    it('should create the component', () => {
+    it('should create', () => {
         expect(component).toBeTruthy();
     });
 
     it('should initialize form with default values', () => {
-        expect(component.form.get('name')?.value).toBe(DEFAULT_NAME);
-        expect(component.form.get('life')?.value).toBe(DEFAULT_LIFE);
-        expect(component.form.get('speed')?.value).toBe(DEFAULT_SPEED);
-        expect(component.form.get('avatar')?.value).toBe(DEFAULT_AVATAR);
+        expect(component.form.value).toEqual({
+            name: 'Player',
+            avatar: 'assets/perso/1.png',
+            life: 4,
+            speed: 4,
+            attack: 4,
+            defense: 4,
+        });
     });
 
-    it('should close dialog with form data when `closeDialog` is called', () => {
+    it('should close dialog with form value when form is valid', () => {
         component.closeDialog();
         expect(dialogRefSpy.close).toHaveBeenCalledWith(component.form.value);
     });
 
-    it('should close dialog with null when `cancel` is called', () => {
+    it('should close dialog with null when cancel is called', () => {
         component.cancel();
         expect(dialogRefSpy.close).toHaveBeenCalledWith(null);
     });
 
-    it('should store form data in localStorage when `save` is called', () => {
+    it('should update avatar when selectAvatar is called', () => {
+        component.selectAvatar('assets/perso/2.png');
+        expect(component.form.get('avatar')?.value).toBe('assets/perso/2.png');
+    });
+
+    it('should update name when inputName is called', () => {
+        const event = { target: { value: 'New Player' } } as unknown as Event;
+        component.inputName(event);
+        expect(component.form.get('name')?.value).toBe('New Player');
+    });
+
+    it('should increase life value by 2 when increase is called', () => {
+        const increasedValue = 6;
+        component.increase('life');
+        expect(component.form.get('life')?.value).toBe(increasedValue);
+        expect(component.life).toBe(increasedValue);
+    });
+
+    it('should increase speed value by 2 when increase is called', () => {
+        const increasedValue = 6;
+        component.increase('speed');
+        expect(component.form.get('speed')?.value).toBe(increasedValue);
+        expect(component.speed).toBe(increasedValue);
+    });
+
+    it('should set attack and defense values correctly when pickDice is called', () => {
+        const sixDiceValue = 6;
+        const fourDiceValue = 4;
+        component.pickDice('attack');
+        expect(component.form.get('attack')?.value).toBe(sixDiceValue);
+        expect(component.attack).toBe(sixDiceValue);
+        expect(component.defense).toBe(fourDiceValue);
+
+        component.pickDice('defense');
+        expect(component.form.get('defense')?.value).toBe(fourDiceValue);
+        expect(component.defense).toBe(sixDiceValue);
+        expect(component.attack).toBe(fourDiceValue);
+    });
+
+    it('should save form value to localStorage when save is called', () => {
         spyOn(localStorage, 'setItem');
         component.save();
         expect(localStorage.setItem).toHaveBeenCalledWith('form', JSON.stringify(component.form.value));
-    });
-
-    it('should update the avatar when `selectAvatar` is called', () => {
-        component.selectAvatar(NEW_AVATAR);
-        expect(component.form.get('avatar')?.value).toBe(NEW_AVATAR);
-    });
-
-    it('should update the name when `inputName` is called', () => {
-        const event = { target: { value: NEW_NAME } } as unknown as Event;
-        component.inputName(event);
-        expect(component.form.get('name')?.value).toBe(NEW_NAME);
-    });
-
-    it('should increase attributes when `increase` is called', () => {
-        component.increase('life');
-        expect(component.life).toBe(INCREASED_LIFE);
-        expect(component.form.get('life')?.value).toBe(INCREASED_LIFE);
-    });
-
-    it('should update attack and defense values when `pickDice` is called', () => {
-        component.pickDice('attack');
-        expect(component.attack).toBe(ATTACK_VALUE);
-        expect(component.defense).toBe(DEFENSE_VALUE);
-        expect(component.form.get('attack')?.value).toBe(ATTACK_VALUE);
-    });
-
-    it('should update defense and attack values when `pickDice` is called with defense', () => {
-        component.pickDice('defense');
-        expect(component.defense).toBe(ATTACK_VALUE);
-        expect(component.attack).toBe(DEFENSE_VALUE);
-        expect(component.form.get('defense')?.value).toBe(DEFENSE_VALUE);
     });
 });
