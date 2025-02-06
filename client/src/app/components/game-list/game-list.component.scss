@@ -14,7 +14,7 @@
     justify-content: space-between;
     padding: 12px;
     background: rgba(50, 157, 156, 0.2);
-    border: 2px dashed #7be495;
+    border: 2px dashed #1d5e36;
     border-radius: 15px;
     display: flex;
     justify-content: center;
@@ -26,15 +26,14 @@
         box-shadow 0.3s ease-in-out;
 
     &:hover {
-        background: rgba(50, 157, 156, 0.4);
+        background: rgba(53, 121, 70, 0.6);
         transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(123, 228, 149, 0.6);
+        box-shadow: 0 8px 20px rgba(3, 73, 20, 0.6);
     }
 
     .plus-sign {
         font-size: 3rem;
-        color: #329d9c;
+        color: #1d5e36;
         font-weight: bold;
-        text-shadow: 0 4px 10px rgba(50, 157, 156, 0.8);
     }
 }
