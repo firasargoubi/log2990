@@ -11,7 +11,7 @@ import { ErrorService } from '@app/services/error.service';
 import { SaveService } from '@app/services/save.service';
 import { GameService } from '@app/services/game.service';
 import { Game } from '@app/interfaces/game.model';
-import { ImageService } from '@app/image.service';
+import { ImageService } from '@app/services/image.service';
 
 @Component({
     selector: 'app-game-page',
