@@ -8,6 +8,8 @@ import { BoxFormDialogComponent } from '@app/components/box-form-dialog/box-form
 import { GameCreationCardComponent } from '@app/components/game-creation-card/game-creation-card.component';
 import { Game } from '@app/interfaces/game.model';
 import { GameService } from '@app/services/game.service';
+import { NotificationService } from '@app/services/notification.service';
+import { catchError, of, tap } from 'rxjs';
 
 @Component({
     selector: 'app-create-page',
@@ -19,6 +21,7 @@ import { GameService } from '@app/services/game.service';
 export class CreatePageComponent implements OnInit {
     @Input() games!: Game[];
     gameService = inject(GameService);
+    notificationService = inject(NotificationService);
 
     constructor(private dialog: MatDialog) {}
 
@@ -27,11 +30,19 @@ export class CreatePageComponent implements OnInit {
     }
 
     fetchGames() {
-        this.gameService.fetchVisibleGames().subscribe({
-            next: (allGames) => {
-                this.games = allGames;
-            },
-        });
+        this.gameService
+            .fetchVisibleGames()
+            .pipe(
+                tap((allGames) => {
+                    this.notificationService.showSuccess('Jeux visibles chargés avec succès.');
+                    this.games = allGames;
+                }),
+                catchError(() => {
+                    this.notificationService.showError('Chargement des jeux visible impossible. Réessayez plus tard.');
+                    return of([]);
+                }),
+            )
+            .subscribe();
     }
 
     onBoxClick(game: Game): void {
