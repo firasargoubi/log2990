@@ -22,7 +22,17 @@ const RIGHT_CLICK = 2;
     styleUrl: './board.component.scss',
 })
 export class BoardComponent implements OnInit {
-    @Input() game: Game;
+    @Input() game: Game = {
+        id: '',
+        name: '',
+        mapSize: 'small',
+        mode: 'normal',
+        previewImage: '',
+        description: '',
+        lastModified: new Date(),
+        isVisible: true,
+        board: [],
+    };
     board: Tile[][] = [];
     selectedTiles: Coordinates[] = [];
     toolSaved: number = -1;

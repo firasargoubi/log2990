@@ -17,14 +17,19 @@
         <div class="tile-tools">
             <app-tile-options></app-tile-options>
         </div>
-        <div class="board-container">
+        @if (gameLoaded) {
+        <div #board class="board-container">
             <app-board [game]="game"></app-board>
         </div>
+        } @else {
+        <div class="board-container">
+            <app-board></app-board>
+        </div>
+        }
         <div class="object-tools">
             <app-objects></app-objects>
         </div>
     </section>
-
     @if (showErrorPopup) {
     <div class="popup">
         <div class="popup-content">

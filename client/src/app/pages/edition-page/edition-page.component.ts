@@ -35,6 +35,7 @@ export class EditionPageComponent {
 
     showErrorPopup: boolean = false;
     saveState: boolean = false;
+    gameLoaded: boolean = false;
     errorMessage: string = '';
 
     saveService = inject(SaveService);
@@ -50,7 +51,7 @@ export class EditionPageComponent {
             this.errorMessage += message;
             this.showErrorPopup = true;
         });
-
+        this.gameLoaded = false;
         this.game.id = this.route.snapshot.params['id'];
         this.game.mode = this.route.snapshot.queryParams['mode'] || 'normal';
         this.game.mapSize = this.route.snapshot.queryParams['size'] || 'large';
@@ -72,7 +73,6 @@ export class EditionPageComponent {
     }
 
     async saveBoard() {
-        this.game.previewImage = await this.imageService.captureComponent(this.boardElement.nativeElement);
         if (!this.game.name) {
             this.errorService.addMessage('Error: Game name is required.\n');
         }
@@ -91,6 +91,7 @@ export class EditionPageComponent {
         }
 
         if (!this.showErrorPopup) {
+            this.game.previewImage = await this.imageService.captureComponent(this.boardElement.nativeElement);
             this.saveService.saveGame(this.game);
             this.saveState = true;
             this.errorService.addMessage('Game saved successfully.\n');
@@ -105,12 +106,14 @@ export class EditionPageComponent {
         if (this.game.id) {
             this.gameService.fetchGameById(this.game.id).subscribe({
                 next: (gameSearched) => {
-                    this.game = { ...gameSearched };
+                    this.game = gameSearched;
+                    this.gameLoaded = true;
                 },
             });
         } else {
             this.game.name = '';
             this.game.description = '';
+            this.gameLoaded = true;
         }
     }
 
