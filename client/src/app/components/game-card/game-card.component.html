@@ -2,7 +2,7 @@
 
 <mat-card class="game-card">
     <div class="game-preview">
-        <img alt="game-preview" matTooltip="{{ game.description }}" matTooltipPosition="above" />
+        <img alt="game-preview" src="{{ game.previewImage }}" matTooltip="{{ game.description }}" matTooltipPosition="above" />
     </div>
     <div class="game-info">
         <ul>
@@ -21,7 +21,7 @@
             class="action edit"
             matTooltip="Modifier"
             matTooltipPosition="below"
-            routerLink="/edit/{{this.game.id}}"
+            routerLink="/edit/{{ this.game.id }}"
         >
             <i class="fa-solid fa-wand-magic-sparkles"></i>
         </button>

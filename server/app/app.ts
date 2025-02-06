@@ -52,8 +52,8 @@ export class Application {
 
     private config(): void {
         // Middlewares configuration
-        this.app.use(express.json());
-        this.app.use(express.urlencoded({ extended: true }));
+        this.app.use(express.json({ limit: '50mb' }));
+        this.app.use(express.urlencoded({ limit: '50mb', extended: true }));
         this.app.use(cookieParser());
         this.app.use(cors());
     }

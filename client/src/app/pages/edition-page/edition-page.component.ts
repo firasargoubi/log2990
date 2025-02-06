@@ -10,6 +10,7 @@ import { Game } from '@app/interfaces/game.model';
 import { SaveMessage } from '@app/interfaces/saveMessage';
 import { ErrorService } from '@app/services/error.service';
 import { GameService } from '@app/services/game.service';
+import { ImageService } from '@app/services/image.service';
 import { SaveService } from '@app/services/save.service';
 
 @Component({
@@ -30,14 +31,17 @@ export class EditionPageComponent {
         private gameService: GameService,
         private saveService: SaveService,
         private errorService: ErrorService,
+        private imageService: ImageService,
     ) {
         this.errorService.message$.pipe(takeUntilDestroyed()).subscribe((message: string) => {
             this.errorMessage += message;
             this.showErrorPopup = true;
         });
+
         this.game.id = this.route.snapshot.params['id'];
         this.game.mode = this.route.snapshot.queryParams['mode'] || 'normal';
         this.game.mapSize = this.route.snapshot.queryParams['size'] || 'large';
+
         this.loadGame();
     }
 
@@ -53,16 +57,18 @@ export class EditionPageComponent {
                 return 10;
         }
     }
-    saveBoard() {
+
+    async saveBoard() {
+        this.game.previewImage = await this.imageService.captureComponent(this.boardElement.nativeElement);
         if (!this.game.name) {
             this.errorService.addMessage('Error: Game name is required.\n');
         }
         if (!this.game.description) {
             this.errorService.addMessage('Error: Game description is required.\n');
         }
+
         this.saveService.alertBoardForVerification(true);
         const saveStatus = this.saveService.currentStatus;
-        this.saveSuccessful = true;
         let key: keyof SaveMessage;
         for (key in saveStatus) {
             if (!saveStatus[key]) {
@@ -70,8 +76,9 @@ export class EditionPageComponent {
                 this.saveSuccessful = false;
             }
         }
-        if (this.saveSuccessful) {
-            this.saveService.saveGame(this.game);
+        if (!this.showErrorPopup) {
+            this.saveService.saveGame(this.gameName, this.gameDescription, this.gameMode, this.gameMapSize, this.id);
+            this.saveState = true;
             this.errorService.addMessage('Game saved successfully.\n');
         }
     }
@@ -88,6 +95,8 @@ export class EditionPageComponent {
                 },
             });
         } else {
+            this.game.name = '';
+            this.game.description = '';
             this.game.name = '';
             this.game.description = '';
         }
