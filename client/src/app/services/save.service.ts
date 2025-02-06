@@ -4,6 +4,7 @@ import { Tile } from '@app/interfaces/tile';
 import { TileTypes } from '@app/interfaces/tileTypes';
 import { Subject } from 'rxjs';
 import { GameService } from './game.service';
+import { Game } from '@app/interfaces/game.model';
 
 const WANTED_TILE_PERCENTAGE = 0.5;
 @Injectable({
@@ -57,15 +58,18 @@ export class SaveService {
         };
     }
 
-    saveGame(name: string, description: string, mode: string, mapSize: string, id: string): void {
-        if (!id) {
-            this.gameService
-                .createGame({ name, description, mode, mapSize, board: this.intBoard, id, isVisible: true, lastModified: new Date() })
-                .subscribe();
+    saveGame(game: Game): void {
+        const gameData: Game = {
+            ...game,
+            board: this.intBoard, // Ensure board data is included
+            lastModified: new Date(),
+            isVisible: true,
+        };
+
+        if (!game.id) {
+            this.gameService.createGame(gameData).subscribe();
         } else {
-            this.gameService
-                .updateGame(id, { name, description, mode, mapSize, board: this.intBoard, id, isVisible: true, lastModified: new Date() })
-                .subscribe();
+            this.gameService.updateGame(game.id, gameData).subscribe();
         }
     }
 

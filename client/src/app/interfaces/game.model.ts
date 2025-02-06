@@ -3,6 +3,7 @@ export interface Game {
     name: string;
     mapSize: string;
     mode: string;
+    previewImage: string;
     description: string;
     lastModified: Date;
     isVisible: boolean;

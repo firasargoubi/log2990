@@ -7,6 +7,7 @@ interface GameData {
     name: string;
     description: string;
     mode: string;
+    previewImage: string;
     mapSize: string;
     lastModified?: Date;
     isVisible: boolean;

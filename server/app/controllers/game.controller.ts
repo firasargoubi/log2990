@@ -34,7 +34,14 @@ export class GameController {
                 res.status(BAD_REQUEST_STATUS).json({ error: error.message });
             }
         });
-
+        this.router.get('/visible', async (req: Request, res: Response) => {
+            try {
+                const visibleGames = await this.gameService.getVisibleGames();
+                res.status(OK_STATUS).json(visibleGames);
+            } catch (error) {
+                res.status(BAD_REQUEST_STATUS).json({ error: error.message });
+            }
+        });
         this.router.get('/:id', async (req: Request, res: Response) => {
             const games = await this.gameService.getGameById(req.params.id);
             res.json(games);
@@ -61,15 +68,6 @@ export class GameController {
                 } else {
                     res.status(NOT_FOUND_STATUS).json({ error: 'Game not found' });
                 }
-            } catch (error) {
-                res.status(BAD_REQUEST_STATUS).json({ error: error.message });
-            }
-        });
-
-        this.router.get('/visible', async (req: Request, res: Response) => {
-            try {
-                const visibleGames = await this.gameService.getVisibleGames();
-                res.status(OK_STATUS).json(visibleGames);
             } catch (error) {
                 res.status(BAD_REQUEST_STATUS).json({ error: error.message });
             }
