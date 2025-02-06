@@ -10,8 +10,8 @@ describe('GameModeDialogComponent', () => {
         await TestBed.configureTestingModule({
             imports: [GameModeDialogComponent],
             providers: [
-                { provide: MatDialogRef, useValue: {} }, // Mock MatDialogRef
-                { provide: MAT_DIALOG_DATA, useValue: {} }, // Mock MAT_DIALOG_DATA if needed
+                { provide: MatDialogRef, useValue: { close: jasmine.createSpy('close') } },
+                { provide: MAT_DIALOG_DATA, useValue: {} },
             ],
         }).compileComponents();
 
@@ -22,5 +22,24 @@ describe('GameModeDialogComponent', () => {
 
     it('should create', () => {
         expect(component).toBeTruthy();
+    });
+    it('should have default selectedMode as classic and moyenne', () => {
+        expect(component.selectedMode).toEqual({ type: 'classic', size: 'moyenne' });
+    });
+
+    it('should close the dialog on cancel', () => {
+        component.onCancel();
+        expect(component['dialogRef'].close).toHaveBeenCalled();
+    });
+
+    it('should close the dialog with selectedMode on confirm', () => {
+        component.onConfirm();
+        expect(component['dialogRef'].close).toHaveBeenCalledWith({ type: 'classic', size: 'moyenne' });
+    });
+
+    it('should update selectedMode when a new mode is selected', () => {
+        component.selectedMode = { type: 'capture', size: 'grande' };
+        fixture.detectChanges();
+        expect(component.selectedMode).toEqual({ type: 'capture', size: 'grande' });
     });
 });
