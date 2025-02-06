@@ -27,11 +27,6 @@ export class AdminPageComponent implements OnInit {
         });
     }
 
-    onEditGame(game: Game) {
-        return game;
-        // TODO: Implémenter  l'édition d’un jeu avec serveur, bdd et vue d'édition
-    }
-
     onDeleteGame() {
         this.fetchGames();
     }

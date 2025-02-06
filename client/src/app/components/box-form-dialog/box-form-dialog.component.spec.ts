@@ -5,20 +5,7 @@ import { Routes, provideRouter } from '@angular/router';
 import { BoxFormDialogComponent } from './box-form-dialog.component';
 
 const routes: Routes = [];
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
-
-const DEFAULT_NAME = 'Player';
-const DEFAULT_LIFE = 4;
-const DEFAULT_SPEED = 4;
-const DEFAULT_AVATAR = 'assets/perso/1.jpg';
-const NEW_AVATAR = 'assets/perso/5.jpg';
-const NEW_NAME = 'New Name';
-const INCREASED_LIFE = 6;
-const ATTACK_VALUE = 6;
-const DEFENSE_VALUE = 4;
+import { ReactiveFormsModule } from '@angular/forms';
 
 describe('BoxFormDialogComponent', () => {
     let component: BoxFormDialogComponent;
@@ -50,7 +37,7 @@ describe('BoxFormDialogComponent', () => {
     it('should initialize form with default values', () => {
         expect(component.form.value).toEqual({
             name: 'Player',
-            avatar: 'assets/perso/1.png',
+            avatar: 'assets/perso/1.jpg',
             life: 4,
             speed: 4,
             attack: 4,

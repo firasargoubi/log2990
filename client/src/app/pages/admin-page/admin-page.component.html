@@ -9,11 +9,6 @@
     </div>
     <!-- Liste des jeux et bouton aligné -->
     <div class="games-container">
-        <app-game-list
-            [games]="games"
-            (editGame)="onEditGame($event)"
-            (deleteGame)="onDeleteGame()"
-            (visibilityChange)="onToggleVisibility()"
-        ></app-game-list>
+        <app-game-list [games]="games" (deleteGame)="onDeleteGame()" (visibilityChange)="onToggleVisibility()"></app-game-list>
     </div>
 </mat-card>

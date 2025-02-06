@@ -44,13 +44,6 @@ describe('GameCardComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should emit edit event when editGame is called', () => {
-        spyOn(component.edit, 'emit');
-        component.game = { id: '1', name: 'Test Game' } as Game;
-        component.editGame();
-        expect(component.edit.emit).toHaveBeenCalledWith(component.game);
-    });
-
     it('should open dialog and delete game when confirmed', () => {
         spyOn(component.delete, 'emit');
         component.game = { id: '1', name: 'Test Game' } as Game;

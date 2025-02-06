@@ -15,7 +15,6 @@ import { Game } from '@app/interfaces/game.model';
 })
 export class GameListComponent {
     @Input() games: Game[] = [];
-    @Output() editGame = new EventEmitter<Game>();
     @Output() deleteGame = new EventEmitter<Game>();
     @Output() visibilityChange = new EventEmitter<Game>();
     constructor(

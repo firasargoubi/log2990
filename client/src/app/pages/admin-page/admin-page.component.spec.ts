@@ -80,19 +80,4 @@ describe('AdminPageComponent', () => {
         component.onToggleVisibility();
         expect(component.fetchGames).toHaveBeenCalled();
     });
-
-    it('should return the game on onEditGame', () => {
-        const game: Game = {
-            id: '1',
-            name: 'Test Game',
-            mapSize: '',
-            mode: '',
-            previewImage: '',
-            description: '',
-            lastModified: new Date(),
-            isVisible: false,
-            board: [],
-        };
-        expect(component.onEditGame(game)).toEqual(game);
-    });
 });

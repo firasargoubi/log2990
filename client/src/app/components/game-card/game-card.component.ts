@@ -21,7 +21,6 @@ import { catchError, tap } from 'rxjs/operators';
 })
 export class GameCardComponent {
     @Input() game!: Game;
-    @Output() edit = new EventEmitter<Game>();
     @Output() delete = new EventEmitter<Game>();
     @Output() visibilityChange = new EventEmitter<Game>();
 
@@ -31,10 +30,6 @@ export class GameCardComponent {
         private dialog: MatDialog,
         private notificationService: NotificationService,
     ) {}
-
-    editGame() {
-        this.edit.emit(this.game);
-    }
 
     async deleteGame() {
         if (!this.game || this.isLoading) return;

@@ -33,28 +33,6 @@ describe('GameListComponent', () => {
     it('should create', () => {
         expect(component).toBeTruthy();
     });
-    it('should emit editGame event when editGame is called', () => {
-        const game: Game = {
-            id: '1',
-            name: 'Test Game',
-            description: 'Test Description',
-            mode: 'Classic',
-            mapSize: 'Medium',
-            isVisible: true,
-            board: [
-                [0, 0],
-                [0, 0],
-            ],
-            previewImage: '',
-            lastModified: new Date(),
-        };
-        spyOn(component.editGame, 'emit');
-
-        component.editGame.emit(game);
-
-        expect(component.editGame.emit).toHaveBeenCalledWith(game);
-    });
-
     it('should emit deleteGame event when deleteGame is called', () => {
         const game: Game = {
             id: '1',

@@ -22,6 +22,7 @@ describe('GameService', () => {
             name: 'Test Game',
             description: 'A test game',
             mode: 'Classic',
+            previewImage: '',
             mapSize: 'Medium',
             isVisible: true,
             board: [
