@@ -4,12 +4,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 import { ConfirmDeleteComponent } from '@app/components/confirm-delete/confirm-delete.component';
 import { Game } from '@app/interfaces/game.model';
 import { GameService } from '@app/services/game.service';
+import { NotificationService } from '@app/services/notification.service';
 import { of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
@@ -28,8 +28,8 @@ export class GameCardComponent {
     isLoading = false;
     constructor(
         private gameService: GameService,
-        private snackBar: MatSnackBar,
         private dialog: MatDialog,
+        private notificationService: NotificationService,
     ) {}
 
     editGame() {
@@ -47,10 +47,10 @@ export class GameCardComponent {
                     .pipe(
                         tap(() => {
                             this.delete.emit(this.game);
-                            this.showSuccessNotification('Jeu supprimé avec succès');
+                            this.notificationService.showSuccess('Jeu supprimé avec succès');
                         }),
                         catchError(() => {
-                            this.showErrorNotification('Impossible de supprimer le jeu');
+                            this.notificationService.showError('Impossible de supprimer le jeu');
                             return of(null);
                         }),
                         tap(() => {
@@ -73,31 +73,17 @@ export class GameCardComponent {
                     if (updatedGame) {
                         this.game = updatedGame;
                         this.visibilityChange.emit(updatedGame);
-                        this.showSuccessNotification('Visibilité du jeu mise à jour');
+                        this.notificationService.showSuccess('Visibilité du jeu mise à jour');
                     } else {
-                        this.showErrorNotification('Mise à jour de la visibilité échouée');
+                        this.notificationService.showError('Mise à jour de la visibilité échouée');
                     }
                 }),
                 catchError(() => {
-                    this.showErrorNotification('Impossible de modifier la visibilité');
+                    this.notificationService.showError('Impossible de modifier la visibilité');
                     return of(null);
                 }),
                 tap(() => (this.isLoading = false)),
             )
             .subscribe();
-    }
-
-    private showSuccessNotification(message: string) {
-        this.snackBar.open(message, 'Fermer', {
-            duration: 3000,
-            panelClass: ['success-notification'],
-        });
-    }
-
-    private showErrorNotification(message: string) {
-        this.snackBar.open(message, 'Fermer', {
-            duration: 3000,
-            panelClass: ['error-notification'],
-        });
     }
 }
