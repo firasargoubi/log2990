@@ -1,7 +1,8 @@
-import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { Component, ViewChildren, QueryList } from '@angular/core';
+import { Component } from '@angular/core';
 import { ItemComponent } from '@app/components/item/item.component';
+import { ObjectCounterService } from '@app/services/objects-counter.service';
 
 @Component({
     selector: 'app-objects',
@@ -13,6 +14,7 @@ export class ObjectsComponent {
     range: number[] = [];
     tooltipText: string | null = null;
     items: ItemComponent[] = [];
+    counter$ = this.counterService.counter$;
 
     descriptions: { [key: number]: string } = {
         0: 'Les bottes magiques vous permettront de vous déplacer à une vitesse SUPERSONIQUE!',
@@ -24,7 +26,8 @@ export class ObjectsComponent {
         6: "Cet objet indique l'endroit où une bataille épique est sur le point d'avoir lieu",
         7: 'Ce petit gnome farceur a un cadeau pour vous. À vos risque et périls...',
     };
-    constructor() {
+
+    constructor(private counterService: ObjectCounterService) {
         const MAX_OBJECTS = 7;
         this.range = this.generateRange(0, MAX_OBJECTS);
     }
@@ -41,7 +44,26 @@ export class ObjectsComponent {
         this.tooltipText = null;
     }
 
+    onItemAdded(item: ItemComponent) {
+        this.items.push(item);
+    }
+
+    incrementCounter(item: ItemComponent) {
+        if (item.type === '6') {
+            item.spawnCounter++;
+        } else if (item.type === '7') {
+            item.randomCounter++;
+        } else {
+            this.counterService.decrementCounter();
+        }
+    }
+
     drop(event: CdkDragDrop<ItemComponent[]>) {
-        moveItemInArray(this.items, event.previousIndex, event.currentIndex);
+        const draggedItem = event.previousContainer.data[event.previousIndex];
+        if (event.previousContainer !== event.container) {
+            draggedItem.isPlaced = false;
+            event.previousContainer.data.pop();
+            this.incrementCounter(draggedItem);
+        }
     }
 }

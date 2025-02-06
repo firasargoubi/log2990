@@ -1,14 +1,19 @@
-import { Component, Input } from '@angular/core';
-import { DragDropModule } from '@angular/cdk/drag-drop';
+import { CdkDrag } from '@angular/cdk/drag-drop';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
 @Component({
     selector: 'app-item',
-    imports: [DragDropModule],
+    imports: [CdkDrag],
     templateUrl: './item.component.html',
     styleUrl: './item.component.scss',
 })
-export class ItemComponent {
+export class ItemComponent implements OnInit {
     @Input() type = '';
+    @Output() itemAdded = new EventEmitter<ItemComponent>();
+    @Input() counter = 4; // Nombre maximal d'objets défini selon les settings de la partie.
+    spawnCounter: number = 2;
+    randomCounter: number = 2;
+    isPlaced: boolean = false;
 
     get name(): string {
         switch (this.type) {
@@ -54,5 +59,9 @@ export class ItemComponent {
             default:
                 return 'Undefined';
         }
+    }
+
+    ngOnInit(): void {
+        this.itemAdded.emit(this);
     }
 }

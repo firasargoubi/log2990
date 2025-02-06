@@ -1,4 +1,24 @@
-<div class = "item" cdkDrag>
-    <img [src]="image">
-    <p [innerText]="name"></p>
-</div>
+@if (isPlaced) {
+    <div class = "grey-item item" cdkDrag>
+        <img [src]="image">
+        <p [innerText]="name"></p>
+    </div>
+    @if ( type ==='6') {
+        <p class="counter">{{spawnCounter}}</p>
+    }
+    @if ( type ==='7') {
+        <p class="counter">{{randomCounter}}</p>
+    }
+}
+@else {
+    <div class = "item" cdkDrag>
+        <img [src]="image">
+        <p [innerText]="name"></p>
+    </div>
+    @if (type === '6') {
+        <p class="counter">{{spawnCounter}}</p>
+    }
+    @if ( type ==='7') {
+        <p class="counter">{{randomCounter}}</p>
+    }
+}

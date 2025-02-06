@@ -1,0 +1,12 @@
+<div 
+    class = "tile" 
+    [cdkDropListData]="placedItem"
+    [ngStyle]="{'background-image': 'url(' + baseImage + ')'}"
+    cdkDropList 
+    (cdkDropListDropped)="drop($event)"
+    >
+    
+    @for (item of placedItem; track item) {
+        <img class ="item-image" src="{{item.image}}" cdkDrag/>
+    }
+</div>

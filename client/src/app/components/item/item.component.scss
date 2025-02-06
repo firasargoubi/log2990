@@ -3,21 +3,37 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    cursor: grab;
 }
 
 .item:hover {
     background-color: darkgreen;
+    border-radius: 10px;
+}
+
+img:active {
+    cursor: grabbing;
 }
 
 img {
     display: flex;
-    width: 75px;
-    height: 75px;
+    width: 40px;
+    height: 40px;
     justify-self: center;
+    cursor: grab;
 }
 
 p {
     color: rgb(230, 255, 230);
     text-align: center;
+    font-size: small;
+}
+
+.grey-item {
+    filter: brightness(0.5) saturate(0%);
+}
+
+.counter {
+    color: black;
+    justify-self: left;
+    align-self: self-end;
 }

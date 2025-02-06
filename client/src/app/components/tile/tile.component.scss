@@ -6,12 +6,39 @@
     justify-content: center;
     align-items: center;
     user-select: none;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 50px;
+    width: 50px;
+}
+[cdkDropList] {
+    position: relative;
 }
 
-.tile img {
+[cdkDrag] {
+    position: absolute;
+    top: 50;
+    left: 50;
+    width: 30px;
+    height: 30px;
+}
+
+.tile-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
     user-select: none;
     pointer-events: none;
+    z-index: 1;
 }
+
+.item-image {
+    z-index: 2;
+    cursor: grab;
+}
+
+.item-image:active {
+    cursor: grabbing;
+}
+

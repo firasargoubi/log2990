@@ -3,20 +3,20 @@
     display: grid;
     justify-self: center;
     align-self: center;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     grid-template-rows: auto;
     border: 2px solid black;
-    //margin: 100px 10px;
+    border-radius: 10px;
 }
 
 .tooltip-container {
-    height: 8em;
-    width: 100%;
+    height: 6em;
+    width: 16em;
     display: block;
     border: 2px solid black;
 }
 
 .tooltip-container > p {
     width: 100%;
-    height: 100%;
+    height: 80%;
 }
