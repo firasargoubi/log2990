@@ -94,4 +94,22 @@ describe('GameService', () => {
 
         expect(result).to.equal(null);
     });
+    it('should get a game by ID', async () => {
+        const gameId = uuidv4();
+        const foundGame = { id: gameId, name: 'Found Game' };
+
+        sandbox.stub(game, 'findOne').resolves(foundGame);
+        const result = await gameService.getGameById(gameId);
+
+        expect(result).to.equal(foundGame);
+    });
+
+    it('should return null if game with given ID does not exist', async () => {
+        const gameId = uuidv4();
+
+        sandbox.stub(game, 'findOne').resolves(null);
+        const result = await gameService.getGameById(gameId);
+
+        expect(result).to.equal(null);
+    });
 });
