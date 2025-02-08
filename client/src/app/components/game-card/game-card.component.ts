@@ -64,13 +64,11 @@ export class GameCardComponent {
         this.gameService
             .updateVisibility(this.game.id, isVisible)
             .pipe(
-                tap((updatedGame: Game | null) => {
+                tap((updatedGame: Game | undefined) => {
                     if (updatedGame) {
                         this.game = updatedGame;
                         this.visibilityChange.emit(updatedGame);
                         this.notificationService.showSuccess('Visibilité du jeu mise à jour');
-                    } else {
-                        this.notificationService.showError('Mise à jour de la visibilité échouée');
                     }
                 }),
                 catchError(() => {

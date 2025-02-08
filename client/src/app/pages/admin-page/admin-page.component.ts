@@ -15,8 +15,8 @@ import { catchError, of, tap } from 'rxjs';
 })
 export class AdminPageComponent implements OnInit {
     games: Game[] = [];
-    gameService = inject(GameService);
-    notificationService = inject(NotificationService);
+    private gameService = inject(GameService);
+    private notificationService = inject(NotificationService);
     ngOnInit(): void {
         this.fetchGames();
     }

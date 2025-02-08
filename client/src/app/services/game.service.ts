@@ -10,7 +10,7 @@ import { NotificationService } from './notification.service';
     providedIn: 'root',
 })
 export class GameService {
-    notificationService = inject(NotificationService);
+    private notificationService = inject(NotificationService);
     private readonly baseUrl: string = environment.serverUrl;
 
     constructor(private http: HttpClient) {}
@@ -19,7 +19,7 @@ export class GameService {
         return this.http.delete<void>(`${this.baseUrl}/${gameId}`).pipe(
             catchError(() => {
                 this.notificationService.showError('Impossible de supprimer le jeu');
-                return EMPTY; // Prevents errors from propagating
+                return EMPTY;
             }),
         );
     }
