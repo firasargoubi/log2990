@@ -4,9 +4,9 @@
     align-items: center;
     padding: 30px;
     width: 100%;
-    max-width: 700px; /* Augmenté pour éviter que le contenu soit tronqué */
-    max-height: 90vh; /* Empêche le débordement de l'écran */
-    overflow-y: auto; /* Ajoute un scroll si nécessaire */
+    max-width: 700px; 
+    max-height: 90vh; 
+    overflow-y: auto; 
     background: #fff;
     border-radius: 10px;
     box-shadow: 0 6px 12px rgb(224, 223, 173);
@@ -23,7 +23,7 @@ h2 {
     text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
 }
 
-/* Style global du formulaire */
+
 form {
     display: flex;
     flex-direction: column;
@@ -31,7 +31,7 @@ form {
     width: 100%;
 }
 
-/* Champs input */
+
 input[type='text'],
 input[type='number'] {
     width: 100%;
@@ -100,7 +100,7 @@ label {
     color: #333;
 }
 
-/* Boutons */
+
 .actions {
     display: flex;
     justify-content: space-between;

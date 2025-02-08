@@ -33,10 +33,6 @@ export class BoxFormDialogComponent {
     formValid$: boolean = false;
     attributeClicked$: boolean = false;
     diceClicked$: boolean = false;
-    private _life: number = DEFAULT_STAT_VALUE;
-    private _speed: number = DEFAULT_STAT_VALUE;
-    private _attack: number = DEFAULT_STAT_VALUE;
-    private _defense: number = DEFAULT_STAT_VALUE;
     constructor(public dialogRef: MatDialogRef<BoxFormDialogComponent>) {
         this.form = new FormGroup({
             name: new FormControl('Player', [Validators.required]),
@@ -50,38 +46,6 @@ export class BoxFormDialogComponent {
         this.form.statusChanges.subscribe(() => {
             this.formValid$ = this.form.valid;
         });
-    }
-
-    get life(): number {
-        return this._life;
-    }
-
-    get speed(): number {
-        return this._speed;
-    }
-
-    get attack(): number {
-        return this._attack;
-    }
-
-    get defense(): number {
-        return this._defense;
-    }
-
-    set life(value: number) {
-        this._life = value;
-    }
-
-    set speed(value: number) {
-        this._speed = value;
-    }
-
-    set attack(value: number) {
-        this._attack = value;
-    }
-
-    set defense(value: number) {
-        this._defense = value;
     }
 
     closeDialog(): void {
@@ -108,26 +72,26 @@ export class BoxFormDialogComponent {
             const formControl = this.form.get(attribute);
             const currentValue = formControl?.value;
             formControl?.setValue(currentValue + 2);
-            if (attribute === 'life') {
-                this.life += 2;
-            } else if (attribute === 'speed') {
-                this.speed += 2;
-            }
             this.attributeClicked$ = true;
         }
     }
 
     pickDice(attribute: string): void {
-        if (attribute === 'attack') {
-            this.form.get('attack')?.setValue(SIX_VALUE_DICE);
-            this.attack = 6;
-            this.defense = 4;
-        } else {
-            this.form.get('defense')?.setValue(SIX_VALUE_DICE);
-            this.defense = 6;
-            this.attack = 4;
-        }
+        const opposite = attribute === 'attack' ? 'defense' : 'attack';
+        this.form.get(attribute)?.setValue(SIX_VALUE_DICE);
+        this.form.get(opposite)?.setValue(DEFAULT_STAT_VALUE);
         this.diceClicked$ = true;
+    }
+
+    resetAttributes(): void {
+        this.form.patchValue({
+            life: DEFAULT_STAT_VALUE,
+            speed: DEFAULT_STAT_VALUE,
+            attack: DEFAULT_STAT_VALUE,
+            defense: DEFAULT_STAT_VALUE,
+        });
+        this.attributeClicked$ = false;
+        this.diceClicked$ = false;
     }
 
     save(): void {
