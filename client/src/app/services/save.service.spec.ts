@@ -2,12 +2,22 @@ import { TestBed } from '@angular/core/testing';
 import { SaveService } from './save.service';
 import { Tile } from '@app/interfaces/tile';
 import { TileTypes } from '@app/interfaces/tileTypes';
+import { GameService } from '@app/services/game.service';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('SaveService', () => {
     let service: SaveService;
+    let gameServiceSpy: jasmine.SpyObj<GameService>;
 
     beforeEach(() => {
-        TestBed.configureTestingModule({});
+        // Mock de GameService
+        gameServiceSpy = jasmine.createSpyObj('GameService', ['createGame', 'updateGame']);
+
+        TestBed.configureTestingModule({
+            imports: [HttpClientTestingModule], // ✅ Ajout de HttpClientTestingModule
+            providers: [{ provide: GameService, useValue: gameServiceSpy }], // ✅ Mock GameService
+        });
+
         service = TestBed.inject(SaveService);
     });
 
@@ -34,7 +44,7 @@ describe('SaveService', () => {
             ],
         ];
 
-        service.board = board; // ✅ Correction : affectation avant appel
+        service.board = board; // ✅ Correction : assigner avant appel
         expect(service.verifyDoors()).toBe(true);
     });
 
@@ -57,7 +67,7 @@ describe('SaveService', () => {
             ],
         ];
 
-        service.board = board; // ✅ Correction
+        service.board = board;
         expect(service.verifyDoors()).toBe(false);
     });
 
@@ -80,14 +90,14 @@ describe('SaveService', () => {
             ],
         ];
 
-        service.board = board; // ✅ Correction
+        service.board = board;
         expect(service.verifyDoors()).toBe(false);
     });
 
     it('should emit true when alertBoardForVerification is called', (done) => {
         service.isSave$.subscribe((value) => {
             expect(value).toBe(true);
-            done(); // ✅ Correction : Assurer que l'observable a bien émis
+            done(); // ✅ Vérifie que l'observable a bien émis
         });
 
         service.alertBoardForVerification(true);

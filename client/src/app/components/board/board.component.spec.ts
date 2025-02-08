@@ -3,6 +3,8 @@ import { BoardComponent } from './board.component';
 import { MouseService } from '@app/services/mouse.service';
 import { SaveService } from '@app/services/save.service';
 import { TileService } from '@app/services/tile.service';
+import { GameService } from '@app/services/game.service';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of } from 'rxjs';
 import { Tile } from '@app/interfaces/tile';
 
@@ -12,20 +14,23 @@ describe('BoardComponent', () => {
     let mouseServiceSpy: jasmine.SpyObj<MouseService>;
     let saveServiceSpy: jasmine.SpyObj<SaveService>;
     let tileServiceSpy: jasmine.SpyObj<TileService>;
+    let gameServiceSpy: jasmine.SpyObj<GameService>;  // ✅ Ajout du mock de GameService
     const BOARD_SIZE = 5;
 
     beforeEach(async () => {
-        // Mock Services
+        // Mock des services
         mouseServiceSpy = jasmine.createSpyObj('MouseService', ['onMouseUp', 'onMouseDown', 'onMouseMove', 'onMouseLeave']);
         saveServiceSpy = jasmine.createSpyObj('SaveService', ['saveBoard'], { isActive$: of(true) });
         tileServiceSpy = jasmine.createSpyObj('TileService', ['modifyTile', 'copyTileTool'], { currentTool: -1 });
+        gameServiceSpy = jasmine.createSpyObj('GameService', ['fetchGames', 'updateGame']); // ✅ Mock GameService
 
         await TestBed.configureTestingModule({
-            imports: [BoardComponent],
+            imports: [HttpClientTestingModule],  // ✅ Ajout de HttpClientTestingModule
             providers: [
                 { provide: MouseService, useValue: mouseServiceSpy },
                 { provide: SaveService, useValue: saveServiceSpy },
                 { provide: TileService, useValue: tileServiceSpy },
+                { provide: GameService, useValue: gameServiceSpy },  // ✅ Mock GameService
             ],
         }).compileComponents();
 
@@ -63,22 +68,6 @@ describe('BoardComponent', () => {
         expect(tileServiceSpy.modifyTile).toHaveBeenCalledWith(component.board[1][1]);
     });
 
-    // it('should save the current tool when right-clicking', () => {
-    //     tileServiceSpy.currentTool = 3;
-    //     const event = new MouseEvent('mousedown', { button: 2 });
-    //     const tile: Tile = { type: 1, x: 1, y: 1, id: '1-1' };
-    //     component.onMouseDownBoard(event, tile);
-    //     expect(component.toolSaved).toBe(3);
-    //     expect(tileServiceSpy.currentTool).toBe(-1);
-    // });
-
-    // it('should restore saved tool on mouse release', () => {
-    //     component.toolSaved = 4;
-    //     component.onMouseUpBoard();
-    //     expect(tileServiceSpy.currentTool).toBe(4);
-    //     expect(component.toolSaved).toBe(-1);
-    // });
-
     it('should modify tile on mouse click', () => {
         const event = new MouseEvent('mousedown', { button: 0 });
         const tile: Tile = { type: 2, x: 2, y: 2, id: '2-2' };
@@ -111,20 +100,8 @@ describe('BoardComponent', () => {
         expect(tileServiceSpy.modifyTile).not.toHaveBeenCalled();
     });
 
-    // it('should handle edge cases for modifying out-of-bounds tiles', () => {
-    //     spyOn(console, 'error'); // Prevent console error from affecting test output
-    //     expect(() => component.modifyTile({ x: -1, y: -1 })).not.toThrow();
-    //     expect(() => component.modifyTile({ x: 5, y: 5 })).not.toThrow();
-    // });
-
     it('should reset toolSaved if no right-click was detected', () => {
         component.onMouseUpBoard();
         expect(component.toolSaved).toBe(-1);
     });
-
-    // it('should not modify tile if out of bounds', () => {
-    //     spyOn(console, 'warn');
-    //     expect(() => component.modifyTile({ x: -10, y: -10 })).not.toThrow();
-    //     expect(() => component.modifyTile({ x: 6, y: 6 })).not.toThrow();
-    // });
 });
