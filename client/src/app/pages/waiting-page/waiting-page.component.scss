@@ -12,3 +12,21 @@
     color: #333;
   }
   
+  .logo {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 145px;
+    height: 145px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.logo-link {
+    display: inline-block;
+    cursor: pointer; 
+}
+
+.logo:hover {
+    transform: scale(1.1);
+}
