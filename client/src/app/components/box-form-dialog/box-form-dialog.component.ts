@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { RouterModule } from '@angular/router';
@@ -10,6 +10,7 @@ import { switchMap } from 'rxjs/operators';
 
 const DEFAULT_STAT_VALUE = 4;
 const SIX_VALUE_DICE = 6;
+const PULLING_INTERVAL = 5000;
 
 @Component({
     selector: 'app-box-form-dialog',
@@ -20,8 +21,7 @@ const SIX_VALUE_DICE = 6;
 export class BoxFormDialogComponent implements OnInit, OnDestroy {
     form: FormGroup;
     gameList: Game[] = [];
-    private pollingSubscription!: Subscription;
-    
+
     avatars = [
         'assets/perso/1.jpg',
         'assets/perso/2.jpg',
@@ -41,10 +41,11 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
     attributeClicked$: boolean = false;
     diceClicked$: boolean = false;
 
+    private pollingSubscription!: Subscription;
     constructor(
         public dialogRef: MatDialogRef<BoxFormDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: { boxId: string; game: Game; gameList: Game[] },
-        private gameService: GameService
+        private gameService: GameService,
     ) {
         console.log('Dialog Data:', data);
         this.loadGames();
@@ -64,7 +65,7 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this.pollingSubscription = interval(5000)
+        this.pollingSubscription = interval(PULLING_INTERVAL)
             .pipe(switchMap(() => this.gameService.fetchVisibleGames()))
             .subscribe({
                 next: (updatedGames) => {
@@ -80,15 +81,6 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
         if (this.pollingSubscription) {
             this.pollingSubscription.unsubscribe();
         }
-    }
-
-    private loadGames(): void {
-        this.gameService.fetchVisibleGames().subscribe({
-            next: (allGames) => {
-                this.gameList = allGames;
-            },
-            error: (err) => console.error('Erreur lors du chargement des jeux', err),
-        });
     }
 
     closeDialog(): void {
@@ -108,8 +100,6 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
     inputName(event: Event): void {
         const inputName = (event.target as HTMLInputElement).value;
         this.form.get('name')?.setValue(inputName);
-        const gameExists = this.gameList.some(game => game.id === this.data.game.id);
-        console.log({ gameExists });
     }
 
     increase(attribute: string): void {
@@ -145,14 +135,20 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
         if (this.form.valid) {
             localStorage.setItem('form', JSON.stringify(this.form.value));
             const gameExists = this.gameList.some((game) => game.id === this.data.game.id);
-            if (!gameExists) {
-                alert("Ce jeu a été supprimé entre temps.");
-                return;
-            }            if (!gameExists) {
-                alert("Ce jeu a été supprimé entre temps.");
+            if (!gameExists || !this.data.game.isVisible) {
+                alert('Ce jeu a été supprimé ou sa visibilité a changéee entre temps, Veuillez choisir un autre jeu.');
                 return;
             }
             this.dialogRef.close(this.form.value);
         }
+    }
+
+    private loadGames(): void {
+        this.gameService.fetchVisibleGames().subscribe({
+            next: (allGames) => {
+                this.gameList = allGames;
+            },
+            error: (err) => console.error('Erreur lors du chargement des jeux', err),
+        });
     }
 }

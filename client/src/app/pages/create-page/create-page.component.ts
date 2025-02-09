@@ -11,6 +11,7 @@ import { GameService } from '@app/services/game.service';
 import { Observable, Subscription, interval } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
+const PULLING_INTERVAL = 5000;
 @Component({
     selector: 'app-create-page',
     standalone: true,
@@ -23,7 +24,6 @@ export class CreatePageComponent implements OnInit, OnDestroy {
     games: Game[] = [];
     private pollingSubscription!: Subscription;
 
-
     constructor(
         private dialog: MatDialog,
         private gameService: GameService,
@@ -32,12 +32,12 @@ export class CreatePageComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.loadGames();
 
-        this.pollingSubscription = interval(5000)
+        this.pollingSubscription = interval(PULLING_INTERVAL)
             .pipe(switchMap(() => this.gameService.fetchVisibleGames()))
             .subscribe({
                 next: (updatedGames) => {
                     if (JSON.stringify(this.games) !== JSON.stringify(updatedGames)) {
-                        this.games = updatedGames; // Update only if there is a change
+                        this.games = updatedGames;
                     }
                 },
                 error: (err) => console.error('Erreur lors du rafraîchissement des jeux', err),
@@ -45,10 +45,22 @@ export class CreatePageComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
-        // 🛑 Stop polling when the component is destroyed
         if (this.pollingSubscription) {
             this.pollingSubscription.unsubscribe();
         }
+    }
+    onBoxClick(game: Game): void {
+        console.log('Opening dialog for:', game);
+        const dialogRef = this.dialog.open(BoxFormDialogComponent, {
+            data: { boxId: game.id, game, gameList: this.games },
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result) {
+                console.log('Dialog closed with:', result);
+                this.loadGames();
+            }
+        });
     }
 
     private loadGames(): void {
@@ -58,23 +70,5 @@ export class CreatePageComponent implements OnInit, OnDestroy {
             },
             error: (err) => console.error('Erreur lors du chargement des jeux', err),
         });
-    }
-
-
-    onBoxClick(game: Game): void {
-        console.log('Opening dialog for:', game);
-        const dialogRef = this.dialog.open(BoxFormDialogComponent, {
-            data: { boxId: game.id, game, gameList: this.games },
-        });
-
-        // ✅ Listen for dialog close and refresh games
-        dialogRef.afterClosed().subscribe((result) => {
-            if (result) {
-                console.log('Dialog closed with:', result);
-                this.loadGames();
-            }
-        });
-
-       
     }
 }
