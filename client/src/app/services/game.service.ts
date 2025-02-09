@@ -5,6 +5,7 @@ import { Observable, EMPTY } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { NotificationService } from './notification.service';
+import { GAME_SERVICE_CONSTANTS } from '@app/Consts/app.constants';
 
 @Injectable({
     providedIn: 'root',
@@ -18,7 +19,7 @@ export class GameService {
     deleteGame(gameId: string): Observable<void> {
         return this.http.delete<void>(`${this.baseUrl}/${gameId}`).pipe(
             catchError(() => {
-                this.notificationService.showError('Impossible de supprimer le jeu');
+                this.notificationService.showError(GAME_SERVICE_CONSTANTS.errorDeleteGame);
                 return EMPTY;
             }),
         );
@@ -31,7 +32,7 @@ export class GameService {
     updateVisibility(gameId: string, isVisible: boolean): Observable<Game> {
         return this.http.patch<Game>(`${this.baseUrl}/${gameId}`, { isVisible }).pipe(
             catchError(() => {
-                this.notificationService.showError('Impossible de modifier la visibilité.');
+                this.notificationService.showError(GAME_SERVICE_CONSTANTS.errorUpdateVisibility);
                 return EMPTY;
             }),
         );
@@ -40,7 +41,7 @@ export class GameService {
     fetchGames(): Observable<Game[]> {
         return this.http.get<Game[]>(`${this.baseUrl}/all`).pipe(
             catchError(() => {
-                this.notificationService.showError('Impossible de récupérer les jeux');
+                this.notificationService.showError(GAME_SERVICE_CONSTANTS.errorFetchGames);
                 return EMPTY;
             }),
         );
@@ -49,7 +50,7 @@ export class GameService {
     fetchVisibleGames(): Observable<Game[]> {
         return this.http.get<Game[]>(`${this.baseUrl}/visible`).pipe(
             catchError(() => {
-                this.notificationService.showError('Impossible de récupérer les jeux visibles.');
+                this.notificationService.showError(GAME_SERVICE_CONSTANTS.errorFetchGames);
                 return EMPTY;
             }),
         );
@@ -58,7 +59,7 @@ export class GameService {
     fetchGameById(gameId: string): Observable<Game> {
         return this.http.get<Game>(`${this.baseUrl}/${gameId}`).pipe(
             catchError(() => {
-                this.notificationService.showError('Impossible de récupérer les détails du jeu.');
+                this.notificationService.showError(GAME_SERVICE_CONSTANTS.errorFetchGames);
                 return EMPTY;
             }),
         );
@@ -67,7 +68,7 @@ export class GameService {
     createGame(game: Game): Observable<Game> {
         return this.http.post<Game>(`${this.baseUrl}/create`, game).pipe(
             catchError(() => {
-                this.notificationService.showError('Impossible de créer le jeu.');
+                this.notificationService.showError(GAME_SERVICE_CONSTANTS.errorCreateGame);
                 return EMPTY;
             }),
         );

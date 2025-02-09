@@ -12,6 +12,7 @@ import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
 import { of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
+import { GAME_CARD_CONSTANTS } from '@app/Consts/app.constants';
 
 @Component({
     selector: 'app-game-card',
@@ -31,7 +32,7 @@ export class GameCardComponent {
         private notificationService: NotificationService,
     ) {}
 
-    async deleteGame() {
+    async deleteGame(): Promise<void> {
         if (!this.game || this.isLoading) return;
         const dialogRef = this.dialog.open(ConfirmDeleteComponent);
         dialogRef.afterClosed().subscribe((result) => {
@@ -42,10 +43,10 @@ export class GameCardComponent {
                     .pipe(
                         tap(() => {
                             this.delete.emit(this.game);
-                            this.notificationService.showSuccess('Jeu supprimé avec succès');
+                            this.notificationService.showSuccess(GAME_CARD_CONSTANTS.successDeleteMessage);
                         }),
                         catchError(() => {
-                            this.notificationService.showError('Impossible de supprimer le jeu');
+                            this.notificationService.showError(GAME_CARD_CONSTANTS.errorDeleteMessage);
                             return of(null);
                         }),
                         tap(() => {
@@ -57,7 +58,7 @@ export class GameCardComponent {
         });
     }
 
-    toggleVisibility(isVisible: boolean) {
+    toggleVisibility(isVisible: boolean): void {
         if (this.isLoading) return;
         this.isLoading = true;
 
@@ -68,11 +69,11 @@ export class GameCardComponent {
                     if (updatedGame) {
                         this.game = updatedGame;
                         this.visibilityChange.emit(updatedGame);
-                        this.notificationService.showSuccess('Visibilité du jeu mise à jour');
+                        this.notificationService.showSuccess(GAME_CARD_CONSTANTS.successVisibilityMessage);
                     }
                 }),
                 catchError(() => {
-                    this.notificationService.showError('Impossible de modifier la visibilité');
+                    this.notificationService.showError(GAME_CARD_CONSTANTS.errorVisibilityMessage);
                     return of(null);
                 }),
                 tap(() => (this.isLoading = false)),
