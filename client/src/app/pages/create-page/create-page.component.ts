@@ -63,10 +63,8 @@ export class CreatePageComponent implements OnInit, OnDestroy {
 
     onBoxClick(game: Game): void {
         console.log('Opening dialog for:', game);
-
         const dialogRef = this.dialog.open(BoxFormDialogComponent, {
-            width: '400px',
-            data: { boxId: game.id, game },
+            data: { boxId: game.id, game, gameList: this.games },
         });
 
         // ✅ Listen for dialog close and refresh games
