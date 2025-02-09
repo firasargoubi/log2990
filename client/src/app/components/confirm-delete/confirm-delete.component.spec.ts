@@ -13,8 +13,7 @@ describe('ConfirmDeleteComponent', () => {
         const dialogRefMock = jasmine.createSpyObj<MatDialogRef<ConfirmDeleteComponent>>('MatDialogRef', ['close']);
 
         await TestBed.configureTestingModule({
-            imports: [MatButtonModule],
-            declarations: [ConfirmDeleteComponent],
+            imports: [MatButtonModule, ConfirmDeleteComponent],
             providers: [{ provide: MatDialogRef, useValue: dialogRefMock }],
         }).compileComponents();
 
