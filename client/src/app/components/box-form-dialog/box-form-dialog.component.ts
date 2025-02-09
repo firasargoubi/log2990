@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { RouterModule } from '@angular/router';
+import { Game } from '@app/interfaces/game.model';
+//import { GameService } from '@app/services/game.service';
 
 const DEFAULT_STAT_VALUE = 4;
 const SIX_VALUE_DICE = 6;
@@ -15,6 +17,7 @@ const SIX_VALUE_DICE = 6;
 })
 export class BoxFormDialogComponent {
     form: FormGroup;
+    
     avatars = [
         'assets/perso/1.jpg',
         'assets/perso/2.jpg',
@@ -33,9 +36,17 @@ export class BoxFormDialogComponent {
     formValid$: boolean = false;
     attributeClicked$: boolean = false;
     diceClicked$: boolean = false;
-    constructor(public dialogRef: MatDialogRef<BoxFormDialogComponent>) {
+    gameList: Game[];
+
+    constructor(
+        public dialogRef: MatDialogRef<BoxFormDialogComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: { boxId: string; game: Game; gameList: Game[] },
+        //private gameService: GameService
+    ) {
+        this.gameList = data.gameList; // ✅ Store game list
+
         this.form = new FormGroup({
-            name: new FormControl('Player', [Validators.required]),
+            name: new FormControl(data.game.name, [Validators.required]),
             avatar: new FormControl(this.avatars[0], [Validators.required]),
             life: new FormControl(DEFAULT_STAT_VALUE, [Validators.min(0)]),
             speed: new FormControl(DEFAULT_STAT_VALUE, [Validators.min(0)]),
@@ -65,6 +76,10 @@ export class BoxFormDialogComponent {
     inputName(event: Event): void {
         const inputName = (event.target as HTMLInputElement).value;
         this.form.get('name')?.setValue(inputName);
+
+        const gameExists = this.gameList;
+        console.log({ gameExists});
+
     }
 
     increase(attribute: string): void {
@@ -94,8 +109,22 @@ export class BoxFormDialogComponent {
         this.diceClicked$ = false;
     }
 
-    save(): void {
+    async save(): Promise<void> {
         this.form.updateValueAndValidity();
-        localStorage.setItem('form', JSON.stringify(this.form.value));
+
+        if (this.form.valid) {
+            localStorage.setItem('form', JSON.stringify(this.form.value));
+
+            // ✅ Check if the game still exists before submitting
+            const gameExists = this.gameList;
+            console.log({ gameExists});
+
+            if (!gameExists) {
+                alert("Ce jeu a été supprimé entre temps.");
+                return;
+            }
+
+            this.dialogRef.close(this.form.value);
+        }
     }
 }
