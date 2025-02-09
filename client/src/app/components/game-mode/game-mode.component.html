@@ -2,19 +2,34 @@
 <mat-dialog-content>
     <div class="mode-section">
         <h6>Choisir le mode</h6>
-        <mat-radio-group [(ngModel)]="selectedMode.type">
-            <mat-radio-button [value]="gameType.Classic">Classique</mat-radio-button>
-            <mat-radio-button [value]="gameType.Capture">Capturer le drapeau</mat-radio-button>
-        </mat-radio-group>        
+        <div class="mode-radio-group">
+            <label>
+                <input type="radio" [(ngModel)]="selectedMode.type" [value]="gameType.Classic" name="gameMode" class="mode-radio-button-classic" />
+                Classique
+            </label>
+            <label>
+                <input type="radio" [(ngModel)]="selectedMode.type" [value]="gameType.Capture" name="gameMode" class="mode-radio-button-capture" />
+                Capturer le drapeau
+            </label>
+        </div>
     </div>
 
     <div class="size-section">
         <h6>Choisir la taille</h6>
-        <mat-radio-group [(ngModel)]="selectedMode.size">
-            <mat-radio-button [value]="gameSize.Small">Petite</mat-radio-button>
-            <mat-radio-button [value]="gameSize.Medium">Moyenne</mat-radio-button>
-            <mat-radio-button [value]="gameSize.Large">Grande</mat-radio-button>
-        </mat-radio-group>        
+        <div class="size-radio-group">
+            <label>
+                <input type="radio" [(ngModel)]="selectedMode.size" [value]="gameSize.Small" name="gameSize" class="size-radio-button-small" />
+                Petite
+            </label>
+            <label>
+                <input type="radio" [(ngModel)]="selectedMode.size" [value]="gameSize.Medium" name="gameSize" class="size-radio-button-medium" />
+                Moyenne
+            </label>
+            <label>
+                <input type="radio" [(ngModel)]="selectedMode.size" [value]="gameSize.Large" name="gameSize" class="size-radio-button-large" />
+                Grande
+            </label>
+        </div>
     </div>
 </mat-dialog-content>
 <mat-dialog-actions>
