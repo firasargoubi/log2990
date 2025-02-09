@@ -47,5 +47,6 @@
     <div class="actions">
         <button type="button" (click)="cancel()">Annuler</button>
         <button mat-button type="submit" [disabled]="!formValid$" (click)="save()" [routerLink]="'/waiting'">Enregistrer</button>
+        <button type="button" (click)="resetAttributes()">Réinitialiser</button>
     </div>
 </form>

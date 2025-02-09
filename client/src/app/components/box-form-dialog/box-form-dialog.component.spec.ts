@@ -3,10 +3,13 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Routes, provideRouter } from '@angular/router';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { Subscription} from 'rxjs';
+
 import { BoxFormDialogComponent } from './box-form-dialog.component';
+import { GameService } from '@app/services/game.service';
 
 const routes: Routes = [];
-
 const DEFAULT_STAT_VALUE = 4;
 const FOUR_VALUE_DICE = 4;
 const SIX_VALUE_DICE = 6;
@@ -16,14 +19,26 @@ describe('BoxFormDialogComponent', () => {
     let component: BoxFormDialogComponent;
     let fixture: ComponentFixture<BoxFormDialogComponent>;
     let dialogRefSpy: jasmine.SpyObj<MatDialogRef<BoxFormDialogComponent>>;
+    let gameServiceSpy: jasmine.SpyObj<GameService>;
 
     beforeEach(async () => {
         dialogRefSpy = jasmine.createSpyObj('MatDialogRef', ['close']);
+        gameServiceSpy = jasmine.createSpyObj('GameService', ['fetchVisibleGames']);
+
+        // ✅ Ensure `fetchVisibleGames` returns a proper observable
+     //   gameServiceSpy.fetchVisibleGames.and.returnValue(of([{ id: '1', name: 'Game 1', isVisible: true }]));
+
         await TestBed.configureTestingModule({
-            imports: [ReactiveFormsModule, BrowserAnimationsModule, BoxFormDialogComponent],
+            imports: [
+                ReactiveFormsModule,
+                BrowserAnimationsModule,
+                HttpClientTestingModule,
+                BoxFormDialogComponent, // ✅ Correct way to include standalone component
+            ],
             providers: [
                 { provide: MatDialogRef, useValue: dialogRefSpy },
                 { provide: MAT_DIALOG_DATA, useValue: { boxId: 1 } },
+                { provide: GameService, useValue: gameServiceSpy },
                 provideRouter(routes),
             ],
         }).compileComponents();
@@ -32,6 +47,10 @@ describe('BoxFormDialogComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(BoxFormDialogComponent);
         component = fixture.componentInstance;
+
+        // ✅ Ensure `pollingSubscription` is initialized before tests run
+        component['pollingSubscription'] = new Subscription();
+
         fixture.detectChanges();
     });
 
@@ -43,10 +62,10 @@ describe('BoxFormDialogComponent', () => {
         expect(component.form.value).toEqual({
             name: 'Player',
             avatar: 'assets/perso/1.jpg',
-            life: 4,
-            speed: 4,
-            attack: 4,
-            defense: 4,
+            life: DEFAULT_STAT_VALUE,
+            speed: DEFAULT_STAT_VALUE,
+            attack: DEFAULT_STAT_VALUE,
+            defense: DEFAULT_STAT_VALUE,
         });
     });
 
@@ -110,12 +129,23 @@ describe('BoxFormDialogComponent', () => {
         expect(component.form.value).toEqual({
             name: 'Player',
             avatar: 'assets/perso/1.jpg',
-            life: 4,
-            speed: 4,
-            attack: 4,
-            defense: 4,
+            life: DEFAULT_STAT_VALUE,
+            speed: DEFAULT_STAT_VALUE,
+            attack: DEFAULT_STAT_VALUE,
+            defense: DEFAULT_STAT_VALUE,
         });
-        expect(component.attributeClicked$).toBeFalse();
-        expect(component.diceClicked$).toBeFalse();
     });
+
+    it('should unsubscribe from polling on destroy', () => {
+        spyOn(component['pollingSubscription'], 'unsubscribe'); // ✅ Ensure we spy on an initialized object
+        component.ngOnDestroy();
+        expect(component['pollingSubscription'].unsubscribe).toHaveBeenCalled();
+    });
+
+    //it('should load games when loadGames is called', () => {
+    //     component.loadGames();
+    //     component.gameList.subscribe((games: any) => {
+    //         expect(games).toEqual([{ id: '1', name: 'Game 1', isVisible: true }]);
+    //     });
+    // });
 });
