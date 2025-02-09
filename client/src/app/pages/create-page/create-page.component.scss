@@ -1,6 +1,5 @@
-
 .create-page {
-    // background: linear-gradient(120deg, #2ecc71, #a8d5a2, #ffd700); 
+    // background: linear-gradient(120deg, #2ecc71, #a8d5a2, #ffd700);
     // background-size: 200% 200%;
     // animation: animatedGradient 6s ease-in-out infinite;
     background: url('../../../assets/images/aw.png') no-repeat center center;
@@ -11,28 +10,25 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 32px;
+    gap: 15px;
     height: 100vh;
     overflow-y: auto;
 }
 
 .create-page h1 {
     font-family: 'Press Start 2P', cursive;
+    font-size: 40px;
     color: white;
     text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
-    margin-bottom: 24px;
     text-align: center;
 }
 .title-container {
-   
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 16px;
+    gap: 10px;
     position: relative;
-    margin-bottom: 16px;
 }
-
 
 .games-container {
     width: 90%;
@@ -46,7 +42,6 @@
     overflow-y: auto;
     max-height: 70vh;
 }
-
 
 .box:hover {
     transform: scale(1.05);
@@ -69,7 +64,6 @@
     background: #f1f1f1;
 }
 
-
 @keyframes bounce {
     0%,
     100% {
@@ -89,15 +83,12 @@
     height: 145px;
     object-fit: cover;
     border-radius: 50%;
-    
 }
 
 .logo-link {
     display: inline-block;
     cursor: pointer; /* Assure que le curseur change en mode clic */
 }
-
-
 
 .logo:hover {
     transform: scale(1.1); /* Effet visuel pour montrer qu'il est cliquable */

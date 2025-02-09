@@ -18,29 +18,12 @@ import { Observable } from 'rxjs';
     styleUrls: ['./create-page.component.scss'],
 })
 export class CreatePageComponent implements OnInit {
-    @Input() games$: Observable<Game[]> = new Observable<Game[]>(); // Observable pour les jeux
-    
-    games: Game[] = []; // Stocke les jeux en tant que tableau
+    @Input() games$: Observable<Game[]> = new Observable<Game[]>();
+    games: Game[] = [];
     constructor(
         private dialog: MatDialog,
         private gameService: GameService,
     ) {}
-
-    ngOnInit(): void {
-        this.loadGames();
-    }
-
-    
-    private loadGames(): void {
-        this.gameService.fetchVisibleGames().subscribe({
-            next: (allGames) => {
-                this.games = allGames; // Stocke les jeux sous forme de tableau
-            },
-            error: (err) => console.error('Erreur lors du chargement des jeux', err),
-        });
-    }
-    
-    
 
     onBoxClick(game: Game): void {
         const dialogRef = this.dialog.open(BoxFormDialogComponent, {
@@ -51,6 +34,18 @@ export class CreatePageComponent implements OnInit {
             if (result) {
                 this.loadGames();
             }
+        });
+    }
+    ngOnInit(): void {
+        this.loadGames();
+    }
+
+    private loadGames(): void {
+        this.gameService.fetchVisibleGames().subscribe({
+            next: (allGames) => {
+                this.games = allGames;
+            },
+            error: (err) => console.error('Erreur lors du chargement des jeux', err),
         });
     }
 }
