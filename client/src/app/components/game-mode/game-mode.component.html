@@ -3,18 +3,18 @@
     <div class="mode-section">
         <h6>Choisir le mode</h6>
         <mat-radio-group [(ngModel)]="selectedMode.type">
-            <mat-radio-button value="classic">Classic</mat-radio-button>
-            <mat-radio-button value="capture">Capture the Flag</mat-radio-button>
-        </mat-radio-group>
+            <mat-radio-button [value]="gameType.Classic">Classique</mat-radio-button>
+            <mat-radio-button [value]="gameType.Capture">Capturer le drapeau</mat-radio-button>
+        </mat-radio-group>        
     </div>
 
     <div class="size-section">
         <h6>Choisir la taille</h6>
         <mat-radio-group [(ngModel)]="selectedMode.size">
-            <mat-radio-button value="small">Petite</mat-radio-button>
-            <mat-radio-button value="medium">Moyenne</mat-radio-button>
-            <mat-radio-button value="large">Grande</mat-radio-button>
-        </mat-radio-group>
+            <mat-radio-button [value]="gameSize.Small">Petite</mat-radio-button>
+            <mat-radio-button [value]="gameSize.Medium">Moyenne</mat-radio-button>
+            <mat-radio-button [value]="gameSize.Large">Grande</mat-radio-button>
+        </mat-radio-group>        
     </div>
 </mat-dialog-content>
 <mat-dialog-actions>

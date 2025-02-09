@@ -4,11 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatRadioModule } from '@angular/material/radio';
-
-interface GameMode {
-    type: 'classic' | 'capture';
-    size: 'small' | 'medium' | 'large';
-}
+import { GameMode, GameSize, GameType } from '@app/Consts/app.constants';
 
 @Component({
     selector: 'app-game-mode-dialog',
@@ -17,9 +13,11 @@ interface GameMode {
     styleUrls: ['./game-mode.component.scss'],
 })
 export class GameModeDialogComponent {
+    gameType = GameType;
+    gameSize = GameSize;
     selectedMode: GameMode = {
-        type: 'classic',
-        size: 'medium',
+        type: GameType.Classic,
+        size: GameSize.Medium,
     };
 
     constructor(private dialogRef: MatDialogRef<GameModeDialogComponent>) {}
