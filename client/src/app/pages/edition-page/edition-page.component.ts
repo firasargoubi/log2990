@@ -31,6 +31,7 @@ export class EditionPageComponent {
         lastModified: new Date(),
         isVisible: true,
         board: [],
+        objects: [],
     };
 
     showErrorPopup: boolean = false;

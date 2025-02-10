@@ -1,8 +1,8 @@
 @if (isPlaced) {
     <div class = "grey-item item" cdkDrag>
         <img [src]="image">
-        <p [innerText]="name"></p>
     </div>
+    <p [innerText]="name"></p>
     @if ( type ==='6') {
         <p class="counter" >{{spawnCounter}}</p>
     }
@@ -13,8 +13,8 @@
 @else {
     <div class = "item" cdkDrag>
         <img [src]="image">
-        <p [innerText]="name"></p>
     </div>
+    <p [innerText]="name"></p>
     @if (type === '6') {
         <p class="counter">{{spawnCounter}}</p>
     }

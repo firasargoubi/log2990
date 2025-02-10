@@ -11,6 +11,7 @@ import { GameService } from '@app/services/game.service';
 import { MouseService } from '@app/services/mouse.service';
 import { SaveService } from '@app/services/save.service';
 import { TileService } from '@app/services/tile.service';
+import { ItemComponent } from '@app/components/item/item.component';
 
 const RIGHT_CLICK = 2;
 @Component({
@@ -30,6 +31,7 @@ export class BoardComponent implements OnInit {
         lastModified: new Date(),
         isVisible: true,
         board: [],
+        objects: [],
     };
     board: Tile[][] = [];
     selectedTiles: Coordinates[] = [];

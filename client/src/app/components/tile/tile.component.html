@@ -1,8 +1,8 @@
 <div 
     class = "tile" 
+    cdkDropList
     [cdkDropListData]="placedItem"
     [ngStyle]="{'background-image': 'url(' + baseImage + ')'}"
-    cdkDropList 
     (cdkDropListDropped)="drop($event)"
     >
     @if (placedItem.length === 0) {

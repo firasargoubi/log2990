@@ -65,21 +65,23 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 25%;
-    height: 25%;
     grid-area: tools;
-
+    padding-left:20px;
 }
 
 .board-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 60%;
+    height: 100%;
+    width: 75%;
+    padding-bottom: 70px;
+    padding-left: 5%;
     grid-area: board;
 }
 
 .object-tools {
+    padding-right: 20px;
     grid-area: objects;
 }
 
