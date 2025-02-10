@@ -236,29 +236,5 @@ describe('CreatePageComponent', () => {
         expect(component['pollingSubscription'].unsubscribe).toHaveBeenCalled();
     });
 
-    it('should show a snackbar when onBoxClick is called', () => {
-        const localSnackBarSpy = snackBarSpy.open; // Use the existing spy
-    
-        const mockGame: Game = {
-            id: '1',
-            name: 'Chess',
-            mapSize: '8x8',
-            mode: 'Classic',
-            previewImage: 'chess.png',
-            description: 'A strategic board game.',
-            lastModified: new Date(),
-            isVisible: true,
-            board: [
-                [0, 1],
-                [1, 0],
-            ],
-        };
-    
-        component.onBoxClick(mockGame);
-    
-        expect(localSnackBarSpy).toHaveBeenCalledWith(`Ouverture de la boîte de dialogue pour : ${mockGame.name}`, 'OK', {
-            duration: 3000,
-        });
-    });
     
 });

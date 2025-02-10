@@ -53,7 +53,6 @@ export class CreatePageComponent implements OnInit, OnDestroy {
     }
 
     onBoxClick(game: Game): void {
-    this.snackBar.open(`Ouverture de la boîte de dialogue pour : ${game.name}`, 'OK', { duration: 3000 });
 
     const dialogRef = this.dialog.open(BoxFormDialogComponent, {
         data: { boxId: game.id, game, gameList: this.games },
@@ -66,9 +65,7 @@ export class CreatePageComponent implements OnInit, OnDestroy {
                 this.loadGames();
             }
         },
-        error: () => {
-            this.snackBar.open('Erreur lors de la fermeture de la boîte de dialogue', 'Fermer', { duration: 3000 });
-        }
+        
     });
 }
 
