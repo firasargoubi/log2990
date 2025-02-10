@@ -11,7 +11,7 @@ export class ItemComponent implements OnInit {
     @Input() type = '';
     @Output() itemAdded = new EventEmitter<ItemComponent>();
     @Input() counter = 4; // Nombre maximal d'objets défini selon les settings de la partie.
-    spawnCounter: number = 2;
+    spawnCounter: number = 4;
     randomCounter: number = 2;
     isPlaced: boolean = false;
 
