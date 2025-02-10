@@ -33,9 +33,14 @@ export class TileOptionsComponent implements OnInit {
     }
 
     selectTileOption(tile: Tile): void {
-        this.tileService.copyTileTool(tile.type);
-        this.setAllTilesUnselected();
-        tile.selected = true;
+        if (tile.selected) {
+            this.tileService.copyTileTool(0);
+            this.setAllTilesUnselected();
+        } else {
+            this.tileService.copyTileTool(tile.type);
+            this.setAllTilesUnselected();
+            tile.selected = true;
+        }
     }
 
     setAllTilesUnselected(): void {

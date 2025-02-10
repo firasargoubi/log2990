@@ -5,8 +5,11 @@
     cdkDropList 
     (cdkDropListDropped)="drop($event)"
     >
-    
-    @for (item of placedItem; track item) {
-        <img class ="item-image" src="{{item.image}}" cdkDrag/>
+    @if (placedItem.length === 0) {
+        <img class = "transparent" src = "assets/transparent.png"/>
+    } @else {
+        @for (item of placedItem; track item) {
+            <img class ="item-image" src="{{item.image}}" cdkDrag/>
+        }
     }
 </div>

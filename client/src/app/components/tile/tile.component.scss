@@ -9,8 +9,8 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    height: 50px;
-    width: 50px;
+    height: 100%;
+    width: 100%;
 }
 [cdkDropList] {
     position: relative;
@@ -31,6 +31,13 @@
     user-select: none;
     pointer-events: none;
     z-index: 1;
+}
+
+.transparent {
+    width: 100%;
+    height: 100%;
+    user-select: none;
+    pointer-events: none;
 }
 
 .item-image {

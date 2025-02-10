@@ -1,4 +1,3 @@
-import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -13,7 +12,6 @@ import { GameService } from '@app/services/game.service';
 import { MouseService } from '@app/services/mouse.service';
 import { SaveService } from '@app/services/save.service';
 import { TileService } from '@app/services/tile.service';
-import { ItemComponent } from '@app/components/item/item.component';
 
 const RIGHT_CLICK = 2;
 @Component({
@@ -54,6 +52,7 @@ export class BoardComponent implements OnInit {
                 this.initializeBoard();
             }
         });
+        this.tileService.currentTool = 0;
     }
 
     get mapSize(): number {

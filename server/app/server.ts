@@ -4,6 +4,8 @@ import { AddressInfo } from 'net';
 import { Service } from 'typedi';
 import mongoose from 'mongoose';
 
+const uri = 'mongodb+srv://admin:admin@log2990-perso.mf3fg.mongodb.net/?retryWrites=true&w=majority&appName=LOG2990-perso';
+
 @Service()
 export class Server {
     private static readonly appPort: string | number | boolean = Server.normalizePort(process.env.PORT || '3000');
@@ -70,7 +72,7 @@ export class Server {
      * Connecte le serveur à la base de données MongoDB.
      */
     private async connectToDatabase(): Promise<void> {
-        const DATABASE_CONNECTION_STRING = 'mongodb+srv://admin:admin@log2990-209.ggs6k.mongodb.net/myDatabase?retryWrites=true&w=majority';
+        const DATABASE_CONNECTION_STRING = uri;
 
         try {
             await mongoose.connect(DATABASE_CONNECTION_STRING);
