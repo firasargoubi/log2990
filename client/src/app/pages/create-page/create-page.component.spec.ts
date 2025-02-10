@@ -10,6 +10,7 @@ import { GameCreationCardComponent } from '@app/components/game-creation-card/ga
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 describe('CreatePageComponent', () => {
     let component: CreatePageComponent;
@@ -17,6 +18,7 @@ describe('CreatePageComponent', () => {
     let gameServiceSpy: jasmine.SpyObj<GameService>;
     let matDialogSpy: jasmine.SpyObj<MatDialog>;
     let mockDialogRef: jasmine.SpyObj<MatDialogRef<BoxFormDialogComponent>>;
+    let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
 
     beforeEach(async () => {
         const mockGamesSubject = new BehaviorSubject<Game[]>([
@@ -60,12 +62,22 @@ describe('CreatePageComponent', () => {
         mockDialogRef.afterClosed.and.returnValue(of(true));
         matDialogSpy.open.and.returnValue(mockDialogRef);
 
+        snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
+
         await TestBed.configureTestingModule({
-            imports: [CreatePageComponent, GameCreationCardComponent, CommonModule, ReactiveFormsModule, MatCardModule, RouterModule],
+            imports: [
+                CreatePageComponent,
+                GameCreationCardComponent,
+                CommonModule,
+                ReactiveFormsModule,
+                MatCardModule,
+                RouterModule.forRoot([{ path: 'waiting', component: CreatePageComponent }]),
+            ],
             providers: [
                 { provide: GameService, useValue: gameServiceSpy },
                 { provide: MatDialog, useValue: matDialogSpy },
                 { provide: ActivatedRoute, useValue: activatedRouteSpy },
+                { provide: MatSnackBar, useValue: snackBarSpy },
             ],
         }).compileComponents();
 
@@ -163,14 +175,13 @@ describe('CreatePageComponent', () => {
     }));
 
     it('should handle error when fetching games fails', fakeAsync(() => {
-        const consoleSpy = spyOn(console, 'error');
-        gameServiceSpy.fetchVisibleGames.and.returnValue(throwError('Error'));
+        gameServiceSpy.fetchVisibleGames.and.returnValue(throwError(() => new Error('Error')));
 
         component.ngOnInit();
         tick();
         fixture.detectChanges();
 
-        expect(consoleSpy).toHaveBeenCalledWith('Erreur lors du chargement des jeux', 'Error');
+        expect(snackBarSpy.open).toHaveBeenCalledWith('Erreur lors du chargement des jeux', 'Fermer', { duration: 3000 });
 
         discardPeriodicTasks();
     }));
@@ -225,8 +236,9 @@ describe('CreatePageComponent', () => {
         expect(component['pollingSubscription'].unsubscribe).toHaveBeenCalled();
     });
 
-    it('should log the game when onBoxClick is called', () => {
-        const consoleSpy = spyOn(console, 'log');
+    it('should show a snackbar when onBoxClick is called', () => {
+        const localSnackBarSpy = snackBarSpy.open; // Use the existing spy
+    
         const mockGame: Game = {
             id: '1',
             name: 'Chess',
@@ -241,8 +253,12 @@ describe('CreatePageComponent', () => {
                 [1, 0],
             ],
         };
-
+    
         component.onBoxClick(mockGame);
-        expect(consoleSpy).toHaveBeenCalledWith('Opening dialog for:', mockGame);
+    
+        expect(localSnackBarSpy).toHaveBeenCalledWith(`Ouverture de la boîte de dialogue pour : ${mockGame.name}`, 'OK', {
+            duration: 3000,
+        });
     });
+    
 });

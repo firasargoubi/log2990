@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { GameService } from '@app/services/game.service';
 import { throwError, of } from 'rxjs';
 import { BoxFormDialogComponent } from './box-form-dialog.component';
@@ -9,15 +10,22 @@ import { ActivatedRoute } from '@angular/router';
 import { Game } from '@app/interfaces/game.model';
 
 const TIME = 5000;
+const DEFAULT_STAT_VALUE = 4;
+const INCREASED_ATTRIBUTE = 6;
+const SIX_VALUE_DICE = 6;
+const FOUR_VALUE_DICE = 4;
+
 describe('BoxFormDialogComponent', () => {
     let component: BoxFormDialogComponent;
     let fixture: ComponentFixture<BoxFormDialogComponent>;
     let mockDialogRef: jasmine.SpyObj<MatDialogRef<BoxFormDialogComponent>>;
     let mockGameService: jasmine.SpyObj<GameService>;
+    let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
 
     beforeEach(async () => {
         mockDialogRef = jasmine.createSpyObj('MatDialogRef', ['close']);
         mockGameService = jasmine.createSpyObj('GameService', ['fetchVisibleGames']);
+        mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
 
         mockGameService.fetchVisibleGames.and.returnValue(of([]));
         await TestBed.configureTestingModule({
@@ -26,6 +34,7 @@ describe('BoxFormDialogComponent', () => {
                 { provide: MatDialogRef, useValue: mockDialogRef },
                 { provide: MAT_DIALOG_DATA, useValue: { boxId: '1', game: { id: '1', name: 'Game1', isVisible: true }, gameList: [] } },
                 { provide: GameService, useValue: mockGameService },
+                { provide: MatSnackBar, useValue: mockSnackBar },
                 { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => '1' } } } },
             ],
         }).compileComponents();
@@ -71,23 +80,23 @@ describe('BoxFormDialogComponent', () => {
     it('should reset attributes correctly', () => {
         component.form.patchValue({ life: 10, speed: 10, attack: 10, defense: 10 });
         component.resetAttributes();
-        expect(component.form.value.life).toBe(4);
-        expect(component.form.value.speed).toBe(4);
-        expect(component.form.value.attack).toBe(4);
-        expect(component.form.value.defense).toBe(4);
+        expect(component.form.value.life).toBe(DEFAULT_STAT_VALUE);
+        expect(component.form.value.speed).toBe(DEFAULT_STAT_VALUE);
+        expect(component.form.value.attack).toBe(DEFAULT_STAT_VALUE);
+        expect(component.form.value.defense).toBe(DEFAULT_STAT_VALUE);
     });
 
     it('should increase attribute only once', () => {
         component.increase('attack');
-        expect(component.form.value.attack).toBe(6);
+        expect(component.form.value.attack).toBe(INCREASED_ATTRIBUTE);
         component.increase('attack');
-        expect(component.form.value.attack).toBe(6);
+        expect(component.form.value.attack).toBe(INCREASED_ATTRIBUTE);
     });
 
     it('should pick dice correctly', () => {
         component.pickDice('attack');
-        expect(component.form.value.attack).toBe(6);
-        expect(component.form.value.defense).toBe(4);
+        expect(component.form.value.attack).toBe(SIX_VALUE_DICE);
+        expect(component.form.value.defense).toBe(FOUR_VALUE_DICE);
     });
 
     it('should start polling for game updates and stop on destroy', fakeAsync(() => {
@@ -113,11 +122,10 @@ describe('BoxFormDialogComponent', () => {
     }));
 
     it('should handle polling error', fakeAsync(() => {
-        spyOn(console, 'error');
         mockGameService.fetchVisibleGames.and.returnValue(throwError(() => new Error('Fetch failed')));
         component.ngOnInit();
         tick(TIME);
-        expect(console.error).toHaveBeenCalledWith('Erreur lors du rafraîchissement des jeux', jasmine.any(Error));
+        expect(mockSnackBar.open).toHaveBeenCalledWith('Erreur lors du rafraîchissement des jeux', 'Fermer', { duration: 3000 });
     }));
 
     it('should not save if the game is deleted or hidden', async () => {
@@ -140,6 +148,7 @@ describe('BoxFormDialogComponent', () => {
         expect(window.alert).toHaveBeenCalledWith('Ce jeu a été supprimé ou sa visibilité a changéee entre temps, Veuillez choisir un autre jeu.');
         expect(mockDialogRef.close).not.toHaveBeenCalled();
     });
+
     it('should select avatar correctly', () => {
         const avatar = 'assets/perso/2.jpg';
         component.selectAvatar(avatar);

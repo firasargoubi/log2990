@@ -3,6 +3,7 @@ import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
 import { BoxFormDialogComponent } from '@app/components/box-form-dialog/box-form-dialog.component';
 import { GameCreationCardComponent } from '@app/components/game-creation-card/game-creation-card.component';
@@ -26,6 +27,7 @@ export class CreatePageComponent implements OnInit, OnDestroy {
 
     constructor(
         private dialog: MatDialog,
+        private snackBar: MatSnackBar,
         private gameService: GameService,
     ) {}
 
@@ -40,7 +42,7 @@ export class CreatePageComponent implements OnInit, OnDestroy {
                         this.games = updatedGames;
                     }
                 },
-                error: (err) => console.error('Erreur lors du rafraîchissement des jeux', err),
+                error: (err) => this.snackBar.open('Erreur lors du rafraîchissement des jeux', 'Fermer', { duration: 3000 }),
             });
     }
 
@@ -49,26 +51,34 @@ export class CreatePageComponent implements OnInit, OnDestroy {
             this.pollingSubscription.unsubscribe();
         }
     }
-    onBoxClick(game: Game): void {
-        console.log('Opening dialog for:', game);
-        const dialogRef = this.dialog.open(BoxFormDialogComponent, {
-            data: { boxId: game.id, game, gameList: this.games },
-        });
 
-        dialogRef.afterClosed().subscribe((result) => {
+    onBoxClick(game: Game): void {
+    this.snackBar.open(`Ouverture de la boîte de dialogue pour : ${game.name}`, 'OK', { duration: 3000 });
+
+    const dialogRef = this.dialog.open(BoxFormDialogComponent, {
+        data: { boxId: game.id, game, gameList: this.games },
+    });
+    
+    
+    dialogRef.afterClosed().subscribe({
+        next: (result) => {
             if (result) {
-                console.log('Dialog closed with:', result);
                 this.loadGames();
             }
-        });
-    }
+        },
+        error: () => {
+            this.snackBar.open('Erreur lors de la fermeture de la boîte de dialogue', 'Fermer', { duration: 3000 });
+        }
+    });
+}
+
 
     private loadGames(): void {
         this.gameService.fetchVisibleGames().subscribe({
             next: (allGames) => {
                 this.games = allGames;
             },
-            error: (err) => console.error('Erreur lors du chargement des jeux', err),
+            error: (err) => this.snackBar.open('Erreur lors du chargement des jeux', 'Fermer', { duration: 3000 }),
         });
     }
 }
