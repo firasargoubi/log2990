@@ -1,9 +1,5 @@
 .admin-page {
-    // background: linear-gradient(120deg, #2ecc71, #a8d5a2, #ffd700);
-    // background-size: 200% 200%;
-    // animation: animatedGradient 6s ease-in-out infinite;
     background: url('../../../assets/images/aw.png') no-repeat center center;
-    //filter:  saturate(0.7);
     background-size: cover;
     margin: 0;
     padding: 16px;
@@ -73,9 +69,9 @@
 
 .logo-link {
     display: inline-block;
-    cursor: pointer; /* Assure que le curseur change en mode clic */
+    cursor: pointer;
 }
 
 .logo:hover {
-    transform: scale(1.1); /* Effet visuel pour montrer qu'il est cliquable */
+    transform: scale(1.1);
 }

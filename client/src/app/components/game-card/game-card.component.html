@@ -13,10 +13,8 @@
         </ul>
     </div>
     <div class="game-actions">
-        <!-- Bouton "Edit" avec une baguette magique -->
         <button
             mat-icon-button
-            (click)="editGame()"
             [disabled]="isLoading"
             class="action edit"
             matTooltip="Modifier"
@@ -26,12 +24,10 @@
             <i class="fa-solid fa-wand-magic-sparkles"></i>
         </button>
 
-        <!-- Bouton "Delete" avec un chaudron -->
         <button mat-icon-button (click)="deleteGame()" [disabled]="isLoading" class="action delete" matTooltip="Supprimer" matTooltipPosition="below">
             <i class="fa-solid fa-trash"></i>
         </button>
 
-        <!-- Bouton "Visibility" avec un oeil -->
         <button
             mat-icon-button
             [class]="{ invisible: !game.isVisible }"

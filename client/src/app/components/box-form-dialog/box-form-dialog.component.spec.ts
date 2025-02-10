@@ -34,7 +34,9 @@ describe('BoxFormDialogComponent', () => {
                 { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => '1' } } } },
             ],
         }).compileComponents();
+    });
 
+    beforeEach(() => {
         fixture = TestBed.createComponent(BoxFormDialogComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();

@@ -1,12 +1,7 @@
 import { GameService } from '@app/services/game.service';
 import { Request, Response, Router } from 'express';
 import { Service } from 'typedi';
-
-const CREATED_STATUS = 201;
-const NO_CONTENT_STATUS = 204;
-const OK_STATUS = 200;
-const NOT_FOUND_STATUS = 404;
-const BAD_REQUEST_STATUS = 400;
+import { StatusCodes } from 'http-status-codes';
 
 @Service()
 export class GameController {
@@ -20,43 +15,51 @@ export class GameController {
         this.router.post('/create', async (req: Request, res: Response) => {
             try {
                 const newGame = await this.gameService.createGame(req.body);
-                res.status(CREATED_STATUS).json(newGame);
+                res.status(StatusCodes.CREATED).json(newGame);
             } catch (error) {
-                res.status(BAD_REQUEST_STATUS).json({ error: error.message });
+                res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
             }
         });
 
         this.router.get('/all', async (req: Request, res: Response) => {
             try {
                 const games = await this.gameService.getAllGames();
-                res.status(OK_STATUS).json(games);
+                res.status(StatusCodes.OK).json(games);
             } catch (error) {
-                res.status(BAD_REQUEST_STATUS).json({ error: error.message });
+                res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
             }
         });
         this.router.get('/visible', async (req: Request, res: Response) => {
             try {
                 const visibleGames = await this.gameService.getVisibleGames();
-                res.status(OK_STATUS).json(visibleGames);
+                res.status(StatusCodes.OK).json(visibleGames);
             } catch (error) {
-                res.status(BAD_REQUEST_STATUS).json({ error: error.message });
+                res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
             }
         });
         this.router.get('/:id', async (req: Request, res: Response) => {
-            const games = await this.gameService.getGameById(req.params.id);
-            res.json(games);
+            try {
+                const game = await this.gameService.getGameById(req.params.id);
+                if (game) {
+                    res.status(StatusCodes.OK).json(game);
+                } else {
+                    res.status(StatusCodes.NOT_FOUND).json({ error: 'Game not found' });
+                }
+            } catch (error) {
+                res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
+            }
         });
 
         this.router.patch('/:id', async (req: Request, res: Response) => {
             try {
                 const updatedGame = await this.gameService.editGame(req.params.id, req.body);
                 if (updatedGame) {
-                    res.status(OK_STATUS).json(updatedGame);
+                    res.status(StatusCodes.OK).json(updatedGame);
                 } else {
-                    res.status(NOT_FOUND_STATUS).json({ error: 'Game not found' });
+                    res.status(StatusCodes.NOT_FOUND).json({ error: 'Game not found' });
                 }
             } catch (error) {
-                res.status(BAD_REQUEST_STATUS).json({ error: error.message });
+                res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
             }
         });
 
@@ -64,17 +67,17 @@ export class GameController {
             try {
                 const deleted = await this.gameService.deleteGame(req.params.id);
                 if (deleted) {
-                    res.sendStatus(NO_CONTENT_STATUS);
+                    res.sendStatus(StatusCodes.NO_CONTENT);
                 } else {
-                    res.status(NOT_FOUND_STATUS).json({ error: 'Game not found' });
+                    res.status(StatusCodes.NOT_FOUND).json({ error: 'Game not found' });
                 }
             } catch (error) {
-                res.status(BAD_REQUEST_STATUS).json({ error: error.message });
+                res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
             }
         });
 
         this.router.use((req: Request, res: Response) => {
-            res.status(NOT_FOUND_STATUS).json({ error: 'Route not found' });
+            res.status(StatusCodes.NOT_FOUND).json({ error: 'Route not found' });
         });
     }
 }

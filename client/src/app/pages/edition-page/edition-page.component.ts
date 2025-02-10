@@ -11,7 +11,9 @@ import { Game } from '@app/interfaces/game.model';
 import { SaveMessage } from '@app/interfaces/saveMessage';
 import { ErrorService } from '@app/services/error.service';
 import { GameService } from '@app/services/game.service';
+import { NotificationService } from '@app/services/notification.service';
 import { SaveService } from '@app/services/save.service';
+import { catchError, EMPTY, tap } from 'rxjs';
 
 @Component({
     selector: 'app-game-page',
@@ -21,6 +23,7 @@ import { SaveService } from '@app/services/save.service';
 })
 export class EditionPageComponent {
     @ViewChild('board', { static: false }) boardElement: ElementRef;
+    notificationService = inject(NotificationService);
     game: Game = {
         id: '',
         name: '',
@@ -104,12 +107,21 @@ export class EditionPageComponent {
 
     loadGame() {
         if (this.game.id) {
-            this.gameService.fetchGameById(this.game.id).subscribe({
-                next: (gameSearched) => {
-                    this.game = gameSearched;
-                    this.gameLoaded = true;
-                },
-            });
+            this.gameService
+                .fetchGameById(this.game.id)
+                .pipe(
+                    tap((gameSearched) => {
+                        this.game = gameSearched;
+                        this.gameLoaded = true;
+                        this.notificationService.showSuccess('Jeu chargé avec succès.');
+                    }),
+                    catchError(() => {
+                        this.notificationService.showError('Impossible de charger le jeu.');
+                        this.gameLoaded = true;
+                        return EMPTY;
+                    }),
+                )
+                .subscribe();
         } else {
             this.game.name = '';
             this.game.description = '';
