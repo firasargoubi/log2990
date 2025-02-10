@@ -3,12 +3,11 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { MatRadioModule } from '@angular/material/radio';
 import { GameMode, GameSize, GameType } from '@app/Consts/app.constants';
 
 @Component({
     selector: 'app-game-mode-dialog',
-    imports: [CommonModule, MatButtonModule, MatRadioModule, FormsModule, MatDialogModule],
+    imports: [CommonModule, MatButtonModule, FormsModule, MatDialogModule],
     templateUrl: './game-mode.component.html',
     styleUrls: ['./game-mode.component.scss'],
 })

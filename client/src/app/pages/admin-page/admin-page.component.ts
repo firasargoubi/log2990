@@ -6,6 +6,7 @@ import { Game } from '@app/interfaces/game.model';
 import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
 import { catchError, of, tap } from 'rxjs';
+import { ADMIN_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 
 @Component({
     selector: 'app-admin-page',
@@ -17,6 +18,8 @@ export class AdminPageComponent implements OnInit {
     games: Game[] = [];
     private gameService = inject(GameService);
     private notificationService = inject(NotificationService);
+    private isFirstLoad = true;
+
     ngOnInit(): void {
         this.fetchGames();
     }
@@ -27,10 +30,13 @@ export class AdminPageComponent implements OnInit {
             .pipe(
                 tap((allGames) => {
                     this.games = allGames;
-                    this.notificationService.showSuccess('Jeux chargés avec succès');
+                    if (this.isFirstLoad) {
+                        this.notificationService.showSuccess(ADMIN_PAGE_CONSTANTS.successFetchMessage);
+                        this.isFirstLoad = false;
+                    }
                 }),
                 catchError(() => {
-                    this.notificationService.showError('Chargement des jeux impossible, réessayez plus tard.');
+                    this.notificationService.showError(ADMIN_PAGE_CONSTANTS.errorFetchMessage);
                     return of([]);
                 }),
             )

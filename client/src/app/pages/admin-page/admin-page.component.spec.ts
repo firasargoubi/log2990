@@ -82,11 +82,19 @@ describe('AdminPageComponent', () => {
         component.onToggleVisibility();
         expect(component.fetchGames).toHaveBeenCalled();
     });
-    it('should show success notification when fetchGames succeeds', () => {
+    it('should show success notification only on the first fetchGames call', () => {
         const notificationService = TestBed.inject(NotificationService);
         spyOn(notificationService, 'showSuccess');
+
+        component['isFirstLoad'] = true;
+
         component.fetchGames();
+
         expect(notificationService.showSuccess).toHaveBeenCalledWith('Jeux chargés avec succès');
+
+        component.fetchGames();
+
+        expect(notificationService.showSuccess).toHaveBeenCalledTimes(1);
     });
 
     it('should show error notification when fetchGames fails', () => {

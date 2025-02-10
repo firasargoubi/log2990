@@ -50,7 +50,7 @@ export class GameService {
     fetchVisibleGames(): Observable<Game[]> {
         return this.http.get<Game[]>(`${this.baseUrl}/visible`).pipe(
             catchError(() => {
-                this.notificationService.showError(GAME_SERVICE_CONSTANTS.errorFetchGames);
+                this.notificationService.showError(GAME_SERVICE_CONSTANTS.errorFetchVisibleGames);
                 return EMPTY;
             }),
         );
@@ -59,7 +59,7 @@ export class GameService {
     fetchGameById(gameId: string): Observable<Game> {
         return this.http.get<Game>(`${this.baseUrl}/${gameId}`).pipe(
             catchError(() => {
-                this.notificationService.showError(GAME_SERVICE_CONSTANTS.errorFetchGames);
+                this.notificationService.showError(GAME_SERVICE_CONSTANTS.errorFetchGameDetails);
                 return EMPTY;
             }),
         );
