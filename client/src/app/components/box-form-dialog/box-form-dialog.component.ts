@@ -46,9 +46,7 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
         public dialogRef: MatDialogRef<BoxFormDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: { boxId: string; game: Game; gameList: Game[] },
         private gameService: GameService,
-        
     ) {
-        console.log('Dialog Data:', data);
         this.loadGames();
 
         this.form = new FormGroup({
@@ -63,6 +61,10 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
         this.form.statusChanges.subscribe(() => {
             this.formValid$ = this.form.valid;
         });
+    }
+
+    get gameExists(): boolean {
+        return this.gameList.some((game) => game.id === this.data.game.id);
     }
 
     ngOnInit(): void {
@@ -130,17 +132,12 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
         this.diceClicked$ = false;
     }
 
-    get gameExists(): boolean {
-        return this.gameList.some(game => game.id === this.data.game.id);
-    }
-    
-
     async save(): Promise<void> {
         this.form.updateValueAndValidity();
 
         if (this.form.valid) {
             localStorage.setItem('form', JSON.stringify(this.form.value));
-            const gameExists = this.gameList.some(game => game.id === this.data.game.id);
+            const gameExists = this.gameList.some((game) => game.id === this.data.game.id);
             if (!gameExists || !this.data.game.isVisible) {
                 alert('Ce jeu a été supprimé ou sa visibilité a changéee entre temps, Veuillez choisir un autre jeu.');
                 return;

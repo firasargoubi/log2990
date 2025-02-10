@@ -9,6 +9,11 @@ import { ActivatedRoute } from '@angular/router';
 import { Game } from '@app/interfaces/game.model';
 
 const TIME = 5000;
+const DEFAULT_STAT_VALUE = 4;
+const INCREASED_ATTRIBUTE = 6;
+const SIX_VALUE_DICE = 6;
+const FOUR_VALUE_DICE = 4;
+
 describe('BoxFormDialogComponent', () => {
     let component: BoxFormDialogComponent;
     let fixture: ComponentFixture<BoxFormDialogComponent>;
@@ -69,23 +74,23 @@ describe('BoxFormDialogComponent', () => {
     it('should reset attributes correctly', () => {
         component.form.patchValue({ life: 10, speed: 10, attack: 10, defense: 10 });
         component.resetAttributes();
-        expect(component.form.value.life).toBe(4);
-        expect(component.form.value.speed).toBe(4);
-        expect(component.form.value.attack).toBe(4);
-        expect(component.form.value.defense).toBe(4);
+        expect(component.form.value.life).toBe(DEFAULT_STAT_VALUE);
+        expect(component.form.value.speed).toBe(DEFAULT_STAT_VALUE);
+        expect(component.form.value.attack).toBe(DEFAULT_STAT_VALUE);
+        expect(component.form.value.defense).toBe(DEFAULT_STAT_VALUE);
     });
 
     it('should increase attribute only once', () => {
         component.increase('attack');
-        expect(component.form.value.attack).toBe(6);
+        expect(component.form.value.attack).toBe(INCREASED_ATTRIBUTE);
         component.increase('attack');
-        expect(component.form.value.attack).toBe(6);
+        expect(component.form.value.attack).toBe(INCREASED_ATTRIBUTE);
     });
 
     it('should pick dice correctly', () => {
         component.pickDice('attack');
-        expect(component.form.value.attack).toBe(6);
-        expect(component.form.value.defense).toBe(4);
+        expect(component.form.value.attack).toBe(SIX_VALUE_DICE);
+        expect(component.form.value.defense).toBe(FOUR_VALUE_DICE);
     });
 
     it('should start polling for game updates and stop on destroy', fakeAsync(() => {
@@ -154,7 +159,7 @@ describe('BoxFormDialogComponent', () => {
         component.cancel();
         expect(mockDialogRef.close).toHaveBeenCalledWith(null);
     });
-   
+
     it('should not save if the game is deleted or hidden', async () => {
         const mockGames: Game[] = [
             {
@@ -165,40 +170,38 @@ describe('BoxFormDialogComponent', () => {
                 previewImage: '',
                 description: '',
                 lastModified: new Date(),
-                isVisible: false, // 🔴 Game is hidden!
+                isVisible: false,
                 board: [],
             },
         ];
         mockGameService.fetchVisibleGames.and.returnValue(of(mockGames));
         spyOn(window, 'alert');
-    
+
         await component.save();
-    
+
         expect(window.alert).toHaveBeenCalledWith('Ce jeu a été supprimé ou sa visibilité a changéee entre temps, Veuillez choisir un autre jeu.');
         expect(mockDialogRef.close).not.toHaveBeenCalled();
     });
-    
-    
 
     it('should save and close dialog when game exists and is visible', async () => {
-        component.gameList = [{
-            id: '1',
-            name: 'Test Game',
-            mapSize: '',
-            mode: '',
-            previewImage: '',
-            description: '',
-            lastModified: new Date(),
-            isVisible: true,
-            board: []
-        }]; // Jeu valide
+        component.gameList = [
+            {
+                id: '1',
+                name: 'Test Game',
+                mapSize: '',
+                mode: '',
+                previewImage: '',
+                description: '',
+                lastModified: new Date(),
+                isVisible: true,
+                board: [],
+            },
+        ];
         spyOn(localStorage, 'setItem');
-    
+
         await component.save();
-    
+
         expect(localStorage.setItem).toHaveBeenCalledWith('form', JSON.stringify(component.form.value));
         expect(mockDialogRef.close).toHaveBeenCalledWith(component.form.value);
     });
-    
-    
 });
