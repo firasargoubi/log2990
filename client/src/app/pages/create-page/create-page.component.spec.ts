@@ -79,22 +79,24 @@ describe('CreatePageComponent', () => {
     });
 
     it('should fetch games on initialization', fakeAsync(() => {
-        gameServiceSpy.fetchVisibleGames.and.returnValue(of([
-            {
-                id: '1',
-                name: 'Chess',
-                mapSize: '8x8',
-                mode: 'Classic',
-                previewImage: 'chess.png',
-                description: 'A strategic board game.',
-                lastModified: new Date(),
-                isVisible: true,
-                board: [
-                    [0, 1],
-                    [1, 0],
-                ],
-            }
-        ]));
+        gameServiceSpy.fetchVisibleGames.and.returnValue(
+            of([
+                {
+                    id: '1',
+                    name: 'Chess',
+                    mapSize: '8x8',
+                    mode: 'Classic',
+                    previewImage: 'chess.png',
+                    description: 'A strategic board game.',
+                    lastModified: new Date(),
+                    isVisible: true,
+                    board: [
+                        [0, 1],
+                        [1, 0],
+                    ],
+                },
+            ]),
+        );
 
         component.ngOnInit();
         tick();
@@ -188,7 +190,7 @@ describe('CreatePageComponent', () => {
                     [0, 1],
                     [1, 0],
                 ],
-            }
+            },
         ];
 
         gameServiceSpy.fetchVisibleGames.and.returnValue(of(newGames));
@@ -222,7 +224,7 @@ describe('CreatePageComponent', () => {
 
         expect(component['pollingSubscription'].unsubscribe).toHaveBeenCalled();
     });
-    
+
     it('should log the game when onBoxClick is called', () => {
         const consoleSpy = spyOn(console, 'log');
         const mockGame: Game = {

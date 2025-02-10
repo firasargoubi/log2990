@@ -29,7 +29,9 @@ describe('BoxFormDialogComponent', () => {
                 { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => '1' } } } },
             ],
         }).compileComponents();
+    });
 
+    beforeEach(() => {
         fixture = TestBed.createComponent(BoxFormDialogComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
@@ -154,7 +156,7 @@ describe('BoxFormDialogComponent', () => {
         component.cancel();
         expect(mockDialogRef.close).toHaveBeenCalledWith(null);
     });
-   
+
     it('should not save if the game is deleted or hidden', async () => {
         const mockGames: Game[] = [
             {
@@ -165,40 +167,38 @@ describe('BoxFormDialogComponent', () => {
                 previewImage: '',
                 description: '',
                 lastModified: new Date(),
-                isVisible: false, // 🔴 Game is hidden!
+                isVisible: false,
                 board: [],
             },
         ];
         mockGameService.fetchVisibleGames.and.returnValue(of(mockGames));
         spyOn(window, 'alert');
-    
+
         await component.save();
-    
+
         expect(window.alert).toHaveBeenCalledWith('Ce jeu a été supprimé ou sa visibilité a changéee entre temps, Veuillez choisir un autre jeu.');
         expect(mockDialogRef.close).not.toHaveBeenCalled();
     });
-    
-    
 
     it('should save and close dialog when game exists and is visible', async () => {
-        component.gameList = [{
-            id: '1',
-            name: 'Test Game',
-            mapSize: '',
-            mode: '',
-            previewImage: '',
-            description: '',
-            lastModified: new Date(),
-            isVisible: true,
-            board: []
-        }]; // Jeu valide
+        component.gameList = [
+            {
+                id: '1',
+                name: 'Test Game',
+                mapSize: '',
+                mode: '',
+                previewImage: '',
+                description: '',
+                lastModified: new Date(),
+                isVisible: true,
+                board: [],
+            },
+        ];
         spyOn(localStorage, 'setItem');
-    
+
         await component.save();
-    
+
         expect(localStorage.setItem).toHaveBeenCalledWith('form', JSON.stringify(component.form.value));
         expect(mockDialogRef.close).toHaveBeenCalledWith(component.form.value);
     });
-    
-    
 });

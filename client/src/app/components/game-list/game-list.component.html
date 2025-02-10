@@ -4,11 +4,6 @@
     </mat-card>
     @for (game of games; track $index) {
 
-    <app-game-card
-        [game]="game"
-        (edit)="editGame.emit(game)"
-        (delete)="deleteGame.emit(game)"
-        (visibilityChange)="onVisibilityChange(game)"
-    ></app-game-card>
+    <app-game-card [game]="game" (delete)="deleteGame.emit(game)" (visibilityChange)="onVisibilityChange(game)"></app-game-card>
     }
 </div>
