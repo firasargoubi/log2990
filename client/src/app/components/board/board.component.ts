@@ -1,9 +1,7 @@
-import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ItemComponent } from '@app/components/item/item.component';
 import { TileComponent } from '@app/components/tile/tile.component';
 import { Coordinates } from '@app/interfaces/coordinates';
 import { Game } from '@app/interfaces/game.model';

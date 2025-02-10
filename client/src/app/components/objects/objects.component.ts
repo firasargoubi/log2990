@@ -54,7 +54,7 @@ export class ObjectsComponent {
         } else if (item.type === '7') {
             item.randomCounter++;
         } else {
-            this.counterService.decrementCounter();
+            this.counterService.incrementCounter();
         }
     }
 
