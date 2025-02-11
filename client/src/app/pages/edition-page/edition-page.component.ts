@@ -13,7 +13,6 @@ import { ErrorService } from '@app/services/error.service';
 import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
 import { SaveService } from '@app/services/save.service';
-import { catchError, EMPTY, tap } from 'rxjs';
 import { MapSize } from '@app/interfaces/mapsize';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 
@@ -123,26 +122,17 @@ export class EditionPageComponent {
 
     loadGame() {
         if (this.game.id) {
-            this.gameService
-                .fetchGameById(this.game.id)
-                .pipe(
-                    tap((gameSearched) => {
-                        this.game = gameSearched;
-                        this.counterService.initializeCounter(this.objectNumber);
-                        this.notificationService.showSuccess('Jeu chargé avec succès.');
-                        this.gameLoaded = true;
-                    }),
-                    catchError(() => {
-                        this.notificationService.showError('Impossible de charger le jeu.');
-                        this.gameLoaded = true;
-                        return EMPTY;
-                    }),
-                )
-                .subscribe();
+            this.gameService.fetchGameById(this.game.id).subscribe((gameSearched: Game) => {
+                this.game = gameSearched;
+                this.counterService.initializeCounter(this.objectNumber);
+                this.notificationService.showSuccess('Jeu chargé avec succès.');
+                this.gameLoaded = true;
+            });
         } else {
             this.game.name = '';
             this.game.description = '';
             this.gameLoaded = true;
+            this.counterService.initializeCounter(this.objectNumber);
         }
     }
 

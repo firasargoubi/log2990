@@ -1,25 +1,39 @@
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { ItemComponent } from '@app/components/item/item.component';
 import { DEFAULT_OBJECTS } from '@app/interfaces/default-objects';
 import { ObjectsTypes } from '@app/interfaces/objectsTypes';
 import { TileTypes } from '@app/interfaces/tileTypes';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 
+class ItemData {
+    type: number;
+    tooltipText: string | null = null;
+    isPlaced: boolean = false;
+
+    constructor(type: number, tooltipText: string | null = null) {
+        this.type = type;
+        this.tooltipText = tooltipText;
+    }
+}
+
 @Component({
     selector: 'app-tile',
     imports: [CommonModule, CdkDropList, CdkDrag],
     templateUrl: './tile.component.html',
-    styleUrl: './tile.component.scss',
+    styleUrls: ['./tile.component.scss'],
 })
 export class TileComponent implements OnInit {
     @Input() type: number;
-    @Input() objectID: number= 0;
+    @Input() objectID: number = 0;
     @Output() objectChanged = new EventEmitter<number>();
     @Output() objectMoved = new EventEmitter<boolean>();
+    @Output() removeObject = new EventEmitter<void>();
     count: number;
-    placedItem: ItemComponent[] = [];
+    objectImage: string = '';
+    isInitialObject: boolean = false;
+    isDragging: boolean = false;
+    private _itemData: ItemData | null = null;
 
     constructor(private counterService: ObjectCounterService) {
         if (!this.objectID) {
@@ -28,6 +42,21 @@ export class TileComponent implements OnInit {
             });
         }
     }
+
+    get itemData(): ItemData | null {
+        if (!this._itemData && this.objectID !== 0) {
+            this._itemData = this.createItemData(this.objectID);
+        }
+        return this._itemData;
+    }
+
+    get tileData(): ItemData[] {
+        if (this.isDragging || !this.itemData) {
+            return [];
+        }
+        return [this.itemData];
+    }
+
     get baseImage(): string {
         switch (this.type) {
             case TileTypes.Grass:
@@ -49,73 +78,100 @@ export class TileComponent implements OnInit {
 
     ngOnInit(): void {
         if (this.objectID !== 0) {
-            const object = this.getObjectById(this.objectID);
-            if (object) {
-                this.placedItem.push(object);
-                this.decrementCounter(object);
-            }
+            this.initializeObject();
         }
     }
 
-    refreshObject(): void {
-        if (!this.placedItem.length || !this.objectID) {
-            this.objectChanged.emit(0);
-        } else {
-            console.log(this.objectID);
-            this.objectChanged.emit(this.objectID);
-        }
-    }
-
-    getObjectById(id: number): ItemComponent | null {
-        const objectData = DEFAULT_OBJECTS.find((obj) => obj.id === id);
-        if (objectData) {
-            this.objectID = id;
-            const item = new ItemComponent();
-            item.type = objectData.id;
-            item.tooltipText = objectData.description;
-            return item;
-        }
-        return null;
-    }
-
-    decrementCounter(item: ItemComponent) {
-        if (item.type === ObjectsTypes.SPAWN || item.type === ObjectsTypes.RANDOM) {
-            this.counterService.decrementCounter(item.type);
-            if (!this.count) {
-                item.isPlaced = true;
-            }
-        } else {
-            this.counterService.decrementCounter(item.type);
-            item.isPlaced = true;
-        }
-    }
-
-    drop(event: CdkDragDrop<ItemComponent[]>) {
-        const draggedItem = event.previousContainer.data[event.previousIndex];
-
-        if (event.previousContainer === event.container) {
-            return; // No changes if dragged to the same place
-        }
-
-        if (this.type === TileTypes.DoorClosed || this.type === TileTypes.DoorOpen || this.type === TileTypes.Wall) {
-            return; // No changes if dragged to an illegal place
-        }
-
-        if (event.previousContainer.id !== 'objects-container') {
-            console.log('ITEM BEING DRAGGED - 1', draggedItem);
-            this.placedItem.push(draggedItem);
-            event.previousContainer.data.splice(event.previousIndex, 1);
-        } else if (
-            this.placedItem.length === 0 &&
-            !draggedItem.isPlaced &&
-            (draggedItem.type === ObjectsTypes.SPAWN || draggedItem.type === ObjectsTypes.RANDOM)
+    drop(event: CdkDragDrop<ItemData[]>) {
+        if (
+            event.previousContainer === event.container ||
+            this.type === TileTypes.DoorClosed ||
+            this.type === TileTypes.DoorOpen ||
+            this.type === TileTypes.Wall ||
+            this._itemData !== null
         ) {
-            console.log('ITEM BEING DRAGGED - 2', draggedItem);
-            this.placedItem.push(draggedItem);
-            this.decrementCounter(draggedItem);
+            return;
         }
+    
+        const draggedItem = event.previousContainer.data[event.previousIndex];
+        if (!draggedItem) return;
+    
+        // Supprimer l'objet de la tuile source
+        if (event.previousContainer.id.startsWith('tile-')) {
+            this.removeObject.emit();
+        }
+    
+        // Mettre à jour la nouvelle tuile avec l’objet déplacé
+        this.setObjectImage(draggedItem.type);
         this.objectID = draggedItem.type;
-        console.log(this);
+        this._itemData = draggedItem;
+        this.counterService.decrementCounter(draggedItem.type);
+        if (!this.count) draggedItem.isPlaced = true;
         this.objectMoved.emit(true);
+        this.isDragging = false;
+    }
+
+    dragStarted(): void {
+        this.isDragging = true;
+    }
+
+    dragEnded(event: any): void {
+        this.isDragging = false;
+    }
+
+    clearTile(): void {
+        this.objectID = 0;
+        this.objectImage = '';
+        this._itemData = null;
+    }
+
+    refreshObject() {
+        this.objectChanged.emit(this.objectID);
+    }
+
+    private initializeObject(): void {
+        const objectData = DEFAULT_OBJECTS.find((obj) => obj.id === this.objectID);
+        if (objectData) {
+            this.isInitialObject = true;
+            this.setObjectImage(objectData.id);
+            this._itemData = this.createItemData(objectData.id);
+            this.objectMoved.emit(true);
+        }
+    }
+
+    private createItemData(id: number): ItemData {
+        const description = DEFAULT_OBJECTS.find((obj) => obj.id === id)?.description || '';
+        return new ItemData(id, description);
+    }
+
+    private setObjectImage(type: number): void {
+        switch (type) {
+            case ObjectsTypes.BOOTS:
+                this.objectImage = 'assets/boots.png';
+                break;
+            case ObjectsTypes.SWORD:
+                this.objectImage = 'assets/sword.png';
+                break;
+            case ObjectsTypes.POTION:
+                this.objectImage = 'assets/potion.png';
+                break;
+            case ObjectsTypes.WAND:
+                this.objectImage = 'assets/wand.png';
+                break;
+            case ObjectsTypes.CRYSTAL:
+                this.objectImage = 'assets/crystal_ball.png';
+                break;
+            case ObjectsTypes.JUICE:
+                this.objectImage = 'assets/berry-juice.png';
+                break;
+            case ObjectsTypes.SPAWN:
+                this.objectImage = 'assets/vortex.png';
+                break;
+            case ObjectsTypes.RANDOM:
+                this.objectImage = 'assets/gnome.png';
+                break;
+            default:
+                this.objectImage = 'assets/transparent.png';
+        }
     }
 }

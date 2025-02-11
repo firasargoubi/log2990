@@ -1,15 +1,23 @@
-<div 
-    class = "tile" 
-    cdkDropList
-    [cdkDropListData]="placedItem"
+<div class="tile-container">
+    <div 
+    class="tile" 
     [ngStyle]="{'background-image': 'url(' + baseImage + ')'}"
+    cdkDropList
+    [cdkDropListData]="tileData"
     (cdkDropListDropped)="drop($event)"
-    >
-    @if (placedItem.length === 0) {
-        <img class = "transparent" src = "assets/transparent.png"/>
-    } @else {
-        @for (item of placedItem; track item) {
-            <img class ="item-image" [src]="item.image" cdkDrag/>
+    (removeObject)="clearTile()"
+>
+        @if (!objectImage) {
+            <img class="transparent" src="assets/transparent.png"/>
+        } @else {
+            <img 
+                class="item-image" 
+                [src]="objectImage" 
+                cdkDrag
+                [cdkDragData]="itemData"
+                (cdkDragStarted)="dragStarted()"
+                (cdkDragEnded)="dragEnded($event)"
+                />
         }
-    }
+    </div>
 </div>
