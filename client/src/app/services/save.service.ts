@@ -52,7 +52,6 @@ export class SaveService {
     }
 
     verifyBoard(board: Tile[][]): void {
-        console.log(this.board);
         this.board = board;
         this.currentStatus = {
             doors: this.verifyDoors(),
