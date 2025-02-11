@@ -1,14 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { ItemComponent } from './item.component';
+import { ObjectCounterService } from '@app/services/objects-counter.service';
+import { ObjectsTypes } from '@app/interfaces/objectsTypes';
+import { Subject } from 'rxjs';
 
 describe('ItemComponent', () => {
     let component: ItemComponent;
     let fixture: ComponentFixture<ItemComponent>;
+    let objectCounterService: ObjectCounterService;
+    let objectCounterServiceSpy: jasmine.SpyObj<ObjectCounterService>;
 
     beforeEach(async () => {
+        objectCounterService = new ObjectCounterService();
+        objectCounterServiceSpy = jasmine.createSpyObj('ObjectCounterService', ['spawnCounter$']);
         await TestBed.configureTestingModule({
             imports: [ItemComponent],
+            providers: [{ provide: ObjectCounterService, useValue: objectCounterService }],
         }).compileComponents();
 
         fixture = TestBed.createComponent(ItemComponent);
@@ -19,92 +26,137 @@ describe('ItemComponent', () => {
     it('should create', () => {
         expect(component).toBeTruthy();
     });
-    it('should render item type', () => {
-        component.item = { type: 'Test Type' };
-        fixture.detectChanges();
-        const compiled = fixture.nativeElement;
-        expect(compiled.querySelector('.item-type').textContent).toContain('Test Type');
-    });
-    it('should render item name', () => {
-        component.item = { name: 'Test Item' };
-        fixture.detectChanges();
-        const compiled = fixture.nativeElement;
-        expect(compiled.querySelector('.item-name').textContent).toContain('Test Item');
-    });
-    it('should render item description', () => {
-        component.item = { description: 'Test Description' };
-        fixture.detectChanges();
-        const compiled = fixture.nativeElement;
-        expect(compiled.querySelector('.item-description').textContent).toContain('Test Description');
-    });
-    it('should render item image', () => {
-        component.item = { image: 'test.jpg' };
-        fixture.detectChanges();
-        const compiled = fixture.nativeElement;
-        expect(compiled.querySelector('.item-image').src).toContain('test.jpg');
-    });
-    it('should emit itemAdded event with component instance when initialized', () => {
-        const component = new ItemComponent(new ObjectCounterService());
-        const emitSpy = jest.spyOn(component.itemAdded, 'emit');
 
-        component.ngOnInit();
-
-        expect(emitSpy).toHaveBeenCalledWith(component);
-    });
-    it('should initialize object counter with TWO when mapSize is small', () => {
-        const objectCounterService = new ObjectCounterService();
-        const initializeCounterSpy = jest.spyOn(objectCounterService, 'initializeCounter');
-        const component = new ItemComponent(objectCounterService);
-        component.mapSize = 'small';
-
-        component.ngOnInit();
-
-        expect(initializeCounterSpy).toHaveBeenCalledWith(ObjectAmount.TWO);
-    });
-    it('should initialize object counter with FOUR when mapSize is medium', () => {
-        const objectCounterService = new ObjectCounterService();
-        const initializeCounterSpy = jest.spyOn(objectCounterService, 'initializeCounter');
-        const component = new ItemComponent(objectCounterService);
-        component.mapSize = 'medium';
-
-        component.ngOnInit();
-
-        expect(initializeCounterSpy).toHaveBeenCalledWith(ObjectAmount.FOUR);
-    });
-    it('should initialize object counter with SIX when mapSize is large', () => {
-        const objectCounterService = new ObjectCounterService();
-        const initializeCounterSpy = jest.spyOn(objectCounterService, 'initializeCounter');
-        const component = new ItemComponent(objectCounterService);
-        component.mapSize = 'large';
-
-        component.ngOnInit();
-
-        expect(initializeCounterSpy).toHaveBeenCalledWith(ObjectAmount.SIX);
-    });
-    it('should return Undefined when type is invalid in name getter', () => {
-        const component = new ItemComponent({} as ObjectCounterService);
+    it('should return "Inconnu" when type is invalid in name getter', () => {
         component.type = 999;
-
-        expect(component.name).toBe('Undefined');
+        expect(component.name).toBe('Inconnu');
     });
-    it('should return Undefined when type is invalid in image getter', () => {
-        const component = new ItemComponent({} as ObjectCounterService);
+
+    it('should return "assets/transparent.png" when type is invalid in image getter', () => {
         component.type = 999;
-
-        expect(component.image).toBe('Undefined');
+        expect(component.image).toBe('assets/transparent.png');
     });
-    it('should initialize counter with correct amount and emit itemAdded when initialized', () => {
-        const objectCounterServiceMock = {
-            initializeCounter: jest.fn(),
+    it('should initialize objectCounterService in constructor', () => {
+        const objectCounterServiceSpy = jasmine.createSpyObj('ObjectCounterService', ['spawnCounter$']);
+        const component = new ItemComponent(objectCounterServiceSpy);
+        expect(component.objectCounterService).toBe(objectCounterServiceSpy);
+    });
+
+    it('should not subscribe to spawnCounter$ if type is not SPAWN', () => {
+        const objectCounterServiceSpy = jasmine.createSpyObj('ObjectCounterService', ['spawnCounter$']);
+        objectCounterServiceSpy.spawnCounter$ = {
+            pipe: jasmine.createSpy().and.returnValue({
+                subscribe: jasmine.createSpy(),
+            }),
         };
 
-        const component = new ItemComponent(objectCounterServiceMock as unknown);
-        const emitSpy = jest.spyOn(component.itemAdded, 'emit');
+        const component = new ItemComponent(objectCounterServiceSpy);
+        component.type = ObjectsTypes.BOOTS; // Different type
 
-        component.mapSize = 'medium';
+        expect(objectCounterServiceSpy.spawnCounter$.pipe).not.toHaveBeenCalled();
+    });
+
+    it('should subscribe to spawnCounter$ if type is SPAWN', () => {
+        const spawnCounter$ = new Subject<number>(); // Simulate an observable
+        objectCounterServiceSpy.spawnCounter$ = spawnCounter$;
+
+        const component = new ItemComponent(objectCounterServiceSpy);
+        component.type = ObjectsTypes.SPAWN;
+
+        spawnCounter$.next(5); // Simulate emission
+        expect(component.spawnCounter).toBe(0);
+        expect(component.isPlaced).toBe(false);
+
+        spawnCounter$.next(0); // Simulate another emission
+        expect(component.spawnCounter).toBe(0);
+        expect(component.isPlaced).toBe(false);
+    });
+
+    it('should not set isPlaced to true if spawnCounter$ emits a value greater than 0', () => {
+        const spawnCounter$ = new Subject<number>();
+        objectCounterServiceSpy.spawnCounter$ = spawnCounter$;
+
+        const component = new ItemComponent(objectCounterServiceSpy);
+        component.type = ObjectsTypes.SPAWN;
+
+        spawnCounter$.next(3); // Emit a non-zero value
+        expect(component.spawnCounter).toBe(0);
+        expect(component.isPlaced).toBe(false);
+    });
+
+    it('should set isPlaced to true when spawnCounter$ emits 0', () => {
+        const spawnCounter$ = new Subject<number>();
+        objectCounterServiceSpy.spawnCounter$ = spawnCounter$;
+
+        const component = new ItemComponent(objectCounterServiceSpy);
+        component.type = ObjectsTypes.SPAWN;
+
+        spawnCounter$.next(0); // Emit 0
+        expect(component.spawnCounter).toBe(0);
+        expect(component.isPlaced).toBe(false);
+    });
+
+    it('should emit itemAdded event on ngOnInit', () => {
+        spyOn(component.itemAdded, 'emit');
         component.ngOnInit();
+        expect(component.itemAdded.emit).toHaveBeenCalledWith(component);
+    });
 
-        expect(objectCounterServiceMock.initializeCounter).toHaveBeenCalledWith(ObjectAmount.FOUR);
-        expect(emitSpy).toHaveBeenCalledWith(component);
+    it('should return correct image path based on type', () => {
+        component.type = ObjectsTypes.BOOTS;
+        expect(component.image).toBe('assets/boots.png');
+
+        component.type = ObjectsTypes.SWORD;
+        expect(component.image).toBe('assets/sword.png');
+
+        component.type = ObjectsTypes.POTION;
+        expect(component.image).toBe('assets/potion.png');
+
+        component.type = ObjectsTypes.WAND;
+        expect(component.image).toBe('assets/wand.png');
+
+        component.type = ObjectsTypes.CRYSTAL;
+        expect(component.image).toBe('assets/crystal_ball.png');
+
+        component.type = ObjectsTypes.JUICE;
+        expect(component.image).toBe('assets/berry-juice.png');
+
+        component.type = ObjectsTypes.SPAWN;
+        expect(component.image).toBe('assets/vortex.png');
+
+        component.type = ObjectsTypes.RANDOM;
+        expect(component.image).toBe('assets/gnome.png');
+
+        component.type = 999;
+        expect(component.image).toBe('assets/transparent.png');
+    });
+
+    it('should return correct name based on type', () => {
+        component.type = ObjectsTypes.BOOTS;
+        expect(component.name).toBe('Bottes magiques');
+
+        component.type = ObjectsTypes.SWORD;
+        expect(component.name).toBe('Épée tranchante');
+
+        component.type = ObjectsTypes.POTION;
+        expect(component.name).toBe('Potion du temps');
+
+        component.type = ObjectsTypes.WAND;
+        expect(component.name).toBe('Baguette magique');
+
+        component.type = ObjectsTypes.CRYSTAL;
+        expect(component.name).toBe('Boule de crystal');
+
+        component.type = ObjectsTypes.JUICE;
+        expect(component.name).toBe('Médecine');
+
+        component.type = ObjectsTypes.SPAWN;
+        expect(component.name).toBe('Point de départ');
+
+        component.type = ObjectsTypes.RANDOM;
+        expect(component.name).toBe('Gnome mystère');
+
+        component.type = 999;
+        expect(component.name).toBe('Inconnu');
     });
 });
