@@ -11,12 +11,11 @@ import { GameService } from '@app/services/game.service';
 import { MouseService } from '@app/services/mouse.service';
 import { SaveService } from '@app/services/save.service';
 import { TileService } from '@app/services/tile.service';
-import { ItemComponent } from '@app/components/item/item.component';
 
 const RIGHT_CLICK = 2;
 @Component({
     selector: 'app-board',
-    imports: [TileComponent, CommonModule, FormsModule, ItemComponent],
+    imports: [TileComponent, CommonModule, FormsModule],
     templateUrl: './board.component.html',
     styleUrl: './board.component.scss',
 })

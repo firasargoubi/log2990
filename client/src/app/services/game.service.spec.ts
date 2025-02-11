@@ -64,12 +64,13 @@ describe('GameService', () => {
             id: gameId,
             name: 'Test Game',
             isVisible,
-            mapSize: '',
-            mode: '',
+            mapSize: 'medium',
+            mode: 'normal',
             previewImage: '',
             description: '',
             lastModified: new Date(),
             board: [],
+            objects: [],
         };
 
         service.updateVisibility(gameId, isVisible).subscribe((game) => {
@@ -101,12 +102,13 @@ describe('GameService', () => {
             id: gameId,
             name: 'Updated Game',
             isVisible: true,
-            mapSize: '',
-            mode: '',
+            mapSize: 'medium',
+            mode: 'normal',
             previewImage: '',
             description: '',
             lastModified: new Date(),
             board: [],
+            objects: [],
         };
 
         service.updateGame(gameId, gameModif).subscribe((game) => {
@@ -125,12 +127,13 @@ describe('GameService', () => {
                 id: '1',
                 name: 'Game 1',
                 isVisible: true,
-                mapSize: '',
-                mode: '',
+                mapSize: 'medium',
+                mode: 'normal',
                 previewImage: '',
                 description: '',
                 lastModified: new Date(),
                 board: [],
+                objects: [],
             },
         ];
 
@@ -160,12 +163,13 @@ describe('GameService', () => {
                 id: '1',
                 name: 'Game 1',
                 isVisible: true,
-                mapSize: '',
-                mode: '',
+                mapSize: 'medium',
+                mode: 'normal',
                 previewImage: '',
                 description: '',
                 lastModified: new Date(),
                 board: [],
+                objects: [],
             },
         ];
 
@@ -195,12 +199,13 @@ describe('GameService', () => {
             id: gameId,
             name: 'Test Game',
             isVisible: true,
-            mapSize: '',
-            mode: '',
+            mapSize: 'medium',
+            mode: 'normal',
             previewImage: '',
             description: '',
             lastModified: new Date(),
             board: [],
+            objects: [],
         };
 
         service.fetchGameById(gameId).subscribe((game) => {
@@ -229,12 +234,13 @@ describe('GameService', () => {
             id: '123',
             name: 'New Game',
             isVisible: true,
-            mapSize: '',
-            mode: '',
+            mapSize: 'medium',
+            mode: 'normal',
             previewImage: '',
             description: '',
             lastModified: new Date(),
             board: [],
+            objects: [],
         };
 
         service.createGame(mockGame).subscribe((game) => {
@@ -252,12 +258,13 @@ describe('GameService', () => {
             id: '123',
             name: 'New Game',
             isVisible: true,
-            mapSize: '',
-            mode: '',
+            mapSize: 'medium',
+            mode: 'normal',
             previewImage: '',
             description: '',
             lastModified: new Date(),
             board: [],
+            objects: [],
         };
 
         service.createGame(mockGame).subscribe((response) => {

@@ -10,14 +10,26 @@ export class ObjectCounterService {
     counterSubject = new BehaviorSubject<number>(0); // Initialisé à 0
     counter$ = this.counterSubject.asObservable(); // Observable pour écouter les changements
 
-    decrementCounter() {
+    decrementCounter(type: number) {
         if (this.counterSubject.value > 0) {
-            this.counterSubject.next(this.counterSubject.value - 1);
+            if (type === 6) {
+                this.spawnCounter.next(this.spawnCounter.value - 1);
+            } else if (type === 7) {
+                this.randomCounter.next(this.randomCounter.value - 1);
+            } else {
+                this.counterSubject.next(this.counterSubject.value - 1);
+            }
         }
     }
 
-    incrementCounter() {
-        this.counterSubject.next(this.counterSubject.value + 1);
+    incrementCounter(type: number) {
+        if (type === 6) {
+            this.spawnCounter.next(this.spawnCounter.value + 1);
+        } else if (type === 7) {
+            this.randomCounter.next(this.randomCounter.value + 1);
+        } else {
+            this.counterSubject.next(this.counterSubject.value + 1);
+        }
     }
 
     getCounter() {
@@ -26,5 +38,7 @@ export class ObjectCounterService {
 
     initializeCounter(value: number) {
         this.counterSubject.next(value);
+        this.spawnCounter.next(value);
+        this.randomCounter.next(value);
     }
 }

@@ -32,12 +32,10 @@ export class ObjectsComponent {
     }
 
     incrementCounter(item: ItemComponent) {
-        if (item.type === 6) {
-            item.spawnCounter++;
-        } else if (item.type === 7) {
-            item.randomCounter++;
+        if (item.type === 6 || item.type === 7) {
+            this.counterService.incrementCounter(item.type);
         } else {
-            this.counterService.incrementCounter();
+            this.counterService.incrementCounter(item.type);
         }
     }
 

@@ -13,8 +13,8 @@ describe('GameCardComponent', () => {
     const mockGame: Game = {
         id: '1',
         name: 'Test Game',
-        mapSize: 'Large',
-        mode: 'CTF',
+        mapSize: 'large',
+        mode: 'capture',
         previewImage: 'https://via.placeholder.com/150',
         description: 'A test game description',
         lastModified: new Date(),
@@ -23,6 +23,7 @@ describe('GameCardComponent', () => {
             [0, 0],
             [0, 0],
         ],
+        objects: [],
     };
 
     beforeEach(async () => {
