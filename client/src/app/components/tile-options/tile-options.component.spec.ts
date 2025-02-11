@@ -28,7 +28,7 @@ describe('TileOptionsComponent', () => {
     it('should initialize tile options', () => {
         component.initializeOptions();
         expect(component.options.length).toBe(MAX_TILE_OPTIONS); // Since MAX_TILE is 6 (1 to 5)
-        expect(component.options[0]).toEqual({ type: 1, x: 1, y: 0, id: '1' });
+        expect(component.options[0]).toEqual({ type: 1, x: 1, y: 0, id: '1', object: 0 });
     });
 
     it('should select a tile option and set all others unselected', () => {

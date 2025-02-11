@@ -49,11 +49,10 @@ export class ObjectsComponent implements OnInit, OnDestroy {
     }
 
     resetComponent(): void {
-        // Ajouter des éléments à `items` ici
         this.items = [];
-        for (let i = 0; i < this.range.length; i++) {
+        for (const type of this.range) {
             const newItem = new ItemComponent(this.counterService);
-            newItem.type = this.range[i];
+            newItem.type = type;
             this.items.push(newItem);
         }
     }

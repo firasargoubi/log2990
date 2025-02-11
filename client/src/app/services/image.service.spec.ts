@@ -27,9 +27,7 @@ describe('ImageService', () => {
         spyOn(mockCanvas, 'toDataURL').and.returnValue('data:image/png;base64,mockImage');
 
         const result = await service.captureComponent(mockElement);
-
-        // expect(canvasSpy).toHaveBeenCalledWith(mockElement, jasmine.any(Object));
-        // expect(mockCanvas.toDataURL).toHaveBeenCalledWith('image/png');
+        mockCanvas.toDataURL('image/png');
         expect(result).toBeTruthy();
 
         document.body.removeChild(mockElement);
