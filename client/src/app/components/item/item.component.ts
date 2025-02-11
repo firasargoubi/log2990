@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ObjectsTypes } from '@app/interfaces/objectsTypes';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
+import { GAME_IMAGES } from '@app/Consts/app.constants';
 
 @Component({
     selector: 'app-item',
@@ -45,46 +46,46 @@ export class ItemComponent implements OnInit {
     get image(): string {
         switch (this.type) {
             case ObjectsTypes.BOOTS:
-                return 'assets/boots.png';
+                return GAME_IMAGES.boots;
             case ObjectsTypes.SWORD:
-                return 'assets/sword.png';
+                return GAME_IMAGES.sword;
             case ObjectsTypes.POTION:
-                return 'assets/potion.png';
+                return GAME_IMAGES.potion;
             case ObjectsTypes.WAND:
-                return 'assets/wand.png';
+                return GAME_IMAGES.wand;
             case ObjectsTypes.CRYSTAL:
-                return 'assets/crystal_ball.png';
+                return GAME_IMAGES.crystalBall;
             case ObjectsTypes.JUICE:
-                return 'assets/berry-juice.png';
+                return GAME_IMAGES.berryJuice;
             case ObjectsTypes.SPAWN:
-                return 'assets/vortex.png';
+                return GAME_IMAGES.vortex;
             case ObjectsTypes.RANDOM:
-                return 'assets/gnome.png';
+                return GAME_IMAGES.gnome;
             default:
-                return 'assets/transparent.png';
+                return GAME_IMAGES.undefined;
         }
     }
 
     get name(): string {
         switch (this.type) {
             case ObjectsTypes.BOOTS:
-                return 'Bottes magiques';
+                return GAME_IMAGES.boots;
             case ObjectsTypes.SWORD:
-                return 'Épée tranchante';
+                return GAME_IMAGES.sword;
             case ObjectsTypes.POTION:
-                return 'Potion du temps';
+                return GAME_IMAGES.potion;
             case ObjectsTypes.WAND:
-                return 'Baguette magique';
+                return GAME_IMAGES.wand;
             case ObjectsTypes.CRYSTAL:
-                return 'Boule de crystal';
+                return GAME_IMAGES.crystalBall;
             case ObjectsTypes.JUICE:
-                return 'Médecine';
+                return GAME_IMAGES.berryJuice;
             case ObjectsTypes.SPAWN:
-                return 'Point de départ';
+                return GAME_IMAGES.vortex;
             case ObjectsTypes.RANDOM:
-                return 'Gnome mystère';
+                return GAME_IMAGES.gnome;
             default:
-                return 'Inconnu';
+                return GAME_IMAGES.undefined;
         }
     }
 

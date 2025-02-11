@@ -5,8 +5,8 @@ import { ItemComponent } from '@app/components/item/item.component';
 import { DEFAULT_OBJECTS } from '@app/interfaces/default-objects';
 import { ObjectsTypes } from '@app/interfaces/objectsTypes';
 import { TileTypes } from '@app/interfaces/tileTypes';
+import { GAME_IMAGES } from '@app/Consts/app.constants';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
-
 @Component({
     selector: 'app-tile',
     imports: [CommonModule, CdkDropList, CdkDrag],
@@ -31,19 +31,19 @@ export class TileComponent implements OnInit {
     get baseImage(): string {
         switch (this.type) {
             case TileTypes.Grass:
-                return 'assets/grass.png';
+                return GAME_IMAGES.grass;
             case TileTypes.Water:
-                return 'assets/water.png';
+                return GAME_IMAGES.water;
             case TileTypes.Ice:
-                return 'assets/ice2.png';
+                return GAME_IMAGES.ice;
             case TileTypes.Wall:
-                return 'assets/wall.png';
+                return GAME_IMAGES.wall;
             case TileTypes.DoorClosed:
-                return 'assets/door_c.png';
+                return GAME_IMAGES.doorClosed;
             case TileTypes.DoorOpen:
-                return 'assets/door_o.png';
+                return GAME_IMAGES.doorOpen;
             default:
-                return 'assets/grass.png';
+                return GAME_IMAGES.default;
         }
     }
 

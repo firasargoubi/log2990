@@ -164,10 +164,7 @@ describe('CreatePageComponent', () => {
         };
 
         mockDialogRef.afterClosed.and.returnValue(of(newMockGame));
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        spyOn(component as any, 'loadGames');
-
+        spyOn(component as unknown as { loadGames: () => void }, 'loadGames');
         component.onBoxClick(newMockGame);
         expect(matDialogSpy.open).toHaveBeenCalled();
         expect(mockDialogRef.afterClosed).toHaveBeenCalled();
@@ -187,7 +184,10 @@ describe('CreatePageComponent', () => {
         tick();
         fixture.detectChanges();
 
-        expect(snackBarSpy.open).toHaveBeenCalledWith('Erreur lors du chargement des jeux', 'Fermer', { duration: 3000 });
+        expect(snackBarSpy.open).toHaveBeenCalledWith('Erreur lors du chargement des jeux', 'Fermer', {
+            duration: 3000,
+            panelClass: ['error-notification'],
+        });
 
         discardPeriodicTasks();
     }));

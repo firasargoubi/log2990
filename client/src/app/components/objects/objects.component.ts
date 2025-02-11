@@ -16,7 +16,7 @@ import { filter } from 'rxjs/operators';
     styleUrl: './objects.component.scss',
 })
 export class ObjectsComponent implements OnInit, OnDestroy {
-    @Input() mapSize: 'small' | 'medium' | 'large';
+    @Input() mapSize: string;
     range: number[] = [];
     items: ItemComponent[] = [];
     counter$ = this.counterService.counter$;

@@ -1,13 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, Inject, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { RouterModule, Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Game } from '@app/interfaces/game.model';
 import { GameService } from '@app/services/game.service';
+import { NotificationService } from '@app/services/notification.service';
 import { Subscription, interval } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+import { CREATE_PAGE_CONSTANTS, GAME_IMAGES } from '@app/Consts/app.constants';
 
 const DEFAULT_STAT_VALUE = 4;
 const SIX_VALUE_DICE = 6;
@@ -22,20 +23,20 @@ const PULLING_INTERVAL = 5000;
 export class BoxFormDialogComponent implements OnInit, OnDestroy {
     form: FormGroup;
     gameList: Game[] = [];
-
+    notificationService = inject(NotificationService);
     avatars = [
-        'assets/perso/1.jpg',
-        'assets/perso/2.jpg',
-        'assets/perso/3.jpg',
-        'assets/perso/4.jpg',
-        'assets/perso/5.jpg',
-        'assets/perso/6.jpg',
-        'assets/perso/7.jpg',
-        'assets/perso/8.jpg',
-        'assets/perso/9.jpg',
-        'assets/perso/10.jpg',
-        'assets/perso/11.jpg',
-        'assets/perso/12.jpg',
+        GAME_IMAGES.fawn,
+        GAME_IMAGES.bear,
+        GAME_IMAGES.castor,
+        GAME_IMAGES.squirrel1,
+        GAME_IMAGES.owl,
+        GAME_IMAGES.rabbit,
+        GAME_IMAGES.squirrel2,
+        GAME_IMAGES.pigeon,
+        GAME_IMAGES.rat,
+        GAME_IMAGES.fox,
+        GAME_IMAGES.dear,
+        GAME_IMAGES.raccoon,
     ];
 
     formValid$: boolean = false;
@@ -47,13 +48,12 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
         public dialogRef: MatDialogRef<BoxFormDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: { boxId: string; game: Game; gameList: Game[] },
         private gameService: GameService,
-        private snackBar: MatSnackBar,
         private router: Router,
     ) {
         this.loadGames();
 
         this.form = new FormGroup({
-            name: new FormControl(data.game.name, [Validators.required]),
+            name: new FormControl('New Player', [Validators.required]),
             avatar: new FormControl(this.avatars[0], [Validators.required]),
             life: new FormControl(DEFAULT_STAT_VALUE, [Validators.min(0)]),
             speed: new FormControl(DEFAULT_STAT_VALUE, [Validators.min(0)]),
@@ -79,7 +79,7 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
                         this.gameList = updatedGames;
                     }
                 },
-                error: () => this.snackBar.open('Erreur lors du rafraîchissement des jeux', 'Fermer', { duration: 3000 }),
+                error: () => this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorRefreshGames),
             });
     }
 
@@ -135,18 +135,22 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
         this.diceClicked$ = false;
     }
 
-    async save(): Promise<void> {
+    async linkRoute(): Promise<void> {
+        if (!(this.form.get('name')?.value === 'New Player')) {
+            this.router.navigate(['/waiting']);
+        }
+    }
+
+    save(): void {
         this.form.updateValueAndValidity();
-        this.form.markAllAsTouched();
+        const gameExists = this.gameList.some((game) => game.id === this.data.game.id);
+        if (!gameExists || !this.data.game.isVisible) {
+            this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorGameDeleted);
+            return;
+        }
         if (this.form.valid) {
             localStorage.setItem('form', JSON.stringify(this.form.value));
-            const gameExists = this.gameList.some((game) => game.id === this.data.game.id);
-            if (!gameExists || !this.data.game.isVisible) {
-                alert('Ce jeu a été supprimé ou sa visibilité a changéee entre temps, Veuillez choisir un autre jeu.');
-                return;
-            }
-            this.router.navigate(['/waiting']);
-            this.dialogRef.close(this.form.value);
+            this.linkRoute();
         }
     }
 
@@ -155,7 +159,7 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
             next: (allGames) => {
                 this.gameList = allGames;
             },
-            error: () => this.snackBar.open('Erreur lors du chargement des jeux', 'Fermer', { duration: 3000 }),
+            error: () => this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorLoadingGames),
         });
     }
 }

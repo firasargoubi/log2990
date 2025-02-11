@@ -9,6 +9,7 @@
         </a>
         @for (game of games; track game) {
         <app-game-creation-card [game]="game" (click)="onBoxClick(game)"></app-game-creation-card>
+
         }
     </div>
 </mat-card>
