@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 
@@ -7,6 +7,7 @@ import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
     imports: [MatButtonModule, MatDialogModule],
     templateUrl: './confirm-delete.component.html',
     styleUrl: './confirm-delete.component.scss',
+    encapsulation: ViewEncapsulation.None,
 })
 export class ConfirmDeleteComponent {
     constructor(private dialogRef: MatDialogRef<ConfirmDeleteComponent>) {}

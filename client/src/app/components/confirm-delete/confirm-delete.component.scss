@@ -1,0 +1,83 @@
+
+.mat-mdc-dialog-container .mdc-dialog__surface {
+    background-color: #459948 !important; 
+    border-radius: 50px !important; 
+    padding: 30px !important;
+    text-align: center !important;
+    font-family: 'Press Start 2P', cursive !important;
+    box-shadow: 0px 15px 25px rgba(0, 0, 0, 0.3) !important;
+    border: 4px solid #81C784 !important; 
+    width: 420px !important;
+    max-width: 90% !important;
+    overflow: hidden !important; 
+    position: relative !important;
+    animation: floating 3s infinite ease-in-out !important;
+}
+
+
+@keyframes floating {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+.mat-mdc-dialog-container .mdc-dialog__title {
+    font-size: 22px !important;
+    font-weight: bold !important;
+    color: white !important;
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5) !important;
+}
+
+.mat-mdc-dialog-container .mdc-dialog__content {
+    font-size: 18px !important;
+    color: white !important;
+    margin: 20px 0 !important;
+}
+
+.mat-mdc-dialog-container .mdc-dialog__content {
+    overflow: hidden !important;
+}
+
+.mat-mdc-dialog-container .mdc-dialog__actions {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 20px !important;
+}
+
+.button {
+    padding: 12px 30px !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    border-radius: 30px !important;
+    transition: all 0.3s ease-in-out !important;
+    border: 3px solid white !important;
+    cursor: pointer !important;
+    box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2) !important;
+}
+
+.button:hover {
+    transform: scale(1.1) !important;
+}
+
+.cancel {
+    background: white !important;
+    color: #2E7D32 !important;
+    border: 2px solid #81C784 !important;
+}
+
+.cancel:hover {
+    background: #A5D6A7 !important;
+}
+
+.confirm {
+    background: #FFA07A !important; 
+    color: white !important;
+    border: 2px solid #FFBFA3 !important;
+}
+
+.confirm:hover {
+    background: #FF8C69 !important; 
+}
