@@ -56,7 +56,6 @@ export class TileComponent implements OnInit {
             }
         }
     }
-
     refreshObject(): void {
         if (!this.placedItem.length || !this.objectID) {
             this.objectChanged.emit(0);
@@ -75,6 +74,16 @@ export class TileComponent implements OnInit {
             return item;
         }
         return null;
+    }
+
+    deleteTile() {
+        console.log("Trying to delete Tile", this.placedItem[0].type);
+        if (this.placedItem.length) {
+            this.counterService.incrementCounter(this.placedItem[0].type);
+            this.placedItem = [];
+            this.objectID = 0;
+            this.objectChanged.emit(0);
+        }
     }
 
     decrementCounter(item: ItemComponent) {
@@ -105,7 +114,7 @@ export class TileComponent implements OnInit {
             event.previousContainer.data.splice(event.previousIndex, 1);
         } else if (
             this.placedItem.length === 0 &&
-            !draggedItem.isPlaced &&
+            this.count &&
             (draggedItem.type === ObjectsTypes.SPAWN || draggedItem.type === ObjectsTypes.RANDOM)
         ) {
             this.placedItem.push(draggedItem);

@@ -36,6 +36,7 @@ export class BoardComponent implements OnInit {
     @ViewChildren(TileComponent) tileComponents!: QueryList<TileComponent>;
     board: Tile[][] = [];
     selectedTiles: Coordinates[] = [];
+    objectHeld: boolean=false;
     mouseService = inject(MouseService);
     tileService = inject(TileService);
     saveService = inject(SaveService);
@@ -45,12 +46,8 @@ export class BoardComponent implements OnInit {
     constructor(private cdr: ChangeDetectorRef) {
         this.saveService.isSave$.pipe(takeUntilDestroyed()).subscribe((isActive: boolean) => {
             if (isActive) {
+                this.reloadTiles();
                 this.saveService.verifyBoard(this.board);
-            }
-        });
-        this.saveService.isReset$.pipe(takeUntilDestroyed()).subscribe((isActive: boolean) => {
-            if (isActive) {
-                this.initializeBoard();
             }
         });
         this.tileService.currentTool = 0;
@@ -107,6 +104,7 @@ export class BoardComponent implements OnInit {
 
     onMouseUpBoard(): void {
         this.mouseService.onMouseUp();
+        this.objectHeld = false;
         if (this.tileService.toolSaved !== 0) {
             this.tileService.currentTool = this.tileService.toolSaved;
             this.tileService.toolSaved = 0;
@@ -115,22 +113,31 @@ export class BoardComponent implements OnInit {
 
     onMouseOverBoard(tile: Tile) {
         this.mouseService.onMouseMove({ x: tile.x, y: tile.y });
-        if (this.mouseService.mousePressed) {
+        if (this.mouseService.mousePressed && !this.objectHeld) {
             this.modifyTile(tile);
         }
     }
 
     onMouseDownBoard(event: MouseEvent, tile: Tile) {
-        console.log(tile);
         this.mouseService.onMouseDown({ x: tile.x, y: tile.y });
+        console.log(tile);
         if (event.button === RIGHT_CLICK) {
-            this.tileService.toolSaved = this.tileService.currentTool;
-            this.tileService.currentTool = 0;
+            if (tile.object) {
+                this.deleteObject(tile);
+                return;
+            } else {
+                this.tileService.toolSaved = this.tileService.currentTool;
+                this.tileService.currentTool = 0;
+            }
         } else if (tile.object) {
-            this.tileService.toolSaved = this.tileService.currentTool;
-            this.tileService.currentTool = -1;
+            this.objectHeld = true;
+            return;
         }
         this.modifyTile(tile);
+    }
+
+    deleteObject(tile: Tile) {
+        tile.object = 0;
     }
 
     onMouseLeaveBoard() {
@@ -140,7 +147,7 @@ export class BoardComponent implements OnInit {
     onObjectChanged(event: number, tile: Tile) {
         tile.object = event;
     }
-    onObjectMoved() {
+    reloadTiles() {
         for (let i = 0; i < this.mapSize ** 2; i++) {
             const tileComponent = this.tileComponents.get(i);
             if (tileComponent) {

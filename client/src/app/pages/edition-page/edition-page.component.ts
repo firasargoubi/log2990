@@ -118,7 +118,7 @@ export class EditionPageComponent {
     }
 
     resetBoard() {
-        this.saveService.alertBoardForReset(true);
+        window.location.reload();
     }
 
     loadGame() {

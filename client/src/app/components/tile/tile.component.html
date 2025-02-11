@@ -4,6 +4,7 @@
     [cdkDropListData]="placedItem"
     [ngStyle]="{'background-image': 'url(' + baseImage + ')'}"
     (cdkDropListDropped)="drop($event)"
+    (contextmenu)="deleteTile()"
     >
     @if (placedItem.length === 0) {
         <img class = "transparent" src = "assets/transparent.png"/>

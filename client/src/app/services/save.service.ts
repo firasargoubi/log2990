@@ -5,6 +5,7 @@ import { TileTypes } from '@app/interfaces/tileTypes';
 import { Subject } from 'rxjs';
 import { GameService } from './game.service';
 import { Game } from '@app/interfaces/game.model';
+import { catchError } from 'rxjs/operators';
 
 const WANTED_TILE_PERCENTAGE = 0.5;
 @Injectable({
@@ -51,11 +52,13 @@ export class SaveService {
     }
 
     verifyBoard(board: Tile[][]): void {
+        console.log(this.board);
         this.board = board;
         this.currentStatus = {
             doors: this.verifyDoors(),
             minTerrain: this.verifyTilePercentage(),
             accessible: this.verifyAccessible(),
+            allSpawnPoints: this.verifySpawnPoints(),
         };
     }
 
@@ -64,14 +67,32 @@ export class SaveService {
             ...game,
             board: this.intBoard, // Ensure board data is included
             lastModified: new Date(),
-            isVisible: true,
+            isVisible: false,
         };
 
         if (!game.id) {
             this.gameService.createGame(gameData).subscribe();
         } else {
-            this.gameService.updateGame(game.id, gameData).subscribe();
+            this.gameService
+                .updateGame(game.id, gameData)
+                .pipe(
+                    catchError((error) => {
+                        console.error('Update game failed, creating a new game instead:', error);
+                        return this.gameService.createGame(gameData);
+                    }),
+                )
+                .subscribe();
         }
+    }
+
+    verifySpawnPoints(): boolean {
+        let count: number = 0;
+        for (const row of this.board) {
+            for (const tile of row) {
+                if (tile.object === 6) count++;
+            }
+        }
+        return count >= 2;
     }
 
     verifyDoors(): boolean {
