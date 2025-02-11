@@ -9,7 +9,10 @@
         <img class = "transparent" src = "assets/transparent.png"/>
     } @else {
         @for (item of placedItem; track item) {
-            <img class ="item-image" src="{{item.image}}" cdkDrag/>
+            <img class ="item-image" src="{{item.image}}" 
+            cdkDrag
+            (cdkDragStarted)="onDragStarted()"
+            />
         }
     }
 </div>

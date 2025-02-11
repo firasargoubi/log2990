@@ -30,9 +30,9 @@ export class ObjectsComponent {
     }
 
     incrementCounter(item: ItemComponent) {
-        if (item.type === '6') {
+        if (item.type === 6) {
             item.spawnCounter++;
-        } else if (item.type === '7') {
+        } else if (item.type === 7) {
             item.randomCounter++;
         } else {
             this.counterService.incrementCounter();

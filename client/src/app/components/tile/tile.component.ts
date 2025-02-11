@@ -1,9 +1,10 @@
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { ItemComponent } from '@app/components/item/item.component';
 import { TileTypes } from '@app/interfaces/tileTypes';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
+import { DEFAULT_OBJECTS } from '@app/interfaces/default-objects';
 
 @Component({
     selector: 'app-tile',
@@ -11,8 +12,10 @@ import { ObjectCounterService } from '@app/services/objects-counter.service';
     templateUrl: './tile.component.html',
     styleUrl: './tile.component.scss',
 })
-export class TileComponent {
+export class TileComponent implements OnInit {
     @Input() type: number;
+    @Input() objectID: number;
+    @Output() objectChanged = new EventEmitter<number>();
     placedItem: ItemComponent[] = [];
 
     constructor(private counterService: ObjectCounterService) {}
@@ -36,13 +39,35 @@ export class TileComponent {
         }
     }
 
+    ngOnInit(): void {
+        if (this.objectID !== 0) {
+            const object = this.getObjectById(this.objectID);
+            if (object) {
+                this.decrementCounter(object);
+                this.placedItem.push(object);
+            }
+        }
+    }
+
+    getObjectById(id: number): ItemComponent | null {
+        const objectData = DEFAULT_OBJECTS.find((obj) => obj.id === id);
+        if (objectData) {
+            const item = new ItemComponent();
+            item.type = objectData.id;
+            item.tooltipText = objectData.description;
+            console.log(item);
+            return item;
+        }
+        return null;
+    }
+
     decrementCounter(item: ItemComponent) {
-        if (item.type === '6') {
+        if (item.type === 6) {
             item.spawnCounter--;
             if (item.spawnCounter === 0) {
                 item.isPlaced = true;
             }
-        } else if (item.type === '7') {
+        } else if (item.type === 7) {
             item.randomCounter--;
             if (item.randomCounter === 0) {
                 item.isPlaced = true;
@@ -65,11 +90,19 @@ export class TileComponent {
         if (event.previousContainer.id !== 'cdk-drop-list-0') {
             this.placedItem.push(draggedItem);
             event.previousContainer.data.splice(0);
-        } else if (this.placedItem.length === 0 && !draggedItem.isPlaced && (draggedItem.type === '6' || draggedItem.type === '7')) {
+            this.objectChanged.emit(draggedItem.type);
+        } else if (this.placedItem.length === 0 && !draggedItem.isPlaced && (draggedItem.type === 6 || draggedItem.type === 7)) {
             this.placedItem.push(draggedItem);
             this.decrementCounter(draggedItem);
+            this.objectChanged.emit(draggedItem.type);
         }
 
         return;
+    }
+
+    onDragStarted() {
+        if (this.placedItem.length > 0) {
+            this.objectChanged.emit(0);
+        }
     }
 }

@@ -10,7 +10,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     styleUrl: './item.component.scss',
 })
 export class ItemComponent implements OnInit {
-    @Input() type = '';
+    @Input() type: number;
     @Output() itemAdded = new EventEmitter<ItemComponent>();
     @Input() counter = 4;
     @Input() inTile: boolean = false;
@@ -32,21 +32,21 @@ export class ItemComponent implements OnInit {
 
     get name(): string {
         switch (this.type) {
-            case '0':
+            case 0:
                 return 'Bottes magiques';
-            case '1':
+            case 1:
                 return 'Épée tranchante';
-            case '2':
+            case 2:
                 return 'Potion du temps';
-            case '3':
+            case 3:
                 return 'Baguette magique';
-            case '4':
+            case 4:
                 return 'Boule de crystal';
-            case '5':
+            case 5:
                 return 'Médecine';
-            case '6':
+            case 6:
                 return 'Point de départ';
-            case '7':
+            case 7:
                 return 'Gnome mystère';
             default:
                 return 'Undefined';
@@ -55,21 +55,21 @@ export class ItemComponent implements OnInit {
 
     get image(): string {
         switch (this.type) {
-            case '0':
+            case 0:
                 return 'assets/boots.png';
-            case '1':
+            case 1:
                 return 'assets/sword.png';
-            case '2':
+            case 2:
                 return 'assets/potion.png';
-            case '3':
+            case 3:
                 return 'assets/wand.png';
-            case '4':
+            case 4:
                 return 'assets/crystal_ball.png';
-            case '5':
+            case 5:
                 return 'assets/berry-juice.png';
-            case '6':
+            case 6:
                 return 'assets/vortex.png';
-            case '7':
+            case 7:
                 return 'assets/gnome.png';
             default:
                 return 'Undefined';
