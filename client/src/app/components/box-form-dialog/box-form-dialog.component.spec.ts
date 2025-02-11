@@ -124,6 +124,7 @@ describe('BoxFormDialogComponent', () => {
                 previewImage: 'path/to/image.jpg',
                 description: 'Test game description',
                 lastModified: new Date(),
+                objects: [],
             },
         ];
         mockGameService.fetchVisibleGames.and.returnValue(of(mockGames));
@@ -194,6 +195,7 @@ describe('BoxFormDialogComponent', () => {
                 previewImage: 'path/to/image.jpg',
                 description: 'Test game description',
                 lastModified: new Date(),
+                objects: [],
             },
         ];
         spyOn(localStorage, 'setItem');

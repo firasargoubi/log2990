@@ -19,7 +19,7 @@ export class ObjectManagementService {
             this.objects.next(newObjects);
         } else {
             const newObjects = JSON.parse(JSON.stringify(DEFAULT_OBJECTS));
-            this.adjustCountersBySize(newObjects, board.mapSize);
+            this.adjustCountersBySize(newObjects, board.mapSize as 'small' | 'medium' | 'large');
 
             this.objects.next(newObjects);
         }
