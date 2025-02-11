@@ -1,21 +1,21 @@
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { SaveService } from './save.service';
+import { Game } from '@app/interfaces/game.model';
 import { Tile } from '@app/interfaces/tile';
 import { TileTypes } from '@app/interfaces/tileTypes';
 import { GameService } from '@app/services/game.service';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { of, throwError } from 'rxjs';
+import { SaveService } from './save.service';
 
 describe('SaveService', () => {
     let service: SaveService;
     let gameServiceSpy: jasmine.SpyObj<GameService>;
 
     beforeEach(() => {
-        // Mock de GameService
         gameServiceSpy = jasmine.createSpyObj('GameService', ['createGame', 'updateGame']);
 
         TestBed.configureTestingModule({
-            imports: [HttpClientTestingModule], // ✅ Ajout de HttpClientTestingModule
-            providers: [{ provide: GameService, useValue: gameServiceSpy }], // ✅ Mock GameService
+            providers: [{ provide: GameService, provideHttpClientTesting, useValue: gameServiceSpy }],
         });
 
         service = TestBed.inject(SaveService);
@@ -25,108 +25,197 @@ describe('SaveService', () => {
         expect(service).toBeTruthy();
     });
 
-    it('should return true for a board with correctly placed doors', () => {
-        const board: Tile[][] = [
-            [
-                { type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 0 },
-                { type: TileTypes.Grass, x: 0, y: 1, id: '2', object: 0 },
-                { type: TileTypes.Grass, x: 0, y: 2, id: '3', object: 0 },
-            ],
-            [
-                { type: TileTypes.Wall, x: 1, y: 0, id: '4', object: 0 },
-                { type: TileTypes.DoorClosed, x: 1, y: 1, id: '5', object: 0 },
-                { type: TileTypes.Wall, x: 1, y: 2, id: '6', object: 0 },
-            ],
-            [
-                { type: TileTypes.Grass, x: 2, y: 0, id: '7', object: 0 },
-                { type: TileTypes.Grass, x: 2, y: 1, id: '8', object: 0 },
-                { type: TileTypes.Grass, x: 2, y: 2, id: '9', object: 0 },
-            ],
-        ];
-
-        service.board = board; // ✅ Correction : assigner avant appel
-        expect(service.verifyDoors()).toBe(true);
+    describe('get boardSize()', () => {
+        it('should return the size of the board', () => {
+            service.board = [
+                [{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 0 }],
+                [{ type: TileTypes.Grass, x: 1, y: 0, id: '2', object: 0 }],
+                [{ type: TileTypes.Grass, x: 2, y: 0, id: '3', object: 0 }],
+            ];
+            expect(service.boardSize).toBe(3);
+        });
     });
 
-    it('should return false for a door on the edge of the board', () => {
-        const board: Tile[][] = [
-            [
-                { type: TileTypes.DoorClosed, x: 0, y: 0, id: '1', object: 0 },
-                { type: TileTypes.Grass, x: 0, y: 1, id: '2', object: 0 },
-                { type: TileTypes.Grass, x: 0, y: 2, id: '3', object: 0 },
-            ],
-            [
-                { type: TileTypes.Wall, x: 1, y: 0, id: '4', object: 0 },
-                { type: TileTypes.Grass, x: 1, y: 1, id: '5', object: 0 },
-                { type: TileTypes.Wall, x: 1, y: 2, id: '6', object: 0 },
-            ],
-            [
-                { type: TileTypes.Grass, x: 2, y: 0, id: '7', object: 0 },
-                { type: TileTypes.Grass, x: 2, y: 1, id: '8', object: 0 },
-                { type: TileTypes.Grass, x: 2, y: 2, id: '9', object: 0 },
-            ],
-        ];
-
-        service.board = board;
-        expect(service.verifyDoors()).toBe(false);
+    describe('get boardTerrainTiles()', () => {
+        it('should return the number of terrain tiles on the board', () => {
+            service.board = [
+                [{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 0 }],
+                [{ type: TileTypes.Wall, x: 1, y: 0, id: '2', object: 0 }],
+                [{ type: TileTypes.Grass, x: 2, y: 0, id: '3', object: 0 }],
+            ];
+            expect(service.boardTerrainTiles).toBe(2);
+        });
     });
 
-    it('should return false for a door not properly connected to walls', () => {
-        const board: Tile[][] = [
-            [
-                { type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 0 },
-                { type: TileTypes.Grass, x: 0, y: 1, id: '2', object: 0 },
-                { type: TileTypes.Grass, x: 0, y: 2, id: '3', object: 0 },
-            ],
-            [
-                { type: TileTypes.Grass, x: 1, y: 0, id: '4', object: 0 },
-                { type: TileTypes.DoorClosed, x: 1, y: 1, id: '5', object: 0 },
-                { type: TileTypes.Grass, x: 1, y: 2, id: '6', object: 0 },
-            ],
-            [
-                { type: TileTypes.Grass, x: 2, y: 0, id: '7', object: 0 },
-                { type: TileTypes.Grass, x: 2, y: 1, id: '8', object: 0 },
-                { type: TileTypes.Grass, x: 2, y: 2, id: '9', object: 0 },
-            ],
-        ];
-
-        service.board = board;
-        expect(service.verifyDoors()).toBe(false);
+    describe('get intBoard()', () => {
+        it('should return a 2D array of integers representing the board', () => {
+            service.board = [
+                [{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 0 }],
+                [{ type: TileTypes.Wall, x: 1, y: 0, id: '2', object: 0 }],
+                [{ type: TileTypes.Grass, x: 2, y: 0, id: '3', object: 0 }],
+            ];
+            expect(service.intBoard).toEqual([
+                [0, 1, 0],
+                [0, 10, 0],
+                [0, 1, 0],
+            ]);
+        });
     });
 
-    it('should emit true when alertBoardForVerification is called', (done) => {
-        service.isSave$.subscribe((value) => {
-            expect(value).toBe(true);
-            done(); // ✅ Vérifie que l'observable a bien émis
+    describe('verifyBoard()', () => {
+        it('should set currentStatus to the verification results', () => {
+            const board: Tile[][] = [
+                [{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 0 }],
+                [{ type: TileTypes.Wall, x: 1, y: 0, id: '2', object: 0 }],
+                [{ type: TileTypes.Grass, x: 2, y: 0, id: '3', object: 0 }],
+            ];
+            service.verifyBoard(board);
+            expect(service.currentStatus).toEqual({
+                doors: false,
+                minTerrain: false,
+                accessible: false,
+                allSpawnPoints: false,
+            });
+        });
+    });
+
+    describe('verifyDoors()', () => {
+        it('should return true for a board with correctly placed doors', () => {
+            const board: Tile[][] = [
+                [{ type: TileTypes.Wall, x: 0, y: 1, id: '1', object: 0 }],
+                [{ type: TileTypes.DoorClosed, x: 1, y: 1, id: '2', object: 0 }],
+                [{ type: TileTypes.Wall, x: 2, y: 1, id: '3', object: 0 }],
+            ];
+            service.board = board;
+            expect(service.verifyDoors()).toBe(true);
         });
 
-        service.alertBoardForVerification(true);
-    });
-
-    it('should emit false when alertBoardForVerification is called with false', (done) => {
-        service.isSave$.subscribe((value) => {
-            expect(value).toBe(false);
-            done();
+        it('should return false for a door on the edge of the board', () => {
+            const board: Tile[][] = [
+                [{ type: TileTypes.DoorClosed, x: 0, y: 0, id: '1', object: 0 }],
+                [{ type: TileTypes.Grass, x: 1, y: 0, id: '2', object: 0 }],
+            ];
+            service.board = board;
+            expect(service.verifyDoors()).toBe(false);
         });
 
-        service.alertBoardForVerification(false);
+        it('should return false for an improperly connected door', () => {
+            const board: Tile[][] = [
+                [{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 0 }],
+                [{ type: TileTypes.DoorClosed, x: 1, y: 0, id: '2', object: 0 }],
+                [{ type: TileTypes.Grass, x: 2, y: 0, id: '3', object: 0 }],
+            ];
+            service.board = board;
+            expect(service.verifyDoors()).toBe(false);
+        });
     });
 
-    it('should emit true when alertBoardForReset is called', (done) => {
-        service.isReset$.subscribe((value) => {
-            expect(value).toBe(true);
-            done();
+    describe('verifySpawnPoints()', () => {
+        it('should return true if there are at least 2 spawn points', () => {
+            const board: Tile[][] = [
+                [{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 6 }],
+                [{ type: TileTypes.Grass, x: 1, y: 0, id: '2', object: 6 }],
+            ];
+            service.board = board;
+            expect(service.verifySpawnPoints()).toBe(true);
         });
 
-        service.alertBoardForReset(true);
+        it('should return false if there are less than 2 spawn points', () => {
+            const board: Tile[][] = [[{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 6 }]];
+            service.board = board;
+            expect(service.verifySpawnPoints()).toBe(false);
+        });
     });
 
-    it('should emit false when alertBoardForReset is called with false', (done) => {
-        service.isReset$.subscribe((value) => {
-            expect(value).toBe(false);
-            done();
+    describe('saveGame()', () => {
+        it('should call createGame() if game has no ID', () => {
+            const game: Game = {
+                id: '',
+                name: 'Test Game',
+                mapSize: 'medium',
+                mode: 'normal',
+                previewImage: 'test-image.png',
+                description: 'This is a test game.',
+                lastModified: new Date(),
+                isVisible: false,
+                board: [],
+                objects: [],
+            };
+            gameServiceSpy.createGame.and.returnValue(of(game));
+            service.saveGame(game);
+            expect(gameServiceSpy.createGame).toHaveBeenCalled();
         });
 
-        service.alertBoardForReset(false);
+        it('should call updateGame() if game has an ID', () => {
+            const game: Game = {
+                id: '123',
+                name: 'Test Game',
+                mapSize: 'medium',
+                mode: 'normal',
+                previewImage: 'test-image.png',
+                description: 'This is a test game.',
+                lastModified: new Date(),
+                isVisible: false,
+                board: [],
+                objects: [],
+            };
+            gameServiceSpy.updateGame.and.returnValue(of(game));
+            service.saveGame(game);
+            expect(gameServiceSpy.updateGame).toHaveBeenCalledWith('123', jasmine.any(Object));
+        });
+
+        it('should fallback to createGame() if updateGame() fails', () => {
+            const game: Game = {
+                id: '123',
+                name: 'Test Game',
+                mapSize: 'medium',
+                mode: 'normal',
+                previewImage: 'test-image.png',
+                description: 'This is a test game.',
+                lastModified: new Date(),
+                isVisible: false,
+                board: [],
+                objects: [],
+            };
+            gameServiceSpy.updateGame.and.returnValue(throwError(() => new Error('Update failed')));
+            gameServiceSpy.createGame.and.returnValue(of(game));
+            service.saveGame(game);
+            expect(gameServiceSpy.updateGame).toHaveBeenCalled();
+            expect(gameServiceSpy.createGame).toHaveBeenCalled();
+        });
+    });
+
+    describe('Observables', () => {
+        it('should emit true when alertBoardForVerification is called', (done) => {
+            service.isSave$.subscribe((value) => {
+                expect(value).toBe(true);
+                done();
+            });
+            service.alertBoardForVerification(true);
+        });
+
+        it('should emit false when alertBoardForVerification is called with false', (done) => {
+            service.isSave$.subscribe((value) => {
+                expect(value).toBe(false);
+                done();
+            });
+            service.alertBoardForVerification(false);
+        });
+
+        it('should emit true when alertBoardForReset is called', (done) => {
+            service.isReset$.subscribe((value) => {
+                expect(value).toBe(true);
+                done();
+            });
+            service.alertBoardForReset(true);
+        });
+
+        it('should emit false when alertBoardForReset is called with false', (done) => {
+            service.isReset$.subscribe((value) => {
+                expect(value).toBe(false);
+                done();
+            });
+            service.alertBoardForReset(false);
+        });
     });
 });
