@@ -18,7 +18,7 @@ describe('TileService', () => {
     it('should toggle door state when modifying a door tile', () => {
         service.copyTileTool(TileTypes.DoorClosed);
 
-        const tile: Tile = { type: TileTypes.DoorClosed, x: 2, y: 2, id: '2-2' };
+        const tile: Tile = { type: TileTypes.DoorClosed, x: 2, y: 2, id: '2-2', object: 0 };
         service.modifyTile(tile);
 
         expect(tile.type).toEqual(TileTypes.DoorOpen);
@@ -29,7 +29,12 @@ describe('TileService', () => {
     });
 
     it('should set tile type to the copied tool if it is not a door', () => {
-        const tile: Tile = { type: TileTypes.Wall, x: 3, y: 3, id: '3-3' };
+        const tile: Tile = { type: TileTypes.Wall, x: 3, y: 3, id: '3-3', object: 0 };
         service.modifyTile(tile);
+    });
+
+    it('should copy the tile tool', () => {
+        service.copyTileTool(TileTypes.Wall);
+        expect(service.currentTool).toEqual(TileTypes.Wall);
     });
 });
