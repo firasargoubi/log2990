@@ -2,7 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { RouterModule } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { RouterModule, Router } from '@angular/router';
 import { Game } from '@app/interfaces/game.model';
 import { GameService } from '@app/services/game.service';
 import { Subscription, interval } from 'rxjs';
@@ -46,6 +47,9 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
         public dialogRef: MatDialogRef<BoxFormDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: { boxId: string; game: Game; gameList: Game[] },
         private gameService: GameService,
+        private snackBar: MatSnackBar,
+        private router: Router,
+
     ) {
         this.loadGames();
 
@@ -76,7 +80,7 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
                         this.gameList = updatedGames;
                     }
                 },
-                error: (err) => console.error('Erreur lors du rafraîchissement des jeux', err),
+                error: (err) => this.snackBar.open('Erreur lors du rafraîchissement des jeux', 'Fermer', { duration: 3000 }),
             });
     }
 
@@ -142,6 +146,8 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
                 alert('Ce jeu a été supprimé ou sa visibilité a changéee entre temps, Veuillez choisir un autre jeu.');
                 return;
             }
+            this.router.navigate(['/waiting']);
+
             this.dialogRef.close(this.form.value);
         }
     }
@@ -151,7 +157,7 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
             next: (allGames) => {
                 this.gameList = allGames;
             },
-            error: (err) => console.error('Erreur lors du chargement des jeux', err),
+            error: (err) => this.snackBar.open('Erreur lors du chargement des jeux', 'Fermer', { duration: 3000 }),
         });
     }
 }
