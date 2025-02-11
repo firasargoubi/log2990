@@ -62,7 +62,6 @@ export class EditionPageComponent {
         this.game.id = this.route.snapshot.params['id'];
         this.game.mode = this.route.snapshot.queryParams['mode'] || 'normal';
         this.game.mapSize = this.route.snapshot.queryParams['size'] || 'large';
-        this.counterService.initializeCounter(this.objectNumber);
         this.loadGame();
     }
 
@@ -129,8 +128,9 @@ export class EditionPageComponent {
                 .pipe(
                     tap((gameSearched) => {
                         this.game = gameSearched;
-                        this.gameLoaded = true;
+                        this.counterService.initializeCounter(this.objectNumber);
                         this.notificationService.showSuccess('Jeu chargé avec succès.');
+                        this.gameLoaded = true;
                     }),
                     catchError(() => {
                         this.notificationService.showError('Impossible de charger le jeu.');

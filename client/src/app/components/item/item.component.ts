@@ -19,7 +19,7 @@ export class ItemComponent implements OnInit {
     isPlaced: boolean = false;
     tooltipText: string | null = null;
     objectCounterService = inject(ObjectCounterService);
-    spawnCounter: number = 0;
+    spawnCounter: number;
 
     descriptions: { [key: string]: string } = {
         [ObjectsTypes.BOOTS]: 'Les bottes magiques vous permettront de vous déplacer à une vitesse SUPERSONIQUE!',
