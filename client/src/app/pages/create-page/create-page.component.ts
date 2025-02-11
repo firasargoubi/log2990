@@ -1,14 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, inject } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
 import { BoxFormDialogComponent } from '@app/components/box-form-dialog/box-form-dialog.component';
 import { GameCreationCardComponent } from '@app/components/game-creation-card/game-creation-card.component';
 import { Game } from '@app/interfaces/game.model';
 import { GameService } from '@app/services/game.service';
+import { NotificationService } from '@app/services/notification.service';
 import { Observable, Subscription, interval } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
@@ -23,11 +23,11 @@ const PULLING_INTERVAL = 5000;
 export class CreatePageComponent implements OnInit, OnDestroy {
     @Input() games$: Observable<Game[]> = new Observable<Game[]>();
     games: Game[] = [];
+    notificationService = inject(NotificationService);
     private pollingSubscription!: Subscription;
 
     constructor(
         private dialog: MatDialog,
-        private snackBar: MatSnackBar,
         private gameService: GameService,
     ) {}
 
@@ -42,7 +42,7 @@ export class CreatePageComponent implements OnInit, OnDestroy {
                         this.games = updatedGames;
                     }
                 },
-                error: (err) => this.snackBar.open('Erreur lors du rafraîchissement des jeux', 'Fermer', { duration: 3000 }),
+                error: () => this.notificationService.showError('Erreur lors du rafraîchissement des jeux'),
             });
     }
 
@@ -71,7 +71,7 @@ export class CreatePageComponent implements OnInit, OnDestroy {
             next: (allGames) => {
                 this.games = allGames;
             },
-            error: (err) => this.snackBar.open('Erreur lors du chargement des jeux', 'Fermer', { duration: 3000 }),
+            error: () => this.notificationService.showError('Erreur lors du chargement des jeux'),
         });
     }
 }

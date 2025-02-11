@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, Inject, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router, RouterModule } from '@angular/router';
 import { Game } from '@app/interfaces/game.model';
 import { GameService } from '@app/services/game.service';
+import { NotificationService } from '@app/services/notification.service';
 import { Subscription, interval } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
@@ -22,6 +22,7 @@ const PULLING_INTERVAL = 5000;
 export class BoxFormDialogComponent implements OnInit, OnDestroy {
     form: FormGroup;
     gameList: Game[] = [];
+    notificationService = inject(NotificationService);
 
     avatars = [
         'assets/perso/1.jpg',
@@ -47,7 +48,6 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
         public dialogRef: MatDialogRef<BoxFormDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: { boxId: string; game: Game; gameList: Game[] },
         private gameService: GameService,
-        private snackBar: MatSnackBar,
         private router: Router,
     ) {
         this.loadGames();
@@ -79,7 +79,7 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
                         this.gameList = updatedGames;
                     }
                 },
-                error: () => this.snackBar.open('Erreur lors du rafraîchissement des jeux', 'Fermer', { duration: 3000 }),
+                error: () => this.notificationService.showError('Erreur lors du rafraîchissement des jeux'),
             });
     }
 
@@ -147,7 +147,7 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
             localStorage.setItem('form', JSON.stringify(this.form.value));
             const gameExists = this.gameList.some((game) => game.id === this.data.game.id);
             if (!gameExists || !this.data.game.isVisible) {
-                alert('Ce jeu a été supprimé ou sa visibilité a changéee entre temps, Veuillez choisir un autre jeu.');
+                this.notificationService.showError('Ce jeu a été supprimé ou sa visibilité a changéee entre temps, Veuillez choisir un autre jeu.');
                 return;
             }
         }
@@ -158,7 +158,7 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
             next: (allGames) => {
                 this.gameList = allGames;
             },
-            error: () => this.snackBar.open('Erreur lors du chargement des jeux', 'Fermer', { duration: 3000 }),
+            error: () => this.notificationService.showError('Erreur lors du chargement des jeux'),
         });
     }
 }
