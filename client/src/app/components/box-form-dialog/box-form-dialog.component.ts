@@ -49,7 +49,6 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
         private gameService: GameService,
         private snackBar: MatSnackBar,
         private router: Router,
-
     ) {
         this.loadGames();
 
@@ -138,7 +137,7 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
 
     async save(): Promise<void> {
         this.form.updateValueAndValidity();
-
+        this.form.markAllAsTouched();
         if (this.form.valid) {
             localStorage.setItem('form', JSON.stringify(this.form.value));
             const gameExists = this.gameList.some((game) => game.id === this.data.game.id);
@@ -147,7 +146,6 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
                 return;
             }
             this.router.navigate(['/waiting']);
-
             this.dialogRef.close(this.form.value);
         }
     }

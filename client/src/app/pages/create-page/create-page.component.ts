@@ -51,31 +51,20 @@ export class CreatePageComponent implements OnInit, OnDestroy {
             this.pollingSubscription.unsubscribe();
         }
     }
-<<<<<<< HEAD
+
     onBoxClick(game: Game): void {
         const dialogRef = this.dialog.open(BoxFormDialogComponent, {
             data: { boxId: game.id, game, gameList: this.games },
         });
-=======
->>>>>>> 0155a9105ad9098fadf4a96b0576dc144534ce8d
 
-    onBoxClick(game: Game): void {
-
-    const dialogRef = this.dialog.open(BoxFormDialogComponent, {
-        data: { boxId: game.id, game, gameList: this.games },
-    });
-    
-    
-    dialogRef.afterClosed().subscribe({
-        next: (result) => {
-            if (result) {
-                this.loadGames();
-            }
-        },
-        
-    });
-}
-
+        dialogRef.afterClosed().subscribe({
+            next: (result) => {
+                if (result) {
+                    this.loadGames();
+                }
+            },
+        });
+    }
 
     private loadGames(): void {
         this.gameService.fetchVisibleGames().subscribe({
