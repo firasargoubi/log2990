@@ -83,7 +83,9 @@ export class BoardComponent implements OnInit {
             for (let i = 0; i < this.mapSize; i++) {
                 const row: Tile[] = [];
                 for (let j = 0; j < this.mapSize; j++) {
-                    row.push({ type: this.game.board[i][j], x: i, y: j, id: `${i}-${j}` });
+                    const tileType = this.game.board[i][j] %10;
+                    const objectType = this.game.board[i][j] /10;
+                    row.push({ type: tileType, object: objectType, x: i, y: j, id: `${i}-${j}` });
                 }
                 this.board.push(row);
             }
