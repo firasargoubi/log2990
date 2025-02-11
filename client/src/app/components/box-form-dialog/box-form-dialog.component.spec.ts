@@ -8,6 +8,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
 import { Game } from '@app/interfaces/game.model';
 import { NotificationService } from '@app/services/notification.service';
+import { CREATE_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 
 const TIME = 5000;
 const DEFAULT_STAT_VALUE = 4;
@@ -74,10 +75,30 @@ describe('BoxFormDialogComponent', () => {
         component.form.get('name')?.setValue('');
         expect(component.form.valid).toBeFalse();
     });
+    it('should not save form when it is invalid', async () => {
+        spyOn(localStorage, 'setItem');
+        spyOn(component, 'linkRoute');
+
+        component.form.get('name')?.setValue(''); // Make form invalid
+
+        await component.save();
+
+        expect(localStorage.setItem).not.toHaveBeenCalled();
+        expect(component.linkRoute).not.toHaveBeenCalled();
+    });
 
     it('should close the dialog with form values when valid', () => {
         component.closeDialog();
         expect(mockDialogRef.close).toHaveBeenCalledWith(component.form.value);
+    });
+    it('should return true if game exists in gameList', () => {
+        component.gameList = [{ id: '1', name: 'Game1', isVisible: true }] as Game[];
+        expect(component.gameExists).toBeTrue();
+    });
+
+    it('should return false if game does not exist in gameList', () => {
+        component.gameList = [{ id: '2', name: 'Game2', isVisible: true }] as Game[];
+        expect(component.gameExists).toBeFalse();
     });
 
     it('should not close the dialog when form is invalid', () => {
@@ -203,5 +224,23 @@ describe('BoxFormDialogComponent', () => {
         await component.save();
         expect(localStorage.setItem).toHaveBeenCalledWith('form', JSON.stringify(component.form.value));
         expect(component.linkRoute).toHaveBeenCalled();
+    });
+    it('should call showError when game loading fails', () => {
+        mockGameService.fetchVisibleGames.and.returnValue(throwError(() => new Error('Fetch failed')));
+
+        component['loadGames']();
+
+        expect(mockNotificationService.showError).toHaveBeenCalledWith(CREATE_PAGE_CONSTANTS.errorLoadingGames);
+    });
+    it('should set attack to 6 and defense to 4 when pickDice is called on attack', () => {
+        component.pickDice('attack');
+        expect(component.form.value.attack).toBe(SIX_VALUE_DICE);
+        expect(component.form.value.defense).toBe(DEFAULT_STAT_VALUE);
+    });
+
+    it('should set defense to 6 and attack to 4 when pickDice is called on defense', () => {
+        component.pickDice('defense');
+        expect(component.form.value.defense).toBe(SIX_VALUE_DICE);
+        expect(component.form.value.attack).toBe(DEFAULT_STAT_VALUE);
     });
 });
