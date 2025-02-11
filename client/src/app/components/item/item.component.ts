@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { GAME_IMAGES } from '@app/Consts/app.constants';
 
 @Component({
     selector: 'app-item',
@@ -36,23 +37,23 @@ export class ItemComponent {
     get image(): string {
         switch (this.type) {
             case '0':
-                return 'assets/objects/boots.png';
+                return GAME_IMAGES.boots;
             case '1':
-                return 'assets/objects/sword.png';
+                return GAME_IMAGES.sword;
             case '2':
-                return 'assets/objects/potion.png';
+                return GAME_IMAGES.potion;
             case '3':
-                return 'assets/objects/wand.png';
+                return GAME_IMAGES.wand;
             case '4':
-                return 'assets/objects/crystal_ball.png';
+                return GAME_IMAGES.crystalBall;
             case '5':
-                return 'assets/objects/berry-juice.png';
+                return GAME_IMAGES.berryJuice;
             case '6':
-                return 'assets/objects/vortex.png';
+                return GAME_IMAGES.vortex;
             case '7':
-                return 'assets/objects/gnome.png';
+                return GAME_IMAGES.gnome;
             default:
-                return 'Undefined';
+                return GAME_IMAGES.undefined;
         }
     }
 }

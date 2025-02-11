@@ -8,7 +8,7 @@ import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
 import { Subscription, interval } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { CREATE_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { CREATE_PAGE_CONSTANTS, GAME_IMAGES } from '@app/Consts/app.constants';
 
 const DEFAULT_STAT_VALUE = 4;
 const SIX_VALUE_DICE = 6;
@@ -24,20 +24,19 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
     form: FormGroup;
     gameList: Game[] = [];
     notificationService = inject(NotificationService);
-
     avatars = [
-        'assets/avatar/1.jpg',
-        'assets/avatar/2.jpg',
-        'assets/avatar/3.jpg',
-        'assets/avatar/4.jpg',
-        'assets/avatar/5.jpg',
-        'assets/avatar/6.jpg',
-        'assets/avatar/7.jpg',
-        'assets/avatar/8.jpg',
-        'assets/avatar/9.jpg',
-        'assets/avatar/10.jpg',
-        'assets/avatar/11.jpg',
-        'assets/avatar/12.jpg',
+        GAME_IMAGES.fawn,
+        GAME_IMAGES.bear,
+        GAME_IMAGES.castor,
+        GAME_IMAGES.squirrel1,
+        GAME_IMAGES.owl,
+        GAME_IMAGES.rabbit,
+        GAME_IMAGES.squirrel2,
+        GAME_IMAGES.pigeon,
+        GAME_IMAGES.rat,
+        GAME_IMAGES.fox,
+        GAME_IMAGES.dear,
+        GAME_IMAGES.raccoon,
     ];
 
     formValid$: boolean = false;
