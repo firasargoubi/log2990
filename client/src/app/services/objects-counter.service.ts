@@ -5,7 +5,9 @@ import { BehaviorSubject } from 'rxjs';
     providedIn: 'root',
 })
 export class ObjectCounterService {
-    counterSubject = new BehaviorSubject<number>(4); // Initialisé à 4
+    randomCounter = new BehaviorSubject<number>(0); // Initialisé à 0
+    spawnCounter = new BehaviorSubject<number>(0); // Initialisé à 0
+    counterSubject = new BehaviorSubject<number>(0); // Initialisé à 0
     counter$ = this.counterSubject.asObservable(); // Observable pour écouter les changements
 
     decrementCounter() {
@@ -20,5 +22,9 @@ export class ObjectCounterService {
 
     getCounter() {
         return this.counterSubject.value;
+    }
+
+    initializeCounter(value: number) {
+        this.counterSubject.next(value);
     }
 }

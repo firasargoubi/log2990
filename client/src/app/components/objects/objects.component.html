@@ -2,7 +2,7 @@
         <div class="object-container" cdkDropList [cdkDropListData]="items" (cdkDropListDropped)="drop($event)">
             @for (number of range ; track number) {
             <div>
-                <app-item [type]="number" (itemAdded)="onItemAdded($event)" />
+                <app-item [type]="number" (itemAdded)="onItemAdded($event)" [mapSize]="mapSize"/>
             </div>
             }
         </div>
