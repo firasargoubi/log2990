@@ -5,6 +5,7 @@ import { of } from 'rxjs';
 
 const RANDOM = 1000;
 const RANDOM_MAX = 9000;
+const LESS_THAN_VALUE = 10000;
 
 describe('WaitingPageComponent', () => {
     let component: WaitingPageComponent;
@@ -12,13 +13,13 @@ describe('WaitingPageComponent', () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [WaitingPageComponent], // ✅ FIX: Use imports instead of declarations
+            imports: [WaitingPageComponent],
             providers: [
-                { 
-                    provide: ActivatedRoute, 
-                    useValue: { params: of({}) }  // Mock ActivatedRoute with an observable
-                }
-            ]
+                {
+                    provide: ActivatedRoute,
+                    useValue: { params: of({}) },
+                },
+            ],
         }).compileComponents();
     });
 
@@ -53,8 +54,8 @@ describe('WaitingPageComponent', () => {
 
     it('should generate a random number between 1000 and 10000', () => {
         component.ngOnInit();
-        expect(component.randomNumber).toBeGreaterThanOrEqual(1000);
-        expect(component.randomNumber).toBeLessThanOrEqual(10000);
+        expect(component.randomNumber).toBeGreaterThanOrEqual(RANDOM);
+        expect(component.randomNumber).toBeLessThanOrEqual(LESS_THAN_VALUE);
     });
 
     it('should call generateRandomNumber when ngOnInit is called', () => {

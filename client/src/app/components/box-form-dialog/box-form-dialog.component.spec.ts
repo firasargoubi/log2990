@@ -144,7 +144,6 @@ describe('BoxFormDialogComponent', () => {
         expect(mockNotificationService.showError).toHaveBeenCalledWith('Erreur lors du rafraîchissement des jeux');
     }));
 
-    
     it('should select avatar correctly', () => {
         const avatar = 'assets/perso/2.jpg';
         component.selectAvatar(avatar);
@@ -162,7 +161,6 @@ describe('BoxFormDialogComponent', () => {
         expect(mockDialogRef.close).toHaveBeenCalledWith(null);
     });
 
-
     it('should navigate to /waiting when linkRoute is called and name is not "New Player"', async () => {
         const routerSpy = spyOn(component['router'], 'navigate');
         component.form.get('name')?.setValue('Player1');
@@ -177,15 +175,11 @@ describe('BoxFormDialogComponent', () => {
         expect(routerSpy).not.toHaveBeenCalled();
     });
 
-    
-
     it('should unsubscribe from polling on destroy', () => {
         const unsubscribeSpy = spyOn(component['pollingSubscription'], 'unsubscribe');
         component.ngOnDestroy();
         expect(unsubscribeSpy).toHaveBeenCalled();
     });
-
-   
 
     it('should save form to localStorage and navigate when form is valid', async () => {
         component.gameList = [
