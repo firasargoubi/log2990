@@ -8,14 +8,14 @@ import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
 import { ImageService } from '@app/image.service';
 import { Game } from '@app/interfaces/game.model';
+import { MapSize } from '@app/interfaces/mapsize';
 import { SaveMessage } from '@app/interfaces/saveMessage';
 import { ErrorService } from '@app/services/error.service';
 import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
+import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { SaveService } from '@app/services/save.service';
 import { catchError, EMPTY, tap } from 'rxjs';
-import { MapSize } from '@app/interfaces/mapsize';
-import { ObjectCounterService } from '@app/services/objects-counter.service';
 
 @Component({
     selector: 'app-game-page',
@@ -131,6 +131,10 @@ export class EditionPageComponent {
                         this.game = gameSearched;
                         this.gameLoaded = true;
                         this.notificationService.showSuccess('Jeu chargé avec succès.');
+                        this.counterService.initializeCounter(this.objectNumber);
+                        setTimeout(() => {
+                            this.boardElement?.nativeElement?.dispatchEvent(new Event('updateBoard'));
+                        }, 0); // Forcer une mise à jour de l'affichage
                     }),
                     catchError(() => {
                         this.notificationService.showError('Impossible de charger le jeu.');
@@ -143,6 +147,7 @@ export class EditionPageComponent {
             this.game.name = '';
             this.game.description = '';
             this.gameLoaded = true;
+            this.counterService.initializeCounter(this.objectNumber);
         }
     }
 

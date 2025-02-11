@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit, inject, ViewChildren, QueryList } from '@angular/core';
+import { Component, inject, Input, OnInit, QueryList, ViewChildren, ChangeDetectorRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { TileComponent } from '@app/components/tile/tile.component';
@@ -42,7 +42,7 @@ export class BoardComponent implements OnInit {
     errorService = inject(ErrorService);
     gameService = inject(GameService);
 
-    constructor() {
+    constructor(private cdr: ChangeDetectorRef) {
         this.saveService.isSave$.pipe(takeUntilDestroyed()).subscribe((isActive: boolean) => {
             if (isActive) {
                 this.saveService.verifyBoard(this.board);
@@ -75,6 +75,7 @@ export class BoardComponent implements OnInit {
 
     ngOnInit() {
         this.initializeBoard();
+        this.cdr.detectChanges();
     }
 
     initializeBoard(): void {

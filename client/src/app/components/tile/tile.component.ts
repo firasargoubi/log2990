@@ -15,7 +15,7 @@ import { ObjectCounterService } from '@app/services/objects-counter.service';
 })
 export class TileComponent implements OnInit {
     @Input() type: number;
-    @Input() objectID: number= 0;
+    @Input() objectID: number = 0;
     @Output() objectChanged = new EventEmitter<number>();
     @Output() objectMoved = new EventEmitter<boolean>();
     count: number;
@@ -70,7 +70,7 @@ export class TileComponent implements OnInit {
         const objectData = DEFAULT_OBJECTS.find((obj) => obj.id === id);
         if (objectData) {
             this.objectID = id;
-            const item = new ItemComponent();
+            const item = new ItemComponent(this.counterService);
             item.type = objectData.id;
             item.tooltipText = objectData.description;
             return item;
@@ -101,8 +101,7 @@ export class TileComponent implements OnInit {
             return; // No changes if dragged to an illegal place
         }
 
-        if (event.previousContainer.id !== 'cdk-drop-list-0') {
-            console.log('ITEM BEING DRAGGED - 1', draggedItem);
+        if (event.previousContainer.id !== 'objects-container') {
             this.placedItem.push(draggedItem);
             event.previousContainer.data.splice(event.previousIndex, 1);
         } else if (
@@ -110,12 +109,10 @@ export class TileComponent implements OnInit {
             !draggedItem.isPlaced &&
             (draggedItem.type === ObjectsTypes.SPAWN || draggedItem.type === ObjectsTypes.RANDOM)
         ) {
-            console.log('ITEM BEING DRAGGED - 2', draggedItem);
             this.placedItem.push(draggedItem);
             this.decrementCounter(draggedItem);
         }
         this.objectID = draggedItem.type;
-        console.log(this);
         this.objectMoved.emit(true);
     }
 }

@@ -19,4 +19,14 @@ describe('ObjectsComponent', () => {
     it('should create', () => {
         expect(component).toBeTruthy();
     });
+
+    it('should render object list', () => {
+        component.objects = [{ name: 'Object 1' }, { name: 'Object 2' }];
+        fixture.detectChanges();
+        const compiled = fixture.nativeElement;
+        const objectElements = compiled.querySelectorAll('.object-name');
+        expect(objectElements.length).toBe(2);
+        expect(objectElements[0].textContent).toContain('Object 1');
+        expect(objectElements[1].textContent).toContain('Object 2');
+    });
 });

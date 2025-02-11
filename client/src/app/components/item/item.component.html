@@ -4,7 +4,7 @@
     </div>
     <p [innerText]="name"></p>
     @if ( type ===6) {
-        <p class="counter" >{{spawnCounter}}</p>
+        <p class="counter" >{{objectCounterService.spawnCounter$ | async}}</p>
     }
     @if ( type ===7) {
         <p class="counter">{{spawnCounter}}</p>
@@ -24,6 +24,6 @@
     
     <p [innerText]="name"></p>
     @if (type >= 6) {
-        <p class="counter">{{spawnCounter}}</p>
+        <p class="counter">{{objectCounterService.spawnCounter$ | async}}</p>
     }
 }

@@ -1,10 +1,10 @@
 import { CdkDrag } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
-import { ObjectCounterService } from '@app/services/objects-counter.service';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ObjectsTypes } from '@app/interfaces/objectsTypes';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ObjectsTypes } from '@app/interfaces/objectsTypes';
+import { ObjectCounterService } from '@app/services/objects-counter.service';
 
 @Component({
     selector: 'app-item',
@@ -18,8 +18,8 @@ export class ItemComponent implements OnInit {
     @Output() itemAdded = new EventEmitter<ItemComponent>();
     isPlaced: boolean = false;
     tooltipText: string | null = null;
-    objectCounterService = inject(ObjectCounterService);
     spawnCounter: number = 0;
+    objectCounterService: ObjectCounterService;
 
     descriptions: { [key: string]: string } = {
         [ObjectsTypes.BOOTS]: 'Les bottes magiques vous permettront de vous déplacer à une vitesse SUPERSONIQUE!',
@@ -32,10 +32,14 @@ export class ItemComponent implements OnInit {
         [ObjectsTypes.RANDOM]: 'Ce petit gnome farceur a un cadeau pour vous. À vos risque et périls...',
     };
 
-    constructor() {
+    constructor(objectCounterService: ObjectCounterService) {
+        this.objectCounterService = objectCounterService;
         if (this.type === ObjectsTypes.SPAWN) {
             this.objectCounterService.spawnCounter$.pipe(takeUntilDestroyed()).subscribe((value) => {
                 this.spawnCounter = value;
+                if (value === 0) {
+                    this.isPlaced = true;
+                }
             });
         }
     }

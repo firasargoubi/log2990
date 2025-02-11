@@ -1,11 +1,13 @@
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router } from '@angular/router';
+import { ItemComponent } from '@app/components/item/item.component';
+import { ObjectsTypes } from '@app/interfaces/objectsTypes';
+import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { ItemComponent } from '@app/components/item/item.component';
-import { ObjectCounterService } from '@app/services/objects-counter.service';
 
 @Component({
     selector: 'app-objects',
@@ -26,6 +28,11 @@ export class ObjectsComponent implements OnInit, OnDestroy {
     ) {
         const MAX_OBJECTS = 7;
         this.range = this.generateRange(0, MAX_OBJECTS);
+        this.counterService.spawnCounter$.pipe(takeUntilDestroyed()).subscribe((value) => {
+            if (value === 0) {
+                this.items[ObjectsTypes.SPAWN].isPlaced = true;
+            }
+        });
     }
 
     ngOnInit(): void {
@@ -42,7 +49,13 @@ export class ObjectsComponent implements OnInit, OnDestroy {
     }
 
     resetComponent(): void {
+        // Ajouter des éléments à `items` ici
         this.items = [];
+        for (let i = 0; i < this.range.length; i++) {
+            const newItem = new ItemComponent(this.counterService);
+            newItem.type = this.range[i];
+            this.items.push(newItem);
+        }
     }
 
     generateRange(start: number, end: number): number[] {
@@ -51,7 +64,6 @@ export class ObjectsComponent implements OnInit, OnDestroy {
 
     onItemAdded(item: ItemComponent) {
         this.items.push(item);
-        console.log(item);
     }
 
     incrementCounter(item: ItemComponent) {
