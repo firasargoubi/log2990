@@ -4,6 +4,7 @@ import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ItemComponent } from '@app/components/item/item.component';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
+import { ObjectsTypes } from '@app/interfaces/objectsTypes';
 
 @Component({
     selector: 'app-objects',

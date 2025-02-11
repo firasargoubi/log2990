@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { WaitingPageComponent } from './waiting-page.component';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
+import { WaitingPageComponent } from './waiting-page.component';
 
 const RANDOM = 1000;
 const RANDOM_MAX = 9000;
@@ -14,11 +14,11 @@ describe('WaitingPageComponent', () => {
         await TestBed.configureTestingModule({
             imports: [WaitingPageComponent], // ✅ FIX: Use imports instead of declarations
             providers: [
-                { 
-                    provide: ActivatedRoute, 
-                    useValue: { params: of({}) }  // Mock ActivatedRoute with an observable
-                }
-            ]
+                {
+                    provide: ActivatedRoute,
+                    useValue: { params: of({}) }, // Mock ActivatedRoute with an observable
+                },
+            ],
         }).compileComponents();
     });
 

@@ -14,6 +14,7 @@ import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
 import { SaveService } from '@app/services/save.service';
 import { catchError, EMPTY, tap } from 'rxjs';
+import { MapSize } from '@app/interfaces/mapsize';
 
 @Component({
     selector: 'app-game-page',
@@ -66,13 +67,13 @@ export class EditionPageComponent {
     get mapSize(): number {
         switch (this.game.mapSize) {
             case 'small':
-                return 10;
+                return MapSize.SMALL;
             case 'medium':
-                return 15;
+                return MapSize.MEDIUM;
             case 'large':
-                return 20;
+                return MapSize.LARGE;
             default:
-                return 10;
+                return MapSize.SMALL;
         }
     }
 

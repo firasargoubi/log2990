@@ -1,5 +1,5 @@
 export enum MapSize {
-    Small = 10,
-    Medium = 15,
-    Large = 20,
+    SMALL = 10,
+    MEDIUM = 15,
+    LARGE = 20,
 }

@@ -1,10 +1,11 @@
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ItemComponent } from '@app/components/item/item.component';
+import { DEFAULT_OBJECTS } from '@app/interfaces/default-objects';
+import { ObjectsTypes } from '@app/interfaces/objectsTypes';
 import { TileTypes } from '@app/interfaces/tileTypes';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
-import { DEFAULT_OBJECTS } from '@app/interfaces/default-objects';
 
 @Component({
     selector: 'app-tile',
@@ -69,7 +70,7 @@ export class TileComponent implements OnInit {
     }
 
     decrementCounter(item: ItemComponent) {
-        if (item.type === 6 || item.type === 7) {
+        if (item.type === ObjectsTypes.SPAWN || item.type === ObjectsTypes.RANDOM) {
             this.counterService.decrementCounter(item.type);
             if (this.counterService.spawnCounter.value === 0) {
                 item.isPlaced = true;
@@ -93,7 +94,11 @@ export class TileComponent implements OnInit {
             this.placedItem.push(draggedItem);
             event.previousContainer.data.splice(0);
             this.objectMoved.emit(true);
-        } else if (this.placedItem.length === 0 && !draggedItem.isPlaced && (draggedItem.type === 6 || draggedItem.type === 7)) {
+        } else if (
+            this.placedItem.length === 0 &&
+            !draggedItem.isPlaced &&
+            (draggedItem.type === ObjectsTypes.SPAWN || draggedItem.type === ObjectsTypes.RANDOM)
+        ) {
             this.placedItem.push(draggedItem);
             this.decrementCounter(draggedItem);
             this.objectMoved.emit(true);

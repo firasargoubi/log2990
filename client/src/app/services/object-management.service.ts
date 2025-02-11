@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import { Object } from '@app/interfaces/object';
 import { DEFAULT_OBJECTS } from '@app/interfaces/default-objects';
 import { Game } from '@app/interfaces/game.model';
+import { Object } from '@app/interfaces/object';
+import { ObjectsTypes } from '@app/interfaces/objectsTypes';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
     providedIn: 'root',
@@ -31,7 +32,7 @@ export class ObjectManagementService {
 
         if (!objectToUpdate || !randomItem) return false;
 
-        if (objectId === 6 || objectId === 7) {
+        if (objectId === ObjectsTypes.SPAWN || objectId === ObjectsTypes.RANDOM) {
             if (objectToUpdate.count > 0) {
                 objectToUpdate.count--;
                 if (objectToUpdate.count === 0) {
@@ -57,12 +58,12 @@ export class ObjectManagementService {
 
     removeObject(objectId: number): boolean {
         const currentObjects = this.objects.value;
-        const objectToUpdate = currentObjects.find(obj => obj.id === objectId);
+        const objectToUpdate = currentObjects.find((obj) => obj.id === objectId);
 
         if (!objectToUpdate) return false;
 
         // Pour les points de départ et objets aléatoires
-        if (objectId === 6 || objectId === 7) {
+        if (objectId === ObjectsTypes.SPAWN || objectId === ObjectsTypes.RANDOM) {
             objectToUpdate.count++;
             if (objectToUpdate.count > 0) {
                 objectToUpdate.isPlaced = false;
@@ -84,8 +85,8 @@ export class ObjectManagementService {
 
     private adjustCountersBySize(objects: Object[], mapSize: 'small' | 'medium' | 'large') {
         // Trouve les objets spéciaux
-        const spawnPoint = objects.find((obj) => obj.id === 6);
-        const randomItem = objects.find((obj) => obj.id === 7);
+        const spawnPoint = objects.find((obj) => obj.id === ObjectsTypes.SPAWN);
+        const randomItem = objects.find((obj) => obj.id === ObjectsTypes.RANDOM);
 
         if (spawnPoint && randomItem) {
             switch (mapSize) {
