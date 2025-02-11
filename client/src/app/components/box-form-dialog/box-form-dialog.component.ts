@@ -8,6 +8,7 @@ import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
 import { Subscription, interval } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+import { CREATE_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 
 const DEFAULT_STAT_VALUE = 4;
 const SIX_VALUE_DICE = 6;
@@ -79,7 +80,7 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
                         this.gameList = updatedGames;
                     }
                 },
-                error: () => this.notificationService.showError('Erreur lors du rafraîchissement des jeux'),
+                error: () => this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorRefreshGames),
             });
     }
 
@@ -147,7 +148,7 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
             localStorage.setItem('form', JSON.stringify(this.form.value));
             const gameExists = this.gameList.some((game) => game.id === this.data.game.id);
             if (!gameExists || !this.data.game.isVisible) {
-                this.notificationService.showError('Ce jeu a été supprimé ou sa visibilité a changéee entre temps, Veuillez choisir un autre jeu.');
+                this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorGameDeleted);
                 return;
             }
         }
@@ -158,7 +159,7 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
             next: (allGames) => {
                 this.gameList = allGames;
             },
-            error: () => this.notificationService.showError('Erreur lors du chargement des jeux'),
+            error: () => this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorLoadingGames),
         });
     }
 }

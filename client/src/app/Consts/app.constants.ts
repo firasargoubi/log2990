@@ -36,3 +36,9 @@ export const GAME_SERVICE_CONSTANTS = {
     errorFetchGameDetails: 'Impossible de récupérer les détails du jeu.',
     errorCreateGame: 'Impossible de créer le jeu.',
 };
+
+export const CREATE_PAGE_CONSTANTS = {
+    errorRefreshGames: 'Erreur lors du rafraîchissement des jeux',
+    errorLoadingGames: 'Erreur lors du chargement des jeux',
+    errorGameDeleted: 'Ce jeu a été supprimé ou sa visibilité a changéee entre temps, Veuillez choisir un autre jeu.',
+};

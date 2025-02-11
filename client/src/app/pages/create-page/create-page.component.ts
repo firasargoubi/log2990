@@ -11,6 +11,7 @@ import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
 import { Observable, Subscription, interval } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+import { CREATE_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 
 const PULLING_INTERVAL = 5000;
 @Component({
@@ -42,7 +43,7 @@ export class CreatePageComponent implements OnInit, OnDestroy {
                         this.games = updatedGames;
                     }
                 },
-                error: () => this.notificationService.showError('Erreur lors du rafraîchissement des jeux'),
+                error: () => this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorRefreshGames),
             });
     }
 
@@ -71,7 +72,7 @@ export class CreatePageComponent implements OnInit, OnDestroy {
             next: (allGames) => {
                 this.games = allGames;
             },
-            error: () => this.notificationService.showError('Erreur lors du chargement des jeux'),
+            error: () => this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorLoadingGames),
         });
     }
 }
