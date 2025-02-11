@@ -5,17 +5,9 @@
     </a>
 
     <div class="title-container">
-        <img src="assets/images/gnome.png" alt="character-left" class="character" />
         <h1>Administrer Jeux</h1>
-        <img src="assets/images/gnome.png" alt="character-right" class="character" />
     </div>
-    <!-- Liste des jeux et bouton aligné -->
     <div class="games-container">
-        <app-game-list
-            [games]="games"
-            (editGame)="onEditGame($event)"
-            (deleteGame)="onDeleteGame()"
-            (visibilityChange)="onToggleVisibility()"
-        ></app-game-list>
+        <app-game-list [games]="games" (deleteGame)="onDeleteGame()" (visibilityChange)="onToggleVisibility()"></app-game-list>
     </div>
 </mat-card>

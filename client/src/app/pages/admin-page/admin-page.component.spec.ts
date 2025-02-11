@@ -1,11 +1,13 @@
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Routes, provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import SpyObj = jasmine.SpyObj;
 import { AdminPageComponent } from './admin-page.component';
 import { GameService } from '@app/services/game.service';
 import { Game } from '@app/interfaces/game.model';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { NotificationService } from '@app/services/notification.service';
 
 const routes: Routes = [];
 
@@ -34,7 +36,7 @@ describe('AdminPageComponent', () => {
 
         await TestBed.configureTestingModule({
             imports: [AdminPageComponent],
-            providers: [{ provide: GameService, useValue: gameServiceSpy }, provideHttpClientTesting(), provideRouter(routes)],
+            providers: [{ provide: GameService, useValue: gameServiceSpy }, provideHttpClientTesting(), provideRouter(routes), provideAnimations()],
         }).compileComponents();
 
         fixture = TestBed.createComponent(AdminPageComponent);
@@ -80,19 +82,29 @@ describe('AdminPageComponent', () => {
         component.onToggleVisibility();
         expect(component.fetchGames).toHaveBeenCalled();
     });
+    it('should show success notification only on the first fetchGames call', () => {
+        const notificationService = TestBed.inject(NotificationService);
+        spyOn(notificationService, 'showSuccess');
 
-    it('should return the game on onEditGame', () => {
-        const game: Game = {
-            id: '1',
-            name: 'Test Game',
-            mapSize: '',
-            mode: '',
-            previewImage: '',
-            description: '',
-            lastModified: new Date(),
-            isVisible: false,
-            board: [],
-        };
-        expect(component.onEditGame(game)).toEqual(game);
+        component['isFirstLoad'] = true;
+
+        component.fetchGames();
+
+        expect(notificationService.showSuccess).toHaveBeenCalledWith('Jeux chargés avec succès');
+
+        component.fetchGames();
+
+        expect(notificationService.showSuccess).toHaveBeenCalledTimes(1);
+    });
+
+    it('should show error notification when fetchGames fails', () => {
+        const notificationService = TestBed.inject(NotificationService);
+        spyOn(notificationService, 'showError');
+
+        gameService.fetchGames.and.returnValue(throwError(() => new Error('error')));
+
+        component.fetchGames();
+
+        expect(notificationService.showError).toHaveBeenCalledWith('Chargement des jeux impossible, réessayez plus tard.');
     });
 });

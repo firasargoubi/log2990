@@ -34,8 +34,8 @@ describe('GameCardComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(GameCreationCardComponent);
         component = fixture.componentInstance;
-        component.game = { ...mockGame }; // Provide input data
-        fixture.detectChanges(); // Trigger change detection
+        component.game = { ...mockGame };
+        fixture.detectChanges();
     });
 
     it('should create', () => {

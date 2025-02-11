@@ -4,26 +4,25 @@
     align-items: center;
     padding: 30px;
     width: 100%;
-    max-width: 700px; /* Augmenté pour éviter que le contenu soit tronqué */
-    max-height: 90vh; /* Empêche le débordement de l'écran */
-    overflow-y: auto; /* Ajoute un scroll si nécessaire */
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
     background: #fff;
     border-radius: 10px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 12px rgb(224, 223, 173);
     box-sizing: border-box;
-    background: linear-gradient(120deg, #2ecc71, #a8d5a2, #ffd700); 
+    background: rgba(241, 238, 198, 0.6);
 }
 
 h2 {
     font-family: 'Press Start 2P', cursive;
-    color: #ffcc00;
-    font-size: 20px; 
-    line-height: 1.2; 
-    margin-bottom: 10px; 
+    color: #125d0c;
+    font-size: 20px;
+    line-height: 1.2;
+    margin-bottom: 10px;
     text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
 }
 
-/* Style global du formulaire */
 form {
     display: flex;
     flex-direction: column;
@@ -31,7 +30,6 @@ form {
     width: 100%;
 }
 
-/* Champs input */
 input[type='text'],
 input[type='number'] {
     width: 100%;
@@ -39,20 +37,19 @@ input[type='number'] {
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 18px;
-    background: #d4f4be;;
-    border: 2px solid #88aa66;
+    background: #d4f4be;
+    border: 2px solid #224201;
     transition:
         border-color 0.3s ease,
         box-shadow 0.3s ease;
 
     &:focus {
-        border-color: #007bff;
+        border-color: #005b03;
         background: #fff;
         outline: none;
         box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
     }
 }
-
 
 .avatar-grid {
     display: flex;
@@ -62,7 +59,7 @@ input[type='number'] {
 
 .avatars {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); 
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
     gap: 15px;
     justify-content: center;
 }
@@ -83,11 +80,10 @@ input[type='number'] {
     }
 
     &.selected {
-        border-color: #4cad26;
+        border-color: #154800;
         box-shadow: 0 0 5px rgba(36, 101, 9, 0.5);
     }
 }
-
 
 .stats {
     display: grid;
@@ -102,7 +98,6 @@ label {
     color: #333;
 }
 
-/* Boutons */
 .actions {
     display: flex;
     justify-content: space-between;
@@ -132,11 +127,11 @@ button:first-of-type {
 }
 
 button:last-of-type {
-    background-color: #007bff;
+    background-color: #125d0c;
     color: white;
 
     &:hover {
-        background-color: #0056b3;
+        background-color: #125d0c;
         transform: scale(1.05);
     }
 

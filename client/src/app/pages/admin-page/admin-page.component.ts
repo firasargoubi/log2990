@@ -4,6 +4,9 @@ import { RouterLink } from '@angular/router';
 import { GameListComponent } from '@app/components/game-list/game-list.component';
 import { Game } from '@app/interfaces/game.model';
 import { GameService } from '@app/services/game.service';
+import { NotificationService } from '@app/services/notification.service';
+import { catchError, of, tap } from 'rxjs';
+import { ADMIN_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 
 @Component({
     selector: 'app-admin-page',
@@ -13,23 +16,31 @@ import { GameService } from '@app/services/game.service';
 })
 export class AdminPageComponent implements OnInit {
     games: Game[] = [];
-    gameService = inject(GameService);
+    private gameService = inject(GameService);
+    private notificationService = inject(NotificationService);
+    private isFirstLoad = true;
 
     ngOnInit(): void {
         this.fetchGames();
     }
 
     fetchGames() {
-        this.gameService.fetchGames().subscribe({
-            next: (allGames) => {
-                this.games = allGames;
-            },
-        });
-    }
-
-    onEditGame(game: Game) {
-        return game;
-        // TODO: Implémenter  l'édition d’un jeu avec serveur, bdd et vue d'édition
+        this.gameService
+            .fetchGames()
+            .pipe(
+                tap((allGames) => {
+                    this.games = allGames;
+                    if (this.isFirstLoad) {
+                        this.notificationService.showSuccess(ADMIN_PAGE_CONSTANTS.successFetchMessage);
+                        this.isFirstLoad = false;
+                    }
+                }),
+                catchError(() => {
+                    this.notificationService.showError(ADMIN_PAGE_CONSTANTS.errorFetchMessage);
+                    return of([]);
+                }),
+            )
+            .subscribe();
     }
 
     onDeleteGame() {

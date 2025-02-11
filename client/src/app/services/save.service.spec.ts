@@ -2,12 +2,22 @@ import { TestBed } from '@angular/core/testing';
 import { SaveService } from './save.service';
 import { Tile } from '@app/interfaces/tile';
 import { TileTypes } from '@app/interfaces/tileTypes';
+import { GameService } from '@app/services/game.service';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('SaveService', () => {
     let service: SaveService;
+    let gameServiceSpy: jasmine.SpyObj<GameService>;
 
     beforeEach(() => {
-        TestBed.configureTestingModule({});
+        // Mock de GameService
+        gameServiceSpy = jasmine.createSpyObj('GameService', ['createGame', 'updateGame']);
+
+        TestBed.configureTestingModule({
+            imports: [HttpClientTestingModule], // ✅ Ajout de HttpClientTestingModule
+            providers: [{ provide: GameService, useValue: gameServiceSpy }], // ✅ Mock GameService
+        });
+
         service = TestBed.inject(SaveService);
     });
 
@@ -34,7 +44,8 @@ describe('SaveService', () => {
             ],
         ];
 
-        expect(service.verifyDoors(board)).toBe(true);
+        service.board = board; // ✅ Correction : assigner avant appel
+        expect(service.verifyDoors()).toBe(true);
     });
 
     it('should return false for a door on the edge of the board', () => {
@@ -55,7 +66,9 @@ describe('SaveService', () => {
                 { type: TileTypes.Grass, x: 2, y: 2, id: '9' },
             ],
         ];
-        expect(service.verifyDoors(board)).toBe(false);
+
+        service.board = board;
+        expect(service.verifyDoors()).toBe(false);
     });
 
     it('should return false for a door not properly connected to walls', () => {
@@ -76,14 +89,44 @@ describe('SaveService', () => {
                 { type: TileTypes.Grass, x: 2, y: 2, id: '9' },
             ],
         ];
-        expect(service.verifyDoors(board)).toBe(false);
+
+        service.board = board;
+        expect(service.verifyDoors()).toBe(false);
     });
 
-    it('should toggle saveActive state', (done) => {
-        service.isActive$.subscribe((value) => {
+    it('should emit true when alertBoardForVerification is called', (done) => {
+        service.isSave$.subscribe((value) => {
+            expect(value).toBe(true);
+            done(); // ✅ Vérifie que l'observable a bien émis
+        });
+
+        service.alertBoardForVerification(true);
+    });
+
+    it('should emit false when alertBoardForVerification is called with false', (done) => {
+        service.isSave$.subscribe((value) => {
+            expect(value).toBe(false);
+            done();
+        });
+
+        service.alertBoardForVerification(false);
+    });
+
+    it('should emit true when alertBoardForReset is called', (done) => {
+        service.isReset$.subscribe((value) => {
             expect(value).toBe(true);
             done();
         });
-        service.setActive(true);
+
+        service.alertBoardForReset(true);
+    });
+
+    it('should emit false when alertBoardForReset is called with false', (done) => {
+        service.isReset$.subscribe((value) => {
+            expect(value).toBe(false);
+            done();
+        });
+
+        service.alertBoardForReset(false);
     });
 });

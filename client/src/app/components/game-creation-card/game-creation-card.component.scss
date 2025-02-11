@@ -14,8 +14,9 @@
         0 10px 15px rgba(0, 0, 0, 0.3),
         0 4px 6px rgba(0, 0, 0, 0.2);
     font-family: 'Press Start 2P', cursive;
-    background: linear-gradient(145deg, #3d2f2f, #5a3d3d);
+    background: linear-gradient(145deg, #77615a, #5a3d3d);
     color: #ffff;
+    cursor: pointer;
     transition:
         transform 0.3s ease,
         box-shadow 0.3s ease;
@@ -45,13 +46,25 @@
     .game-info {
         margin-top: 8px;
         ul {
-            list-style: disc;
+            list-style: none;
             padding: 0;
 
             li {
                 margin-bottom: 8px;
             }
         }
+        .game-name {
+            color: #9eba63;
+            text-shadow:
+                0 4px 6px rgba(0, 0, 0, 0.5),
+                0 1px 3px rgba(0, 0, 0, 0.5);
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+            display: block;
+        }
     }
-
 }

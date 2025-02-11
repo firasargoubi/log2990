@@ -1,20 +1,35 @@
 <h2 mat-dialog-title>Création / édition d'un jeu</h2>
 <mat-dialog-content>
     <div class="mode-section">
-        <h3>Choisir le mode</h3>
-        <mat-radio-group [(ngModel)]="selectedMode.type">
-            <mat-radio-button value="classic">Classic</mat-radio-button>
-            <mat-radio-button value="capture">Capture the Flag</mat-radio-button>
-        </mat-radio-group>
+        <h6>Choisir le mode</h6>
+        <div class="mode-radio-group">
+            <label>
+                <input type="radio" [(ngModel)]="selectedMode.type" [value]="gameType.Classic" name="gameMode" class="mode-radio-button-classic" />
+                Classique
+            </label>
+            <label>
+                <input type="radio" [(ngModel)]="selectedMode.type" [value]="gameType.Capture" name="gameMode" class="mode-radio-button-capture" />
+                Capturer le drapeau
+            </label>
+        </div>
     </div>
 
     <div class="size-section">
-        <h3>Choisir la taille</h3>
-        <mat-radio-group [(ngModel)]="selectedMode.size">
-            <mat-radio-button value="small">Petite</mat-radio-button>
-            <mat-radio-button value="medium">Moyenne</mat-radio-button>
-            <mat-radio-button value="large">Grande</mat-radio-button>
-        </mat-radio-group>
+        <h6>Choisir la taille</h6>
+        <div class="size-radio-group">
+            <label>
+                <input type="radio" [(ngModel)]="selectedMode.size" [value]="gameSize.Small" name="gameSize" class="size-radio-button-small" />
+                Petite
+            </label>
+            <label>
+                <input type="radio" [(ngModel)]="selectedMode.size" [value]="gameSize.Medium" name="gameSize" class="size-radio-button-medium" />
+                Moyenne
+            </label>
+            <label>
+                <input type="radio" [(ngModel)]="selectedMode.size" [value]="gameSize.Large" name="gameSize" class="size-radio-button-large" />
+                Grande
+            </label>
+        </div>
     </div>
 </mat-dialog-content>
 <mat-dialog-actions>

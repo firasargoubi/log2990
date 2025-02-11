@@ -22,6 +22,7 @@ describe('GameService', () => {
             name: 'Test Game',
             description: 'A test game',
             mode: 'Classic',
+            previewImage: '',
             mapSize: 'Medium',
             isVisible: true,
             board: [
@@ -90,6 +91,24 @@ describe('GameService', () => {
 
         sandbox.stub(game, 'findOneAndDelete').resolves(null);
         const result = await gameService.deleteGame(gameId);
+
+        expect(result).to.equal(null);
+    });
+    it('should get a game by ID', async () => {
+        const gameId = uuidv4();
+        const foundGame = { id: gameId, name: 'Found Game' };
+
+        sandbox.stub(game, 'findOne').resolves(foundGame);
+        const result = await gameService.getGameById(gameId);
+
+        expect(result).to.equal(foundGame);
+    });
+
+    it('should return null if game with given ID does not exist', async () => {
+        const gameId = uuidv4();
+
+        sandbox.stub(game, 'findOne').resolves(null);
+        const result = await gameService.getGameById(gameId);
 
         expect(result).to.equal(null);
     });
