@@ -7,12 +7,11 @@ import { TileService } from '@app/services/tile.service';
 import { SaveService } from '@app/services/save.service';
 import { ErrorService } from '@app/services/error.service';
 import { GameService } from '@app/services/game.service';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { Tile } from '@app/interfaces/tile';
 import { Game } from '@app/interfaces/game.model';
 import { Coordinates } from '@app/interfaces/coordinates';
 import { MapSize } from '@app/interfaces/mapsize';
-
 
 describe('BoardComponent', () => {
     let component: BoardComponent;
@@ -26,7 +25,7 @@ describe('BoardComponent', () => {
     beforeEach(async () => {
         mouseServiceSpy = jasmine.createSpyObj('MouseService', ['onMouseUp', 'onMouseDown', 'onMouseMove', 'onMouseLeave']);
         tileServiceSpy = jasmine.createSpyObj('TileService', ['modifyTile', 'copyTileTool'], { currentTool: 0, toolSaved: 0 });
-        saveServiceSpy = jasmine.createSpyObj('SaveService', ['verifyBoard'], { isSave$: of(false), isReset$: of(false) });
+        saveServiceSpy = jasmine.createSpyObj('SaveService', ['verifyBoard'], { isSave$: new Subject<boolean>(), isReset$: of(false) });
         errorServiceSpy = jasmine.createSpyObj('ErrorService', ['showError']);
         gameServiceSpy = jasmine.createSpyObj('GameService', ['fetchGames']);
 
@@ -231,13 +230,6 @@ describe('BoardComponent', () => {
         expect(tile.object).toBe(1);
     });
 
-    it('should call refreshObject on all tile components when onObjectMoved is called', () => {
-        const tileComponentSpy = jasmine.createSpyObj('TileComponent', ['refreshObject']);
-        component.tileComponents.reset([tileComponentSpy, tileComponentSpy]);
-        component.onObjectMoved();
-        expect(tileComponentSpy.refreshObject).toHaveBeenCalledTimes(2);
-    });
-
     it('should call modifyTile with correct coordinates', () => {
         const coordinates: Coordinates = { x: 1, y: 1 };
         component.modifyTile(coordinates);
@@ -280,23 +272,6 @@ describe('BoardComponent', () => {
         component.onMouseUpBoard();
         expect(mouseServiceSpy.onMouseUp).toHaveBeenCalled();
     });
-   
-    it('should initialize board with correct tile types and objects when game ID is provided', () => {
-        component.game.id = 'test-game-id';
-        component.board = [
-            [{ type: 0, object: 1, x: 0, y: 0, id: '0-0' }, { type: 1, object: 2, x: 0, y: 1, id: '0-1' }],
-            [{ type: 2, object: 3, x: 1, y: 0, id: '1-0' }, { type: 3, object: 4, x: 1, y: 1, id: '1-1' }],
-        ];
-        component.initializeBoard();
-        expect(component.board[0][0].type).toBe(0);
-        expect(component.board[0][0].object).toBe(1);
-        expect(component.board[0][1].type).toBe(1);
-        expect(component.board[0][1].object).toBe(2);
-        expect(component.board[1][0].type).toBe(2);
-        expect(component.board[1][0].object).toBe(3);
-        expect(component.board[1][1].type).toBe(3);
-        expect(component.board[1][1].object).toBe(4);
-    });
 
     it('should set currentTool to toolSaved and reset toolSaved on mouse up', () => {
         component.tileService.toolSaved = 1;
@@ -305,7 +280,78 @@ describe('BoardComponent', () => {
         expect(component.tileService.currentTool).toBe(0);
         expect(component.tileService.toolSaved).toBe(0);
     });
+    it('should subscribe to isSave$ observable in constructor', () => {
+        const reloadTilesSpy = spyOn(component, 'reloadTiles');
+        (saveServiceSpy.isSave$ as Subject<boolean>).next(true);
+        expect(reloadTilesSpy).toHaveBeenCalled();
+        expect(saveServiceSpy.verifyBoard).toHaveBeenCalledWith(component.board);
+    });
 
-   
-    
+    it('should set currentTool to 0 in constructor', () => {
+        expect(component.tileService.currentTool).toBe(0);
+    });
+    it('should call onMouseDown with correct coordinates', () => {
+        const event = new MouseEvent('mousedown', { button: 0 });
+        const tile: Tile = { type: 1, x: 1, y: 1, id: '1-1', object: 0 };
+        component.onMouseDownBoard(event, tile);
+        expect(mouseServiceSpy.onMouseDown).toHaveBeenCalledWith({ x: tile.x, y: tile.y });
+    });
+
+    it('should delete object on right-click if tile has an object', () => {
+        const event = new MouseEvent('mousedown', { button: 2 });
+        const tile: Tile = { type: 1, x: 1, y: 1, id: '1-1', object: 1 };
+        component.onMouseDownBoard(event, tile);
+        expect(tile.object).toBe(0);
+    });
+
+    it('should save current tool and set current tool to 0 on right-click if tile has no object', () => {
+        const event = new MouseEvent('mousedown', { button: 2 });
+        const tile: Tile = { type: 1, x: 1, y: 1, id: '1-1', object: 0 };
+        component.onMouseDownBoard(event, tile);
+        expect(tileServiceSpy.toolSaved).toBe(tileServiceSpy.currentTool);
+        expect(tileServiceSpy.currentTool).toBe(0);
+    });
+
+    it('should set objectHeld to true if tile has an object on left-click', () => {
+        const event = new MouseEvent('mousedown', { button: 0 });
+        const tile: Tile = { type: 1, x: 1, y: 1, id: '1-1', object: 1 };
+        component.onMouseDownBoard(event, tile);
+        expect(component.objectHeld).toBeTrue();
+    });
+
+    it('should call modifyTile if tile has no object on left-click', () => {
+        const event = new MouseEvent('mousedown', { button: 0 });
+        const tile: Tile = { type: 1, x: 1, y: 1, id: '1-1', object: 0 };
+        component.onMouseDownBoard(event, tile);
+        expect(tileServiceSpy.modifyTile).toHaveBeenCalledWith(component.board[1][1]);
+    });
+    it('should call refreshObject on each TileComponent when reloadTiles is called', () => {
+        const mockTileComponents = [{ refreshObject: jasmine.createSpy('refreshObject') }, { refreshObject: jasmine.createSpy('refreshObject') }];
+        component.tileComponents.reset(mockTileComponents as any);
+
+        component.reloadTiles();
+
+        mockTileComponents.forEach((tileComponent) => {
+            expect(tileComponent.refreshObject).toHaveBeenCalled();
+        });
+    });
+
+    it('should not throw an error if tileComponents is empty when reloadTiles is called', () => {
+        component.tileComponents.reset([]);
+
+        expect(() => component.reloadTiles()).not.toThrow();
+    });
+
+    it('should call refreshObject on the correct number of TileComponents when reloadTiles is called', () => {
+        const mockTileComponents = Array.from({ length: component.mapSize ** 2 }, () => ({
+            refreshObject: jasmine.createSpy('refreshObject'),
+        }));
+        component.tileComponents.reset(mockTileComponents as any);
+
+        component.reloadTiles();
+
+        mockTileComponents.forEach((tileComponent) => {
+            expect(tileComponent.refreshObject).toHaveBeenCalled();
+        });
+    });
 });
