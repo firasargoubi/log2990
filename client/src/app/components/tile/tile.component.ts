@@ -65,7 +65,7 @@ export class TileComponent {
         if (event.previousContainer.id !== 'cdk-drop-list-0') {
             this.placedItem.push(draggedItem);
             event.previousContainer.data.splice(0);
-        } else if (this.placedItem.length === 0 && !draggedItem.isPlaced && (draggedItem.type === '6' || draggedItem.type === '7')) {
+        } else if (this.placedItem.length === 0 && !draggedItem.isPlaced && draggedItem.type === '6') {
             this.placedItem.push(draggedItem);
             this.decrementCounter(draggedItem);
         }

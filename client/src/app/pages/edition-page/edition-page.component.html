@@ -27,7 +27,9 @@
         </div>
         }
         <div class="object-tools">
-            <app-objects></app-objects>
+            @if (gameLoaded) {
+            <app-objects [mapSize]="game.mapSize"></app-objects>
+            }
         </div>
     </section>
     @if (showErrorPopup) {

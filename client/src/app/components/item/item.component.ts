@@ -2,6 +2,7 @@ import { CdkDrag } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ObjectAmount } from '@app/interfaces/objectAmount';
 
 @Component({
     selector: 'app-item',
@@ -11,13 +12,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 })
 export class ItemComponent implements OnInit {
     @Input() type = '';
+    @Input() mapSize: 'small' | 'medium' | 'large';
     @Output() itemAdded = new EventEmitter<ItemComponent>();
     @Input() counter = 4;
     @Input() inTile: boolean = false;
-    spawnCounter: number = 2;
-    randomCounter: number = 2;
     isPlaced: boolean = false;
     tooltipText: string | null = null;
+    spawnCounter: number;
+    randomCounter: number;
 
     descriptions: { [key: string]: string } = {
         0: 'Les bottes magiques vous permettront de vous déplacer à une vitesse SUPERSONIQUE!',
@@ -77,5 +79,23 @@ export class ItemComponent implements OnInit {
     }
     ngOnInit(): void {
         this.itemAdded.emit(this);
+        switch (this.mapSize) {
+            case 'small':
+                this.spawnCounter = ObjectAmount.TWO;
+                this.randomCounter = ObjectAmount.TWO;
+                break;
+            case 'medium':
+                this.spawnCounter = ObjectAmount.FOUR;
+                this.randomCounter = ObjectAmount.FOUR;
+                break;
+            case 'large':
+                this.spawnCounter = ObjectAmount.SIX;
+                this.randomCounter = ObjectAmount.SIX;
+                break;
+            default:
+                this.spawnCounter = ObjectAmount.TWO;
+                this.randomCounter = ObjectAmount.TWO;
+                break;
+        }
     }
 }
