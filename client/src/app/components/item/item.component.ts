@@ -1,14 +1,15 @@
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { ObjectCounterService } from '@app/services/objects-counter.service';
+import { ObjectAmount } from '@app/interfaces/objectAmount';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { CdkDrag } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { ObjectAmount } from '@app/interfaces/objectAmount';
 
 @Component({
     selector: 'app-item',
     imports: [CdkDrag, CommonModule, MatTooltipModule],
     templateUrl: './item.component.html',
-    styleUrl: './item.component.scss',
+    styleUrls: ['./item.component.scss'],
 })
 export class ItemComponent implements OnInit {
     @Input() type = '';
@@ -18,8 +19,6 @@ export class ItemComponent implements OnInit {
     @Input() inTile: boolean = false;
     isPlaced: boolean = false;
     tooltipText: string | null = null;
-    spawnCounter: number;
-    randomCounter: number;
 
     descriptions: { [key: string]: string } = {
         0: 'Les bottes magiques vous permettront de vous déplacer à une vitesse SUPERSONIQUE!',
@@ -31,6 +30,8 @@ export class ItemComponent implements OnInit {
         6: "Cet objet indique l'endroit où une bataille épique est sur le point d'avoir lieu",
         7: 'Ce petit gnome farceur a un cadeau pour vous. À vos risque et périls...',
     };
+
+    constructor(public objectCounterService: ObjectCounterService) {}
 
     get name(): string {
         switch (this.type) {
@@ -77,24 +78,21 @@ export class ItemComponent implements OnInit {
                 return 'Undefined';
         }
     }
+
     ngOnInit(): void {
         this.itemAdded.emit(this);
         switch (this.mapSize) {
             case 'small':
-                this.spawnCounter = ObjectAmount.TWO;
-                this.randomCounter = ObjectAmount.TWO;
+                this.objectCounterService.initializeCounter(ObjectAmount.TWO);
                 break;
             case 'medium':
-                this.spawnCounter = ObjectAmount.FOUR;
-                this.randomCounter = ObjectAmount.FOUR;
+                this.objectCounterService.initializeCounter(ObjectAmount.FOUR);
                 break;
             case 'large':
-                this.spawnCounter = ObjectAmount.SIX;
-                this.randomCounter = ObjectAmount.SIX;
+                this.objectCounterService.initializeCounter(ObjectAmount.SIX);
                 break;
             default:
-                this.spawnCounter = ObjectAmount.TWO;
-                this.randomCounter = ObjectAmount.TWO;
+                this.objectCounterService.initializeCounter(ObjectAmount.TWO);
                 break;
         }
     }

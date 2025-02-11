@@ -11,12 +11,11 @@ import { GameService } from '@app/services/game.service';
 import { MouseService } from '@app/services/mouse.service';
 import { SaveService } from '@app/services/save.service';
 import { TileService } from '@app/services/tile.service';
-import { ItemComponent } from '@app/components/item/item.component';
 
 const RIGHT_CLICK = 2;
 @Component({
     selector: 'app-board',
-    imports: [TileComponent, CommonModule, FormsModule, ItemComponent],
+    imports: [TileComponent, CommonModule, FormsModule],
     templateUrl: './board.component.html',
     styleUrl: './board.component.scss',
 })
@@ -83,8 +82,8 @@ export class BoardComponent implements OnInit {
             for (let i = 0; i < this.mapSize; i++) {
                 const row: Tile[] = [];
                 for (let j = 0; j < this.mapSize; j++) {
-                    const tileType = this.game.board[i][j] %10;
-                    const objectType = this.game.board[i][j] /10;
+                    const tileType = this.game.board[i][j] % 10;
+                    const objectType = this.game.board[i][j] / 10;
                     row.push({ type: tileType, object: objectType, x: i, y: j, id: `${i}-${j}` });
                 }
                 this.board.push(row);

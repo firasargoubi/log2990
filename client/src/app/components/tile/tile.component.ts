@@ -7,7 +7,7 @@ import { ObjectCounterService } from '@app/services/objects-counter.service';
 
 @Component({
     selector: 'app-tile',
-    imports: [CommonModule, CdkDropList, ItemComponent, CdkDrag],
+    imports: [CommonModule, CdkDropList, CdkDrag],
     templateUrl: './tile.component.html',
     styleUrl: './tile.component.scss',
 })
@@ -38,17 +38,17 @@ export class TileComponent {
 
     decrementCounter(item: ItemComponent) {
         if (item.type === '6') {
-            item.spawnCounter--;
-            if (item.spawnCounter === 0) {
+            this.counterService.decrementCounter(item.type);
+            if (this.counterService.spawnCounter.value === 0) {
                 item.isPlaced = true;
             }
         } else if (item.type === '7') {
-            item.randomCounter--;
-            if (item.randomCounter === 0) {
+            this.counterService.decrementCounter(item.type);
+            if (this.counterService.randomCounter.value === 0) {
                 item.isPlaced = true;
             }
         } else {
-            this.counterService.decrementCounter();
+            this.counterService.decrementCounter(item.type);
             item.isPlaced = true;
         }
     }
