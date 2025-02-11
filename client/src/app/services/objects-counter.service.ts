@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { ObjectsTypes } from '@app/interfaces/objectsTypes';
 
 @Injectable({
     providedIn: 'root',
@@ -12,9 +13,9 @@ export class ObjectCounterService {
 
     decrementCounter(type: number) {
         if (this.counterSubject.value > 0) {
-            if (type === 6) {
+            if (type === ObjectsTypes.SPAWN) {
                 this.spawnCounter.next(this.spawnCounter.value - 1);
-            } else if (type === 7) {
+            } else if (type === ObjectsTypes.RANDOM) {
                 this.randomCounter.next(this.randomCounter.value - 1);
             } else {
                 this.counterSubject.next(this.counterSubject.value - 1);
@@ -23,9 +24,9 @@ export class ObjectCounterService {
     }
 
     incrementCounter(type: number) {
-        if (type === 6) {
+        if (type === ObjectsTypes.SPAWN) {
             this.spawnCounter.next(this.spawnCounter.value + 1);
-        } else if (type === 7) {
+        } else if (type === ObjectsTypes.RANDOM) {
             this.randomCounter.next(this.randomCounter.value + 1);
         } else {
             this.counterSubject.next(this.counterSubject.value + 1);

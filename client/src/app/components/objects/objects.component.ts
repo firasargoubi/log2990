@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { ItemComponent } from '@app/components/item/item.component';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
+import { ObjectsTypes } from '@app/interfaces/objectsTypes';
 
 @Component({
     selector: 'app-objects',
@@ -31,7 +32,7 @@ export class ObjectsComponent {
     }
 
     incrementCounter(item: ItemComponent) {
-        if (item.type === 6 || item.type === 7) {
+        if (item.type === ObjectsTypes.SPAWN || item.type === ObjectsTypes.RANDOM) {
             this.counterService.incrementCounter(item.type);
         } else {
             this.counterService.incrementCounter(item.type);

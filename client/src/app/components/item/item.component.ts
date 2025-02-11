@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { ObjectAmount } from '@app/interfaces/objectAmount';
+import { ObjectsTypes } from '@app/interfaces/objectsTypes';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { CdkDrag } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
@@ -15,41 +16,40 @@ export class ItemComponent implements OnInit {
     @Input() mapSize: 'small' | 'medium' | 'large';
     @Input() type: number;
     @Output() itemAdded = new EventEmitter<ItemComponent>();
-    @Input() counter = 4;
     @Input() inTile: boolean = false;
     isPlaced: boolean = false;
     tooltipText: string | null = null;
 
     descriptions: { [key: string]: string } = {
-        0: 'Les bottes magiques vous permettront de vous déplacer à une vitesse SUPERSONIQUE!',
-        1: 'Cette épée effectue plus de dégats sur vos ennemis!',
-        2: 'Figez le temps et profitez-en pour vous déplacer une fois de plus que vos adversaires...',
-        3: "Cette mystérieuse baguette vous permet d'ensorceler un de vos adversaires et de le dérouter de son chemin!",
-        4: "Vos talents de clairvoyance vous permettent d'identifier tous les points faibles d'un de vos ennemis.",
-        5: 'Ne paniquez pas, ce nectar soignera toutes vos blessures!',
-        6: "Cet objet indique l'endroit où une bataille épique est sur le point d'avoir lieu",
-        7: 'Ce petit gnome farceur a un cadeau pour vous. À vos risque et périls...',
+        [ObjectsTypes.BOOTS]: 'Les bottes magiques vous permettront de vous déplacer à une vitesse SUPERSONIQUE!',
+        [ObjectsTypes.SWORD]: 'Cette épée effectue plus de dégats sur vos ennemis!',
+        [ObjectsTypes.POTION]: 'Figez le temps et profitez-en pour vous déplacer une fois de plus que vos adversaires...',
+        [ObjectsTypes.WAND]: "Cette mystérieuse baguette vous permet d'ensorceler un de vos adversaires et de le dérouter de son chemin!",
+        [ObjectsTypes.CRYSTAL]: "Vos talents de clairvoyance vous permettent d'identifier tous les points faibles d'un de vos ennemis.",
+        [ObjectsTypes.JUICE]: 'Ne paniquez pas, ce nectar soignera toutes vos blessures!',
+        [ObjectsTypes.SPAWN]: "Cet objet indique l'endroit où une bataille épique est sur le point d'avoir lieu",
+        [ObjectsTypes.RANDOM]: 'Ce petit gnome farceur a un cadeau pour vous. À vos risque et périls...',
     };
 
     constructor(public objectCounterService: ObjectCounterService) {}
 
     get name(): string {
         switch (this.type) {
-            case 0:
+            case ObjectsTypes.BOOTS:
                 return 'Bottes magiques';
-            case 1:
+            case ObjectsTypes.SWORD:
                 return 'Épée tranchante';
-            case 2:
+            case ObjectsTypes.POTION:
                 return 'Potion du temps';
-            case 3:
+            case ObjectsTypes.WAND:
                 return 'Baguette magique';
-            case 4:
+            case ObjectsTypes.CRYSTAL:
                 return 'Boule de crystal';
-            case 5:
+            case ObjectsTypes.JUICE:
                 return 'Médecine';
-            case 6:
+            case ObjectsTypes.SPAWN:
                 return 'Point de départ';
-            case 7:
+            case ObjectsTypes.RANDOM:
                 return 'Gnome mystère';
             default:
                 return 'Undefined';
@@ -58,21 +58,21 @@ export class ItemComponent implements OnInit {
 
     get image(): string {
         switch (this.type) {
-            case 0:
+            case ObjectsTypes.BOOTS:
                 return 'assets/boots.png';
-            case 1:
+            case ObjectsTypes.SWORD:
                 return 'assets/sword.png';
-            case 2:
+            case ObjectsTypes.POTION:
                 return 'assets/potion.png';
-            case 3:
+            case ObjectsTypes.WAND:
                 return 'assets/wand.png';
-            case 4:
+            case ObjectsTypes.CRYSTAL:
                 return 'assets/crystal_ball.png';
-            case 5:
+            case ObjectsTypes.JUICE:
                 return 'assets/berry-juice.png';
-            case 6:
+            case ObjectsTypes.SPAWN:
                 return 'assets/vortex.png';
-            case 7:
+            case ObjectsTypes.RANDOM:
                 return 'assets/gnome.png';
             default:
                 return 'Undefined';

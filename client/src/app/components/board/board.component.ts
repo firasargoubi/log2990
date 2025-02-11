@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { TileComponent } from '@app/components/tile/tile.component';
 import { Coordinates } from '@app/interfaces/coordinates';
 import { Game } from '@app/interfaces/game.model';
+import { MapSize } from '@app/interfaces/mapsize';
 import { Tile } from '@app/interfaces/tile';
 import { ErrorService } from '@app/services/error.service';
 import { GameService } from '@app/services/game.service';
@@ -57,13 +58,13 @@ export class BoardComponent implements OnInit {
     get mapSize(): number {
         switch (this.game.mapSize) {
             case 'small':
-                return 10;
+                return MapSize.SMALL;
             case 'medium':
-                return 15;
+                return MapSize.MEDIUM;
             case 'large':
-                return 20;
+                return MapSize.LARGE;
             default:
-                return 10;
+                return MapSize.SMALL;
         }
     }
 
@@ -81,8 +82,8 @@ export class BoardComponent implements OnInit {
             for (let i = 0; i < this.mapSize; i++) {
                 const row: Tile[] = [];
                 for (let j = 0; j < this.mapSize; j++) {
-                    const tileType = this.game.board[i][j] %10;
-                    const objectType = Math.floor(this.game.board[i][j] /10);
+                    const tileType = this.game.board[i][j] % 10;
+                    const objectType = Math.floor(this.game.board[i][j] / 10);
                     row.push({ type: tileType, object: objectType, x: i, y: j, id: `${i}-${j}` });
                 }
                 this.board.push(row);
@@ -96,7 +97,6 @@ export class BoardComponent implements OnInit {
                 this.board.push(row);
             }
         }
-        console.log(this.board);
     }
 
     loadBoard(board: Tile[][]): void {
@@ -108,7 +108,6 @@ export class BoardComponent implements OnInit {
         if (this.tileService.toolSaved !== 0) {
             this.tileService.currentTool = this.tileService.toolSaved;
             this.tileService.toolSaved = 0;
-            console.log(this.tileService.currentTool);
         }
     }
 
@@ -121,7 +120,6 @@ export class BoardComponent implements OnInit {
 
     onMouseDownBoard(event: MouseEvent, tile: Tile) {
         this.mouseService.onMouseDown({ x: tile.x, y: tile.y });
-        console.log(tile);
         if (event.button === RIGHT_CLICK) {
             this.tileService.toolSaved = this.tileService.currentTool;
             this.tileService.currentTool = 0;

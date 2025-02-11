@@ -1,12 +1,12 @@
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BoardComponent } from './board.component';
+import { Tile } from '@app/interfaces/tile';
+import { GameService } from '@app/services/game.service';
 import { MouseService } from '@app/services/mouse.service';
 import { SaveService } from '@app/services/save.service';
 import { TileService } from '@app/services/tile.service';
-import { GameService } from '@app/services/game.service';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of } from 'rxjs';
-import { Tile } from '@app/interfaces/tile';
+import { BoardComponent } from './board.component';
 
 describe('BoardComponent', () => {
     let component: BoardComponent;
@@ -14,7 +14,7 @@ describe('BoardComponent', () => {
     let mouseServiceSpy: jasmine.SpyObj<MouseService>;
     let saveServiceSpy: jasmine.SpyObj<SaveService>;
     let tileServiceSpy: jasmine.SpyObj<TileService>;
-    let gameServiceSpy: jasmine.SpyObj<GameService>;  // ✅ Ajout du mock de GameService
+    let gameServiceSpy: jasmine.SpyObj<GameService>; // ✅ Ajout du mock de GameService
     const BOARD_SIZE = 5;
 
     beforeEach(async () => {
@@ -25,12 +25,12 @@ describe('BoardComponent', () => {
         gameServiceSpy = jasmine.createSpyObj('GameService', ['fetchGames', 'updateGame']); // ✅ Mock GameService
 
         await TestBed.configureTestingModule({
-            imports: [HttpClientTestingModule],  // ✅ Ajout de HttpClientTestingModule
+            imports: [HttpClientTestingModule], // ✅ Ajout de HttpClientTestingModule
             providers: [
                 { provide: MouseService, useValue: mouseServiceSpy },
                 { provide: SaveService, useValue: saveServiceSpy },
                 { provide: TileService, useValue: tileServiceSpy },
-                { provide: GameService, useValue: gameServiceSpy },  // ✅ Mock GameService
+                { provide: GameService, useValue: gameServiceSpy }, // ✅ Mock GameService
             ],
         }).compileComponents();
 
