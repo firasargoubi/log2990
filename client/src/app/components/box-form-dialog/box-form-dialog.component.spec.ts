@@ -104,13 +104,14 @@ describe('BoxFormDialogComponent', () => {
             {
                 id: '1',
                 name: 'Test Game',
-                mapSize: '',
-                mode: '',
+                mapSize: 'medium',
+                mode: 'normal',
                 previewImage: '',
                 description: '',
                 lastModified: new Date(),
                 isVisible: false,
                 board: [],
+                objects: [],
             },
         ];
         mockGameService.fetchVisibleGames.and.returnValue(of(mockGames));
@@ -133,13 +134,14 @@ describe('BoxFormDialogComponent', () => {
             {
                 id: '1',
                 name: 'Test Game',
-                mapSize: '',
-                mode: '',
+                mapSize: 'medium',
+                mode: 'normal',
                 previewImage: '',
                 description: '',
                 lastModified: new Date(),
                 isVisible: false,
                 board: [],
+                objects: [],
             },
         ];
         mockGameService.fetchVisibleGames.and.returnValue(of(mockGames));
@@ -171,13 +173,14 @@ describe('BoxFormDialogComponent', () => {
             {
                 id: '1',
                 name: 'Test Game',
-                mapSize: '',
-                mode: '',
+                mapSize: 'medium',
+                mode: 'normal',
                 previewImage: '',
                 description: '',
                 lastModified: new Date(),
                 isVisible: false,
                 board: [],
+                objects: [],
             },
         ];
         mockGameService.fetchVisibleGames.and.returnValue(of(mockGames));
@@ -194,13 +197,14 @@ describe('BoxFormDialogComponent', () => {
             {
                 id: '1',
                 name: 'Test Game',
-                mapSize: '',
-                mode: '',
+                mapSize: 'medium',
+                mode: 'normal',
                 previewImage: '',
                 description: '',
                 lastModified: new Date(),
                 isVisible: true,
                 board: [],
+                objects: [],
             },
         ];
         spyOn(localStorage, 'setItem');

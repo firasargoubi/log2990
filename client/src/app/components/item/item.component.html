@@ -3,11 +3,11 @@
         <img [src]="image" [matTooltip]="descriptions[type]" matTooltipPosition="before">
     </div>
     <p [innerText]="name"></p>
-    @if (type === '6') {
-        <p class="counter">{{ objectCounterService.spawnCounter | async }}</p>
+    @if ( type ===6) {
+        <p class="counter" >{{objectCounterService.spawnCounter}}</p>
     }
-    @if (type === '7') {
-        <p class="counter">{{ objectCounterService.randomCounter | async }}</p>
+    @if ( type ===7) {
+        <p class="counter">{{objectCounterService.randomCounter}}</p>
     }
 }
 @else {
@@ -15,10 +15,10 @@
         <img [src]="image" [matTooltip]="descriptions[type]" matTooltipPosition="before">
     </div>
     <p [innerText]="name"></p>
-    @if (type === '6') {
-        <p class="counter">{{ objectCounterService.spawnCounter | async }}</p>
+    @if (type === 6) {
+        <p class="counter">{{objectCounterService.spawnCounter}}</p>
     }
-    @if (type === '7') {
-        <p class="counter">{{ objectCounterService.randomCounter | async }}</p>
+    @if ( type ===7) {
+        <p class="counter">{{objectCounterService.randomCounter}}</p>
     }
 }

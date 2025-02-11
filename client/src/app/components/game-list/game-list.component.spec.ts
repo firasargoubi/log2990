@@ -38,8 +38,8 @@ describe('GameListComponent', () => {
             id: '1',
             name: 'Test Game',
             description: 'Test Description',
-            mode: 'Classic',
-            mapSize: 'Medium',
+            mode: 'normal',
+            mapSize: 'medium',
             isVisible: true,
             board: [
                 [0, 0],
@@ -47,6 +47,7 @@ describe('GameListComponent', () => {
             ],
             previewImage: '',
             lastModified: new Date(),
+            objects: [],
         };
         spyOn(component.deleteGame, 'emit');
 
@@ -60,8 +61,8 @@ describe('GameListComponent', () => {
             id: '1',
             name: 'Test Game',
             description: 'Test Description',
-            mode: 'Classic',
-            mapSize: 'Medium',
+            mode: 'normal',
+            mapSize: 'medium',
             isVisible: true,
             board: [
                 [0, 0],
@@ -69,6 +70,7 @@ describe('GameListComponent', () => {
             ],
             previewImage: '',
             lastModified: new Date(),
+            objects: [],
         };
         spyOn(component.visibilityChange, 'emit');
 
@@ -83,8 +85,8 @@ describe('GameListComponent', () => {
                 id: '1',
                 name: 'Test Game 1',
                 description: 'Test Description 1',
-                mode: 'Classic',
-                mapSize: 'Medium',
+                mode: 'normal',
+                mapSize: 'medium',
                 isVisible: true,
                 board: [
                     [0, 0],
@@ -92,13 +94,14 @@ describe('GameListComponent', () => {
                 ],
                 previewImage: '',
                 lastModified: new Date(),
+                objects: [],
             },
             {
                 id: '2',
                 name: 'Test Game 2',
                 description: 'Test Description 2',
-                mode: 'Classic',
-                mapSize: 'Medium',
+                mode: 'normal',
+                mapSize: 'medium',
                 isVisible: true,
                 board: [
                     [0, 0],
@@ -106,6 +109,7 @@ describe('GameListComponent', () => {
                 ],
                 previewImage: '',
                 lastModified: new Date(),
+                objects: [],
             },
         ];
         fixture.detectChanges();
