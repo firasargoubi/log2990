@@ -77,7 +77,6 @@ export class TileComponent implements OnInit {
     }
 
     deleteTile() {
-        console.log("Trying to delete Tile", this.placedItem[0].type);
         if (this.placedItem.length) {
             this.counterService.incrementCounter(this.placedItem[0].type);
             this.placedItem = [];
@@ -87,23 +86,11 @@ export class TileComponent implements OnInit {
     }
 
     decrementCounter(item: ItemComponent) {
-        if (item.type === ObjectsTypes.SPAWN || item.type === ObjectsTypes.RANDOM) {
-            this.counterService.decrementCounter(item.type);
-            if (!this.count) {
-                item.isPlaced = true;
-            }
-        } else {
-            this.counterService.decrementCounter(item.type);
-            item.isPlaced = true;
-        }
+        this.counterService.decrementCounter(item.type);
     }
 
     drop(event: CdkDragDrop<ItemComponent[]>) {
         const draggedItem = event.previousContainer.data[event.previousIndex];
-
-        if (event.previousContainer === event.container) {
-            return; // No changes if dragged to the same place
-        }
 
         if (this.type === TileTypes.DoorClosed || this.type === TileTypes.DoorOpen || this.type === TileTypes.Wall) {
             return; // No changes if dragged to an illegal place
@@ -115,7 +102,7 @@ export class TileComponent implements OnInit {
         } else if (
             this.placedItem.length === 0 &&
             this.count &&
-            (draggedItem.type === ObjectsTypes.SPAWN || draggedItem.type === ObjectsTypes.RANDOM)
+            (draggedItem.type === ObjectsTypes.SPAWN)
         ) {
             this.placedItem.push(draggedItem);
             this.decrementCounter(draggedItem);

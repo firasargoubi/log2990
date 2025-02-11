@@ -141,7 +141,7 @@ export class BoardComponent implements OnInit {
     }
 
     onMouseLeaveBoard() {
-        this.mouseService.onMouseLeave();
+        this.mouseService.onMouseUp();
     }
 
     onObjectChanged(event: number, tile: Tile) {

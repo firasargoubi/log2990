@@ -14,7 +14,7 @@ describe('TileComponent', () => {
     let counterService: jasmine.SpyObj<ObjectCounterService>;
 
     beforeEach(async () => {
-        const counterServiceSpy = jasmine.createSpyObj('ObjectCounterService', ['decrementCounter'], {
+        const counterServiceSpy = jasmine.createSpyObj('ObjectCounterService', ['decrementCounter', 'incrementCounter'], {
             spawnCounter$: of(SPAWN_COUNTER),
         });
 
@@ -35,22 +35,22 @@ describe('TileComponent', () => {
 
     it('should set baseImage correctly based on type', () => {
         component.type = TileTypes.Grass;
-        expect(component.baseImage).toBe('assets/grass.png');
+        expect(component.baseImage).toBe('assets/tiles/grass.png');
 
         component.type = TileTypes.Water;
-        expect(component.baseImage).toBe('assets/water.png');
+        expect(component.baseImage).toBe('assets/tiles/water.png');
 
         component.type = TileTypes.Ice;
-        expect(component.baseImage).toBe('assets/ice2.png');
+        expect(component.baseImage).toBe('assets/tiles/ice2.png');
 
         component.type = TileTypes.Wall;
-        expect(component.baseImage).toBe('assets/wall.png');
+        expect(component.baseImage).toBe('assets/tiles/wall.png');
 
         component.type = TileTypes.DoorClosed;
-        expect(component.baseImage).toBe('assets/door_c.png');
+        expect(component.baseImage).toBe('assets/tiles/door_c.png');
 
         component.type = TileTypes.DoorOpen;
-        expect(component.baseImage).toBe('assets/door_o.png');
+        expect(component.baseImage).toBe('assets/tiles/door_o.png');
     });
 
     it('should emit objectChanged with 0 if placedItem is empty or objectID is 0', () => {
@@ -86,7 +86,7 @@ describe('TileComponent', () => {
         item.type = ObjectsTypes.SPAWN;
         const event: CdkDragDrop<ItemComponent[]> = {
             previousContainer: { data: [item], id: 'objects-container' } as any,
-            container: { data: [] } as any,
+            container: { data: [], id: 'tile-container' } as any,
             previousIndex: 0,
             currentIndex: 0,
             item: {} as any,
@@ -190,5 +190,35 @@ describe('TileComponent', () => {
         component.drop(event);
         expect(component.placedItem.length).toBe(0);
         expect(component.objectID).toBe(0);
+    });
+
+    it('should delete the tile object and increment the counter', () => {
+        const item = new ItemComponent(counterService);
+        item.type = ObjectsTypes.SPAWN;
+        component.placedItem.push(item);
+        component.objectID = item.type;
+
+        spyOn(component.objectChanged, 'emit');
+
+        component.deleteTile();
+
+        expect(counterService.incrementCounter).toHaveBeenCalledWith(item.type);
+        expect(component.placedItem.length).toBe(0);
+        expect(component.objectID).toBe(0);
+        expect(component.objectChanged.emit).toHaveBeenCalledWith(0);
+    });
+
+    it('should not increment the counter if placedItem is empty', () => {
+        component.placedItem = [];
+        component.objectID = 0;
+
+        spyOn(component.objectChanged, 'emit');
+
+        component.deleteTile();
+
+        expect(counterService.incrementCounter).not.toHaveBeenCalled();
+        expect(component.placedItem.length).toBe(0);
+        expect(component.objectID).toBe(0);
+        expect(component.objectChanged.emit).toHaveBeenCalledWith(0);
     });
 });
