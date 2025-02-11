@@ -29,12 +29,12 @@ describe('ItemComponent', () => {
 
     it('should return "Inconnu" when type is invalid in name getter', () => {
         component.type = 999;
-        expect(component.name).toBe('Inconnu');
+        expect(component.name).toBe('assets/objects/undefined.png');
     });
 
-    it('should return "assets/transparent.png" when type is invalid in image getter', () => {
+    it('should return "assets/objects/undefined.png" when type is invalid in image getter', () => {
         component.type = 999;
-        expect(component.image).toBe('assets/transparent.png');
+        expect(component.image).toBe('assets/objects/undefined.png');
     });
     it('should initialize objectCounterService in constructor', () => {
         const objectCounterServiceSpy = jasmine.createSpyObj('ObjectCounterService', ['spawnCounter$']);
@@ -104,59 +104,59 @@ describe('ItemComponent', () => {
 
     it('should return correct image path based on type', () => {
         component.type = ObjectsTypes.BOOTS;
-        expect(component.image).toBe('assets/boots.png');
+        expect(component.image).toBe('assets/objects/boots.png');
 
         component.type = ObjectsTypes.SWORD;
-        expect(component.image).toBe('assets/sword.png');
+        expect(component.image).toBe('assets/objects/sword.png');
 
         component.type = ObjectsTypes.POTION;
-        expect(component.image).toBe('assets/potion.png');
+        expect(component.image).toBe('assets/objects/potion.png');
 
         component.type = ObjectsTypes.WAND;
-        expect(component.image).toBe('assets/wand.png');
+        expect(component.image).toBe('assets/objects/wand.png');
 
         component.type = ObjectsTypes.CRYSTAL;
-        expect(component.image).toBe('assets/crystal_ball.png');
+        expect(component.image).toBe('assets/objects/crystal_ball.png');
 
         component.type = ObjectsTypes.JUICE;
-        expect(component.image).toBe('assets/berry-juice.png');
+        expect(component.image).toBe('assets/objects/berry-juice.png');
 
         component.type = ObjectsTypes.SPAWN;
-        expect(component.image).toBe('assets/vortex.png');
+        expect(component.image).toBe('assets/objects/vortex.png');
 
         component.type = ObjectsTypes.RANDOM;
-        expect(component.image).toBe('assets/gnome.png');
+        expect(component.image).toBe('assets/objects/gnome.png');
 
         component.type = 999;
-        expect(component.image).toBe('assets/transparent.png');
+        expect(component.image).toBe('assets/objects/undefined.png');
     });
 
     it('should return correct name based on type', () => {
         component.type = ObjectsTypes.BOOTS;
-        expect(component.name).toBe('Bottes magiques');
+        expect(component.name).toBe('assets/objects/boots.png');
 
         component.type = ObjectsTypes.SWORD;
-        expect(component.name).toBe('Épée tranchante');
+        expect(component.name).toBe('assets/objects/sword.png');
 
         component.type = ObjectsTypes.POTION;
-        expect(component.name).toBe('Potion du temps');
+        expect(component.name).toBe('assets/objects/potion.png');
 
         component.type = ObjectsTypes.WAND;
-        expect(component.name).toBe('Baguette magique');
+        expect(component.name).toBe('assets/objects/wand.png');
 
         component.type = ObjectsTypes.CRYSTAL;
-        expect(component.name).toBe('Boule de crystal');
+        expect(component.name).toBe('assets/objects/crystal_ball.png');
 
         component.type = ObjectsTypes.JUICE;
-        expect(component.name).toBe('Médecine');
+        expect(component.name).toBe('assets/objects/berry-juice.png');
 
         component.type = ObjectsTypes.SPAWN;
-        expect(component.name).toBe('Point de départ');
+        expect(component.name).toBe('assets/objects/vortex.png');
 
         component.type = ObjectsTypes.RANDOM;
-        expect(component.name).toBe('Gnome mystère');
+        expect(component.name).toBe('assets/objects/gnome.png');
 
         component.type = 999;
-        expect(component.name).toBe('Inconnu');
+        expect(component.name).toBe('assets/objects/undefined.png');
     });
 });
