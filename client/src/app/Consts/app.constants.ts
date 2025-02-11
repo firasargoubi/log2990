@@ -45,17 +45,17 @@ export const CREATE_PAGE_CONSTANTS = {
 
 export const GAME_IMAGES = {
     fawn: 'assets/avatar/1.jpg',
-    bear:    'assets/avatar/2.jpg',
-    castor:    'assets/avatar/3.jpg',
-    squirrel1:    'assets/avatar/4.jpg',
-    owl:    'assets/avatar/5.jpg',
-    rabbit:    'assets/avatar/6.jpg',
-    squirrel2:    'assets/avatar/7.jpg',
-    pigeon:    'assets/avatar/8.jpg',
-    rat:    'assets/avatar/9.jpg',
-    fox:    'assets/avatar/10.jpg',
-    dear:    'assets/avatar/11.jpg',
-    raccoon:    'assets/avatar/12.jpg',
+    bear: 'assets/avatar/2.jpg',
+    castor: 'assets/avatar/3.jpg',
+    squirrel1: 'assets/avatar/4.jpg',
+    owl: 'assets/avatar/5.jpg',
+    rabbit: 'assets/avatar/6.jpg',
+    squirrel2: 'assets/avatar/7.jpg',
+    pigeon: 'assets/avatar/8.jpg',
+    rat: 'assets/avatar/9.jpg',
+    fox: 'assets/avatar/10.jpg',
+    dear: 'assets/avatar/11.jpg',
+    raccoon: 'assets/avatar/12.jpg',
 
     water: 'assets/tiles/water.png',
     grass: 'assets/tiles/grass.png',
@@ -74,5 +74,16 @@ export const GAME_IMAGES = {
     vortex: 'assets/objects/vortex.png',
     gnome: 'assets/objects/gnome.png',
     undefined: 'assets/objects/undefined.png',
-    
-}
+};
+
+export const GAME_MODES = {
+    classic: 'Classique',
+    capture: 'Capture',
+};
+
+// Map Size Translation Dictionary
+export const GAME_SIZE = {
+    small: 'Petite',
+    medium: 'Moyenne',
+    large: 'Grande',
+};

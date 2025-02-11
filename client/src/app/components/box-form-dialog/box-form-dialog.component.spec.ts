@@ -4,7 +4,7 @@ import { GameService } from '@app/services/game.service';
 import { throwError, of } from 'rxjs';
 import { BoxFormDialogComponent } from './box-form-dialog.component';
 import { ReactiveFormsModule } from '@angular/forms';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
 import { Game } from '@app/interfaces/game.model';
 import { NotificationService } from '@app/services/notification.service';
@@ -30,8 +30,9 @@ describe('BoxFormDialogComponent', () => {
         mockGameService.fetchVisibleGames.and.returnValue(of([]));
 
         await TestBed.configureTestingModule({
-            imports: [ReactiveFormsModule, HttpClientTestingModule, BoxFormDialogComponent],
+            imports: [ReactiveFormsModule, BoxFormDialogComponent],
             providers: [
+                provideHttpClientTesting(),
                 { provide: MatDialogRef, useValue: mockDialogRef },
                 {
                     provide: MAT_DIALOG_DATA,
@@ -61,7 +62,7 @@ describe('BoxFormDialogComponent', () => {
     it('should initialize the form with default values', () => {
         expect(component.form.value).toEqual({
             name: 'New Player',
-            avatar: 'assets/perso/1.jpg',
+            avatar: 'assets/avatar/1.jpg',
             life: DEFAULT_STAT_VALUE,
             speed: DEFAULT_STAT_VALUE,
             attack: DEFAULT_STAT_VALUE,
@@ -94,7 +95,7 @@ describe('BoxFormDialogComponent', () => {
             attack: DEFAULT_STAT_VALUE,
             defense: DEFAULT_STAT_VALUE,
             name: 'New Player',
-            avatar: 'assets/perso/1.jpg',
+            avatar: 'assets/avatar/1.jpg',
         });
     });
 

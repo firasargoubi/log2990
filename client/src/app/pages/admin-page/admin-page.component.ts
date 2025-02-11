@@ -6,7 +6,7 @@ import { Game } from '@app/interfaces/game.model';
 import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
 import { catchError, of, tap } from 'rxjs';
-import { ADMIN_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { ADMIN_PAGE_CONSTANTS, GAME_MODES, GAME_SIZE } from '@app/Consts/app.constants';
 
 @Component({
     selector: 'app-admin-page',
@@ -20,8 +20,22 @@ export class AdminPageComponent implements OnInit {
     private notificationService = inject(NotificationService);
     private isFirstLoad = true;
 
+    // Mode Translation Dictionary
+    private MODE_TRANSLATION: Record<string, string> = GAME_MODES;
+
+    // Map Size Translation Dictionary
+    private SIZE_TRANSLATION: Record<string, string> = GAME_SIZE;
+
     ngOnInit(): void {
         this.fetchGames();
+    }
+
+    translateMode(mode: string): string {
+        return this.MODE_TRANSLATION[mode] || mode;
+    }
+
+    translateSize(size: string): string {
+        return this.SIZE_TRANSLATION[size] || size;
     }
 
     fetchGames() {
@@ -29,7 +43,12 @@ export class AdminPageComponent implements OnInit {
             .fetchGames()
             .pipe(
                 tap((allGames) => {
-                    this.games = allGames;
+                    this.games = allGames.map((game) => ({
+                        ...game,
+                        mode: this.translateMode(game.mode), // Translate mode
+                        mapSize: this.translateSize(game.mapSize), // Translate map size
+                    }));
+
                     if (this.isFirstLoad) {
                         this.notificationService.showSuccess(ADMIN_PAGE_CONSTANTS.successFetchMessage);
                         this.isFirstLoad = false;

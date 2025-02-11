@@ -11,9 +11,10 @@ import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
 import { Observable, Subscription, interval } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { CREATE_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { CREATE_PAGE_CONSTANTS, GAME_MODES, GAME_SIZE } from '@app/Consts/app.constants';
 
 const PULLING_INTERVAL = 5000;
+
 @Component({
     selector: 'app-create-page',
     standalone: true,
@@ -26,6 +27,8 @@ export class CreatePageComponent implements OnInit, OnDestroy {
     games: Game[] = [];
     notificationService = inject(NotificationService);
     private pollingSubscription!: Subscription;
+    private modeTranslation: Record<string, string> = GAME_MODES;
+    private sizeTranslation: Record<string, string> = GAME_SIZE;
 
     constructor(
         private dialog: MatDialog,
@@ -47,6 +50,14 @@ export class CreatePageComponent implements OnInit, OnDestroy {
             });
     }
 
+    translateMode(mode: string): string {
+        return this.modeTranslation[mode] || mode;
+    }
+
+    translateSize(size: string): string {
+        return this.sizeTranslation[size] || size;
+    }
+
     ngOnDestroy(): void {
         if (this.pollingSubscription) {
             this.pollingSubscription.unsubscribe();
@@ -54,8 +65,14 @@ export class CreatePageComponent implements OnInit, OnDestroy {
     }
 
     onBoxClick(game: Game): void {
+        const translatedGame = {
+            ...game,
+            mode: this.translateMode(game.mode),
+            mapSize: this.translateSize(game.mapSize),
+        };
+
         const dialogRef = this.dialog.open(BoxFormDialogComponent, {
-            data: { boxId: game.id, game, gameList: this.games },
+            data: { boxId: game.id, game: translatedGame, gameList: this.games },
         });
 
         dialogRef.afterClosed().subscribe({
@@ -70,7 +87,11 @@ export class CreatePageComponent implements OnInit, OnDestroy {
     private loadGames(): void {
         this.gameService.fetchVisibleGames().subscribe({
             next: (allGames) => {
-                this.games = allGames;
+                this.games = allGames.map((game) => ({
+                    ...game,
+                    mode: this.translateMode(game.mode), // ✅ Translate mode
+                    mapSize: this.translateSize(game.mapSize), // ✅ Translate size
+                }));
             },
             error: () => this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorLoadingGames),
         });
