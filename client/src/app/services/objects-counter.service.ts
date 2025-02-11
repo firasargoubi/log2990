@@ -8,7 +8,9 @@ export class ObjectCounterService {
     randomCounter = new BehaviorSubject<number>(0); // Initialisé à 0
     spawnCounter = new BehaviorSubject<number>(0); // Initialisé à 0
     counterSubject = new BehaviorSubject<number>(0); // Initialisé à 0
-    counter$ = this.counterSubject.asObservable(); // Observable pour écouter les changements
+    counter$ = this.counterSubject.asObservable();
+    spawnCounter$ = this.spawnCounter.asObservable();
+    randomCounter$ = this.randomCounter.asObservable(); // Observable pour écouter les changements
 
     decrementCounter(type: number) {
         if (this.counterSubject.value > 0) {

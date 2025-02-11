@@ -120,6 +120,7 @@ export class BoardComponent implements OnInit {
 
     onMouseDownBoard(event: MouseEvent, tile: Tile) {
         this.mouseService.onMouseDown({ x: tile.x, y: tile.y });
+        console.log(tile);
         if (event.button === RIGHT_CLICK) {
             this.tileService.toolSaved = this.tileService.currentTool;
             this.tileService.currentTool = 0;

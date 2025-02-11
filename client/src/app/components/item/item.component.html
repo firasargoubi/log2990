@@ -4,10 +4,10 @@
     </div>
     <p [innerText]="name"></p>
     @if ( type ===6) {
-        <p class="counter" >{{objectCounterService.spawnCounter}}</p>
+        <p class="counter" >{{objectCounterService.spawnCounter$}}</p>
     }
     @if ( type ===7) {
-        <p class="counter">{{objectCounterService.randomCounter}}</p>
+        <p class="counter">{{objectCounterService.randomCounter$}}</p>
     }
 }
 @else {
@@ -16,9 +16,9 @@
     </div>
     <p [innerText]="name"></p>
     @if (type === 6) {
-        <p class="counter">{{objectCounterService.spawnCounter}}</p>
+        <p class="counter">{{objectCounterService.spawnCounter$}}</p>
     }
     @if ( type ===7) {
-        <p class="counter">{{objectCounterService.randomCounter}}</p>
+        <p class="counter">{{objectCounterService.randomCounter$}}</p>
     }
 }

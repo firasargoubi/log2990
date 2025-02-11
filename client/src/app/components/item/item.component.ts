@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { ObjectAmount } from '@app/interfaces/objectAmount';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -12,13 +12,12 @@ import { CommonModule } from '@angular/common';
     styleUrls: ['./item.component.scss'],
 })
 export class ItemComponent implements OnInit {
-    @Input() mapSize: 'small' | 'medium' | 'large';
     @Input() type: number;
+    @Input() mapSize: 'small' | 'medium' | 'large';
     @Output() itemAdded = new EventEmitter<ItemComponent>();
-    @Input() counter = 4;
-    @Input() inTile: boolean = false;
     isPlaced: boolean = false;
     tooltipText: string | null = null;
+    objectCounterService = inject(ObjectCounterService);
 
     descriptions: { [key: string]: string } = {
         0: 'Les bottes magiques vous permettront de vous déplacer à une vitesse SUPERSONIQUE!',
@@ -30,8 +29,6 @@ export class ItemComponent implements OnInit {
         6: "Cet objet indique l'endroit où une bataille épique est sur le point d'avoir lieu",
         7: 'Ce petit gnome farceur a un cadeau pour vous. À vos risque et périls...',
     };
-
-    constructor(public objectCounterService: ObjectCounterService) {}
 
     get name(): string {
         switch (this.type) {
@@ -52,7 +49,7 @@ export class ItemComponent implements OnInit {
             case 7:
                 return 'Gnome mystère';
             default:
-                return 'Undefined';
+                return 'assets/gnome.png';
         }
     }
 
@@ -75,7 +72,7 @@ export class ItemComponent implements OnInit {
             case 7:
                 return 'assets/gnome.png';
             default:
-                return 'Undefined';
+                return 'assets/gnome.png';
         }
     }
 
