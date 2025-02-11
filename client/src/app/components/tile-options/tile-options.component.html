@@ -6,6 +6,7 @@
             [type]="option.type"
             [ngStyle]="{ transform: option.selected === undefined || option.selected === false ? 'scale(0.5)' : 'scale(0.7)' }"
             (click)="selectTileOption(option)"
+            [matTooltip]="descriptions[option.type]" matTooltipPosition="before"
         ></app-tile>
         }
     </div>

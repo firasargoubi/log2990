@@ -3,11 +3,12 @@ import { Component, inject, OnInit } from '@angular/core';
 import { TileComponent } from '@app/components/tile/tile.component';
 import { Tile } from '@app/interfaces/tile';
 import { TileTypes } from '@app/interfaces/tileTypes';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { TileService } from '@app/services/tile.service';
 
 @Component({
     selector: 'app-tile-options',
-    imports: [TileComponent, CommonModule],
+    imports: [TileComponent, CommonModule, MatTooltipModule],
     templateUrl: './tile-options.component.html',
     styleUrl: './tile-options.component.scss',
 })
@@ -15,6 +16,13 @@ export class TileOptionsComponent implements OnInit {
     options: Tile[] = [];
 
     tileService = inject(TileService);
+
+    descriptions: { [key: string]: string } = {
+        [TileTypes.Water]: "L'eau minimise les mouvements",
+        [TileTypes.Ice]: 'Attention la glace est très glissante',
+        [TileTypes.DoorClosed]: 'Une porte peut être ouverte!.',
+        [TileTypes.Wall]: 'Un mur empêce tous les mouvements.',
+    };
 
     get tiles(): Tile[] {
         return this.options;
@@ -28,7 +36,14 @@ export class TileOptionsComponent implements OnInit {
         this.options = [];
         const MAX_TILE = 6;
         for (let i = TileTypes.Water; i <= MAX_TILE; i++) {
-            if (i !== TileTypes.DoorOpen) this.options.push({ type: i, object: 0, x: i, y: 0, id: `${i}` });
+            if (i !== TileTypes.DoorOpen)
+                this.options.push({
+                    type: i,
+                    object: 0,
+                    x: i,
+                    y: 0,
+                    id: `${i}`,
+                });
         }
     }
 
