@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit, inject } from '@angular/core';
+import { Component, Input, OnInit, inject, ViewChildren, QueryList } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { TileComponent } from '@app/components/tile/tile.component';
@@ -33,6 +33,7 @@ export class BoardComponent implements OnInit {
         board: [],
         objects: [],
     };
+    @ViewChildren(TileComponent) tileComponents!: QueryList<TileComponent>;
     board: Tile[][] = [];
     selectedTiles: Coordinates[] = [];
     mouseService = inject(MouseService);
@@ -97,7 +98,6 @@ export class BoardComponent implements OnInit {
                 this.board.push(row);
             }
         }
-        console.log(this.board);
     }
 
     loadBoard(board: Tile[][]): void {
@@ -109,7 +109,6 @@ export class BoardComponent implements OnInit {
         if (this.tileService.toolSaved !== 0) {
             this.tileService.currentTool = this.tileService.toolSaved;
             this.tileService.toolSaved = 0;
-            console.log(this.tileService.currentTool);
         }
     }
 
@@ -122,7 +121,6 @@ export class BoardComponent implements OnInit {
 
     onMouseDownBoard(event: MouseEvent, tile: Tile) {
         this.mouseService.onMouseDown({ x: tile.x, y: tile.y });
-        console.log(tile);
         if (event.button === RIGHT_CLICK) {
             this.tileService.toolSaved = this.tileService.currentTool;
             this.tileService.currentTool = 0;
@@ -140,7 +138,15 @@ export class BoardComponent implements OnInit {
     onObjectChanged(event: number, tile: Tile) {
         tile.object = event;
     }
-
+    onObjectMoved() {
+        // Find the specific tile component and call refreshObject
+        for (let i = 0; i < this.mapSize ** 2; i++) {
+            const tileComponent = this.tileComponents.get(i);
+            if (tileComponent) {
+                tileComponent.refreshObject();
+            }
+        }
+    }
     modifyTile(coordinate: Coordinates): void {
         this.tileService.modifyTile(this.board[coordinate.x][coordinate.y]);
     }

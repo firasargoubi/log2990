@@ -16,6 +16,7 @@ export class TileComponent implements OnInit {
     @Input() type: number;
     @Input() objectID: number;
     @Output() objectChanged = new EventEmitter<number>();
+    @Output() objectMoved = new EventEmitter<boolean>();
     placedItem: ItemComponent[] = [];
 
     constructor(private counterService: ObjectCounterService) {}
@@ -43,9 +44,16 @@ export class TileComponent implements OnInit {
         if (this.objectID !== 0) {
             const object = this.getObjectById(this.objectID);
             if (object) {
-                this.decrementCounter(object);
                 this.placedItem.push(object);
             }
+        }
+    }
+
+    refreshObject(): void {
+        if (!this.placedItem.length) {
+            this.objectChanged.emit(0);
+        } else {
+            this.objectChanged.emit(this.placedItem[0].type);
         }
     }
 
@@ -55,7 +63,6 @@ export class TileComponent implements OnInit {
             const item = new ItemComponent();
             item.type = objectData.id;
             item.tooltipText = objectData.description;
-            console.log(item);
             return item;
         }
         return null;
@@ -80,29 +87,23 @@ export class TileComponent implements OnInit {
 
     drop(event: CdkDragDrop<ItemComponent[]>) {
         const draggedItem = event.previousContainer.data[event.previousIndex];
-
+        console.log("ITEM BEING DRAGGED",draggedItem);
         if (event.previousContainer === event.container) {
             return;
         }
         if (this.type === TileTypes.DoorClosed || this.type === TileTypes.DoorOpen || this.type === TileTypes.Wall) {
             return;
         }
-        if (event.previousContainer.id !== 'cdk-drop-list-0') {
+        if (this.placedItem.length === 0 && event.previousContainer.id !== 'cdk-drop-list-0') {
             this.placedItem.push(draggedItem);
             event.previousContainer.data.splice(0);
-            this.objectChanged.emit(draggedItem.type);
+            this.objectMoved.emit(true);
         } else if (this.placedItem.length === 0 && !draggedItem.isPlaced && (draggedItem.type === 6 || draggedItem.type === 7)) {
             this.placedItem.push(draggedItem);
             this.decrementCounter(draggedItem);
-            this.objectChanged.emit(draggedItem.type);
+            this.objectMoved.emit(true);
         }
 
         return;
-    }
-
-    onDragStarted() {
-        if (this.placedItem.length > 0) {
-            this.objectChanged.emit(0);
-        }
     }
 }

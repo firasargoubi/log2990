@@ -28,6 +28,7 @@ export class ObjectsComponent {
 
     onItemAdded(item: ItemComponent) {
         this.items.push(item);
+        console.log(item);
     }
 
     incrementCounter(item: ItemComponent) {
