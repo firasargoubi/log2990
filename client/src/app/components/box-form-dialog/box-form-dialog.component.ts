@@ -26,18 +26,18 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
     notificationService = inject(NotificationService);
 
     avatars = [
-        'assets/perso/1.jpg',
-        'assets/perso/2.jpg',
-        'assets/perso/3.jpg',
-        'assets/perso/4.jpg',
-        'assets/perso/5.jpg',
-        'assets/perso/6.jpg',
-        'assets/perso/7.jpg',
-        'assets/perso/8.jpg',
-        'assets/perso/9.jpg',
-        'assets/perso/10.jpg',
-        'assets/perso/11.jpg',
-        'assets/perso/12.jpg',
+        'assets/avatar/1.jpg',
+        'assets/avatar/2.jpg',
+        'assets/avatar/3.jpg',
+        'assets/avatar/4.jpg',
+        'assets/avatar/5.jpg',
+        'assets/avatar/6.jpg',
+        'assets/avatar/7.jpg',
+        'assets/avatar/8.jpg',
+        'assets/avatar/9.jpg',
+        'assets/avatar/10.jpg',
+        'assets/avatar/11.jpg',
+        'assets/avatar/12.jpg',
     ];
 
     formValid$: boolean = false;

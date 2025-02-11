@@ -36,21 +36,21 @@ export class ItemComponent {
     get image(): string {
         switch (this.type) {
             case '0':
-                return 'assets/boots.png';
+                return 'assets/objects/boots.png';
             case '1':
-                return 'assets/sword.png';
+                return 'assets/objects/sword.png';
             case '2':
-                return 'assets/potion.png';
+                return 'assets/objects/potion.png';
             case '3':
-                return 'assets/wand.png';
+                return 'assets/objects/wand.png';
             case '4':
-                return 'assets/crystal_ball.png';
+                return 'assets/objects/crystal_ball.png';
             case '5':
-                return 'assets/berry-juice.png';
+                return 'assets/objects/berry-juice.png';
             case '6':
-                return 'assets/vortex.png';
+                return 'assets/objects/vortex.png';
             case '7':
-                return 'assets/gnome.png';
+                return 'assets/objects/gnome.png';
             default:
                 return 'Undefined';
         }

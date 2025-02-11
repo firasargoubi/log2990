@@ -15,19 +15,19 @@ export class TileComponent {
     get image(): string {
         switch (this.type) {
             case TileTypes.Grass:
-                return 'assets/grass.png';
+                return 'assets/tiles/grass.png';
             case TileTypes.Water:
-                return 'assets/water.png';
+                return 'assets/tiles/water.png';
             case TileTypes.Ice:
-                return 'assets/ice2.png';
+                return 'assets/tiles/ice2.png';
             case TileTypes.Wall:
-                return 'assets/wall.png';
+                return 'assets/tiles/wall.png';
             case TileTypes.DoorClosed:
-                return 'assets/door_c.png';
+                return 'assets/tiles/door_c.png';
             case TileTypes.DoorOpen:
-                return 'assets/door_o.png';
+                return 'assets/tiles/door_o.png';
             default:
-                return 'assets/grass.png';
+                return 'assets/tiles/grass.png';
         }
     }
 }
