@@ -6,7 +6,21 @@ import html2canvas from 'html2canvas';
 })
 export class ImageService {
     async captureComponent(componentElement: HTMLElement): Promise<string> {
-        const canvas = await html2canvas(componentElement, { logging: false, backgroundColor: null });
-        return canvas.toDataURL('image/png');
+        if (!componentElement) {
+            return Promise.reject('Invalid HTML element');
+        }
+
+        try {
+            const canvas = await html2canvas(componentElement, {
+                logging: false,
+                backgroundColor: null,
+                useCORS: true,
+                allowTaint: true,
+            });
+
+            return canvas.toDataURL('image/png');
+        } catch (error) {
+            return Promise.reject('Error capturing component: ' + error);
+        }
     }
 }
