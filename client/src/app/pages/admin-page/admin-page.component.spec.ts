@@ -54,13 +54,14 @@ describe('AdminPageComponent', () => {
             {
                 id: '1',
                 name: 'Test Game',
-                mapSize: '',
-                mode: '',
+                mapSize: 'small',
+                mode: 'capture',
                 previewImage: '',
                 description: '',
                 lastModified: new Date(),
                 isVisible: false,
                 board: [],
+                objects: [],
             },
         ];
         gameService.fetchGames.and.returnValue(of(mockGames));

@@ -25,22 +25,23 @@ describe('CreatePageComponent', () => {
             {
                 id: '1',
                 name: 'Chess',
-                mapSize: '8x8',
-                mode: 'Classic',
+                mapSize: 'medium',
+                mode: 'normal',
                 previewImage: 'chess.png',
-                description: 'A strategic board game.',
+                description: 'A normal board game.',
                 lastModified: new Date('2024-01-01T10:00:00Z'),
                 isVisible: true,
                 board: [
                     [0, 1],
                     [1, 0],
                 ],
+                objects: [],
             },
             {
                 id: '2',
                 name: 'Poker',
-                mapSize: 'Card Table',
-                mode: "Texas Hold'em",
+                mapSize: 'medium',
+                mode: 'normal',
                 previewImage: 'poker.png',
                 description: 'A popular card game.',
                 lastModified: new Date('2024-01-02T15:30:00Z'),
@@ -49,6 +50,7 @@ describe('CreatePageComponent', () => {
                     [1, 1],
                     [0, 0],
                 ],
+                objects: [],
             },
         ]);
 
@@ -96,16 +98,17 @@ describe('CreatePageComponent', () => {
                 {
                     id: '1',
                     name: 'Chess',
-                    mapSize: '8x8',
-                    mode: 'Classic',
+                    mapSize: 'medium',
+                    mode: 'normal',
                     previewImage: 'chess.png',
-                    description: 'A strategic board game.',
+                    description: 'A normal board game.',
                     lastModified: new Date(),
                     isVisible: true,
                     board: [
                         [0, 1],
                         [1, 0],
                     ],
+                    objects: [],
                 },
             ]),
         );
@@ -124,16 +127,17 @@ describe('CreatePageComponent', () => {
         const mockGame: Game = {
             id: '1',
             name: 'Chess',
-            mapSize: '8x8',
-            mode: 'Classic',
+            mapSize: 'medium',
+            mode: 'normal',
             previewImage: 'chess.png',
-            description: 'A strategic board game.',
+            description: 'A normal board game.',
             lastModified: new Date(),
             isVisible: true,
             board: [
                 [0, 1],
                 [1, 0],
             ],
+            objects: [],
         };
 
         component.onBoxClick(mockGame);
@@ -146,20 +150,22 @@ describe('CreatePageComponent', () => {
         const newMockGame: Game = {
             id: '3',
             name: 'Go',
-            mapSize: '19x19',
-            mode: 'Strategic',
+            mapSize: 'medium',
+            mode: 'normal',
             previewImage: 'go.png',
-            description: 'A strategic board game.',
+            description: 'A normal board game.',
             lastModified: new Date(),
             isVisible: true,
             board: [
                 [0, 1],
                 [1, 0],
             ],
+            objects: [],
         };
 
         mockDialogRef.afterClosed.and.returnValue(of(newMockGame));
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         spyOn(component as any, 'loadGames');
 
         component.onBoxClick(newMockGame);
@@ -191,16 +197,17 @@ describe('CreatePageComponent', () => {
             {
                 id: '4',
                 name: 'Checkers',
-                mapSize: '8x8',
-                mode: 'Classic',
+                mapSize: 'medium',
+                mode: 'normal',
                 previewImage: 'checkers.png',
-                description: 'A classic board game.',
+                description: 'A normal board game.',
                 lastModified: new Date(),
                 isVisible: true,
                 board: [
                     [0, 1],
                     [1, 0],
                 ],
+                objects: [],
             },
         ];
 
@@ -235,6 +242,4 @@ describe('CreatePageComponent', () => {
 
         expect(component['pollingSubscription'].unsubscribe).toHaveBeenCalled();
     });
-
-    
 });
