@@ -74,7 +74,7 @@ export class ObjectsComponent implements OnInit, OnDestroy {
         const draggedItem = event.previousContainer.data[event.previousIndex];
         if (event.previousContainer !== event.container) {
             draggedItem.isPlaced = false;
-            event.previousContainer.data.pop();
+            event.previousContainer.data.splice(event.previousIndex, 1);
             this.incrementCounter(draggedItem);
         }
     }

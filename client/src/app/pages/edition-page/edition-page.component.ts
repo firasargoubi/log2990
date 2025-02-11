@@ -62,7 +62,6 @@ export class EditionPageComponent {
         this.game.id = this.route.snapshot.params['id'];
         this.game.mode = this.route.snapshot.queryParams['mode'] || 'normal';
         this.game.mapSize = this.route.snapshot.queryParams['size'] || 'large';
-        this.counterService.initializeCounter(this.objectNumber);
         this.loadGame();
     }
 
@@ -147,6 +146,7 @@ export class EditionPageComponent {
             this.game.name = '';
             this.game.description = '';
             this.gameLoaded = true;
+            this.counterService.initializeCounter(this.objectNumber);
             this.counterService.initializeCounter(this.objectNumber);
         }
     }

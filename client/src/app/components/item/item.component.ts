@@ -14,7 +14,6 @@ import { ObjectCounterService } from '@app/services/objects-counter.service';
 })
 export class ItemComponent implements OnInit {
     @Input() type: number;
-    @Input() mapSize: 'small' | 'medium' | 'large';
     @Output() itemAdded = new EventEmitter<ItemComponent>();
     isPlaced: boolean = false;
     tooltipText: string | null = null;

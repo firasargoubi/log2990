@@ -61,7 +61,6 @@ export class TileComponent implements OnInit {
         if (!this.placedItem.length || !this.objectID) {
             this.objectChanged.emit(0);
         } else {
-            console.log(this.objectID);
             this.objectChanged.emit(this.objectID);
         }
     }
