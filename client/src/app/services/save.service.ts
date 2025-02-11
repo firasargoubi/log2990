@@ -42,7 +42,8 @@ export class SaveService {
         for (const row of this.board) {
             const newRow: number[] = [];
             for (const tile of row) {
-                newRow.push(tile.type);
+                const objectValue = tile.object ? tile.object * 10 : 0;
+                newRow.push(tile.type + objectValue);
             }
             board.push(newRow);
         }

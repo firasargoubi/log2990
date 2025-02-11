@@ -1,6 +1,6 @@
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { ItemComponent } from '@app/components/item/item.component';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 
@@ -11,6 +11,7 @@ import { ObjectCounterService } from '@app/services/objects-counter.service';
     styleUrl: './objects.component.scss',
 })
 export class ObjectsComponent {
+    @Input() mapSize: 'small' | 'medium' | 'large';
     range: number[] = [];
     tooltipText: string | null = null;
     items: ItemComponent[] = [];
@@ -30,9 +31,9 @@ export class ObjectsComponent {
     }
 
     incrementCounter(item: ItemComponent) {
-        if (item.type === '6') {
+        if (item.type === 6) {
             item.spawnCounter++;
-        } else if (item.type === '7') {
+        } else if (item.type === 7) {
             item.randomCounter++;
         } else {
             this.counterService.incrementCounter();

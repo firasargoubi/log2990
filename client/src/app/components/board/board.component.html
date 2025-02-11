@@ -4,10 +4,12 @@
         <app-tile
             class="tile"
             [type]="tile.type"
+            [objectID]="tile.object"
             (contextmenu)="onRightClickBoard($event)"
             (mouseup)="onMouseUpBoard()"
             (mousedown)="onMouseDownBoard($event, tile)"
             (mouseover)="onMouseOverBoard(tile)"
+            (objectChanged)="onObjectChanged($event,tile)"
         ></app-tile>
         } }
     </section>
