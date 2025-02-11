@@ -2,11 +2,11 @@ import { Component, inject, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { RouterLink } from '@angular/router';
 import { GameListComponent } from '@app/components/game-list/game-list.component';
+import { ADMIN_PAGE_CONSTANTS, GAME_MODES, GAME_SIZE } from '@app/Consts/app.constants';
 import { Game } from '@app/interfaces/game.model';
 import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
 import { catchError, of, tap } from 'rxjs';
-import { ADMIN_PAGE_CONSTANTS, GAME_MODES, GAME_SIZE } from '@app/Consts/app.constants';
 
 @Component({
     selector: 'app-admin-page',
@@ -19,23 +19,19 @@ export class AdminPageComponent implements OnInit {
     private gameService = inject(GameService);
     private notificationService = inject(NotificationService);
     private isFirstLoad = true;
-
-    // Mode Translation Dictionary
-    private MODE_TRANSLATION: Record<string, string> = GAME_MODES;
-
-    // Map Size Translation Dictionary
-    private SIZE_TRANSLATION: Record<string, string> = GAME_SIZE;
+    private modeTranslation: Record<string, string> = GAME_MODES;
+    private sizeTranslation: Record<string, string> = GAME_SIZE;
 
     ngOnInit(): void {
         this.fetchGames();
     }
 
     translateMode(mode: string): string {
-        return this.MODE_TRANSLATION[mode] || mode;
+        return this.modeTranslation[mode] || mode;
     }
 
     translateSize(size: string): string {
-        return this.SIZE_TRANSLATION[size] || size;
+        return this.sizeTranslation[size] || size;
     }
 
     fetchGames() {
@@ -45,8 +41,8 @@ export class AdminPageComponent implements OnInit {
                 tap((allGames) => {
                     this.games = allGames.map((game) => ({
                         ...game,
-                        mode: this.translateMode(game.mode), // Translate mode
-                        mapSize: this.translateSize(game.mapSize), // Translate map size
+                        mode: this.translateMode(game.mode),
+                        mapSize: this.translateSize(game.mapSize),
                     }));
 
                     if (this.isFirstLoad) {

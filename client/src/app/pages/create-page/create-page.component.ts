@@ -44,8 +44,8 @@ export class CreatePageComponent implements OnInit, OnDestroy {
                 next: (updatedGames) => {
                     this.games = updatedGames.map((game) => ({
                         ...game,
-                        mode: this.translateMode(game.mode), // ✅ Ensure translations persist
-                        mapSize: this.translateSize(game.mapSize), // ✅ Ensure translations persist
+                        mode: this.translateMode(game.mode),
+                        mapSize: this.translateSize(game.mapSize),
                     }));
                 },
                 error: () => this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorRefreshGames),

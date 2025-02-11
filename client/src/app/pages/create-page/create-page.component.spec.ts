@@ -159,9 +159,7 @@ describe('CreatePageComponent', () => {
         };
 
         mockDialogRef.afterClosed.and.returnValue(of(newMockGame));
-
-        spyOn(component as any, 'loadGames');
-
+        spyOn(component as unknown as { loadGames: () => void }, 'loadGames');
         component.onBoxClick(newMockGame);
         expect(matDialogSpy.open).toHaveBeenCalled();
         expect(mockDialogRef.afterClosed).toHaveBeenCalled();
