@@ -42,9 +42,11 @@ export class CreatePageComponent implements OnInit, OnDestroy {
             .pipe(switchMap(() => this.gameService.fetchVisibleGames()))
             .subscribe({
                 next: (updatedGames) => {
-                    if (JSON.stringify(this.games) !== JSON.stringify(updatedGames)) {
-                        this.games = updatedGames;
-                    }
+                    this.games = updatedGames.map((game) => ({
+                        ...game,
+                        mode: this.translateMode(game.mode), // ✅ Ensure translations persist
+                        mapSize: this.translateSize(game.mapSize), // ✅ Ensure translations persist
+                    }));
                 },
                 error: () => this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorRefreshGames),
             });
@@ -89,8 +91,8 @@ export class CreatePageComponent implements OnInit, OnDestroy {
             next: (allGames) => {
                 this.games = allGames.map((game) => ({
                     ...game,
-                    mode: this.translateMode(game.mode), // ✅ Translate mode
-                    mapSize: this.translateSize(game.mapSize), // ✅ Translate size
+                    mode: this.translateMode(game.mode), // ✅ Always translate mode
+                    mapSize: this.translateSize(game.mapSize), // ✅ Always translate size
                 }));
             },
             error: () => this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorLoadingGames),
