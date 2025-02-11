@@ -120,6 +120,7 @@ export class BoardComponent implements OnInit {
     }
 
     onMouseDownBoard(event: MouseEvent, tile: Tile) {
+        console.log(tile);
         this.mouseService.onMouseDown({ x: tile.x, y: tile.y });
         if (event.button === RIGHT_CLICK) {
             this.tileService.toolSaved = this.tileService.currentTool;
@@ -139,7 +140,6 @@ export class BoardComponent implements OnInit {
         tile.object = event;
     }
     onObjectMoved() {
-        // Find the specific tile component and call refreshObject
         for (let i = 0; i < this.mapSize ** 2; i++) {
             const tileComponent = this.tileComponents.get(i);
             if (tileComponent) {

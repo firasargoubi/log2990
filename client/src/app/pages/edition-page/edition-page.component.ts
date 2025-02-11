@@ -15,6 +15,7 @@ import { NotificationService } from '@app/services/notification.service';
 import { SaveService } from '@app/services/save.service';
 import { catchError, EMPTY, tap } from 'rxjs';
 import { MapSize } from '@app/interfaces/mapsize';
+import { ObjectCounterService } from '@app/services/objects-counter.service';
 
 @Component({
     selector: 'app-game-page',
@@ -47,6 +48,7 @@ export class EditionPageComponent {
     errorService = inject(ErrorService);
     gameService = inject(GameService);
     imageService = inject(ImageService);
+    counterService = inject(ObjectCounterService);
 
     constructor(
         private route: ActivatedRoute,
@@ -60,7 +62,6 @@ export class EditionPageComponent {
         this.game.id = this.route.snapshot.params['id'];
         this.game.mode = this.route.snapshot.queryParams['mode'] || 'normal';
         this.game.mapSize = this.route.snapshot.queryParams['size'] || 'large';
-
         this.loadGame();
     }
 
@@ -74,6 +75,19 @@ export class EditionPageComponent {
                 return MapSize.LARGE;
             default:
                 return MapSize.SMALL;
+        }
+    }
+
+    get objectNumber(): number {
+        switch (this.game.mapSize) {
+            case 'small':
+                return 2;
+            case 'medium':
+                return 4;
+            case 'large':
+                return 6;
+            default:
+                return 2;
         }
     }
 
@@ -114,8 +128,9 @@ export class EditionPageComponent {
                 .pipe(
                     tap((gameSearched) => {
                         this.game = gameSearched;
-                        this.gameLoaded = true;
+                        this.counterService.initializeCounter(this.objectNumber);
                         this.notificationService.showSuccess('Jeu chargé avec succès.');
+                        this.gameLoaded = true;
                     }),
                     catchError(() => {
                         this.notificationService.showError('Impossible de charger le jeu.');
