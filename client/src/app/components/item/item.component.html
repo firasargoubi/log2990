@@ -1,6 +1,6 @@
 @if (isPlaced) {
     <div class = "grey-item item" cdkDrag>
-        <img [src]="image">
+        <img [src]="image" [matTooltip]="descriptions[type]" matTooltipPosition="before">
     </div>
     <p [innerText]="name"></p>
     @if ( type ==='6') {
@@ -12,7 +12,7 @@
 }
 @else {
     <div class = "item" cdkDrag>
-        <img [src]="image">
+        <img [src]="image" [matTooltip]="descriptions[type]" matTooltipPosition="before">
     </div>
     <p [innerText]="name"></p>
     @if (type === '6') {

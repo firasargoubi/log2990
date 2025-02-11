@@ -11,8 +11,6 @@ import { ObjectCounterService } from '@app/services/objects-counter.service';
     templateUrl: './tile.component.html',
     styleUrl: './tile.component.scss',
 })
-
-// TODO : Ajouter une logique separee pour les cases du plateau et de la barre d'outil
 export class TileComponent {
     @Input() type: number;
     placedItem: ItemComponent[] = [];
@@ -64,17 +62,14 @@ export class TileComponent {
         if (this.type === TileTypes.DoorClosed || this.type === TileTypes.DoorOpen || this.type === TileTypes.Wall) {
             return;
         }
-        if (this.placedItem.length === 0 && !draggedItem.isPlaced && this.counterService.getCounter() > 0) {
-            this.placedItem.push(draggedItem);
-            this.decrementCounter(draggedItem);
-        }
         if (event.previousContainer.id !== 'cdk-drop-list-0') {
             this.placedItem.push(draggedItem);
             event.previousContainer.data.splice(0);
+        } else if (this.placedItem.length === 0 && !draggedItem.isPlaced && (draggedItem.type === '6' || draggedItem.type === '7')) {
+            this.placedItem.push(draggedItem);
+            this.decrementCounter(draggedItem);
         }
-        this.placedItem.forEach((item) => {
-            item.inTile = true;
-        });
+
         return;
     }
 }

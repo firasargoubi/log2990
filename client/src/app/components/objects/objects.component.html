@@ -1,15 +1,9 @@
-<div class="container">
-    <div class="object-container" 
-         cdkDropList
-         [cdkDropListData]="items"
-         (cdkDropListDropped)="drop($event)">
-        @for (number of range ; track number) {
+    <div class="container">
+        <div class="object-container" cdkDropList [cdkDropListData]="items" (cdkDropListDropped)="drop($event)">
+            @for (number of range ; track number) {
             <div>
-                <app-item  type="{{ number }}" 
-                        (mouseenter)="setTooltip(number)" 
-                        (mouseleave)="clearTooltip()" 
-                        (itemAdded)="onItemAdded($event)"/>
+                <app-item type="{{ number }}" (itemAdded)="onItemAdded($event)" />
             </div>
-        }
+            }
+        </div>
     </div>
-</div>
