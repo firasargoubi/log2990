@@ -1,10 +1,11 @@
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { ItemComponent } from '@app/components/item/item.component';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
-import { ObjectsTypes } from '@app/interfaces/objectsTypes';
 
 @Component({
     selector: 'app-objects',
@@ -19,7 +20,10 @@ export class ObjectsComponent implements OnInit, OnDestroy {
     counter$ = this.counterService.counter$;
     private subscriptions: Subscription[] = [];
 
-    constructor(private counterService: ObjectCounterService) {
+    constructor(
+        private counterService: ObjectCounterService,
+        private router: Router,
+    ) {
         const MAX_OBJECTS = 7;
         this.range = this.generateRange(0, MAX_OBJECTS);
     }
@@ -27,9 +31,9 @@ export class ObjectsComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.resetComponent();
         this.subscriptions.push(
-            this.counterService.counter$.subscribe((count) => {
-                console.log('Counter updated:', count);
-            })
+            this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
+                this.resetComponent();
+            }),
         );
     }
 
@@ -39,7 +43,6 @@ export class ObjectsComponent implements OnInit, OnDestroy {
 
     resetComponent(): void {
         this.items = [];
-        this.counterService.initializeCounter(this.getInitialCounterValue());
     }
 
     generateRange(start: number, end: number): number[] {
@@ -61,19 +64,6 @@ export class ObjectsComponent implements OnInit, OnDestroy {
             draggedItem.isPlaced = false;
             event.previousContainer.data.pop();
             this.incrementCounter(draggedItem);
-        }
-    }
-
-    private getInitialCounterValue(): number {
-        switch (this.mapSize) {
-            case 'small':
-                return 2;
-            case 'medium':
-                return 4;
-            case 'large':
-                return 6;
-            default:
-                return 2;
         }
     }
 }

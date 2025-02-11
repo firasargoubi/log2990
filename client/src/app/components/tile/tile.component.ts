@@ -15,13 +15,19 @@ import { ObjectCounterService } from '@app/services/objects-counter.service';
 })
 export class TileComponent implements OnInit {
     @Input() type: number;
-    @Input() objectID: number;
+    @Input() objectID: number= 0;
     @Output() objectChanged = new EventEmitter<number>();
     @Output() objectMoved = new EventEmitter<boolean>();
+    count: number;
     placedItem: ItemComponent[] = [];
 
-    constructor(private counterService: ObjectCounterService) {}
-
+    constructor(private counterService: ObjectCounterService) {
+        if (!this.objectID) {
+            this.counterService.spawnCounter$.subscribe((value: number) => {
+                this.count = value;
+            });
+        }
+    }
     get baseImage(): string {
         switch (this.type) {
             case TileTypes.Grass:
@@ -46,21 +52,24 @@ export class TileComponent implements OnInit {
             const object = this.getObjectById(this.objectID);
             if (object) {
                 this.placedItem.push(object);
+                this.decrementCounter(object);
             }
         }
     }
 
     refreshObject(): void {
-        if (!this.placedItem.length) {
+        if (!this.placedItem.length || !this.objectID) {
             this.objectChanged.emit(0);
         } else {
-            this.objectChanged.emit(this.placedItem[0].type);
+            console.log(this.objectID);
+            this.objectChanged.emit(this.objectID);
         }
     }
 
     getObjectById(id: number): ItemComponent | null {
         const objectData = DEFAULT_OBJECTS.find((obj) => obj.id === id);
         if (objectData) {
+            this.objectID = id;
             const item = new ItemComponent();
             item.type = objectData.id;
             item.tooltipText = objectData.description;
@@ -72,7 +81,7 @@ export class TileComponent implements OnInit {
     decrementCounter(item: ItemComponent) {
         if (item.type === ObjectsTypes.SPAWN || item.type === ObjectsTypes.RANDOM) {
             this.counterService.decrementCounter(item.type);
-            if (this.counterService.spawnCounter.value === 0) {
+            if (!this.count) {
                 item.isPlaced = true;
             }
         } else {
@@ -83,27 +92,30 @@ export class TileComponent implements OnInit {
 
     drop(event: CdkDragDrop<ItemComponent[]>) {
         const draggedItem = event.previousContainer.data[event.previousIndex];
-        console.log("ITEM BEING DRAGGED",draggedItem);
+
         if (event.previousContainer === event.container) {
-            return;
+            return; // No changes if dragged to the same place
         }
+
         if (this.type === TileTypes.DoorClosed || this.type === TileTypes.DoorOpen || this.type === TileTypes.Wall) {
-            return;
+            return; // No changes if dragged to an illegal place
         }
-        if (this.placedItem.length === 0 && event.previousContainer.id !== 'cdk-drop-list-0') {
+
+        if (event.previousContainer.id !== 'cdk-drop-list-0') {
+            console.log('ITEM BEING DRAGGED - 1', draggedItem);
             this.placedItem.push(draggedItem);
-            event.previousContainer.data.splice(0);
-            this.objectMoved.emit(true);
+            event.previousContainer.data.splice(event.previousIndex, 1);
         } else if (
             this.placedItem.length === 0 &&
             !draggedItem.isPlaced &&
             (draggedItem.type === ObjectsTypes.SPAWN || draggedItem.type === ObjectsTypes.RANDOM)
         ) {
+            console.log('ITEM BEING DRAGGED - 2', draggedItem);
             this.placedItem.push(draggedItem);
             this.decrementCounter(draggedItem);
-            this.objectMoved.emit(true);
         }
-
-        return;
+        this.objectID = draggedItem.type;
+        console.log(this);
+        this.objectMoved.emit(true);
     }
 }

@@ -1,24 +1,29 @@
-@if (isPlaced) {
+@if (isPlaced || type !== 6) {
     <div class="grey-item item" cdkDrag>
         <img [src]="image" [matTooltip]="descriptions[type]" matTooltipPosition="before">
     </div>
     <p [innerText]="name"></p>
     @if ( type ===6) {
-        <p class="counter" >{{objectCounterService.spawnCounter$}}</p>
+        <p class="counter" >{{spawnCounter}}</p>
     }
     @if ( type ===7) {
-        <p class="counter">{{objectCounterService.randomCounter$}}</p>
+        <p class="counter">{{spawnCounter}}</p>
     }
 }
 @else {
-    <div class="item" cdkDrag>
-        <img [src]="image" [matTooltip]="descriptions[type]" matTooltipPosition="before">
-    </div>
-    <p [innerText]="name"></p>
     @if (type === 6) {
-        <p class="counter">{{objectCounterService.spawnCounter$}}</p>
+        <div class="item" cdkDrag>
+            <img [src]="image" [matTooltip]="descriptions[type]" matTooltipPosition="before">
+        </div>
     }
-    @if ( type ===7) {
-        <p class="counter">{{objectCounterService.randomCounter$}}</p>
+    @else {
+        <div class="item">
+            <img [src]="image" [matTooltip]="descriptions[type]" matTooltipPosition="before">
+        </div>
+    }
+    
+    <p [innerText]="name"></p>
+    @if (type >= 6) {
+        <p class="counter">{{spawnCounter}}</p>
     }
 }
