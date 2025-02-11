@@ -6,7 +6,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { BoardComponent } from '@app/components/board/board.component';
 import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
-import { ImageService } from '@app/image.service';
+import { ImageService } from '@app/services/image.service';
 import { Game } from '@app/interfaces/game.model';
 import { MapSize } from '@app/interfaces/mapsize';
 import { SaveMessage } from '@app/interfaces/saveMessage';
