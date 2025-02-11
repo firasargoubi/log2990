@@ -136,21 +136,22 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
         this.diceClicked$ = false;
     }
 
-    linkRoute(): void {
-        if (this.form.valid) {
+    async linkRoute(): Promise<void> {
+        if (!(this.form.get('name')?.value === 'New Player')) {
             this.router.navigate(['/waiting']);
         }
     }
 
-    async save(): Promise<void> {
+    save(): void {
         this.form.updateValueAndValidity();
+        const gameExists = this.gameList.some((game) => game.id === this.data.game.id);
+        if (!gameExists || !this.data.game.isVisible) {
+            this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorGameDeleted);
+            return;
+        }
         if (this.form.valid) {
             localStorage.setItem('form', JSON.stringify(this.form.value));
-            const gameExists = this.gameList.some((game) => game.id === this.data.game.id);
-            if (!gameExists || !this.data.game.isVisible) {
-                this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorGameDeleted);
-                return;
-            }
+            this.linkRoute();
         }
     }
 

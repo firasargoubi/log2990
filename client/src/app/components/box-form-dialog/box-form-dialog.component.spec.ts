@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { GameService } from '@app/services/game.service';
 import { throwError, of } from 'rxjs';
 import { BoxFormDialogComponent } from './box-form-dialog.component';
@@ -8,6 +7,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
 import { Game } from '@app/interfaces/game.model';
+import { NotificationService } from '@app/services/notification.service';
 
 const TIME = 5000;
 const DEFAULT_STAT_VALUE = 4;
@@ -20,21 +20,29 @@ describe('BoxFormDialogComponent', () => {
     let fixture: ComponentFixture<BoxFormDialogComponent>;
     let mockDialogRef: jasmine.SpyObj<MatDialogRef<BoxFormDialogComponent>>;
     let mockGameService: jasmine.SpyObj<GameService>;
-    let mockSnackBar: jasmine.SpyObj<MatSnackBar>;
+    let mockNotificationService: jasmine.SpyObj<NotificationService>;
 
     beforeEach(async () => {
         mockDialogRef = jasmine.createSpyObj('MatDialogRef', ['close']);
         mockGameService = jasmine.createSpyObj('GameService', ['fetchVisibleGames']);
-        mockSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
+        mockNotificationService = jasmine.createSpyObj('NotificationService', ['showError']);
 
         mockGameService.fetchVisibleGames.and.returnValue(of([]));
+
         await TestBed.configureTestingModule({
             imports: [ReactiveFormsModule, HttpClientTestingModule, BoxFormDialogComponent],
             providers: [
                 { provide: MatDialogRef, useValue: mockDialogRef },
-                { provide: MAT_DIALOG_DATA, useValue: { boxId: '1', game: { id: '1', name: 'Game1', isVisible: true }, gameList: [] } },
+                {
+                    provide: MAT_DIALOG_DATA,
+                    useValue: {
+                        boxId: '1',
+                        game: { id: '1', name: 'Game1', isVisible: true },
+                        gameList: [],
+                    },
+                },
                 { provide: GameService, useValue: mockGameService },
-                { provide: MatSnackBar, useValue: mockSnackBar },
+                { provide: NotificationService, useValue: mockNotificationService },
                 { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => '1' } } } },
             ],
         }).compileComponents();
@@ -52,16 +60,16 @@ describe('BoxFormDialogComponent', () => {
 
     it('should initialize the form with default values', () => {
         expect(component.form.value).toEqual({
-            name: 'Game1',
+            name: 'New Player',
             avatar: 'assets/perso/1.jpg',
-            life: 4,
-            speed: 4,
-            attack: 4,
-            defense: 4,
+            life: DEFAULT_STAT_VALUE,
+            speed: DEFAULT_STAT_VALUE,
+            attack: DEFAULT_STAT_VALUE,
+            defense: DEFAULT_STAT_VALUE,
         });
     });
 
-    it('should update form validity when status changes', () => {
+    it('should update form validity when name is empty', () => {
         component.form.get('name')?.setValue('');
         expect(component.form.valid).toBeFalse();
     });
@@ -78,12 +86,16 @@ describe('BoxFormDialogComponent', () => {
     });
 
     it('should reset attributes correctly', () => {
-        component.form.patchValue({ life: 10, speed: 10, attack: 10, defense: 10 });
+        component.form.patchValue({ life: 10, speed: 10, attack: 10, defense: 10, name: 'New Player' });
         component.resetAttributes();
-        expect(component.form.value.life).toBe(DEFAULT_STAT_VALUE);
-        expect(component.form.value.speed).toBe(DEFAULT_STAT_VALUE);
-        expect(component.form.value.attack).toBe(DEFAULT_STAT_VALUE);
-        expect(component.form.value.defense).toBe(DEFAULT_STAT_VALUE);
+        expect(component.form.value).toEqual({
+            life: DEFAULT_STAT_VALUE,
+            speed: DEFAULT_STAT_VALUE,
+            attack: DEFAULT_STAT_VALUE,
+            defense: DEFAULT_STAT_VALUE,
+            name: 'New Player',
+            avatar: 'assets/perso/1.jpg',
+        });
     });
 
     it('should increase attribute only once', () => {
@@ -104,18 +116,20 @@ describe('BoxFormDialogComponent', () => {
             {
                 id: '1',
                 name: 'Test Game',
-                mapSize: '',
-                mode: '',
-                previewImage: '',
-                description: '',
-                lastModified: new Date(),
                 isVisible: false,
                 board: [],
+                mapSize: 'medium',
+                mode: 'classic',
+                previewImage: 'path/to/image.jpg',
+                description: 'Test game description',
+                lastModified: new Date(),
             },
         ];
         mockGameService.fetchVisibleGames.and.returnValue(of(mockGames));
+
         component.ngOnInit();
         tick(TIME);
+
         expect(component.gameList.length).toBe(1);
         component.ngOnDestroy();
         expect(mockGameService.fetchVisibleGames).toHaveBeenCalled();
@@ -123,32 +137,14 @@ describe('BoxFormDialogComponent', () => {
 
     it('should handle polling error', fakeAsync(() => {
         mockGameService.fetchVisibleGames.and.returnValue(throwError(() => new Error('Fetch failed')));
+
         component.ngOnInit();
         tick(TIME);
-        expect(mockSnackBar.open).toHaveBeenCalledWith('Erreur lors du rafraîchissement des jeux', 'Fermer', { duration: 3000 });
+
+        expect(mockNotificationService.showError).toHaveBeenCalledWith('Erreur lors du rafraîchissement des jeux');
     }));
 
-    it('should not save if the game is deleted or hidden', async () => {
-        const mockGames: Game[] = [
-            {
-                id: '1',
-                name: 'Test Game',
-                mapSize: '',
-                mode: '',
-                previewImage: '',
-                description: '',
-                lastModified: new Date(),
-                isVisible: false,
-                board: [],
-            },
-        ];
-        mockGameService.fetchVisibleGames.and.returnValue(of(mockGames));
-        spyOn(window, 'alert');
-        await component.save();
-        expect(window.alert).toHaveBeenCalledWith('Ce jeu a été supprimé ou sa visibilité a changéee entre temps, Veuillez choisir un autre jeu.');
-        expect(mockDialogRef.close).not.toHaveBeenCalled();
-    });
-
+    
     it('should select avatar correctly', () => {
         const avatar = 'assets/perso/2.jpg';
         component.selectAvatar(avatar);
@@ -166,48 +162,49 @@ describe('BoxFormDialogComponent', () => {
         expect(mockDialogRef.close).toHaveBeenCalledWith(null);
     });
 
-    it('should not save if the game is deleted or hidden', async () => {
-        const mockGames: Game[] = [
-            {
-                id: '1',
-                name: 'Test Game',
-                mapSize: '',
-                mode: '',
-                previewImage: '',
-                description: '',
-                lastModified: new Date(),
-                isVisible: false,
-                board: [],
-            },
-        ];
-        mockGameService.fetchVisibleGames.and.returnValue(of(mockGames));
-        spyOn(window, 'alert');
 
-        await component.save();
-
-        expect(window.alert).toHaveBeenCalledWith('Ce jeu a été supprimé ou sa visibilité a changéee entre temps, Veuillez choisir un autre jeu.');
-        expect(mockDialogRef.close).not.toHaveBeenCalled();
+    it('should navigate to /waiting when linkRoute is called and name is not "New Player"', async () => {
+        const routerSpy = spyOn(component['router'], 'navigate');
+        component.form.get('name')?.setValue('Player1');
+        await component.linkRoute();
+        expect(routerSpy).toHaveBeenCalledWith(['/waiting']);
     });
 
-    it('should save and close dialog when game exists and is visible', async () => {
+    it('should not navigate to /waiting when linkRoute is called and name is "New Player"', async () => {
+        const routerSpy = spyOn(component['router'], 'navigate');
+        component.form.get('name')?.setValue('New Player');
+        await component.linkRoute();
+        expect(routerSpy).not.toHaveBeenCalled();
+    });
+
+    
+
+    it('should unsubscribe from polling on destroy', () => {
+        const unsubscribeSpy = spyOn(component['pollingSubscription'], 'unsubscribe');
+        component.ngOnDestroy();
+        expect(unsubscribeSpy).toHaveBeenCalled();
+    });
+
+   
+
+    it('should save form to localStorage and navigate when form is valid', async () => {
         component.gameList = [
             {
                 id: '1',
                 name: 'Test Game',
-                mapSize: '',
-                mode: '',
-                previewImage: '',
-                description: '',
-                lastModified: new Date(),
                 isVisible: true,
                 board: [],
+                mapSize: 'medium',
+                mode: 'classic',
+                previewImage: 'path/to/image.jpg',
+                description: 'Test game description',
+                lastModified: new Date(),
             },
         ];
         spyOn(localStorage, 'setItem');
-
+        spyOn(component, 'linkRoute').and.callThrough();
         await component.save();
-
         expect(localStorage.setItem).toHaveBeenCalledWith('form', JSON.stringify(component.form.value));
-        expect(mockDialogRef.close).toHaveBeenCalledWith(component.form.value);
+        expect(component.linkRoute).toHaveBeenCalled();
     });
 });

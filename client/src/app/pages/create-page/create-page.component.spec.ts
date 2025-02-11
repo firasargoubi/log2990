@@ -181,7 +181,7 @@ describe('CreatePageComponent', () => {
         tick();
         fixture.detectChanges();
 
-        expect(snackBarSpy.open).toHaveBeenCalledWith('Erreur lors du chargement des jeux', 'Fermer', { duration: 3000 });
+        expect(snackBarSpy.open).toHaveBeenCalledWith('Erreur lors du chargement des jeux', 'Fermer', { duration: 3000, panelClass: ['error-notification'] });
 
         discardPeriodicTasks();
     }));
