@@ -101,7 +101,7 @@ export class TileComponent implements OnInit {
             return; // No changes if dragged to an illegal place
         }
 
-        if (event.previousContainer.id !== 'cdk-drop-list-0') {
+        if (event.previousContainer.id !== 'objects-container') {
             console.log('ITEM BEING DRAGGED - 1', draggedItem);
             this.placedItem.push(draggedItem);
             event.previousContainer.data.splice(event.previousIndex, 1);
