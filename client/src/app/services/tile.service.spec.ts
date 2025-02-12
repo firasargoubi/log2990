@@ -37,4 +37,36 @@ describe('TileService', () => {
         service.copyTileTool(TileTypes.Wall);
         expect(service.currentTool).toEqual(TileTypes.Wall);
     });
+    it('should not modify tile if the tile has an object', () => {
+        service.copyTileTool(TileTypes.Wall);
+
+        const tile: Tile = { type: TileTypes.Wall, x: 1, y: 1, id: '1-1', object: 1 };
+        const originalTile = { ...tile };
+
+        service.modifyTile(tile);
+
+        expect(tile).toEqual(originalTile);
+    });
+
+    it('should not modify tile with object when current tool is Wall', () => {
+        service.copyTileTool(TileTypes.Wall);
+
+        const tile: Tile = { type: TileTypes.Wall, x: 4, y: 4, id: '4-4', object: 1 };
+        const originalTile = { ...tile };
+
+        service.modifyTile(tile);
+
+        expect(tile).toEqual(originalTile);
+    });
+
+    it('should not modify tile if tile has an object (not door)', () => {
+        service.copyTileTool(TileTypes.DoorClosed);
+
+        const tile: Tile = { type: TileTypes.Wall, x: 2, y: 2, id: '2-2', object: 1 };
+        const originalTile = { ...tile };
+
+        service.modifyTile(tile);
+
+        expect(tile).toEqual(originalTile);
+    });
 });
