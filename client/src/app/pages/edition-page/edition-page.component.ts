@@ -103,13 +103,19 @@ export class EditionPageComponent implements OnInit {
         }
 
         this.saveService.alertBoardForVerification(true);
-        const saveStatus = this.saveService.currentStatus;
+        const saveStatus: Partial<SaveMessage> = this.saveService.currentStatus;
 
-        let key: keyof SaveMessage;
-        for (key in saveStatus) {
-            if (!saveStatus[key]) {
-                this.errorService.addMessage(EDITION_PAGE_CONSTANTS.errorInvalidName);
-            }
+        if (!saveStatus.doors) {
+            this.errorService.addMessage(EDITION_PAGE_CONSTANTS.errorInvalidDoors);
+        }
+        if (!saveStatus.allSpawnPoints) {
+            this.errorService.addMessage(EDITION_PAGE_CONSTANTS.errorInvalidSpawns);
+        }
+        if (!saveStatus.accessible) {
+            this.errorService.addMessage(EDITION_PAGE_CONSTANTS.errorInvalidAccess);
+        }
+        if (!saveStatus.minTerrain) {
+            this.errorService.addMessage(EDITION_PAGE_CONSTANTS.errorInvalidMinTiles);
         }
 
         if (!this.showErrorPopup) {
