@@ -35,7 +35,6 @@ describe('BoardComponent', () => {
         mouseServiceSpy = jasmine.createSpyObj('MouseService', ['onMouseUp', 'onMouseDown', 'onMouseMove']);
         tileServiceSpy = jasmine.createSpyObj('TileService', ['modifyTile', 'copyTileTool', 'getToolSaved'], { currentTool: 0, toolSaved: 0 });
         saveServiceSpy = jasmine.createSpyObj('SaveService', ['verifyBoard'], { isSave$: new Subject<boolean>(), isReset$: of(false) });
-        errorServiceSpy = jasmine.createSpyObj('ErrorService', ['showError']);
         gameServiceSpy = jasmine.createSpyObj('GameService', ['fetchGames']);
 
         await TestBed.configureTestingModule({
