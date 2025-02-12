@@ -20,7 +20,7 @@ const CUSTOM_GAME = {
     name: 'Wow',
     description: 'Avec Item',
     mapSize: 'small',
-    board: [Array(MAP_SIZE).fill(Array(MAP_SIZE).fill(TILE_VALUE))],
+    board: Array.from({ length: MAP_SIZE }, () => Array(MAP_SIZE).fill(TILE_VALUE)),
 };
 describe('BoardComponent', () => {
     let component: BoardComponent;
