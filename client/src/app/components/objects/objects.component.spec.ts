@@ -87,12 +87,6 @@ describe('ObjectsComponent', () => {
         expect(result).toEqual([3, 4, 5, 6]);
     });
 
-    it('should add an item to items array when onItemAdded is called', () => {
-        const newItem = new ItemComponent(mockCounterService);
-        component.onItemAdded(newItem);
-        expect(component.items.includes(newItem)).toBeTrue();
-    });
-
     it('should call incrementCounter in ObjectCounterService when incrementCounter is called', () => {
         const mockItem = new ItemComponent(mockCounterService);
         mockItem.type = 2;

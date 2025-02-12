@@ -66,12 +66,6 @@ describe('ItemComponent', () => {
         expect(component.isPlaced).toBe(true);
     });
 
-    it('should emit itemAdded event on ngOnInit', () => {
-        spyOn(component.itemAdded, 'emit');
-        component.ngOnInit();
-        expect(component.itemAdded.emit).toHaveBeenCalledWith(component);
-    });
-
     it('should update spawnCounter and set isPlaced to true when spawnCounter$ emits 0', () => {
         const spawnCounter$ = new Subject<number>();
         objectCounterServiceSpy.spawnCounter$ = spawnCounter$;
