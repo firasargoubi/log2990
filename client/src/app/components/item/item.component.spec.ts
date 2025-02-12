@@ -34,9 +34,9 @@ describe('ItemComponent', () => {
         expect(component.image).toBe('assets/objects/undefined.png');
     });
 
-    it('should return "assets/objects/undefined.png" when type is invalid in name getter', () => {
+    it('should return Objet inconnu when type is invalid in name getter', () => {
         component.type = 999; // Invalid type
-        expect(component.name).toBe('assets/objects/undefined.png');
+        expect(component.name).toBe('Objet inconnu');
     });
 
     it('should initialize objectCounterService in constructor', () => {

@@ -54,8 +54,8 @@ describe('AdminPageComponent', () => {
             {
                 id: '1',
                 name: 'Test Game',
-                mapSize: 'small',
-                mode: 'capture',
+                mapSize: 'Petite',
+                mode: 'Capture',
                 previewImage: '',
                 description: '',
                 lastModified: new Date(),
