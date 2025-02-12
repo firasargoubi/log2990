@@ -11,7 +11,7 @@ import { of, Subject } from 'rxjs';
 import { Tile } from '@app/interfaces/tile';
 import { Game } from '@app/interfaces/game.model';
 import { Coordinates } from '@app/interfaces/coordinates';
-import { MapSize } from '@app/interfaces/mapsize';
+import { MapSize } from '@app/interfaces/map-size';
 
 const MAP_SIZE = 10;
 const TILE_VALUE = 12;

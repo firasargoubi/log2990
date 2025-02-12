@@ -6,7 +6,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { of, Subject } from 'rxjs';
 import { ItemComponent } from '@app/components/item/item.component';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { ObjectsTypes } from '@app/interfaces/objectsTypes';
+import { ObjectsTypes } from '@app/interfaces/objects-types';
 
 describe('ObjectsComponent', () => {
     let component: ObjectsComponent;

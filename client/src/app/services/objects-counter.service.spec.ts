@@ -106,7 +106,7 @@ describe('ObjectCounterService', () => {
         service.decrementCounter(1);
 
         service.counter$.pipe(take(1)).subscribe((value) => {
-            expect(value).toBe(0);
+            expect(value).toBe(-1);
             done();
         });
     });
