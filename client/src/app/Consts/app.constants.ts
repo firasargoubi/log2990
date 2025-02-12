@@ -88,6 +88,29 @@ export const GAME_SIZE = {
     large: 'Grande',
 };
 
+export const OBJECT_NAMES = {
+    boots: 'Bottes de vitesse',
+    sword: 'Épée de puissance',
+    potion: 'Potion de soin',
+    wand: 'Baguette magique',
+    crystalBall: 'Boule de cristal',
+    berryJuice: 'Jus de baies',
+    vortex: 'Vortex',
+    gnome: 'Gnome',
+    undefined: 'Objet inconnu',
+};
+
+export const OBJECTS_DESCRIPTION = {
+    boots: 'Les bottes magiques vous permettront de vous déplacer à une vitesse SUPERSONIQUE!',
+    sword: 'Cette épée effectue plus de dégats sur vos ennemis!',
+    potion: 'Figez le temps et profitez-en pour vous déplacer une fois de plus que vos adversaires...',
+    wand: "Cette mystérieuse baguette vous permet d'ensorceler un de vos adversaires et de le dérouter de son chemin!",
+    crystal: "Vos talents de clairvoyance vous permettent d'identifier tous les points faibles d'un de vos ennemis.",
+    berryJuice: 'Ne paniquez pas, ce nectar soignera toutes vos blessures!',
+    vortex: "Cet objet indique l'endroit où une bataille épique est sur le point d'avoir lieu",
+    gnome: 'Ce petit gnome farceur a un cadeau pour vous. À vos risque et périls...',
+    undefined: 'Objet inconnu',
+};
 export const EDITION_PAGE_CONSTANTS = {
     errorGameNameRequired: 'Le nom du jeu est requis.',
     errorGameDescriptionRequired: 'La description du jeu est requise.',
