@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
-import { SaveMessage } from '@app/interfaces/saveMessage';
+import { SaveMessage } from '@app/interfaces/save-message';
 import { Tile } from '@app/interfaces/tile';
-import { TileTypes } from '@app/interfaces/tileTypes';
+import { TileTypes } from '@app/interfaces/tile-types';
 import { Subject } from 'rxjs';
 import { GameService } from './game.service';
 import { Game } from '@app/interfaces/game.model';

@@ -8,8 +8,8 @@ import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
 import { EDITION_PAGE_CONSTANTS, MAP_SIZES, OBJECT_COUNT } from '@app/Consts/app.constants';
 import { Game } from '@app/interfaces/game.model';
-import { MapSize } from '@app/interfaces/mapsize';
-import { SaveMessage } from '@app/interfaces/saveMessage';
+import { MapSize } from '@app/interfaces/map-size';
+import { SaveMessage } from '@app/interfaces/save-message';
 import { ErrorService } from '@app/services/error.service';
 import { GameService } from '@app/services/game.service';
 import { ImageService } from '@app/services/image.service';
@@ -81,7 +81,6 @@ export class EditionPageComponent {
 
     get objectNumber(): number {
         switch (this.game.mapSize) {
-
             case MAP_SIZES.small:
                 return OBJECT_COUNT.small;
             case MAP_SIZES.medium:
