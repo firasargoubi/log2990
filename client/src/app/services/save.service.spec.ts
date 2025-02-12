@@ -50,14 +50,34 @@ describe('SaveService', () => {
     describe('get intBoard()', () => {
         it('should return a 2D array of integers representing the board', () => {
             service.board = [
-                [{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 0 }],
-                [{ type: TileTypes.Wall, x: 1, y: 0, id: '2', object: 0 }],
-                [{ type: TileTypes.Grass, x: 2, y: 0, id: '3', object: 0 }],
+                [
+                    { type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 0 },
+                    { type: TileTypes.Wall, x: 1, y: 0, id: '2', object: 0 },
+                ],
+                [
+                    { type: TileTypes.Grass, x: 0, y: 1, id: '1', object: 0 },
+                    { type: TileTypes.Wall, x: 1, y: 1, id: '2', object: 0 },
+                ],
             ];
             expect(service.intBoard).toEqual([
-                [0, 1, 0],
-                [0, 10, 0],
-                [0, 1, 0],
+                [1, 6],
+                [1, 6],
+            ]);
+        });
+        it('should return a 2D array of integers representing the board with objects', () => {
+            service.board = [
+                [
+                    { type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 6 },
+                    { type: TileTypes.Wall, x: 1, y: 0, id: '2', object: 0 },
+                ],
+                [
+                    { type: TileTypes.Grass, x: 0, y: 1, id: '1', object: 0 },
+                    { type: TileTypes.Wall, x: 1, y: 1, id: '2', object: 0 },
+                ],
+            ];
+            expect(service.intBoard).toEqual([
+                [61, 6],
+                [1, 6],
             ]);
         });
     });
@@ -65,16 +85,25 @@ describe('SaveService', () => {
     describe('verifyBoard()', () => {
         it('should set currentStatus to the verification results', () => {
             const board: Tile[][] = [
-                [{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 0 }],
-                [{ type: TileTypes.Wall, x: 1, y: 0, id: '2', object: 0 }],
-                [{ type: TileTypes.Grass, x: 2, y: 0, id: '3', object: 0 }],
+                [
+                    { type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 6 },
+                    { type: TileTypes.Wall, x: 1, y: 0, id: '2', object: 0 },
+                    { type: TileTypes.Grass, x: 2, y: 0, id: '3', object: 6 },
+                    { type: TileTypes.Wall, x: 3, y: 0, id: '4', object: 0 },
+                ],
+                [
+                    { type: TileTypes.Grass, x: 0, y: 1, id: '1', object: 0 },
+                    { type: TileTypes.Grass, x: 1, y: 1, id: '2', object: 0 },
+                    { type: TileTypes.Grass, x: 2, y: 1, id: '3', object: 0 },
+                    { type: TileTypes.Wall, x: 3, y: 1, id: '4', object: 0 },
+                ],
             ];
             service.verifyBoard(board);
             expect(service.currentStatus).toEqual({
-                doors: false,
-                minTerrain: false,
+                doors: true,
+                minTerrain: true,
                 accessible: false,
-                allSpawnPoints: false,
+                allSpawnPoints: true,
             });
         });
     });
@@ -82,9 +111,21 @@ describe('SaveService', () => {
     describe('verifyDoors()', () => {
         it('should return true for a board with correctly placed doors', () => {
             const board: Tile[][] = [
-                [{ type: TileTypes.Wall, x: 0, y: 1, id: '1', object: 0 }],
-                [{ type: TileTypes.DoorClosed, x: 1, y: 1, id: '2', object: 0 }],
-                [{ type: TileTypes.Wall, x: 2, y: 1, id: '3', object: 0 }],
+                [
+                    { type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 6 },
+                    { type: TileTypes.Grass, x: 1, y: 0, id: '2', object: 0 },
+                    { type: TileTypes.Grass, x: 2, y: 0, id: '3', object: 0 },
+                ],
+                [
+                    { type: TileTypes.Wall, x: 0, y: 1, id: '4', object: 0 },
+                    { type: TileTypes.DoorClosed, x: 1, y: 1, id: '5', object: 0 },
+                    { type: TileTypes.Wall, x: 2, y: 1, id: '6', object: 0 },
+                ],
+                [
+                    { type: TileTypes.Grass, x: 0, y: 2, id: '7', object: 0 },
+                    { type: TileTypes.Grass, x: 1, y: 2, id: '8', object: 0 },
+                    { type: TileTypes.Grass, x: 2, y: 2, id: '9', object: 6 },
+                ],
             ];
             service.board = board;
             expect(service.verifyDoors()).toBe(true);
@@ -99,14 +140,51 @@ describe('SaveService', () => {
             expect(service.verifyDoors()).toBe(false);
         });
 
-        it('should return false for an improperly connected door', () => {
+        it('should return false for missing walls door', () => {
             const board: Tile[][] = [
-                [{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 0 }],
-                [{ type: TileTypes.DoorClosed, x: 1, y: 0, id: '2', object: 0 }],
-                [{ type: TileTypes.Grass, x: 2, y: 0, id: '3', object: 0 }],
+                [
+                    { type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 6 },
+                    { type: TileTypes.Grass, x: 1, y: 0, id: '2', object: 0 },
+                    { type: TileTypes.Grass, x: 2, y: 0, id: '3', object: 0 },
+                ],
+                [
+                    { type: TileTypes.Grass, x: 0, y: 1, id: '4', object: 0 },
+                    { type: TileTypes.DoorClosed, x: 1, y: 1, id: '5', object: 0 },
+                    { type: TileTypes.Grass, x: 2, y: 1, id: '6', object: 0 },
+                ],
+                [
+                    { type: TileTypes.Grass, x: 0, y: 2, id: '7', object: 0 },
+                    { type: TileTypes.Grass, x: 1, y: 2, id: '8', object: 0 },
+                    { type: TileTypes.Grass, x: 2, y: 2, id: '9', object: 6 },
+                ],
             ];
             service.board = board;
             expect(service.verifyDoors()).toBe(false);
+        });
+
+        it('should verify connecting doors correctly', () => {
+            const board: Tile[][] = [
+                [
+                    { type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 6 },
+                    { type: TileTypes.Wall, x: 1, y: 0, id: '2', object: 0 },
+                    { type: TileTypes.Grass, x: 2, y: 0, id: '3', object: 0 },
+                ],
+                [
+                    { type: TileTypes.Grass, x: 0, y: 1, id: '4', object: 0 },
+                    { type: TileTypes.DoorClosed, x: 1, y: 1, id: '5', object: 0 },
+                    { type: TileTypes.Grass, x: 2, y: 1, id: '6', object: 0 },
+                ],
+                [
+                    { type: TileTypes.Grass, x: 0, y: 2, id: '7', object: 0 },
+                    { type: TileTypes.Wall, x: 1, y: 2, id: '8', object: 0 },
+                    { type: TileTypes.Grass, x: 2, y: 2, id: '9', object: 6 },
+                ],
+            ];
+
+            service.board = board;
+
+            const result = service.verifyDoors();
+            expect(result).toBeTrue();
         });
     });
 
@@ -216,6 +294,69 @@ describe('SaveService', () => {
                 done();
             });
             service.alertBoardForReset(false);
+        });
+    });
+
+    describe('verifyAccessible', () => {
+        it('should return true for a fully accessible board', () => {
+            const board: Tile[][] = [
+                [
+                    { type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 6 },
+                    { type: TileTypes.Grass, x: 1, y: 0, id: '2', object: 0 },
+                ],
+                [
+                    { type: TileTypes.Grass, x: 0, y: 1, id: '4', object: 0 },
+                    { type: TileTypes.Grass, x: 1, y: 1, id: '5', object: 0 },
+                ],
+            ];
+            service.verifyBoard(board);
+            expect(service.verifyAccessible()).toBeTrue();
+        });
+
+        it('should return false for a board with inaccessible tiles', () => {
+            const board: Tile[][] = [
+                [
+                    { type: TileTypes.Wall, x: 0, y: 0, id: '1', object: 6 },
+                    { type: TileTypes.Wall, x: 1, y: 0, id: '2', object: 0 },
+                ],
+            ];
+            service.verifyBoard(board);
+            expect(service.verifyAccessible()).toBeFalse();
+        });
+
+        it('should return true for a board with multiple accessible areas', () => {
+            const board: Tile[][] = [
+                [
+                    { type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 6 },
+                    { type: TileTypes.Wall, x: 1, y: 0, id: '2', object: 0 },
+                ],
+                [
+                    { type: TileTypes.Grass, x: 0, y: 1, id: '4', object: 0 },
+                    { type: TileTypes.Wall, x: 1, y: 1, id: '5', object: 0 },
+                ],
+            ];
+
+            service.verifyBoard(board);
+            expect(service.verifyAccessible()).toBeTrue();
+        });
+
+        it('should mark the left tile as seen if it is accessible', () => {
+            const board: Tile[][] = [
+                [
+                    { type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 0, seen: false },
+                    { type: TileTypes.Grass, x: 1, y: 0, id: '2', object: 0, seen: false },
+                ],
+                [
+                    { type: TileTypes.Grass, x: 0, y: 1, id: '4', object: 0, seen: false },
+                    { type: TileTypes.Grass, x: 1, y: 1, id: '5', object: 0, seen: false },
+                ],
+            ];
+
+            service.board = board;
+            service.countSeen = 0;
+
+            service.verifyAccessibleDFS(1, 1);
+            expect(service.board[1][0].seen).toBeTrue();
         });
     });
 });
