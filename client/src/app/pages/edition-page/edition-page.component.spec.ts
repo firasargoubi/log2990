@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { EditionPageComponent } from './edition-page.component';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, provideRouter, Routes } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
 import { of, Subject } from 'rxjs';
@@ -10,6 +10,8 @@ import { SaveService } from '@app/services/save.service';
 import { NotificationService } from '@app/services/notification.service';
 import { ImageService } from '@app/services/image.service';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
+
+const routes: Routes = [];
 
 describe('EditionPageComponent', () => {
     let component: EditionPageComponent;
@@ -50,6 +52,7 @@ describe('EditionPageComponent', () => {
                 { provide: ImageService, useValue: imageServiceSpy },
                 { provide: NotificationService, useValue: notificationServiceSpy },
                 { provide: ObjectCounterService, useValue: objectCounterServiceSpy },
+                provideRouter(routes),
             ],
         }).compileComponents();
 

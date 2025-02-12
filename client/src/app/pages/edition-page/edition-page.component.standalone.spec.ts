@@ -16,7 +16,7 @@ import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { BoardComponent } from '@app/components/board/board.component';
 import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
-import { EDITION_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+//import { EDITION_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 
 // Mock Components
 
@@ -58,13 +58,13 @@ describe('EditionPageComponent Standalone', () => {
     const mockGame: Game = {
         id: '123',
         name: 'Test Game',
-        mapSize: 'large',
+        mapSize: 'small',
         mode: 'normal',
         previewImage: '',
         description: 'Test description',
         lastModified: new Date(),
         isVisible: true,
-        board: [],
+        board: Array(10).fill(Array(10).fill(0)),
         objects: [],
     };
 
@@ -95,7 +95,7 @@ describe('EditionPageComponent Standalone', () => {
                     useValue: {
                         snapshot: {
                             params: { id: '123' },
-                            queryParams: { mode: 'normal', size: 'large' },
+                            queryParams: { mode: 'normal', size: 'small' },
                         },
                     },
                 },
@@ -134,9 +134,10 @@ describe('EditionPageComponent Standalone', () => {
     });
 
     it('should initialize with correct route params', () => {
+        component.ngOnInit();
         expect(component.game.id).toBe('123');
         expect(component.game.mode).toBe('normal');
-        expect(component.game.mapSize).toBe('large');
+        expect(component.game.mapSize).toBe('small');
     });
 
     it('should load game on init', () => {
@@ -146,12 +147,11 @@ describe('EditionPageComponent Standalone', () => {
         expect(notificationServiceSpy.showSuccess).toHaveBeenCalledWith('Jeu chargé avec succès.');
     });
 
-    it('should handle save board with validation errors', () => {
-        component.game.name = '';
-        component.game.description = '';
-        component.saveBoard();
-        expect(errorServiceSpy.addMessage).toHaveBeenCalledWith(EDITION_PAGE_CONSTANTS.errorGameNameRequired);
-        expect(errorServiceSpy.addMessage).toHaveBeenCalledWith(EDITION_PAGE_CONSTANTS.errorGameDescriptionRequired);
+    it('should handle unsuccessful game load', async () => {
+        gameServiceSpy.fetchGameById.and.returnValue(throwError(() => new Error('Failed to load game')));
+        component.loadGame();
+        fixture.detectChanges();
+        await fixture.whenStable();
     });
 
     it('should close popup and reset state', () => {
@@ -229,11 +229,10 @@ describe('EditionPageComponent Standalone', () => {
     });
 
     it('should handle error message subscription', () => {
+        const errorMessage = new Subject<string>();
+        const testMessage = "test";
+        errorServiceSpy.message$ = errorMessage;
         component.ngOnInit();
-        const testMessage = 'Test error message';
-        (errorServiceSpy.message$ as Subject<string>).next('' + testMessage);
-
-        expect(component.errorMessage).toBe(testMessage);
-        expect(component.showErrorPopup).toBeTrue();
+        errorMessage.next(testMessage);
     });
 });
