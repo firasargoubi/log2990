@@ -4,6 +4,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ObjectsTypes } from '@app/interfaces/objects-types';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
+import { GAME_IMAGES, OBJECT_NAMES, OBJECTS_DESCRIPTION } from '@app/Consts/app.constants';
 
 @Component({
     selector: 'app-item',
