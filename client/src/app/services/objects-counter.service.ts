@@ -18,16 +18,12 @@ export class ObjectCounterService {
     incrementCounter(type: number): void {
         if (type === 6) {
             this.spawnCounterSubject.next(this.spawnCounterSubject.value + 1);
-        } else {
-            this.counterSubject.next(this.counterSubject.value + 1);
         }
     }
 
     decrementCounter(type: number): void {
         if (type === 6 && this.spawnCounterSubject.value > 0) {
             this.spawnCounterSubject.next(this.spawnCounterSubject.value - 1);
-        } else {
-            this.counterSubject.next(this.counterSubject.value - 1);
         }
     }
 }

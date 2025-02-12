@@ -19,7 +19,6 @@ export class ObjectsComponent implements OnInit, OnDestroy {
     @Input() mapSize: string;
     range: number[] = [];
     items: ItemComponent[] = [];
-    counter$ = this.counterService.counter$;
     private subscriptions: Subscription[] = [];
 
     constructor(
@@ -57,12 +56,20 @@ export class ObjectsComponent implements OnInit, OnDestroy {
         }
     }
 
-    generateRange(start: number, end: number): number[] {
-        return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    adjustObjectsColor(): void {
+        this.items.forEach((item) => {
+            if (item.type === ObjectsTypes.SPAWN) {
+                if (item.spawnCounter === 1) {
+                    item.isPlaced = true;
+                }
+            } else {
+                item.isPlaced = false;
+            }
+        });
     }
 
-    onItemAdded(item: ItemComponent) {
-        this.items.push(item);
+    generateRange(start: number, end: number): number[] {
+        return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     }
 
     incrementCounter(item: ItemComponent) {
@@ -75,6 +82,7 @@ export class ObjectsComponent implements OnInit, OnDestroy {
             draggedItem.isPlaced = false;
             event.previousContainer.data.splice(event.previousIndex, 1);
             this.incrementCounter(draggedItem);
+            this.adjustObjectsColor();
         }
     }
 }
