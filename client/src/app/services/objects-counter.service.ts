@@ -1,14 +1,21 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { OBJECT_COUNT } from '@app/Consts/app.constants';
 
 @Injectable({
     providedIn: 'root',
 })
 export class ObjectCounterService {
-    private counterSubject = new BehaviorSubject<number>(0); // Initialisé à 0
-    counter$ = this.counterSubject.asObservable();
+    counter$;
+    spawnCounter$;
+
+    private counterSubject = new BehaviorSubject<number>(0); // Initial value: 0
     private spawnCounterSubject = new BehaviorSubject<number>(0);
-    spawnCounter$ = this.spawnCounterSubject.asObservable();
+
+    constructor() {
+        this.counter$ = this.counterSubject.asObservable();
+        this.spawnCounter$ = this.spawnCounterSubject.asObservable();
+    }
 
     initializeCounter(initialValue: number): void {
         this.counterSubject.next(initialValue);
@@ -16,13 +23,13 @@ export class ObjectCounterService {
     }
 
     incrementCounter(type: number): void {
-        if (type === 6) {
+        if (type === OBJECT_COUNT.large) {
             this.spawnCounterSubject.next(this.spawnCounterSubject.value + 1);
         }
     }
 
     decrementCounter(type: number): void {
-        if (type === 6 && this.spawnCounterSubject.value > 0) {
+        if (type === OBJECT_COUNT.large && this.spawnCounterSubject.value > 0) {
             this.spawnCounterSubject.next(this.spawnCounterSubject.value - 1);
         }
     }
