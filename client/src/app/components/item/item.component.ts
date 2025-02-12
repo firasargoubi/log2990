@@ -1,7 +1,6 @@
 import { CdkDrag } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ObjectsTypes } from '@app/interfaces/objectsTypes';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
@@ -34,15 +33,8 @@ export class ItemComponent implements OnInit {
 
     constructor(objectCounterService: ObjectCounterService) {
         this.objectCounterService = objectCounterService;
-        if (this.type === ObjectsTypes.SPAWN) {
-            this.objectCounterService.spawnCounter$.pipe(takeUntilDestroyed()).subscribe((value) => {
-                this.spawnCounter = value;
-                if (value === 0) {
-                    this.isPlaced = true;
-                }
-            });
-        }
     }
+
     get image(): string {
         switch (this.type) {
             case ObjectsTypes.BOOTS:
@@ -90,6 +82,14 @@ export class ItemComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        if (this.type === ObjectsTypes.SPAWN) {
+            this.objectCounterService.spawnCounter$.pipe().subscribe((value) => {
+                this.spawnCounter = value;
+                if (value === 0) {
+                    this.isPlaced = true;
+                }
+            });
+        }
         this.itemAdded.emit(this);
     }
 }

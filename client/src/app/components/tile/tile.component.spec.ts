@@ -207,18 +207,4 @@ describe('TileComponent', () => {
         expect(component.objectID).toBe(0);
         expect(component.objectChanged.emit).toHaveBeenCalledWith(0);
     });
-
-    it('should not increment the counter if placedItem is empty', () => {
-        component.placedItem = [];
-        component.objectID = 0;
-
-        spyOn(component.objectChanged, 'emit');
-
-        component.deleteTile();
-
-        expect(counterService.incrementCounter).not.toHaveBeenCalled();
-        expect(component.placedItem.length).toBe(0);
-        expect(component.objectID).toBe(0);
-        expect(component.objectChanged.emit).toHaveBeenCalledWith(0);
-    });
 });

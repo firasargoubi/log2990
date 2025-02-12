@@ -69,4 +69,23 @@ describe('TileService', () => {
 
         expect(tile).toEqual(originalTile);
     });
+
+    it('should modify currentTool if it has a tool saved', () => {
+        service.toolSaved = 1;
+
+        service.getToolSaved();
+
+        expect(service.toolSaved).toEqual(0);
+        expect(service.currentTool).toEqual(1);
+    });
+
+    it('should not modify currentTool if it has a tool saved', () => {
+        service.toolSaved = 0;
+        service.currentTool = 1;
+
+        service.getToolSaved();
+
+        expect(service.toolSaved).toEqual(0);
+        expect(service.currentTool).toEqual(1);
+    });
 });
