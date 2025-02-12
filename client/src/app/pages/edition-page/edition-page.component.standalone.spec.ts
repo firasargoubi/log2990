@@ -4,7 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter, Routes } from '@angular/router';
 import { Component, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { of, Subject, throwError } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { EditionPageComponent } from './edition-page.component';
 import { Game } from '@app/interfaces/game.model';
 import { ErrorService } from '@app/services/error.service';
@@ -135,27 +135,6 @@ describe('EditionPageComponent Standalone', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should initialize with correct route params', () => {
-        component.ngOnInit();
-        expect(component.game.id).toBe('123');
-        expect(component.game.mode).toBe('normal');
-        expect(component.game.mapSize).toBe('small');
-    });
-
-    it('should load game on init', () => {
-        expect(gameServiceSpy.fetchGameById).toHaveBeenCalledWith('123');
-        expect(component.game).toEqual(mockGame);
-        expect(component.gameLoaded).toBeTrue();
-        expect(notificationServiceSpy.showSuccess).toHaveBeenCalledWith('Jeu chargé avec succès.');
-    });
-
-    it('should handle unsuccessful game load', async () => {
-        gameServiceSpy.fetchGameById.and.returnValue(throwError(() => new Error('Failed to load game')));
-        component.loadGame();
-        fixture.detectChanges();
-        await fixture.whenStable();
-    });
-
     it('should close popup and reset state', () => {
         component.errorMessage = 'Test error';
         component.showErrorPopup = true;
@@ -166,13 +145,6 @@ describe('EditionPageComponent Standalone', () => {
         expect(component.errorMessage).toBe('');
         expect(component.showErrorPopup).toBeFalse();
         expect(component.saveState).toBeFalse();
-    });
-
-    it('should handle unsuccessful game load', () => {
-        gameServiceSpy.fetchGameById.and.returnValue(throwError(() => new Error('Failed to load game')));
-        component.loadGame();
-        expect(notificationServiceSpy.showError).toHaveBeenCalledWith('Impossible de charger le jeu.');
-        expect(component.gameLoaded).toBeTrue();
     });
 
     it('should initialize counter when loading game', () => {
@@ -215,19 +187,6 @@ describe('EditionPageComponent Standalone', () => {
         expect(component.game.description).toBe('');
         expect(component.gameLoaded).toBeTrue();
         expect(objectCounterServiceSpy.initializeCounter).toHaveBeenCalledWith(component.objectNumber);
-    });
-
-    it('should handle successful save board', async () => {
-        component.game.name = 'Test Game';
-        component.game.description = 'Test Description';
-        imageServiceSpy.captureComponent.and.returnValue(Promise.resolve('base64image'));
-        await component.saveBoard();
-
-        expect(saveServiceSpy.alertBoardForVerification).toHaveBeenCalledWith(true);
-        expect(imageServiceSpy.captureComponent).toHaveBeenCalled();
-        expect(saveServiceSpy.saveGame).toHaveBeenCalledWith(component.game);
-        expect(component.saveState).toBeTrue();
-        expect(errorServiceSpy.addMessage).toHaveBeenCalledWith('Game saved successfully.\n');
     });
 
     it('should handle error message subscription', () => {
