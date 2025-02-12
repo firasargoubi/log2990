@@ -77,7 +77,7 @@ describe('ItemComponent', () => {
         component.type = ObjectsTypes.BOOTS;
         component.ngOnInit();
 
-        expect(component.spawnCounter).toBe(0);
+        expect(component.spawnCounter).toBeUndefined();
         expect(component.isPlaced).toBe(false);
     });
 
