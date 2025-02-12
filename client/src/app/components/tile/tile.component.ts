@@ -2,10 +2,10 @@ import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ItemComponent } from '@app/components/item/item.component';
-import { GAME_IMAGES } from '@app/Consts/app.constants';
 import { DEFAULT_ITEMS } from '@app/interfaces/default-items';
-import { ObjectsTypes } from '@app/interfaces/objectsTypes';
-import { TileTypes } from '@app/interfaces/tileTypes';
+import { ObjectsTypes } from '@app/interfaces/objects-types';
+import { TileTypes } from '@app/interfaces/tile-types';
+import { GAME_IMAGES } from '@app/Consts/app.constants';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 @Component({
     selector: 'app-tile',
