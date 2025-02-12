@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { TileComponent } from '@app/components/tile/tile.component';
 import { Coordinates } from '@app/interfaces/coordinates';
 import { Game } from '@app/interfaces/game.model';
-import { MapSize } from '@app/interfaces/mapsize';
+import { MapSize } from '@app/interfaces/map-size';
 import { Tile } from '@app/interfaces/tile';
 import { ErrorService } from '@app/services/error.service';
 import { GameService } from '@app/services/game.service';

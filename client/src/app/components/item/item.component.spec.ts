@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ItemComponent } from './item.component';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
-import { ObjectsTypes } from '@app/interfaces/objectsTypes';
+import { ObjectsTypes } from '@app/interfaces/objects-types';
 import { of, Subject } from 'rxjs';
 import { OBJECT_NAMES } from '@app/Consts/app.constants';
 
