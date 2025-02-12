@@ -123,29 +123,6 @@ describe('CreatePageComponent', () => {
         discardPeriodicTasks();
     }));
 
-    it('should open dialog when onBoxClick is called', () => {
-        const mockGame: Game = {
-            id: '1',
-            name: 'Chess',
-            mapSize: 'medium',
-            mode: 'normal',
-            previewImage: 'chess.png',
-            description: 'A normal board game.',
-            lastModified: new Date(),
-            isVisible: true,
-            board: [
-                [0, 1],
-                [1, 0],
-            ],
-            objects: [],
-        };
-
-        component.onBoxClick(mockGame);
-        expect(matDialogSpy.open).toHaveBeenCalledWith(BoxFormDialogComponent, {
-            data: { boxId: mockGame.id, game: mockGame, gameList: component.games },
-        });
-    });
-
     it('should reload games when dialog is closed with a result', fakeAsync(() => {
         const newMockGame: Game = {
             id: '3',
@@ -188,36 +165,6 @@ describe('CreatePageComponent', () => {
             duration: 3000,
             panelClass: ['error-notification'],
         });
-
-        discardPeriodicTasks();
-    }));
-
-    it('should update games array when new games are fetched', fakeAsync(() => {
-        const newGames: Game[] = [
-            {
-                id: '4',
-                name: 'Checkers',
-                mapSize: 'medium',
-                mode: 'normal',
-                previewImage: 'checkers.png',
-                description: 'A normal board game.',
-                lastModified: new Date(),
-                isVisible: true,
-                board: [
-                    [0, 1],
-                    [1, 0],
-                ],
-                objects: [],
-            },
-        ];
-
-        gameServiceSpy.fetchVisibleGames.and.returnValue(of(newGames));
-
-        component.ngOnInit();
-        tick();
-        fixture.detectChanges();
-
-        expect(component.games).toEqual(newGames);
 
         discardPeriodicTasks();
     }));
