@@ -17,7 +17,6 @@ import { NotificationService } from '@app/services/notification.service';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { SaveService } from '@app/services/save.service';
 import { catchError, EMPTY, tap } from 'rxjs';
-import { OBJECT_NUMBER } from '@app/Consts/app.constants';
 
 @Component({
     selector: 'app-game-page',
