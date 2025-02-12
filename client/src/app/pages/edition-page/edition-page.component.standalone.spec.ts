@@ -87,7 +87,7 @@ describe('EditionPageComponent Standalone', () => {
         imageServiceSpy = jasmine.createSpyObj('ImageService', ['captureComponent']);
         notificationServiceSpy = jasmine.createSpyObj('NotificationService', ['showSuccess', 'showError']);
         objectCounterServiceSpy = jasmine.createSpyObj('ObjectCounterService', ['initializeCounter']);
-c:\Users\Yassine\AppData\Local\Packages\MicrosoftWindows.Client.Core_cw5n1h2txyewy\TempState\ScreenClip\{62C77C13-8333-4BF9-A81A-510E2CC30EC5}.png
+
         await TestBed.configureTestingModule({
             imports: [FormsModule, EditionPageComponent],
             providers: [
