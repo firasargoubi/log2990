@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { EditionPageComponent } from './edition-page.component';
 import { ActivatedRoute, provideRouter, Routes } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
 import { of, Subject } from 'rxjs';
 import { ErrorService } from '@app/services/error.service';
@@ -35,7 +34,7 @@ describe('EditionPageComponent', () => {
         const objectCounterServiceSpy = jasmine.createSpyObj('ObjectCounterService', ['initializeCounter']);
 
         TestBed.configureTestingModule({
-            imports: [FormsModule, RouterTestingModule, EditionPageComponent],
+            imports: [FormsModule, EditionPageComponent],
             providers: [
                 {
                     provide: ActivatedRoute,

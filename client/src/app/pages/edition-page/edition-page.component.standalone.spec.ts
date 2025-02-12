@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable max-classes-per-file */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
+import { ActivatedRoute, provideRouter, Routes } from '@angular/router';
 import { Component, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { of, Subject, throwError } from 'rxjs';
@@ -16,9 +16,10 @@ import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { BoardComponent } from '@app/components/board/board.component';
 import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
-//import { EDITION_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+// import { EDITION_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 
 // Mock Components
+const routes: Routes = [];
 
 @Component({
     selector: 'app-board',
@@ -86,9 +87,9 @@ describe('EditionPageComponent Standalone', () => {
         imageServiceSpy = jasmine.createSpyObj('ImageService', ['captureComponent']);
         notificationServiceSpy = jasmine.createSpyObj('NotificationService', ['showSuccess', 'showError']);
         objectCounterServiceSpy = jasmine.createSpyObj('ObjectCounterService', ['initializeCounter']);
-
+c:\Users\Yassine\AppData\Local\Packages\MicrosoftWindows.Client.Core_cw5n1h2txyewy\TempState\ScreenClip\{62C77C13-8333-4BF9-A81A-510E2CC30EC5}.png
         await TestBed.configureTestingModule({
-            imports: [FormsModule, RouterTestingModule, EditionPageComponent],
+            imports: [FormsModule, EditionPageComponent],
             providers: [
                 {
                     provide: ActivatedRoute,
@@ -105,6 +106,7 @@ describe('EditionPageComponent Standalone', () => {
                 { provide: ImageService, useValue: imageServiceSpy },
                 { provide: NotificationService, useValue: notificationServiceSpy },
                 { provide: ObjectCounterService, useValue: objectCounterServiceSpy },
+                provideRouter(routes),
             ],
         }).compileComponents();
 
@@ -230,7 +232,7 @@ describe('EditionPageComponent Standalone', () => {
 
     it('should handle error message subscription', () => {
         const errorMessage = new Subject<string>();
-        const testMessage = "test";
+        const testMessage = 'test';
         errorServiceSpy.message$ = errorMessage;
         component.ngOnInit();
         errorMessage.next(testMessage);

@@ -12,6 +12,7 @@ import { GameService } from '@app/services/game.service';
 import { MouseService } from '@app/services/mouse.service';
 import { SaveService } from '@app/services/save.service';
 import { TileService } from '@app/services/tile.service';
+import { OBJECT_MULTIPLIER } from '@app/Consts/app.constants';
 
 const RIGHT_CLICK = 2;
 @Component({
@@ -81,8 +82,8 @@ export class BoardComponent implements OnInit {
             for (let i = 0; i < this.mapSize; i++) {
                 const row: Tile[] = [];
                 for (let j = 0; j < this.mapSize; j++) {
-                    const tileType = this.game.board[i][j] % 10;
-                    const objectType = Math.floor(this.game.board[i][j] / 10);
+                    const tileType = this.game.board[i][j] % OBJECT_MULTIPLIER;
+                    const objectType = Math.floor(this.game.board[i][j] / OBJECT_MULTIPLIER);
                     row.push({ type: tileType, object: objectType, x: i, y: j, id: `${i}-${j}` });
                 }
                 this.board.push(row);
@@ -117,7 +118,6 @@ export class BoardComponent implements OnInit {
 
     onMouseDownBoard(event: MouseEvent, tile: Tile) {
         this.mouseService.onMouseDown({ x: tile.x, y: tile.y });
-        console.log(tile);
         if (event.button === RIGHT_CLICK) {
             if (tile.object) {
                 this.deleteObject(tile);
