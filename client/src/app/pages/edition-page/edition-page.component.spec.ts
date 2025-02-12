@@ -1,22 +1,19 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { EditionPageComponent } from './edition-page.component';
 import { HttpClient, HttpHandler } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
-import { Router } from '@angular/router';
-import { SaveService } from '@app/services/save.service';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ErrorService } from '@app/services/error.service';
 import { GameService } from '@app/services/game.service';
+import { SaveService } from '@app/services/save.service';
+import { of } from 'rxjs';
+import { EditionPageComponent } from './edition-page.component';
 
-
-describe('EditionPageComponent', ()=> {
+describe('EditionPageComponent', () => {
     let component: EditionPageComponent;
     let fixture: ComponentFixture<EditionPageComponent>;
     let router: Router;
     let saveService: SaveService;
     let errorService: ErrorService;
     let gameService: GameService;
-    
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -32,7 +29,7 @@ describe('EditionPageComponent', ()=> {
                 { provide: SaveService, useValue: jasmine.createSpyObj('SaveService', ['alertBoardForVerification', 'saveGame']) },
                 { provide: ErrorService, useValue: jasmine.createSpyObj('ErrorService', ['addMessage', 'message$']) },
                 { provide: GameService, useValue: jasmine.createSpyObj('GameService', ['fetchGameById']) },
-                  ],
+            ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(EditionPageComponent);
@@ -41,7 +38,7 @@ describe('EditionPageComponent', ()=> {
         saveService = TestBed.inject(SaveService);
         errorService = TestBed.inject(ErrorService);
         gameService = TestBed.inject(GameService);
-             fixture.detectChanges();
+        fixture.detectChanges();
     });
 
     it('should create', () => {

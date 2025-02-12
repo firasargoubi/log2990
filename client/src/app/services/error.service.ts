@@ -11,7 +11,4 @@ export class ErrorService {
         this.message.next(message);
         this.message.next('\n');
     }
-    showError(message: string) {
-        console.error(message);
-    }
 }
