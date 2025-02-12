@@ -36,7 +36,7 @@ export class BoardComponent implements OnInit {
     @ViewChildren(TileComponent) tileComponents!: QueryList<TileComponent>;
     board: Tile[][] = [];
     selectedTiles: Coordinates[] = [];
-    objectHeld: boolean=false;
+    objectHeld: boolean = false;
     mouseService = inject(MouseService);
     tileService = inject(TileService);
     saveService = inject(SaveService);

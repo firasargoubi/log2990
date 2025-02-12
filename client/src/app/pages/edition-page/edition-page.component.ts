@@ -1,6 +1,5 @@
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { Component, ElementRef, inject, ViewChild } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, ElementRef, inject, ViewChild, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { BoardComponent } from '@app/components/board/board.component';
@@ -24,7 +23,7 @@ import { catchError, EMPTY, tap } from 'rxjs';
     styleUrls: ['./edition-page.component.scss'],
     imports: [FormsModule, BoardComponent, TileOptionsComponent, ObjectsComponent, RouterLink, DragDropModule],
 })
-export class EditionPageComponent {
+export class EditionPageComponent implements OnInit {
     @ViewChild('board', { static: false }) boardElement: ElementRef;
     notificationService = inject(NotificationService);
     game: Game = {
@@ -55,10 +54,6 @@ export class EditionPageComponent {
         private route: ActivatedRoute,
         private router: Router,
     ) {
-        this.errorService.message$.pipe(takeUntilDestroyed()).subscribe((message: string) => {
-            this.errorMessage += message;
-            this.showErrorPopup = true;
-        });
         this.gameLoaded = false;
         this.game.id = this.route.snapshot.params['id'];
         this.game.mode = this.route.snapshot.queryParams['mode'] || 'normal';
@@ -90,6 +85,13 @@ export class EditionPageComponent {
             default:
                 return OBJECT_COUNT.small;
         }
+    }
+
+    ngOnInit() {
+        this.errorService.message$.pipe().subscribe((message: string) => {
+            this.errorMessage += message;
+            this.showErrorPopup = true;
+        });
     }
 
     async saveBoard() {
