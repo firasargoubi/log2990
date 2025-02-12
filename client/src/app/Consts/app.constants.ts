@@ -133,3 +133,4 @@ export const OBJECT_COUNT = {
     medium: 4,
     large: 6,
 };
+export const OBJECT_MULTIPLIER = 10;
