@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BoardComponent } from './board.component';
@@ -36,6 +37,7 @@ describe('BoardComponent', () => {
         tileServiceSpy = jasmine.createSpyObj('TileService', ['modifyTile', 'copyTileTool', 'getToolSaved'], { currentTool: 0, toolSaved: 0 });
         saveServiceSpy = jasmine.createSpyObj('SaveService', ['verifyBoard'], { isSave$: new Subject<boolean>(), isReset$: of(false) });
         gameServiceSpy = jasmine.createSpyObj('GameService', ['fetchGames']);
+        errorServiceSpy = jasmine.createSpyObj('ErrorService', ['handleError']);
 
         await TestBed.configureTestingModule({
             imports: [TileComponent],
