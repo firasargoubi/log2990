@@ -9,6 +9,7 @@ describe('ItemComponent', () => {
     let component: ItemComponent;
     let fixture: ComponentFixture<ItemComponent>;
     let objectCounterServiceSpy: jasmine.SpyObj<ObjectCounterService>;
+    let mockObjectCounterService: jasmine.SpyObj<ObjectCounterService>;
 
     beforeEach(async () => {
         objectCounterServiceSpy = jasmine.createSpyObj('ObjectCounterService', [], {
@@ -28,6 +29,32 @@ describe('ItemComponent', () => {
     it('should create', () => {
         expect(component).toBeTruthy();
     });
+
+    it('should subscribe to spawnCounter$ when type is SPAWN', () => {
+        mockObjectCounterService.spawnCounter$ = of(5); // Simule un observable émettant 5
+        component.type = ObjectsTypes.SPAWN;
+
+        component.ngOnInit(); // Simule le cycle de vie Angular
+
+        expect(component.spawnCounter).toBe(5);
+    });
+
+    it('should subscribe to counter$ when type is RANDOM', () => {
+        mockObjectCounterService.counter$ = of(10); // Simule un observable émettant 10
+        component.type = ObjectsTypes.RANDOM;
+
+        component.ngOnInit(); // Simule le cycle de vie Angular
+
+        expect(component.spawnCounter).toBe(10);
+    });
+
+    it('should not subscribe if type is neither SPAWN nor RANDOM', () => {
+        component.type = 999; // Type inexistant
+        component.ngOnInit(); 
+
+        expect(component.spawnCounter).toBeUndefined();
+    });
+});
 
     it('should return "assets/objects/undefined.png" when type is invalid in image getter', () => {
         component.type = 999; // Invalid type
