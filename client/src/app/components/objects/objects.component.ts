@@ -56,18 +56,6 @@ export class ObjectsComponent implements OnInit, OnDestroy {
         }
     }
 
-    adjustObjectsColor(): void {
-        this.items.forEach((item) => {
-            if (item.type === ObjectsTypes.SPAWN) {
-                if (item.spawnCounter === 1) {
-                    item.isPlaced = true;
-                }
-            } else {
-                item.isPlaced = false;
-            }
-        });
-    }
-
     generateRange(start: number, end: number): number[] {
         return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     }
@@ -82,7 +70,6 @@ export class ObjectsComponent implements OnInit, OnDestroy {
             draggedItem.isPlaced = false;
             event.previousContainer.data.splice(event.previousIndex, 1);
             this.incrementCounter(draggedItem);
-            this.adjustObjectsColor();
         }
     }
 }
