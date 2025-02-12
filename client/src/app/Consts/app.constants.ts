@@ -87,3 +87,9 @@ export const GAME_SIZE = {
     medium: 'Moyenne',
     large: 'Grande',
 };
+
+export const OBJECT_NUMBER = {
+    small: 2,
+    medium: 4,
+    large: 6,
+};

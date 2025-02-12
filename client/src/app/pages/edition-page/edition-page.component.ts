@@ -16,6 +16,7 @@ import { NotificationService } from '@app/services/notification.service';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { SaveService } from '@app/services/save.service';
 import { catchError, EMPTY, tap } from 'rxjs';
+import { OBJECT_NUMBER } from '@app/Consts/app.constants';
 
 @Component({
     selector: 'app-game-page',
@@ -81,13 +82,13 @@ export class EditionPageComponent {
     get objectNumber(): number {
         switch (this.game.mapSize) {
             case 'small':
-                return 2;
+                return OBJECT_NUMBER.small;
             case 'medium':
-                return 4;
+                return OBJECT_NUMBER.medium;
             case 'large':
-                return 6;
+                return OBJECT_NUMBER.large;
             default:
-                return 2;
+                return OBJECT_NUMBER.small;
         }
     }
 
