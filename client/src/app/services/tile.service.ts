@@ -21,4 +21,11 @@ export class TileService {
             tile.type = this.currentTool;
         }
     }
+
+    getToolSaved() {
+        if (this.toolSaved) {
+            this.currentTool = this.toolSaved;
+            this.toolSaved = 0;
+        }
+    }
 }

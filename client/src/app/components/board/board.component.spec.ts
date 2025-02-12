@@ -33,7 +33,7 @@ describe('BoardComponent', () => {
 
     beforeEach(async () => {
         mouseServiceSpy = jasmine.createSpyObj('MouseService', ['onMouseUp', 'onMouseDown', 'onMouseMove']);
-        tileServiceSpy = jasmine.createSpyObj('TileService', ['modifyTile', 'copyTileTool'], { currentTool: 0, toolSaved: 0 });
+        tileServiceSpy = jasmine.createSpyObj('TileService', ['modifyTile', 'copyTileTool', 'getToolSaved'], { currentTool: 0, toolSaved: 0 });
         saveServiceSpy = jasmine.createSpyObj('SaveService', ['verifyBoard'], { isSave$: new Subject<boolean>(), isReset$: of(false) });
         errorServiceSpy = jasmine.createSpyObj('ErrorService', ['showError']);
         gameServiceSpy = jasmine.createSpyObj('GameService', ['fetchGames']);
@@ -195,6 +195,7 @@ describe('BoardComponent', () => {
         component.onMouseUpBoard();
         expect(component.objectHeld).toBeFalsy('');
         expect(mouseServiceSpy.onMouseUp).toHaveBeenCalled();
+        expect(tileServiceSpy.getToolSaved).toHaveBeenCalled();
     });
 
     it('should call onMouseMove when onMouseOverBoard is called', () => {
@@ -290,13 +291,6 @@ describe('BoardComponent', () => {
         expect(component.mapSize).toBe(MapSize.SMALL);
     });
 
-    it('should set currentTool to toolSaved and reset toolSaved on mouse up', () => {
-        tileServiceSpy.toolSaved = 1;
-        tileServiceSpy.currentTool = 2;
-        component.onMouseUpBoard();
-        expect(tileServiceSpy.currentTool).toBe(1);
-        expect(tileServiceSpy.toolSaved).toBe(0);
-    });
     it('should subscribe to isSave$ observable in constructor', () => {
         const reloadTilesSpy = spyOn(component, 'reloadTiles');
         (saveServiceSpy.isSave$ as Subject<boolean>).next(true);

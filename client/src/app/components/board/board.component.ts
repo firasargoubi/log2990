@@ -105,10 +105,7 @@ export class BoardComponent implements OnInit {
     onMouseUpBoard(): void {
         this.mouseService.onMouseUp();
         this.objectHeld = false;
-        if (this.tileService.toolSaved !== 0) {
-            this.tileService.currentTool = this.tileService.toolSaved;
-            this.tileService.toolSaved = 0;
-        }
+        this.tileService.getToolSaved();
     }
 
     onMouseOverBoard(tile: Tile) {
