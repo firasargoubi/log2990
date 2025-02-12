@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { TileComponent } from '@app/components/tile/tile.component';
 import { Tile } from '@app/interfaces/tile';
-import { TileTypes } from '@app/interfaces/tileTypes';
+import { TileTypes } from '@app/interfaces/tile-types';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TileService } from '@app/services/tile.service';
 

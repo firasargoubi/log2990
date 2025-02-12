@@ -2,9 +2,9 @@ import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ItemComponent } from '@app/components/item/item.component';
-import { DEFAULT_OBJECTS } from '@app/interfaces/default-objects';
-import { ObjectsTypes } from '@app/interfaces/objectsTypes';
-import { TileTypes } from '@app/interfaces/tileTypes';
+import { DEFAULT_ITEMS } from '@app/interfaces/default-items';
+import { ObjectsTypes } from '@app/interfaces/objects-types';
+import { TileTypes } from '@app/interfaces/tile-types';
 import { GAME_IMAGES } from '@app/Consts/app.constants';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 @Component({
@@ -65,7 +65,7 @@ export class TileComponent implements OnInit {
     }
 
     getObjectById(id: number): ItemComponent | null {
-        const objectData = DEFAULT_OBJECTS.find((obj) => obj.id === id);
+        const objectData = DEFAULT_ITEMS.find((obj) => obj.id === id);
         if (objectData) {
             this.objectID = id;
             const item = new ItemComponent(this.counterService);
@@ -99,11 +99,7 @@ export class TileComponent implements OnInit {
         if (event.previousContainer.id !== 'objects-container') {
             this.placedItem.push(draggedItem);
             event.previousContainer.data.splice(event.previousIndex, 1);
-        } else if (
-            this.placedItem.length === 0 &&
-            this.count &&
-            (draggedItem.type === ObjectsTypes.SPAWN)
-        ) {
+        } else if (this.placedItem.length === 0 && this.count && draggedItem.type === ObjectsTypes.SPAWN) {
             this.placedItem.push(draggedItem);
             this.decrementCounter(draggedItem);
         }

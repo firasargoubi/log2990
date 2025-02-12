@@ -44,6 +44,7 @@
     }
 
     .game-info ul li {
+        list-style-type: none;
         font-size: 12px;
     }
 
@@ -83,27 +84,8 @@
             color: #ff4d4d;
         }
     }
+
 }
-
-
-.game-info {
-    margin-top: 8px;
-    text-align: center; 
-
-    ul {
-        list-style: none;
-        padding: 0;
-        margin: 0; 
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    }
-
-    li {
-        margin-bottom: 6px; 
-    }
-
     
     .game-name {
         color: #9eba63;
@@ -131,6 +113,6 @@
             0 2px 4px rgba(0, 0, 0, 0.5),
             0 1px 2px rgba(0, 0, 0, 0.5);
     }
-}
+
 
 

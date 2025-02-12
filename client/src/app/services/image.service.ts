@@ -14,8 +14,6 @@ export class ImageService {
             const canvas = await html2canvas(componentElement, {
                 logging: false,
                 backgroundColor: null,
-                useCORS: true,
-                allowTaint: true,
             });
 
             return canvas.toDataURL('image/png');

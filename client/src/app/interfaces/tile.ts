@@ -3,7 +3,7 @@ export interface Tile {
     x: number;
     y: number;
     id: string;
-    object: number; // L'objet placé sur la tuile
+    object: number;
     seen?: boolean;
     selected?: boolean;
 }

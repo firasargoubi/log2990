@@ -1,11 +1,10 @@
 import { CdkDrag } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ObjectsTypes } from '@app/interfaces/objectsTypes';
+import { ObjectsTypes } from '@app/interfaces/objects-types';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
-import { GAME_IMAGES } from '@app/Consts/app.constants';
+import { GAME_IMAGES, OBJECT_NAMES, OBJECTS_DESCRIPTION } from '@app/Consts/app.constants';
 
 @Component({
     selector: 'app-item',
@@ -22,27 +21,20 @@ export class ItemComponent implements OnInit {
     objectCounterService: ObjectCounterService;
 
     descriptions: { [key: string]: string } = {
-        [ObjectsTypes.BOOTS]: 'Les bottes magiques vous permettront de vous déplacer à une vitesse SUPERSONIQUE!',
-        [ObjectsTypes.SWORD]: 'Cette épée effectue plus de dégats sur vos ennemis!',
-        [ObjectsTypes.POTION]: 'Figez le temps et profitez-en pour vous déplacer une fois de plus que vos adversaires...',
-        [ObjectsTypes.WAND]: "Cette mystérieuse baguette vous permet d'ensorceler un de vos adversaires et de le dérouter de son chemin!",
-        [ObjectsTypes.CRYSTAL]: "Vos talents de clairvoyance vous permettent d'identifier tous les points faibles d'un de vos ennemis.",
-        [ObjectsTypes.JUICE]: 'Ne paniquez pas, ce nectar soignera toutes vos blessures!',
-        [ObjectsTypes.SPAWN]: "Cet objet indique l'endroit où une bataille épique est sur le point d'avoir lieu",
-        [ObjectsTypes.RANDOM]: 'Ce petit gnome farceur a un cadeau pour vous. À vos risque et périls...',
+        [ObjectsTypes.BOOTS]: OBJECTS_DESCRIPTION.boots,
+        [ObjectsTypes.SWORD]: OBJECTS_DESCRIPTION.sword,
+        [ObjectsTypes.POTION]: OBJECTS_DESCRIPTION.potion,
+        [ObjectsTypes.WAND]: OBJECTS_DESCRIPTION.wand,
+        [ObjectsTypes.CRYSTAL]: OBJECTS_DESCRIPTION.crystal,
+        [ObjectsTypes.JUICE]: OBJECTS_DESCRIPTION.berryJuice,
+        [ObjectsTypes.SPAWN]: OBJECTS_DESCRIPTION.vortex,
+        [ObjectsTypes.RANDOM]: OBJECTS_DESCRIPTION.gnome,
     };
 
     constructor(objectCounterService: ObjectCounterService) {
         this.objectCounterService = objectCounterService;
-        if (this.type === ObjectsTypes.SPAWN) {
-            this.objectCounterService.spawnCounter$.pipe(takeUntilDestroyed()).subscribe((value) => {
-                this.spawnCounter = value;
-                if (value === 0) {
-                    this.isPlaced = true;
-                }
-            });
-        }
     }
+
     get image(): string {
         switch (this.type) {
             case ObjectsTypes.BOOTS:
@@ -69,27 +61,35 @@ export class ItemComponent implements OnInit {
     get name(): string {
         switch (this.type) {
             case ObjectsTypes.BOOTS:
-                return GAME_IMAGES.boots;
+                return OBJECT_NAMES.boots;
             case ObjectsTypes.SWORD:
-                return GAME_IMAGES.sword;
+                return OBJECT_NAMES.sword;
             case ObjectsTypes.POTION:
-                return GAME_IMAGES.potion;
+                return OBJECT_NAMES.potion;
             case ObjectsTypes.WAND:
-                return GAME_IMAGES.wand;
+                return OBJECT_NAMES.wand;
             case ObjectsTypes.CRYSTAL:
-                return GAME_IMAGES.crystalBall;
+                return OBJECT_NAMES.crystalBall;
             case ObjectsTypes.JUICE:
-                return GAME_IMAGES.berryJuice;
+                return OBJECT_NAMES.berryJuice;
             case ObjectsTypes.SPAWN:
-                return GAME_IMAGES.vortex;
+                return OBJECT_NAMES.vortex;
             case ObjectsTypes.RANDOM:
-                return GAME_IMAGES.gnome;
+                return OBJECT_NAMES.gnome;
             default:
-                return GAME_IMAGES.undefined;
+                return OBJECT_NAMES.undefined;
         }
     }
 
     ngOnInit(): void {
+        if (this.type === ObjectsTypes.SPAWN) {
+            this.objectCounterService.spawnCounter$.pipe().subscribe((value) => {
+                this.spawnCounter = value;
+                if (value === 0) {
+                    this.isPlaced = true;
+                }
+            });
+        }
         this.itemAdded.emit(this);
     }
 }

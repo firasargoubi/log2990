@@ -3,8 +3,8 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { TileComponent } from './tile.component';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { ItemComponent } from '@app/components/item/item.component';
-import { TileTypes } from '@app/interfaces/tileTypes';
-import { ObjectsTypes } from '@app/interfaces/objectsTypes';
+import { TileTypes } from '@app/interfaces/tile-types';
+import { ObjectsTypes } from '@app/interfaces/objects-types';
 import { of } from 'rxjs';
 
 const SPAWN_COUNTER = 5;

@@ -11,7 +11,7 @@ import { of, Subject } from 'rxjs';
 import { Tile } from '@app/interfaces/tile';
 import { Game } from '@app/interfaces/game.model';
 import { Coordinates } from '@app/interfaces/coordinates';
-import { MapSize } from '@app/interfaces/mapsize';
+import { MapSize } from '@app/interfaces/map-size';
 
 const MAP_SIZE = 10;
 const TILE_VALUE = 12;
@@ -20,7 +20,7 @@ const CUSTOM_GAME = {
     name: 'Wow',
     description: 'Avec Item',
     mapSize: 'small',
-    board: [Array(MAP_SIZE).fill(Array(MAP_SIZE).fill(TILE_VALUE))],
+    board: Array.from({ length: MAP_SIZE }, () => Array(MAP_SIZE).fill(TILE_VALUE)),
 };
 describe('BoardComponent', () => {
     let component: BoardComponent;
@@ -35,7 +35,6 @@ describe('BoardComponent', () => {
         mouseServiceSpy = jasmine.createSpyObj('MouseService', ['onMouseUp', 'onMouseDown', 'onMouseMove']);
         tileServiceSpy = jasmine.createSpyObj('TileService', ['modifyTile', 'copyTileTool', 'getToolSaved'], { currentTool: 0, toolSaved: 0 });
         saveServiceSpy = jasmine.createSpyObj('SaveService', ['verifyBoard'], { isSave$: new Subject<boolean>(), isReset$: of(false) });
-        errorServiceSpy = jasmine.createSpyObj('ErrorService', ['showError']);
         gameServiceSpy = jasmine.createSpyObj('GameService', ['fetchGames']);
 
         await TestBed.configureTestingModule({
