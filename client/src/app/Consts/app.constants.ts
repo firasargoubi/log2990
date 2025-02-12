@@ -88,7 +88,21 @@ export const GAME_SIZE = {
     large: 'Grande',
 };
 
-export const OBJECT_NUMBER = {
+export const EDITION_PAGE_CONSTANTS = {
+    errorGameNameRequired: 'Le nom du jeu est requis.',
+    errorGameDescriptionRequired: 'La description du jeu est requise.',
+    errorInvalidName: 'Le nom est invalide.',
+    successGameLoaded: 'Jeu chargé avec succès.',
+    errorGameLoad: 'Impossible de charger le jeu.',
+    successGameSaved: 'Jeu sauvegardé avec succès.',
+};
+export const MAP_SIZES = {
+    small: 'small',
+    medium: 'medium',
+    large: 'large',
+};
+
+export const OBJECT_COUNT = {
     small: 2,
     medium: 4,
     large: 6,
