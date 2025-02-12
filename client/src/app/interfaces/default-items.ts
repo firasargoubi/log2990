@@ -1,6 +1,6 @@
-import { Object } from '@app/interfaces/object';
+import { Item } from '@app/interfaces/items';
 
-export const DEFAULT_OBJECTS: Object[] = [
+export const DEFAULT_ITEMS: Item[] = [
     {
         name: 'Bottes magiques',
         id: 1,
