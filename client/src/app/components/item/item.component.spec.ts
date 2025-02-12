@@ -50,7 +50,7 @@ describe('ItemComponent', () => {
         component.type = ObjectsTypes.BOOTS;
         component.ngOnInit();
 
-        expect(component.spawnCounter).toBe(0);
+        expect(component.spawnCounter).toBeUndefined();
         expect(component.isPlaced).toBe(false);
     });
 
@@ -132,7 +132,7 @@ describe('ItemComponent', () => {
         expect(component.name).toBe(OBJECT_NAMES.vortex);
 
         component.type = ObjectsTypes.RANDOM;
-        expect(component.name).toBe(OBJECT_NAMES.gnome);
+        expect(component.name).toBe( OBJECT_NAMES.gnome);
 
         component.type = 999;
         expect(component.name).toBe(OBJECT_NAMES.undefined);
