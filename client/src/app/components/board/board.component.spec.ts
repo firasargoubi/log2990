@@ -13,6 +13,15 @@ import { Game } from '@app/interfaces/game.model';
 import { Coordinates } from '@app/interfaces/coordinates';
 import { MapSize } from '@app/interfaces/mapsize';
 
+const MAP_SIZE = 10;
+const TILE_VALUE = 12;
+const CUSTOM_GAME = {
+    id: 'abcd',
+    name: 'Wow',
+    description: 'Avec Item',
+    mapSize: 'small',
+    board: [Array(MAP_SIZE).fill(Array(MAP_SIZE).fill(TILE_VALUE))],
+};
 describe('BoardComponent', () => {
     let component: BoardComponent;
     let fixture: ComponentFixture<BoardComponent>;
@@ -23,7 +32,7 @@ describe('BoardComponent', () => {
     let gameServiceSpy: jasmine.SpyObj<GameService>;
 
     beforeEach(async () => {
-        mouseServiceSpy = jasmine.createSpyObj('MouseService', ['onMouseUp', 'onMouseDown', 'onMouseMove', 'onMouseLeave']);
+        mouseServiceSpy = jasmine.createSpyObj('MouseService', ['onMouseUp', 'onMouseDown', 'onMouseMove']);
         tileServiceSpy = jasmine.createSpyObj('TileService', ['modifyTile', 'copyTileTool'], { currentTool: 0, toolSaved: 0 });
         saveServiceSpy = jasmine.createSpyObj('SaveService', ['verifyBoard'], { isSave$: new Subject<boolean>(), isReset$: of(false) });
         errorServiceSpy = jasmine.createSpyObj('ErrorService', ['showError']);
@@ -57,6 +66,17 @@ describe('BoardComponent', () => {
         expect(component.board[0].length).toBe(component.mapSize);
         expect(component.board[0][0].type).toBe(0);
         expect(component.board[0][0].object).toBe(0);
+    });
+
+    it('should initialize board with values of board if id provided', () => {
+        component.game.id = CUSTOM_GAME.id;
+        component.game.board = CUSTOM_GAME.board;
+        component.game.mapSize = CUSTOM_GAME.mapSize;
+        component.initializeBoard();
+        expect(component.board.length).toBe(component.mapSize);
+        expect(component.board[0].length).toBe(component.mapSize);
+        expect(component.board[0][0].type).toBe(2);
+        expect(component.board[0][0].object).toBe(1);
     });
 
     it('should modify tile on mouse over if mouse is pressed', () => {
@@ -109,7 +129,7 @@ describe('BoardComponent', () => {
 
     it('should trigger mouse leave event', () => {
         component.onMouseLeaveBoard();
-        expect(mouseServiceSpy.onMouseLeave).toHaveBeenCalled();
+        expect(mouseServiceSpy.onMouseUp).toHaveBeenCalled();
     });
 
     it('should update board when loading an existing board', () => {
@@ -173,6 +193,7 @@ describe('BoardComponent', () => {
 
     it('should call onMouseUp when onMouseUpBoard is called', () => {
         component.onMouseUpBoard();
+        expect(component.objectHeld).toBeFalsy('');
         expect(mouseServiceSpy.onMouseUp).toHaveBeenCalled();
     });
 
@@ -221,7 +242,7 @@ describe('BoardComponent', () => {
 
     it('should call onMouseLeave when onMouseLeaveBoard is called', () => {
         component.onMouseLeaveBoard();
-        expect(mouseServiceSpy.onMouseLeave).toHaveBeenCalled();
+        expect(mouseServiceSpy.onMouseUp).toHaveBeenCalled();
     });
 
     it('should update tile object when onObjectChanged is called', () => {
@@ -265,20 +286,16 @@ describe('BoardComponent', () => {
     });
 
     it('should return the default map size for an unknown size', () => {
+        component.game.mapSize = '';
         expect(component.mapSize).toBe(MapSize.SMALL);
     });
 
-    it('should call onMouseUp when onMouseUpBoard is called', () => {
-        component.onMouseUpBoard();
-        expect(mouseServiceSpy.onMouseUp).toHaveBeenCalled();
-    });
-
     it('should set currentTool to toolSaved and reset toolSaved on mouse up', () => {
-        component.tileService.toolSaved = 1;
-        component.tileService.currentTool = 2;
+        tileServiceSpy.toolSaved = 1;
+        tileServiceSpy.currentTool = 2;
         component.onMouseUpBoard();
-        expect(component.tileService.currentTool).toBe(0);
-        expect(component.tileService.toolSaved).toBe(0);
+        expect(tileServiceSpy.currentTool).toBe(1);
+        expect(tileServiceSpy.toolSaved).toBe(0);
     });
     it('should subscribe to isSave$ observable in constructor', () => {
         const reloadTilesSpy = spyOn(component, 'reloadTiles');
