@@ -2,7 +2,7 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ItemComponent } from '@app/components/item/item.component';
-import { ObjectsTypes } from '@app/interfaces/objects-types';
+import { ObjectsTypes } from '@app/Consts/app.constants';
 import { TileTypes } from '@app/interfaces/tile-types';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { of } from 'rxjs';
@@ -170,6 +170,32 @@ describe('TileComponent', () => {
         component.drop(event);
         expect(component.placedItem.length).toBe(1);
         expect(component.objectID).toBe(item.type);
+    });
+
+    it('should add dragged item if dropped from another tile and the tile is empty', () => {
+        const item = new ItemComponent(counterService);
+        item.type = ObjectsTypes.SPAWN;
+
+        spyOn(component, 'isTileEmpty').and.returnValue(true); // Simuler une tuile vide
+        spyOn(component.objectMoved, 'emit');
+
+        const event: CdkDragDrop<ItemComponent[]> = {
+            previousContainer: { data: [item], id: 'tile-container-1' } as any, // Autre container
+            container: { data: [], id: 'tile-container-2' } as any,
+            previousIndex: 0,
+            currentIndex: 0,
+            item: {} as any,
+            isPointerOverContainer: true,
+            distance: { x: 0, y: 0 },
+            dropPoint: { x: 0, y: 0 },
+            event: {} as any,
+        };
+
+        component.drop(event);
+
+        expect(component.placedItem.length).toBe(1);
+        expect(component.placedItem[0]).toBe(item);
+        expect(component.objectMoved.emit).toHaveBeenCalledWith(true);
     });
 
     it('should not change if dragged to an illegal place', () => {
