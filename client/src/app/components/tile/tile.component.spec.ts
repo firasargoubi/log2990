@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { TileComponent } from './tile.component';
-import { ObjectCounterService } from '@app/services/objects-counter.service';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ItemComponent } from '@app/components/item/item.component';
-import { TileTypes } from '@app/interfaces/tile-types';
 import { ObjectsTypes } from '@app/interfaces/objects-types';
+import { TileTypes } from '@app/interfaces/tile-types';
+import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { of } from 'rxjs';
+import { TileComponent } from './tile.component';
 
 const SPAWN_COUNTER = 5;
 describe('TileComponent', () => {
@@ -207,5 +207,14 @@ describe('TileComponent', () => {
         expect(component.placedItem.length).toBe(0);
         expect(component.objectID).toBe(0);
         expect(component.objectChanged.emit).toHaveBeenCalledWith(0);
+    });
+
+    it('should return true if placedItem is empty', () => {
+        expect(component.isTileEmpty()).toBeTrue();
+    });
+
+    it('should return false if placedItem is not empty', () => {
+        component.placedItem.push(new ItemComponent(counterService));
+        expect(component.isTileEmpty()).toBeFalse();
     });
 });

@@ -2,10 +2,10 @@ import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ItemComponent } from '@app/components/item/item.component';
+import { GAME_IMAGES } from '@app/Consts/app.constants';
 import { DEFAULT_ITEMS } from '@app/interfaces/default-items';
 import { ObjectsTypes } from '@app/interfaces/objects-types';
 import { TileTypes } from '@app/interfaces/tile-types';
-import { GAME_IMAGES } from '@app/Consts/app.constants';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 @Component({
     selector: 'app-tile',
@@ -89,17 +89,21 @@ export class TileComponent implements OnInit {
         this.counterService.decrementCounter(item.type);
     }
 
+    isTileEmpty(): boolean {
+        return this.placedItem.length === 0;
+    }
+
     drop(event: CdkDragDrop<ItemComponent[]>) {
         const draggedItem = event.previousContainer.data[event.previousIndex];
 
         if (this.type === TileTypes.DoorClosed || this.type === TileTypes.DoorOpen || this.type === TileTypes.Wall) {
             return; // No changes if dragged to an illegal place
         }
-
-        if (event.previousContainer.id !== 'objects-container') {
+        // If swapped with an empty tile, empty the old one and place the new one
+        if (event.previousContainer.id !== 'objects-container' && this.isTileEmpty()) {
             this.placedItem.push(draggedItem);
             event.previousContainer.data.splice(event.previousIndex, 1);
-        } else if (this.placedItem.length === 0 && this.count && draggedItem.type === ObjectsTypes.SPAWN) {
+        } else if (this.isTileEmpty() && this.count && draggedItem.type === ObjectsTypes.SPAWN) {
             this.placedItem.push(draggedItem);
             this.decrementCounter(draggedItem);
         }
