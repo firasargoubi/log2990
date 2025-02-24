@@ -61,6 +61,19 @@ export class CreatePageComponent implements OnInit, OnDestroy {
     }
 
     onBoxClick(game: Game): void {
+        this.gameService.verifyGameAccessible(game.id).subscribe({
+            next: (isAccessible) => {
+                if (isAccessible) {
+                    this.openBoxFormDialog(game);
+                } else {
+                    this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorGameDeleted);
+                }
+            },
+            error: () => this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorGameDeleted),
+        });
+    }
+
+    openBoxFormDialog(game: Game): void {
         const translatedGame = {
             ...game,
             mode: this.translateMode(game.mode),

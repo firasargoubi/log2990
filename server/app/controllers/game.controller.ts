@@ -76,10 +76,14 @@ export class GameController {
             }
         });
 
-        this.router.post('/validateName', async (req: Request, res: Response) => {
+        this.router.get('validate/:id', async (req: Request, res: Response) => {
             try {
-                const nameValid = await this.gameService.validateName(req.body);
-                res.status(StatusCodes.OK).json(nameValid);
+                const game = await this.gameService.getGameById(req.params.id);
+                if (!game || !game.isVisible) {
+                    res.status(StatusCodes.NOT_FOUND).json({ error: 'Game not found' });
+                } else {
+                    res.status(StatusCodes.OK).json(game);
+                }
             } catch (error) {
                 res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
             }

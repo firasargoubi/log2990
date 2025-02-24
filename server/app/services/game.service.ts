@@ -43,8 +43,4 @@ export class GameService {
     async getVisibleGames() {
         return await game.find({ isVisible: true });
     }
-
-    async validateName(gameToValidate: GameData) {
-        return (await game.findOne({ id: { $ne: gameToValidate.id }, name: gameToValidate.name })) ? false : true;
-    }
 }
