@@ -9,12 +9,8 @@ import { GameCreationCardComponent } from '@app/components/game-creation-card/ga
 import { Game } from '@app/interfaces/game.model';
 import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
-import { Observable, Subscription, interval } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { Observable, Subscription, } from 'rxjs';
 import { CREATE_PAGE_CONSTANTS, GAME_MODES, GAME_SIZE } from '@app/Consts/app.constants';
-
-const PULLING_INTERVAL = 5000;
-
 @Component({
     selector: 'app-create-page',
     standalone: true,
@@ -38,18 +34,16 @@ export class CreatePageComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.loadGames();
 
-        this.pollingSubscription = interval(PULLING_INTERVAL)
-            .pipe(switchMap(() => this.gameService.fetchVisibleGames()))
-            .subscribe({
-                next: (updatedGames) => {
-                    this.games = updatedGames.map((game) => ({
-                        ...game,
-                        mode: this.translateMode(game.mode),
-                        mapSize: this.translateSize(game.mapSize),
-                    }));
-                },
-                error: () => this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorRefreshGames),
-            });
+        this.gameService.fetchVisibleGames().subscribe({
+            next: (updatedGames) => {
+                this.games = updatedGames.map((game) => ({
+                    ...game,
+                    mode: this.translateMode(game.mode),
+                    mapSize: this.translateSize(game.mapSize),
+                }));
+            },
+            error: () => this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorRefreshGames),
+        });
     }
 
     translateMode(mode: string): string {
@@ -91,8 +85,8 @@ export class CreatePageComponent implements OnInit, OnDestroy {
             next: (allGames) => {
                 this.games = allGames.map((game) => ({
                     ...game,
-                    mode: this.translateMode(game.mode), // ✅ Always translate mode
-                    mapSize: this.translateSize(game.mapSize), // ✅ Always translate size
+                    mode: this.translateMode(game.mode),
+                    mapSize: this.translateSize(game.mapSize),
                 }));
             },
             error: () => this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorLoadingGames),

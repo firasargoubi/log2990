@@ -4,7 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter, Routes } from '@angular/router';
 import { Component, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { of, Subject } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { EditionPageComponent } from './edition-page.component';
 import { Game } from '@app/interfaces/game.model';
 import { ErrorService } from '@app/services/error.service';
@@ -16,7 +16,7 @@ import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { BoardComponent } from '@app/components/board/board.component';
 import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
-// import { EDITION_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { EDITION_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 
 // Mock Components
 const routes: Routes = [];
@@ -71,7 +71,7 @@ describe('EditionPageComponent Standalone', () => {
 
     beforeEach(async () => {
         // Create spy objects
-        saveServiceSpy = jasmine.createSpyObj('SaveService', ['alertBoardForVerification', 'saveGame'], {
+        saveServiceSpy = jasmine.createSpyObj('SaveService', ['alertBoardForVerification', 'saveGame', 'getGameNames'], {
             isSave$: new Subject<boolean>(),
             isReset$: of(false),
             currentStatus: {},
@@ -85,6 +85,8 @@ describe('EditionPageComponent Standalone', () => {
         gameServiceSpy.fetchGameById.and.returnValue(of(mockGame));
 
         imageServiceSpy = jasmine.createSpyObj('ImageService', ['captureComponent']);
+        imageServiceSpy.captureComponent.and.returnValue(Promise.resolve('data:image/png;base64,test'));
+
         notificationServiceSpy = jasmine.createSpyObj('NotificationService', ['showSuccess', 'showError']);
         objectCounterServiceSpy = jasmine.createSpyObj('ObjectCounterService', ['initializeCounter']);
 
@@ -128,6 +130,7 @@ describe('EditionPageComponent Standalone', () => {
 
         fixture = TestBed.createComponent(EditionPageComponent);
         component = fixture.debugElement.componentInstance;
+        component.gameNames = ['Existing Game'];
         fixture.detectChanges();
     });
 
@@ -189,11 +192,114 @@ describe('EditionPageComponent Standalone', () => {
         expect(objectCounterServiceSpy.initializeCounter).toHaveBeenCalledWith(component.objectNumber);
     });
 
+    it('should call gameservice to find the game if id is provided', () => {
+        component.game.id = '123';
+        component.loadGame();
+        expect(gameServiceSpy.fetchGameById).toHaveBeenCalledWith('123');
+        expect(component.gameLoaded).toBeTrue();
+    });
+
+    it('should show error notification when loading game fails', () => {
+        const errorMessage = 'Error';
+        gameServiceSpy.fetchGameById.and.returnValue(throwError(() => new Error(errorMessage)));
+
+        component.game.id = '123';
+        component.loadGame();
+
+        expect(notificationServiceSpy.showError).toHaveBeenCalledWith(EDITION_PAGE_CONSTANTS.errorGameLoad);
+        expect(component.gameLoaded).toBeTrue();
+    });
+
     it('should handle error message subscription', () => {
-        const errorMessage = new Subject<string>();
         const testMessage = 'test';
-        errorServiceSpy.message$ = errorMessage;
         component.ngOnInit();
-        errorMessage.next(testMessage);
+        (errorServiceSpy.message$ as Subject<string>).next(testMessage);
+        expect(component.errorMessage).toBe(testMessage);
+        expect(component.showErrorPopup).toBeTrue();
+    });
+
+    it('should validate game name is required', async () => {
+        component.game.name = '';
+
+        await component.saveBoard();
+
+        expect(errorServiceSpy.addMessage).toHaveBeenCalledWith(EDITION_PAGE_CONSTANTS.errorGameNameRequired);
+    });
+
+    it('should validate game description is required', async () => {
+        component.game.description = '';
+
+        await component.saveBoard();
+
+        expect(errorServiceSpy.addMessage).toHaveBeenCalledWith(EDITION_PAGE_CONSTANTS.errorGameDescriptionRequired);
+    });
+
+    it('should validate game name is unique', async () => {
+        component.game.name = 'Existing Game';
+
+        await component.saveBoard();
+
+        expect(errorServiceSpy.addMessage).toHaveBeenCalledWith(EDITION_PAGE_CONSTANTS.errorGameNameExists);
+    });
+
+    it('should validate board has valid doors', async () => {
+        saveServiceSpy.currentStatus = { doors: false };
+
+        await component.saveBoard();
+
+        expect(saveServiceSpy.alertBoardForVerification).toHaveBeenCalledWith(true);
+        expect(errorServiceSpy.addMessage).toHaveBeenCalledWith(EDITION_PAGE_CONSTANTS.errorInvalidDoors);
+    });
+
+    it('should validate board has valid spawn points', async () => {
+        saveServiceSpy.currentStatus = { allSpawnPoints: false };
+
+        await component.saveBoard();
+
+        expect(errorServiceSpy.addMessage).toHaveBeenCalledWith(EDITION_PAGE_CONSTANTS.errorInvalidSpawns);
+    });
+
+    it('should validate board is accessible', async () => {
+        saveServiceSpy.currentStatus = { accessible: false };
+
+        await component.saveBoard();
+
+        expect(errorServiceSpy.addMessage).toHaveBeenCalledWith(EDITION_PAGE_CONSTANTS.errorInvalidAccess);
+    });
+
+    it('should validate board has minimum terrain tiles', async () => {
+        saveServiceSpy.currentStatus = { minTerrain: false };
+
+        await component.saveBoard();
+
+        expect(errorServiceSpy.addMessage).toHaveBeenCalledWith(EDITION_PAGE_CONSTANTS.errorInvalidMinTiles);
+    });
+
+    it('should not save if validation errors exist (showErrorPopup is true)', async () => {
+        component.showErrorPopup = true;
+
+        await component.saveBoard();
+
+        expect(imageServiceSpy.captureComponent).not.toHaveBeenCalled();
+        expect(saveServiceSpy.saveGame).not.toHaveBeenCalled();
+    });
+
+    it('should save the game if all validations pass', async () => {
+        component.game.name = 'New Game';
+        component.game.description = 'Valid description';
+        component.showErrorPopup = false;
+        saveServiceSpy.currentStatus = {
+            doors: true,
+            allSpawnPoints: true,
+            accessible: true,
+            minTerrain: true,
+        };
+
+        await component.saveBoard();
+
+        expect(imageServiceSpy.captureComponent).toHaveBeenCalledWith(component.boardElement.nativeElement);
+        expect(saveServiceSpy.saveGame).toHaveBeenCalledWith(component.game);
+        expect(component.saveState).toBeTrue();
+        expect(errorServiceSpy.addMessage).toHaveBeenCalledWith(EDITION_PAGE_CONSTANTS.successGameLoaded);
     });
 });

@@ -85,7 +85,7 @@ describe('TileOptionsComponent', () => {
 
         component.selectTileOption(tile);
 
-        expect(tileServiceSpy.copyTileTool).toHaveBeenCalledWith(0);
+        expect(tileServiceSpy.copyTileTool).toHaveBeenCalledWith(-1);
         component.options.forEach((t) => {
             expect(t.selected).toBeFalse();
         });
