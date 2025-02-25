@@ -1,0 +1,37 @@
+<div class="game-container">
+    <!-- Sidebar Left: Countdown, Player Info, Inventory -->
+    <div class="sidebar-left">
+        <div class="component-box">
+            <app-countdown-timer></app-countdown-timer>
+        </div>
+        <div class="component-box">
+            <app-player-info></app-player-info>
+        </div>
+        <div class="component-box">
+            <app-inventory></app-inventory>
+        </div>
+    </div>
+
+    <!-- Main Content: Game Board -->
+    <div class="main-content">
+        <app-board></app-board>
+    </div>
+
+    <!-- Sidebar Right: Game Info, Chat, Action Buttons -->
+    <div class="sidebar-right">
+        <div class="component-box">
+            <app-game-info></app-game-info>
+        </div>
+        <div class="component-box">
+            <app-messages></app-messages>
+        </div>
+        <div class="component-box">
+            <div class="action-buttons">
+                <button (click)="attack()">Attaquer</button>
+                <button (click)="defend()">Défendre</button>
+                <button (click)="endTurn()">Fin de tour</button>
+                <button (click)="abandon()" routerLink="/home">Abandonner</button>
+            </div>
+        </div>
+    </div>
+</div>

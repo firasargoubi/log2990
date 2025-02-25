@@ -1,0 +1,10 @@
+<div class="player-info">
+    <h3>{{ player.name }}</h3>
+    <img [src]="player.avatar" alt="Player Avatar" class="avatar" />
+    <p><strong>PV:</strong> {{ player.health.current }}/{{ player.health.max }}</p>
+    <p><strong>Vitesse:</strong> {{ player.speed }}</p>
+    <p><strong>Attaque:</strong> {{ player.attack }} ({{ player.attackDice }})</p>
+    <p><strong>Défense:</strong> {{ player.defense }} ({{ player.defenseDice }})</p>
+    <p><strong>Points de mouvement:</strong> {{ player.movement }}</p>
+    <p><strong>Actions restantes:</strong> {{ player.actions }}</p>
+</div>

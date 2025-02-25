@@ -1,0 +1,56 @@
+.game-container {
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr; /* 1:3:1 distribution (gauche, centre, droite) */
+    grid-template-rows: 1fr auto; /* Hauteur de la ligne centrale automatique */
+    gap: 20px; /* Espacement entre les composants */
+    padding: 20px;
+    height: 100vh; /* Prend toute la hauteur de la fenêtre */
+}
+
+.sidebar-left,
+.sidebar-right {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.main-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background-color: #f4f4f4;
+    border: 2px solid #ccc;
+    height: 100%;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.sidebar-left .component-box,
+.sidebar-right .component-box {
+    background-color: #fff;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.component-box h3 {
+    margin: 0 0 10px 0;
+}
+
+.component-box p {
+    margin: 0;
+}

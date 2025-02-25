@@ -1,0 +1,21 @@
+.messages {
+    background-color: #e4e4e4;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+}
+
+.tab {
+    padding: 10px;
+    background-color: #ddd;
+    cursor: pointer;
+}
+
+.tab.active {
+    background-color: #b7e4d9;
+}
