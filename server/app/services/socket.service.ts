@@ -17,7 +17,7 @@ export class SocketService {
     private rooms: Record<string, GameRoom> = {}; // pour stocker les parties et joueurs
 
     initialize(server: HttpServer): void {
-        // console.log("Initialisation du serveur WebSocket...");
+        console.log('Initialisation du serveur WebSocket...');
         this.io = new Server(server, {
             cors: {
                 origin: '*',
@@ -25,7 +25,7 @@ export class SocketService {
             },
         });
         this.io.on('connection', (socket) => {
-            // console.log(`Connexion WebSocket reçue : ${socket.id}`);
+            console.log(`Connexion WebSocket reçue : ${socket.id}`);
             socket.on('createGame', (gameId: string, playerName: string) => {
                 if (this.rooms[gameId]) {
                     socket.emit('error', 'Cette partie existe déjà.');
