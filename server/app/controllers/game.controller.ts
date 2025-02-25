@@ -76,6 +76,15 @@ export class GameController {
             }
         });
 
+        this.router.post('/validateName', async (req: Request, res: Response) => {
+            try {
+                const nameValid = await this.gameService.validateName(req.body);
+                res.status(StatusCodes.OK).json(nameValid);
+            } catch (error) {
+                res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
+            }
+        });
+
         this.router.use((req: Request, res: Response) => {
             res.status(StatusCodes.NOT_FOUND).json({ error: 'Route not found' });
         });

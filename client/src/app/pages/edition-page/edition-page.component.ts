@@ -42,6 +42,7 @@ export class EditionPageComponent implements OnInit {
     showErrorPopup: boolean = false;
     saveState: boolean = false;
     gameLoaded: boolean = false;
+    gameNames: string[] = [];
     errorMessage: string = '';
 
     saveService = inject(SaveService);
@@ -58,6 +59,7 @@ export class EditionPageComponent implements OnInit {
         this.game.id = this.route.snapshot.params['id'];
         this.game.mode = this.route.snapshot.queryParams['mode'] || 'normal';
         this.game.mapSize = this.route.snapshot.queryParams['size'] || 'large';
+        this.gameNames = this.saveService.getGameNames(this.game.id);
         this.loadGame();
     }
 
@@ -101,7 +103,10 @@ export class EditionPageComponent implements OnInit {
         if (!this.game.description) {
             this.errorService.addMessage(EDITION_PAGE_CONSTANTS.errorGameDescriptionRequired);
         }
-
+        console.log(this.gameNames);
+        if (this.gameNames.includes(this.game.name)) {
+            this.errorService.addMessage(EDITION_PAGE_CONSTANTS.errorGameNameExists);
+        }
         this.saveService.alertBoardForVerification(true);
         const saveStatus: Partial<SaveMessage> = this.saveService.currentStatus;
 

@@ -1,0 +1,26 @@
+.player-card {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    .player-preview {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+    .player-info {
+        .player-name {
+            font-weight: bold;
+        }
+    }
+    .player-actions {
+        display: flex;
+        justify-content: flex-end;
+        button {
+            margin: 0 5px;
+        }
+    }
+}

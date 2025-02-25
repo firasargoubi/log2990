@@ -6,6 +6,7 @@ import { ADMIN_PAGE_CONSTANTS, GAME_MODES, GAME_SIZE } from '@app/Consts/app.con
 import { Game } from '@app/interfaces/game.model';
 import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
+import { SaveService } from '@app/services/save.service';
 import { catchError, of, tap } from 'rxjs';
 
 @Component({
@@ -17,6 +18,7 @@ import { catchError, of, tap } from 'rxjs';
 export class AdminPageComponent implements OnInit {
     games: Game[] = [];
     private gameService = inject(GameService);
+    private saveService = inject(SaveService);
     private notificationService = inject(NotificationService);
     private isFirstLoad = true;
     private modeTranslation: Record<string, string> = GAME_MODES;
@@ -44,7 +46,7 @@ export class AdminPageComponent implements OnInit {
                         mode: this.translateMode(game.mode),
                         mapSize: this.translateSize(game.mapSize),
                     }));
-
+                    this.saveService.updateGames(this.games);
                     if (this.isFirstLoad) {
                         this.notificationService.showSuccess(ADMIN_PAGE_CONSTANTS.successFetchMessage);
                         this.isFirstLoad = false;

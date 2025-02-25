@@ -51,7 +51,7 @@ export class BoardComponent implements OnInit {
                 this.saveService.verifyBoard(this.board);
             }
         });
-        this.tileService.currentTool = 0;
+        this.tileService.resetTool();
     }
 
     get mapSize(): number {
@@ -123,8 +123,8 @@ export class BoardComponent implements OnInit {
                 this.deleteObject(tile);
                 return;
             } else {
-                this.tileService.toolSaved = this.tileService.currentTool;
-                this.tileService.currentTool = 0;
+                this.tileService.saveTool();
+                this.tileService.deleteTool();
             }
         } else if (tile.object) {
             this.objectHeld = true;
