@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ChatComponent } from '@app/components/chat/chat.component';
 import { GameControlsComponent } from '@app/components/game-controls/game-controls.component';
 import { PlayerListComponent } from '@app/components/player-list/player-list.component';
 import { LobbyService } from '@app/services/lobby.service';
@@ -9,7 +8,7 @@ import { Player } from '@common/player';
 
 @Component({
     selector: 'app-waiting-page',
-    imports: [RouterLink, GameControlsComponent, ChatComponent, PlayerListComponent],
+    imports: [RouterLink, GameControlsComponent, PlayerListComponent],
     templateUrl: './waiting-page.component.html',
     styleUrls: ['./waiting-page.component.scss'],
 })
