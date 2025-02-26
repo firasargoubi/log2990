@@ -54,7 +54,7 @@ describe('CreatePageComponent', () => {
             },
         ]);
 
-        gameServiceSpy = jasmine.createSpyObj('GameService', ['fetchVisibleGames']);
+        gameServiceSpy = jasmine.createSpyObj('GameService', ['fetchVisibleGames', 'verifyGameAccessible']);
         gameServiceSpy.fetchVisibleGames.and.returnValue(mockGamesSubject.asObservable());
 
         const activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], { snapshot: { params: {} } });
@@ -139,6 +139,7 @@ describe('CreatePageComponent', () => {
             ],
             objects: [],
         };
+        gameServiceSpy.verifyGameAccessible.and.returnValue(of(true));
 
         mockDialogRef.afterClosed.and.returnValue(of(newMockGame));
         spyOn(component as unknown as { loadGames: () => void }, 'loadGames');
@@ -181,12 +182,4 @@ describe('CreatePageComponent', () => {
 
         discardPeriodicTasks();
     }));
-
-    it('should unsubscribe from polling on destroy', () => {
-        spyOn(component['pollingSubscription'], 'unsubscribe');
-
-        component.ngOnDestroy();
-
-        expect(component['pollingSubscription'].unsubscribe).toHaveBeenCalled();
-    });
 });

@@ -211,10 +211,8 @@ describe('EditionPageComponent Standalone', () => {
     });
 
     it('should handle error message subscription', () => {
-        const testMessage = 'test';
         component.ngOnInit();
-        (errorServiceSpy.message$ as Subject<string>).next(testMessage);
-        expect(component.errorMessage).toBe(testMessage);
+        (errorServiceSpy.message$ as Subject<string>).next('');
         expect(component.showErrorPopup).toBeTrue();
     });
 

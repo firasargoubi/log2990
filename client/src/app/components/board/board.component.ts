@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Input, OnInit, QueryList, ViewChildren, ChangeDetectorRef, OnChanges } from '@angular/core';
+import { Component, inject, Input, OnInit, QueryList, ViewChildren, ChangeDetectorRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { TileComponent } from '@app/components/tile/tile.component';
@@ -21,7 +21,7 @@ const RIGHT_CLICK = 2;
     templateUrl: './board.component.html',
     styleUrl: './board.component.scss',
 })
-export class BoardComponent implements OnInit, OnChanges {
+export class BoardComponent implements OnInit {
     @Input() game: Game = {
         id: '',
         name: '',
@@ -72,11 +72,6 @@ export class BoardComponent implements OnInit, OnChanges {
     }
 
     ngOnInit() {
-        this.initializeBoard();
-        this.cdr.detectChanges();
-    }
-
-    ngOnChanges() {
         this.initializeBoard();
         this.cdr.detectChanges();
     }
