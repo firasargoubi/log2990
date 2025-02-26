@@ -1,4 +1,4 @@
-import { Socket, io} from 'socket.io-client';
+import { Socket, io } from 'socket.io-client';
 import { Injectable } from '@angular/core';
 @Injectable({
     providedIn: 'root',

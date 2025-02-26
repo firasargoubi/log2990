@@ -2,6 +2,7 @@ import { Application } from '@app/app';
 import * as http from 'http';
 import { AddressInfo } from 'net';
 import { Service } from 'typedi';
+import { SocketService } from '@app/services/socket.service';
 import mongoose from 'mongoose';
 
 const uri = 'mongodb+srv://admin:admin@log2990-perso.mf3fg.mongodb.net/?retryWrites=true&w=majority&appName=LOG2990-perso';
@@ -12,6 +13,7 @@ export class Server {
     // eslint-disable-next-line @typescript-eslint/no-magic-numbers
     private static readonly baseDix: number = 10;
     private server: http.Server;
+    private socketManager: SocketService;
 
     constructor(private readonly application: Application) {}
 
@@ -24,6 +26,9 @@ export class Server {
         this.application.app.set('port', Server.appPort);
 
         this.server = http.createServer(this.application.app);
+
+        this.socketManager = new SocketService(this.server);
+        this.socketManager.handleSockets();
 
         this.server.on('error', (error: NodeJS.ErrnoException) => this.onError(error));
         this.server.on('listening', () => this.onListening());
