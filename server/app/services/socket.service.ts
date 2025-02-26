@@ -1,5 +1,5 @@
 import { Server as HttpServer } from 'http';
-import { Server, Socket } from 'socket.io';
+import { Server, Socket, io } from 'socket.io';
 import { Service } from 'typedi';
 interface Player {
     id: string;
@@ -16,7 +16,7 @@ export class SocketService {
     private io: Server;
     private rooms: Record<string, GameRoom> = {}; // pour stocker les parties et joueurs
 
-    initialize(server: HttpServer): void {
+    constructor(server: HttpServer) {
         console.log('Initialisation du serveur WebSocket...');
         this.io = new Server(server, {
             cors: {
@@ -24,6 +24,11 @@ export class SocketService {
                 methods: ['GET', 'POST'],
             },
         });
+
+        server.listen(3000, () => {
+            console.log('✅ Serveur WebSocket démarré sur http://localhost:3000');
+        });
+
         this.io.on('connection', (socket) => {
             console.log(`Connexion WebSocket reçue : ${socket.id}`);
             socket.on('createGame', (gameId: string, playerName: string) => {

@@ -1,14 +1,15 @@
-import { io, Socket } from 'socket.io-client';
+import { Socket, io} from 'socket.io-client';
 import { Injectable } from '@angular/core';
-import { environment } from 'src/environments/environment';
-
 @Injectable({
     providedIn: 'root',
 })
 export class SocketClientService {
     socket: Socket;
     connect() {
-        this.socket = io(environment.serverUrl, { transports: ['websocket'] });
+        this.socket = io('http://localhost:3000', {
+            transports: ['websocket', 'polling'],
+        });
+        console.log('Connexion au serveur WebSocket sur http://localhost:3000');
     }
 
     disconnect() {
