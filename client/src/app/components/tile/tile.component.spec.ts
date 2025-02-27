@@ -176,7 +176,6 @@ describe('TileComponent', () => {
         const item = new ItemComponent(counterService);
         item.type = ObjectsTypes.SPAWN;
 
-        spyOn(component, 'isTileEmpty').and.returnValue(true); // Simuler une tuile vide
         spyOn(component.objectMoved, 'emit');
 
         const event: CdkDragDrop<ItemComponent[]> = {
@@ -233,14 +232,5 @@ describe('TileComponent', () => {
         expect(component.placedItem.length).toBe(0);
         expect(component.objectID).toBe(0);
         expect(component.objectChanged.emit).toHaveBeenCalledWith(0);
-    });
-
-    it('should return true if placedItem is empty', () => {
-        expect(component.isTileEmpty()).toBeTrue();
-    });
-
-    it('should return false if placedItem is not empty', () => {
-        component.placedItem.push(new ItemComponent(counterService));
-        expect(component.isTileEmpty()).toBeFalse();
     });
 });
