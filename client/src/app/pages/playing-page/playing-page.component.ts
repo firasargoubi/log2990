@@ -46,6 +46,7 @@ export class PlayingPageComponent implements OnInit {
     errorMessage: string = '';
     objectNumber: number = 0;
 
+    // eslint-disable-next-line max-params
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -156,7 +157,7 @@ export class PlayingPageComponent implements OnInit {
     }
 
     abandon() {
-        // Logic to redirect or notify about abandonment
+        this.router.navigate(['/home']);
     }
 
     attack() {
