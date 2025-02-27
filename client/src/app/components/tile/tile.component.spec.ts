@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { TileComponent } from './tile.component';
-import { ObjectCounterService } from '@app/services/objects-counter.service';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ItemComponent } from '@app/components/item/item.component';
+import { ObjectsTypes } from '@app/Consts/app.constants';
 import { TileTypes } from '@app/interfaces/tile-types';
-import { ObjectsTypes } from '@app/interfaces/objects-types';
+import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { of } from 'rxjs';
+import { TileComponent } from './tile.component';
 
 const SPAWN_COUNTER = 5;
 describe('TileComponent', () => {
@@ -170,6 +170,31 @@ describe('TileComponent', () => {
         component.drop(event);
         expect(component.placedItem.length).toBe(1);
         expect(component.objectID).toBe(item.type);
+    });
+
+    it('should add dragged item if dropped from another tile and the tile is empty', () => {
+        const item = new ItemComponent(counterService);
+        item.type = ObjectsTypes.SPAWN;
+
+        spyOn(component.objectMoved, 'emit');
+
+        const event: CdkDragDrop<ItemComponent[]> = {
+            previousContainer: { data: [item], id: 'tile-container-1' } as any, // Autre container
+            container: { data: [], id: 'tile-container-2' } as any,
+            previousIndex: 0,
+            currentIndex: 0,
+            item: {} as any,
+            isPointerOverContainer: true,
+            distance: { x: 0, y: 0 },
+            dropPoint: { x: 0, y: 0 },
+            event: {} as any,
+        };
+
+        component.drop(event);
+
+        expect(component.placedItem.length).toBe(1);
+        expect(component.placedItem[0]).toBe(item);
+        expect(component.objectMoved.emit).toHaveBeenCalledWith(true);
     });
 
     it('should not change if dragged to an illegal place', () => {
