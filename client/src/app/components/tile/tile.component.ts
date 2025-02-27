@@ -88,10 +88,6 @@ export class TileComponent implements OnInit {
         this.counterService.decrementCounter(item.type);
     }
 
-    isTileEmpty(): boolean {
-        return this.placedItem.length === 0;
-    }
-
     drop(event: CdkDragDrop<ItemComponent[]>) {
         const draggedItem = event.previousContainer.data[event.previousIndex];
 
@@ -99,10 +95,10 @@ export class TileComponent implements OnInit {
             return; // No changes if dragged to an illegal place
         }
         // If swapped with an empty tile, empty the old one and place the new one
-        if (event.previousContainer.id !== 'objects-container' && this.isTileEmpty()) {
+        if (event.previousContainer.id !== 'objects-container' && !this.placedItem.length) {
             this.placedItem.push(draggedItem);
             event.previousContainer.data.splice(event.previousIndex, 1);
-        } else if (this.isTileEmpty() && this.count && draggedItem.type === ObjectsTypes.SPAWN) {
+        } else if (!this.placedItem.length && this.count && draggedItem.type === ObjectsTypes.SPAWN) {
             this.placedItem.push(draggedItem);
             this.decrementCounter(draggedItem);
         }
