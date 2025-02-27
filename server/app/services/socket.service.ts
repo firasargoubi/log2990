@@ -26,19 +26,26 @@ export class SocketService {
     init(): void {
         this.io.on('connection', (socket: Socket) => {
             console.log(`User connected: ${socket.id}`);
-
             socket.on('createGame', (data: { gameId: string; playerName: string }) => {
                 const gameId = data.gameId.trim().toLowerCase();
                 const playerName = data.playerName.trim();
-                // console.log('Checking gameId:', gameId);
-                // console.log('Current rooms:', JSON.stringify(this.rooms, null, 2));
-                // console.log('Existing room:', JSON.stringify(this.rooms[gameId], null, 2));
                 if (this.rooms[gameId]) {
-                    // console.log('Hey');
                     socket.emit('error', 'Cette partie existe déjà.');
                     return;
                 }
                 this.rooms[gameId] = { id: gameId, players: [], isStarted: false };
+                this.joinGame(socket, gameId, playerName);
+            });
+
+            socket.on('joinGame', (data: { gameId: string; playerName: string }) => {
+                console.log('Join game initial dans le serveur');
+                const gameId = data.gameId.trim().toLocaleLowerCase();
+                const playerName = data.playerName.trim();
+                if (!this.rooms[gameId]) {
+                    console.log("NON, LE JEU N'EXISTE PAS");
+                    socket.emit('error', "Cette partie n'existe pas.");
+                    return;
+                }
                 this.joinGame(socket, gameId, playerName);
             });
 
@@ -56,8 +63,8 @@ export class SocketService {
     private joinGame(socket: Socket, gameId: string, playerName: string) {
         console.log('joinGame', gameId, playerName);
         const game = this.rooms[gameId];
-        if (game.players.some((p) => p.id === socket.id)) {
-            socket.emit('error', 'Vous êtes déjà dans cette partie.');
+        if (game.players.some((p) => p.name === playerName)) {
+            socket.emit('error', 'Vous êtes déjà, SERVEUR dans cette partie.');
             return;
         }
         const player: Player = {

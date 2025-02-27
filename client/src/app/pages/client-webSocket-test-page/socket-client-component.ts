@@ -15,8 +15,10 @@ export class ChatComponent implements OnInit, OnDestroy {
     messages: string[] = [];
     createdGames: string[] = []; // Liste locale des jeux créés
     messageInput: string = '';
-    gameId: string = '';
-    playerName: string = '';
+    createGameId: string = ''; // ID pour créer une partie
+    createPlayerName: string = ''; // Nom du joueur pour créer une partie
+    joinGameId: string = ''; // ID pour rejoindre une partie
+    joinPlayerName: string = ''; // Nom du joueur pour rejoindre une partie
     private messageSubscription!: Subscription;
 
     constructor(private socketService: SocketClientService) {}
@@ -26,11 +28,10 @@ export class ChatComponent implements OnInit, OnDestroy {
             this.messages.push(message);
         });
 
-        // Écoute des erreurs
-        // this.socketService.receiveError().subscribe((error) => {
-        //     console.error('Erreur reçue:', error);
-        //     this.messages.push(`Erreur: ${error}`);
-        // });
+        this.socketService.receiveError().subscribe((error) => {
+            console.error('Erreur reçue:', error);
+            this.messages.push(`Erreur: ${error}`);
+        });
     }
 
     sendMessage(): void {
@@ -40,21 +41,39 @@ export class ChatComponent implements OnInit, OnDestroy {
         }
     }
     createGame(): void {
-        this.gameId = this.gameId.trim().toLowerCase(); // Normaliser l'ID
-        this.playerName = this.playerName.trim();
+        const gameId = this.createGameId.trim().toLowerCase();
+        const playerName = this.createPlayerName.trim();
 
-        if (!this.gameId || !this.playerName) {
+        if (!gameId || !playerName) {
             this.messages.push('Veuillez entrer un ID de jeu et un nom.');
             return;
         }
-        if (this.createdGames.includes(this.gameId)) {
-            this.messages.push(`Le jeu "${this.gameId}" existe déjà.`);
+        if (this.createdGames.includes(gameId)) {
+            this.messages.push(`Le jeu "${gameId}" existe déjà.`);
             return;
         }
-        console.log('Envoi de la création du jeu:', this.gameId, this.playerName);
-        this.socketService.createGame(this.gameId, this.playerName);
-        this.createdGames.push(this.gameId);
+        console.log('Envoi de la création du jeu:', gameId, playerName);
+        this.socketService.createGame(gameId, playerName);
+        this.createdGames.push(gameId);
+        this.createGameId = '';
+        this.createPlayerName = '';
     }
+
+    joinGame(): void {
+        const gameId = this.joinGameId.trim().toLowerCase();
+        const playerName = this.joinPlayerName.trim();
+
+        if (!gameId || !playerName) {
+            this.messages.push('Veuillez entrer un ID de jeu et un nom.');
+            return;
+        }
+        console.log('Rejoindre la partie:', gameId, playerName);
+        this.socketService.joinGame(gameId, playerName);
+
+        this.joinGameId = '';
+        this.joinPlayerName = '';
+    }
+
     ngOnDestroy(): void {
         if (this.messageSubscription) {
             this.messageSubscription.unsubscribe();

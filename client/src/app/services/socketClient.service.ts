@@ -14,9 +14,20 @@ export class SocketClientService {
         });
     }
 
+    receiveError() {
+        return new Observable<string>((observer) => {
+            this.socket.on('error', (errorMessage: string) => {
+                observer.next(errorMessage);
+            });
+        });
+    }
+
     createGame(gameId: string, playerName: string) {
-        console.log(gameId, playerName);
         this.socket.emit('createGame', { gameId, playerName });
+    }
+
+    joinGame(gameId: string, playerName: string): void {
+        this.socket.emit('joinGame', { gameId, playerName });
     }
 
     sendMessage(message: string): void {

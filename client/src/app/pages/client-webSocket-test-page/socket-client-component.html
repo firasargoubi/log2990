@@ -1,6 +1,12 @@
+<div id="joinGameForm">
+  <input [(ngModel)]="joinGameId" type="text" placeholder="ID de la partie" />
+  <input [(ngModel)]="joinPlayerName" type="text" placeholder="Votre nom" />
+  <button (click)="joinGame()">Rejoindre la partie</button>
+</div>
+
 <div id="createGameForm">
-  <input [(ngModel)]="gameId" type="text" placeholder="ID de la partie" />
-  <input [(ngModel)]="playerName" type="text" placeholder="Votre nom" />
+  <input [(ngModel)]="createGameId" type="text" placeholder="ID de la partie" />
+  <input [(ngModel)]="createPlayerName" type="text" placeholder="Votre nom" />
   <button (click)="createGame()">Créer la partie</button>
 </div>
 
