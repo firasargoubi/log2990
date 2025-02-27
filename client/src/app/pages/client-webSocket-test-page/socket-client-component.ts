@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 @Component({
     selector: 'app-chat',
     templateUrl: './socket-client-component.html',
+    standalone: true,
     styleUrls: ['./socket-client-component.scss'],
     imports: [FormsModule, CommonModule],
 })
@@ -26,7 +27,8 @@ export class ChatComponent implements OnInit, OnDestroy {
     sendMessage(): void {
         if (this.messageInput.trim()) {
             this.socketService.sendMessage(this.messageInput);
-            this.messageInput = ''; // Effacer le champ après envoi
+            this.messages.push(this.messageInput); // Ajouter le message à la liste locale
+            this.messageInput = ''; // Effacer le champ après l'envoi
         }
     }
 
