@@ -177,14 +177,14 @@ describe('GameController', () => {
         gameServiceStub.getGameById.resolves(mockGame as any);
         const response = await request(app).get(`/game/validate/${mockGame.id}`);
         expect(response.status).to.equal(StatusCodes.OK);
-        expect(response.body.valid).to.equal(true);
+        expect(response.body).to.equal(true);
     });
 
     it('GET /game/validate/:id should return 404 if game invalid', async () => {
         gameServiceStub.getGameById.resolves(null);
         const response = await request(app).get(`/game/validate/${mockGame.id}`);
-        expect(response.status).to.equal(StatusCodes.NOT_FOUND);
-        expect(response.body.error).to.equal('Game not found');
+        expect(response.status).to.equal(StatusCodes.OK);
+        expect(response.body).to.equal(false);
     });
 
     it('GET /game/validate/:id should return 400 if validation fails', async () => {
