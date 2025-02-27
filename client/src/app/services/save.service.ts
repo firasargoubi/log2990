@@ -1,17 +1,14 @@
 import { inject, Injectable } from '@angular/core';
-import { OBJECT_COUNT, OBJECT_MULTIPLIER, ObjectsTypes } from '@app/Consts/app.constants';
-import { Game } from '@app/interfaces/game.model';
 import { SaveMessage } from '@app/interfaces/save-message';
 import { Tile } from '@app/interfaces/tile';
 import { TileTypes } from '@app/interfaces/tile-types';
 import { Subject } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 import { GameService } from './game.service';
+import { Game } from '@app/interfaces/game.model';
+import { catchError } from 'rxjs/operators';
+import { OBJECT_COUNT, OBJECT_MULTIPLIER } from '@app/Consts/app.constants';
 
 const WANTED_TILE_PERCENTAGE = 0.5;
-const SMALL_MAP = 10;
-const MEDIUM_MAP = 15;
-const LARGE_MAP = 20;
 @Injectable({
     providedIn: 'root',
 })
@@ -70,7 +67,7 @@ export class SaveService {
             doors: this.verifyDoors(),
             minTerrain: this.verifyTilePercentage(),
             accessible: this.verifyAccessible(),
-            allSpawnPoints: this.verifySpawnPoints(this.board.length),
+            allSpawnPoints: this.verifySpawnPoints(),
         };
     }
 
@@ -96,23 +93,14 @@ export class SaveService {
         }
     }
 
-    verifySpawnPoints(size: number): boolean {
+    verifySpawnPoints(): boolean {
         let count = 0;
         for (const row of this.board) {
             for (const tile of row) {
-                if (tile.object === ObjectsTypes.SPAWN) count++;
+                if (tile.object === OBJECT_COUNT.large) count++;
             }
         }
-        switch (size) {
-            case SMALL_MAP:
-                return count === OBJECT_COUNT.small;
-            case MEDIUM_MAP:
-                return count === OBJECT_COUNT.medium;
-            case LARGE_MAP:
-                return count === OBJECT_COUNT.large;
-            default:
-                return count === OBJECT_COUNT.small;
-        }
+        return count >= 2;
     }
 
     verifyDoors(): boolean {
