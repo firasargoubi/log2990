@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TileOptionsComponent } from './tile-options.component';
 import { TileService } from '@app/services/tile.service';
-import { TileTypes } from '@app/interfaces/tileTypes';
+import { TileTypes } from '@app/interfaces/tile-types';
 
 describe('TileOptionsComponent', () => {
     let component: TileOptionsComponent;
@@ -85,7 +85,7 @@ describe('TileOptionsComponent', () => {
 
         component.selectTileOption(tile);
 
-        expect(tileServiceSpy.copyTileTool).toHaveBeenCalledWith(0);
+        expect(tileServiceSpy.copyTileTool).toHaveBeenCalledWith(-1);
         component.options.forEach((t) => {
             expect(t.selected).toBeFalse();
         });

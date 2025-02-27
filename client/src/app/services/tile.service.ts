@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Tile } from '@app/interfaces/tile';
-import { TileTypes } from '@app/interfaces/tileTypes';
+import { TileTypes } from '@app/interfaces/tile-types';
 @Injectable({
     providedIn: 'root',
 })
 export class TileService {
-    currentTool: number = 0;
+    currentTool: number = -1;
     toolSaved: number = 0;
 
     copyTileTool(type: number) {
@@ -23,9 +23,20 @@ export class TileService {
     }
 
     getToolSaved() {
-        if (this.toolSaved) {
-            this.currentTool = this.toolSaved;
-            this.toolSaved = 0;
-        }
+        if (this.toolSaved === 0) return;
+        this.currentTool = this.toolSaved;
+        this.toolSaved = 0;
+    }
+
+    saveTool() {
+        this.toolSaved = this.currentTool;
+    }
+
+    resetTool() {
+        this.currentTool = -1;
+    }
+
+    deleteTool() {
+        this.currentTool = 0;
     }
 }

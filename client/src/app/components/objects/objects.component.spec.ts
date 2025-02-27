@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ObjectsComponent } from './objects.component';
-import { ObjectCounterService } from '@app/services/objects-counter.service';
-import { Router, NavigationEnd } from '@angular/router';
-import { of, Subject } from 'rxjs';
-import { ItemComponent } from '@app/components/item/item.component';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { ObjectsTypes } from '@app/interfaces/objectsTypes';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NavigationEnd, Router } from '@angular/router';
+import { ItemComponent } from '@app/components/item/item.component';
+import { ObjectsTypes } from '@app/Consts/app.constants';
+import { ObjectCounterService } from '@app/services/objects-counter.service';
+import { of, Subject } from 'rxjs';
+import { ObjectsComponent } from './objects.component';
 
 describe('ObjectsComponent', () => {
     let component: ObjectsComponent;
@@ -85,12 +85,6 @@ describe('ObjectsComponent', () => {
     it('should generate a correct range of numbers', () => {
         const result = component.generateRange(3, 6);
         expect(result).toEqual([3, 4, 5, 6]);
-    });
-
-    it('should add an item to items array when onItemAdded is called', () => {
-        const newItem = new ItemComponent(mockCounterService);
-        component.onItemAdded(newItem);
-        expect(component.items.includes(newItem)).toBeTrue();
     });
 
     it('should call incrementCounter in ObjectCounterService when incrementCounter is called', () => {

@@ -8,7 +8,8 @@ h2[mat-dialog-title] {
 .mode-section,
 .size-section {
     background: rgba(0, 0, 0, 0.2);
-    border-radius: 10px;
+    border-radius: 50px;
+    background-color: #9eba63;
     padding: 20px;
     margin-bottom: 20px;
 }
@@ -26,7 +27,7 @@ h6 {
 }
 
 .mat-radio-button {
-    color: #125d0c;
+    color: #9eba63;
 }
 
 .mat-dialog-actions {

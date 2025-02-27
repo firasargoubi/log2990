@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BoardComponent } from './board.component';
@@ -11,7 +13,7 @@ import { of, Subject } from 'rxjs';
 import { Tile } from '@app/interfaces/tile';
 import { Game } from '@app/interfaces/game.model';
 import { Coordinates } from '@app/interfaces/coordinates';
-import { MapSize } from '@app/interfaces/mapsize';
+import { MapSize } from '@app/interfaces/map-size';
 
 const MAP_SIZE = 10;
 const TILE_VALUE = 12;
@@ -20,7 +22,7 @@ const CUSTOM_GAME = {
     name: 'Wow',
     description: 'Avec Item',
     mapSize: 'small',
-    board: [Array(MAP_SIZE).fill(Array(MAP_SIZE).fill(TILE_VALUE))],
+    board: Array.from({ length: MAP_SIZE }, () => Array(MAP_SIZE).fill(TILE_VALUE)),
 };
 describe('BoardComponent', () => {
     let component: BoardComponent;
@@ -33,9 +35,16 @@ describe('BoardComponent', () => {
 
     beforeEach(async () => {
         mouseServiceSpy = jasmine.createSpyObj('MouseService', ['onMouseUp', 'onMouseDown', 'onMouseMove']);
-        tileServiceSpy = jasmine.createSpyObj('TileService', ['modifyTile', 'copyTileTool', 'getToolSaved'], { currentTool: 0, toolSaved: 0 });
-        saveServiceSpy = jasmine.createSpyObj('SaveService', ['verifyBoard'], { isSave$: new Subject<boolean>(), isReset$: of(false) });
+        tileServiceSpy = jasmine.createSpyObj('TileService', ['modifyTile', 'copyTileTool', 'getToolSaved', 'resetTool', 'deleteTool', 'saveTool'], {
+            currentTool: -1,
+            toolSaved: -1,
+        });
+        saveServiceSpy = jasmine.createSpyObj('SaveService', ['verifyBoard', 'getGameNames'], {
+            isSave$: new Subject<boolean>(),
+            isReset$: of(false),
+        });
         gameServiceSpy = jasmine.createSpyObj('GameService', ['fetchGames']);
+        errorServiceSpy = jasmine.createSpyObj('ErrorService', ['handleError']);
 
         await TestBed.configureTestingModule({
             imports: [TileComponent],
@@ -104,7 +113,7 @@ describe('BoardComponent', () => {
         const tile: Tile = { type: 2, x: 2, y: 2, id: '2-2', object: 0 };
         component.onMouseDownBoard(event, tile);
         expect(tileServiceSpy.toolSaved).toBe(tileServiceSpy.currentTool);
-        expect(tileServiceSpy.currentTool).toBe(0);
+        expect(tileServiceSpy.currentTool).toBe(-1);
     });
 
     it('should update tile object when onObjectChanged is called', () => {
@@ -222,7 +231,7 @@ describe('BoardComponent', () => {
         const tile: Tile = { type: 1, x: 1, y: 1, id: '1-1', object: 0 };
         component.onMouseDownBoard(event, tile);
         expect(tileServiceSpy.toolSaved).toBe(tileServiceSpy.currentTool);
-        expect(tileServiceSpy.currentTool).toBe(0);
+        expect(tileServiceSpy.currentTool).toBe(-1);
     });
 
     it('should set toolSaved and currentTool to -1 if tile has object', () => {
@@ -230,7 +239,7 @@ describe('BoardComponent', () => {
         const tile: Tile = { type: 1, x: 1, y: 1, id: '1-1', object: 1 };
         component.onMouseDownBoard(event, tile);
         expect(tileServiceSpy.toolSaved).toBe(tileServiceSpy.currentTool);
-        expect(tileServiceSpy.currentTool).toBe(0);
+        expect(tileServiceSpy.currentTool).toBe(-1);
     });
 
     it('should call modifyTile when onMouseDownBoard is called', () => {
@@ -298,7 +307,7 @@ describe('BoardComponent', () => {
     });
 
     it('should set currentTool to 0 in constructor', () => {
-        expect(component.tileService.currentTool).toBe(0);
+        expect(component.tileService.currentTool).toBe(-1);
     });
     it('should call onMouseDown with correct coordinates', () => {
         const event = new MouseEvent('mousedown', { button: 0 });
@@ -319,7 +328,7 @@ describe('BoardComponent', () => {
         const tile: Tile = { type: 1, x: 1, y: 1, id: '1-1', object: 0 };
         component.onMouseDownBoard(event, tile);
         expect(tileServiceSpy.toolSaved).toBe(tileServiceSpy.currentTool);
-        expect(tileServiceSpy.currentTool).toBe(0);
+        expect(tileServiceSpy.currentTool).toBe(-1);
     });
 
     it('should set objectHeld to true if tile has an object on left-click', () => {

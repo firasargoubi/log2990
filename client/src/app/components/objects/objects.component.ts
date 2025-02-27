@@ -4,7 +4,7 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { ItemComponent } from '@app/components/item/item.component';
-import { ObjectsTypes } from '@app/interfaces/objectsTypes';
+import { ObjectsTypes } from '@app/Consts/app.constants';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -19,7 +19,6 @@ export class ObjectsComponent implements OnInit, OnDestroy {
     @Input() mapSize: string;
     range: number[] = [];
     items: ItemComponent[] = [];
-    counter$ = this.counterService.counter$;
     private subscriptions: Subscription[] = [];
 
     constructor(
@@ -59,10 +58,6 @@ export class ObjectsComponent implements OnInit, OnDestroy {
 
     generateRange(start: number, end: number): number[] {
         return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-    }
-
-    onItemAdded(item: ItemComponent) {
-        this.items.push(item);
     }
 
     incrementCounter(item: ItemComponent) {

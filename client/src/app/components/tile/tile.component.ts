@@ -2,10 +2,9 @@ import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ItemComponent } from '@app/components/item/item.component';
+import { GAME_IMAGES, ObjectsTypes } from '@app/Consts/app.constants';
 import { DEFAULT_ITEMS } from '@app/interfaces/default-items';
-import { ObjectsTypes } from '@app/interfaces/objectsTypes';
-import { TileTypes } from '@app/interfaces/tileTypes';
-import { GAME_IMAGES } from '@app/Consts/app.constants';
+import { TileTypes } from '@app/interfaces/tile-types';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 @Component({
     selector: 'app-tile',
@@ -95,14 +94,15 @@ export class TileComponent implements OnInit {
         if (this.type === TileTypes.DoorClosed || this.type === TileTypes.DoorOpen || this.type === TileTypes.Wall) {
             return; // No changes if dragged to an illegal place
         }
-
-        if (event.previousContainer.id !== 'objects-container') {
+        // If swapped with an empty tile, empty the old one and place the new one
+        if (event.previousContainer.id !== 'objects-container' && !this.placedItem.length) {
             this.placedItem.push(draggedItem);
             event.previousContainer.data.splice(event.previousIndex, 1);
-        } else if (this.placedItem.length === 0 && this.count && draggedItem.type === ObjectsTypes.SPAWN) {
+        } else if (!this.placedItem.length && this.count && draggedItem.type === ObjectsTypes.SPAWN) {
             this.placedItem.push(draggedItem);
             this.decrementCounter(draggedItem);
         }
+
         this.objectID = draggedItem.type;
         this.objectMoved.emit(true);
     }
