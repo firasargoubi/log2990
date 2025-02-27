@@ -13,6 +13,7 @@ import { CommonModule } from '@angular/common';
 })
 export class ChatComponent implements OnInit, OnDestroy {
     messages: string[] = [];
+    createdGames: string[] = [];  // Liste locale des jeux créés
     messageInput: string = '';
     gameId: string = '';
     playerName: string = '';
@@ -24,6 +25,12 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.messageSubscription = this.socketService.receiveMessage().subscribe((message) => {
             this.messages.push(message);
         });
+
+        // Écoute des erreurs
+        this.socketService.receiveError().subscribe((error) => {
+            console.error('Erreur reçue:', error);
+            this.messages.push(`Erreur: ${error}`);
+        });
     }
 
     sendMessage(): void {
@@ -32,16 +39,43 @@ export class ChatComponent implements OnInit, OnDestroy {
             this.messageInput = ''; // Effacer le champ après l'envoi
         }
     }
-
     createGame(): void {
-        if (this.gameId.trim() && this.playerName.trim()) {
-            console.log(this.gameId, this.playerName);
-            this.socketService.createGame(this.gameId, this.playerName);
-        } else {
-            this.messages.push('Veuillez entrer un ID de jeu et un nom.');
-        }
-    }
+        this.gameId = this.gameId.trim().toLowerCase(); // Normaliser l'ID
+        this.playerName = this.playerName.trim();
 
+        if (!this.gameId || !this.playerName) {
+            this.messages.push('Veuillez entrer un ID de jeu et un nom.');
+            return;
+        }
+
+        // Vérification si le jeu existe déjà côté client
+        if (this.createdGames.includes(this.gameId)) {
+            this.messages.push(`Le jeu "${this.gameId}" existe déjà.`);
+            return;
+        }
+
+        console.log('Envoi de la création du jeu:', this.gameId, this.playerName);
+        this.socketService.createGame(this.gameId, this.playerName);
+
+        // Ajouter le jeu dans la liste locale après envoi
+        this.createdGames.push(this.gameId);
+    }
+    createGame(): void {
+        this.gameId = this.gameId.trim().toLowerCase(); // Normaliser l'ID
+        this.playerName = this.playerName.trim();
+
+        if (!this.gameId || !this.playerName) {
+            this.messages.push('Veuillez entrer un ID de jeu et un nom.');
+            return;
+        }
+        if (this.createdGames.includes(this.gameId)) {
+            this.messages.push(`Le jeu "${this.gameId}" existe déjà.`);
+            return;
+        }
+        console.log('Envoi de la création du jeu:', this.gameId, this.playerName);
+        this.socketService.createGame(this.gameId, this.playerName);
+        this.createdGames.push(this.gameId);
+    }
     ngOnDestroy(): void {
         if (this.messageSubscription) {
             this.messageSubscription.unsubscribe();

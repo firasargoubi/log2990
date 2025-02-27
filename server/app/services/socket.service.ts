@@ -27,9 +27,14 @@ export class SocketService {
         this.io.on('connection', (socket: Socket) => {
             console.log(`User connected: ${socket.id}`);
 
-            socket.on('createGame', (gameId: string, playerName: string) => {
-                console.log(gameId, playerName);
+            socket.on('createGame', (data: { gameId: string; playerName: string }) => {
+                const gameId = data.gameId.trim().toLowerCase();
+                const playerName = data.playerName.trim();
+                // console.log('Checking gameId:', gameId);
+                // console.log('Current rooms:', JSON.stringify(this.rooms, null, 2));
+                // console.log('Existing room:', JSON.stringify(this.rooms[gameId], null, 2));
                 if (this.rooms[gameId]) {
+                    // console.log('Hey');
                     socket.emit('error', 'Cette partie existe déjà.');
                     return;
                 }
@@ -49,7 +54,7 @@ export class SocketService {
     }
 
     private joinGame(socket: Socket, gameId: string, playerName: string) {
-        console.log("joinGame", gameId, playerName);
+        console.log('joinGame', gameId, playerName);
         const game = this.rooms[gameId];
         if (game.players.some((p) => p.id === socket.id)) {
             socket.emit('error', 'Vous êtes déjà dans cette partie.');
