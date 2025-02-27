@@ -12,7 +12,7 @@ import { GAME_SERVICE_CONSTANTS } from '@app/Consts/app.constants';
 })
 export class GameService {
     private notificationService = inject(NotificationService);
-    private readonly baseUrl: string = environment.serverUrl;
+    private readonly baseUrl: string = environment.serverUrl + 'api/game';
 
     constructor(private http: HttpClient) {}
 
