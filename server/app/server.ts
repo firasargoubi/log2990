@@ -28,7 +28,7 @@ export class Server {
         this.server = http.createServer(this.application.app);
 
         this.socketManager = new SocketService(this.server);
-        this.socketManager.handleSockets();
+        this.socketManager.init();
 
         this.server.on('error', (error: NodeJS.ErrnoException) => this.onError(error));
         this.server.on('listening', () => this.onListening());

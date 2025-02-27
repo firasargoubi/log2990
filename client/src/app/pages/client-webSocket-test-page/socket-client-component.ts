@@ -1,88 +1,38 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { SocketClientService } from '@app/services/socketClient.service';
+import { Subscription } from 'rxjs';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
-interface Player {
-    id: string;
-    name: string;
-}
 @Component({
-    selector: 'app-socket-client',
-    imports: [CommonModule, FormsModule],
+    selector: 'app-chat',
     templateUrl: './socket-client-component.html',
     styleUrls: ['./socket-client-component.scss'],
+    imports: [FormsModule, CommonModule],
 })
-export class SocketClientComponent implements OnInit {
-    gameId = '';
-    playerName = '';
-    messages: { playerId: string; message: string }[] = [];
-    players: Player[] = [];
-    newMessage = '';
+export class ChatComponent implements OnInit, OnDestroy {
+    messages: string[] = [];
+    messageInput: string = '';
+    private messageSubscription!: Subscription;
+
     constructor(private socketService: SocketClientService) {}
 
-    ngOnInit() {
-        this.socketService.connect();
-        this.connectionToServer();
-
-        this.socketService.on('playerJoined', (players) => {
-            this.players = players as Player[];
-        });
-
-        this.socketService.on('chatMessage', (data) => {
-            this.messages.push(data as { playerId: string; message: string });
-        });
-
-        this.socketService.on('gameStarted', () => {
-            alert('La partie a commencé !');
-        });
-
-        this.socketService.on('playerLeft', (playerId) => {
-            this.players = this.players.filter((p) => p.id !== playerId);
-        });
-
-        this.socketService.on('playersList', (players) => {
-            this.players = players as Player[];
+    ngOnInit(): void {
+        this.messageSubscription = this.socketService.receiveMessage().subscribe((message) => {
+            this.messages.push(message);
         });
     }
 
-    connectionToServer() {
-        this.socketService.on('connect', () => {
-            console.log(`Connexion par WebSocket réussie avec le socket ${this.socketService.socket.id}`);
-        });
-
-        this.socketService.on('connect_error', (error) => {
-            console.error('Erreur de connexion WebSocket :', error);
-        });
-
-        this.socketService.on('disconnect', () => {
-            console.log('Déconnecté du serveur WebSocket');
-        });
-    }
-    createGame() {
-        this.socketService.send('createGame', { gameId: this.gameId, playerName: this.playerName });
-    }
-
-    joinGame() {
-        this.socketService.send('joinGame', { gameId: this.gameId, playerName: this.playerName });
-    }
-
-    sendMessage() {
-        if (this.newMessage.trim()) {
-            this.socketService.send('message', { gameId: this.gameId, message: this.newMessage });
-            this.newMessage = '';
+    sendMessage(): void {
+        if (this.messageInput.trim()) {
+            this.socketService.sendMessage(this.messageInput);
+            this.messageInput = ''; // Effacer le champ après envoi
         }
     }
 
-    startGame() {
-        this.socketService.send('startGame', { gameId: this.gameId });
-    }
-
-    leaveGame() {
-        this.socketService.send('leaveGame', { gameId: this.gameId });
-    }
-
-    getPlayers() {
-        this.socketService.send('getPlayers', { gameId: this.gameId });
+    ngOnDestroy(): void {
+        if (this.messageSubscription) {
+            this.messageSubscription.unsubscribe();
+        }
     }
 }

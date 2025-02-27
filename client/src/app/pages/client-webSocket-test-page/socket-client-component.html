@@ -1,26 +1,12 @@
-<div>
-    <h2>Test WebSocket</h2>
-    
-    <input [(ngModel)]="gameId" placeholder="ID Partie" />
-    <input [(ngModel)]="playerName" placeholder="Nom Joueur" />
-    <button (click)="createGame()">Créer Partie</button>
-    <button (click)="joinGame()">Rejoindre Partie</button>
-    <button (click)="startGame()">Démarrer Partie</button>
-    <button (click)="leaveGame()">Quitter Partie</button>
-    <button (click)="getPlayers()">Afficher Joueurs</button>
-  
-    <h3>Joueurs :</h3>
-    <ul>
-      <li *ngFor="let player of players">{{ player.name }}</li>
-    </ul>
-  
-    <h3>Chat :</h3>
-    <input [(ngModel)]="newMessage" placeholder="Message" />
-    <button (click)="sendMessage()">Envoyer</button>
-    
-    <ul>
-      <li *ngFor="let msg of messages">
-        <strong>{{ msg.playerId }}</strong>: {{ msg.message }}
-      </li>
-    </ul>
+<div id="chat">
+  <h2>Clavardage</h2>
+  <div id="messages">
+    <div>
+      @for (message of messages; track message) {
+        <p>{{message}} </p>
+    }
+    </div>      
+  </div>
+  <input [(ngModel)]="messageInput" type="text" placeholder="Écrivez un message..." />
+  <button (click)="sendMessage()">Envoyer</button>
 </div>

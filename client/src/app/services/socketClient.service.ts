@@ -1,24 +1,28 @@
-import { Socket, io } from 'socket.io-client';
 import { Injectable } from '@angular/core';
+import { io, Socket } from 'socket.io-client';
+import { Observable } from 'rxjs';
+
 @Injectable({
     providedIn: 'root',
 })
 export class SocketClientService {
-    socket: Socket;
-    connect() {
+    private socket: Socket;
+
+    constructor() {
         this.socket = io('http://localhost:3000', {
             transports: ['websocket', 'polling'],
         });
-        console.log('Connexion au serveur WebSocket sur http://localhost:3000');
     }
 
-    disconnect() {
-        this.socket.disconnect();
+    // Émission d'un message
+    sendMessage(message: string): void {
+        this.socket.emit('message', message);
     }
-    on<T>(event: string, action: (data: T) => void): void {
-        this.socket.on(event, action);
-    }
-    send<T>(event: string, data?: T, callback?: Function): void {
-        this.socket.emit(event, ...[data, callback].filter((x) => x));
+
+    // Écoute des messages
+    receiveMessage(): Observable<string> {
+        return new Observable((observer) => {
+            this.socket.on('message', (data: string) => observer.next(data));
+        });
     }
 }
