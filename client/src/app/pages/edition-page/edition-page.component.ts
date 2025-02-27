@@ -39,6 +39,19 @@ export class EditionPageComponent implements OnInit {
         objects: [],
     };
 
+    gameReference: Game = {
+        id: '',
+        name: '',
+        mapSize: 'small',
+        mode: 'normal',
+        previewImage: '',
+        description: '',
+        lastModified: new Date(),
+        isVisible: true,
+        board: [],
+        objects: [],
+    };
+
     showErrorPopup: boolean = false;
     saveState: boolean = false;
     gameLoaded: boolean = false;
@@ -103,7 +116,6 @@ export class EditionPageComponent implements OnInit {
         if (!this.game.description) {
             this.errorService.addMessage(EDITION_PAGE_CONSTANTS.errorGameDescriptionRequired);
         }
-        console.log(this.gameNames);
         if (this.gameNames.includes(this.game.name)) {
             this.errorService.addMessage(EDITION_PAGE_CONSTANTS.errorGameNameExists);
         }
@@ -132,7 +144,7 @@ export class EditionPageComponent implements OnInit {
     }
 
     resetBoard() {
-        window.location.reload();
+        this.game = { ...this.gameReference };
     }
 
     loadGame() {
@@ -142,12 +154,10 @@ export class EditionPageComponent implements OnInit {
                 .pipe(
                     tap((gameSearched) => {
                         this.game = gameSearched;
+                        this.gameReference = gameSearched;
                         this.gameLoaded = true;
                         this.notificationService.showSuccess(EDITION_PAGE_CONSTANTS.successGameLoaded);
                         this.counterService.initializeCounter(this.objectNumber);
-                        setTimeout(() => {
-                            this.boardElement?.nativeElement?.dispatchEvent(new Event('updateBoard'));
-                        }, 0); // Forcer une mise à jour de l'affichage
                     }),
                     catchError(() => {
                         this.notificationService.showError(EDITION_PAGE_CONSTANTS.errorGameLoad);

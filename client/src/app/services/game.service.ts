@@ -73,6 +73,14 @@ export class GameService {
         );
     }
 
+    verifyGameAccessible(gameId: string): Observable<boolean> {
+        return this.http.get<boolean>(`${this.baseUrl}/validate/${gameId}`).pipe(
+            catchError(() => {
+                return EMPTY;
+            }),
+        );
+    }
+
     createGame(game: Game): Observable<Game> {
         return this.http.post<Game>(`${this.baseUrl}/create`, game).pipe(
             catchError(() => {

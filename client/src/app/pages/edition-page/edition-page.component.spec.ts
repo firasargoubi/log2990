@@ -18,7 +18,7 @@ describe('EditionPageComponent', () => {
 
     beforeEach(waitForAsync(() => {
         // Création des spy objects pour les services
-        const saveServiceSpy = jasmine.createSpyObj('SaveService', ['alertBoardForVerification', 'saveGame'], {
+        const saveServiceSpy = jasmine.createSpyObj('SaveService', ['alertBoardForVerification', 'saveGame', 'getGameNames'], {
             isSave$: new Subject<boolean>(),
             isReset$: of(false),
             currentStatus: {},
