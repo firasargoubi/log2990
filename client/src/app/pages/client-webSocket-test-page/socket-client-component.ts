@@ -14,6 +14,8 @@ import { CommonModule } from '@angular/common';
 export class ChatComponent implements OnInit, OnDestroy {
     messages: string[] = [];
     messageInput: string = '';
+    gameId: string = '';
+    playerName: string = '';
     private messageSubscription!: Subscription;
 
     constructor(private socketService: SocketClientService) {}
@@ -27,8 +29,16 @@ export class ChatComponent implements OnInit, OnDestroy {
     sendMessage(): void {
         if (this.messageInput.trim()) {
             this.socketService.sendMessage(this.messageInput);
-            this.messages.push(this.messageInput); // Ajouter le message à la liste locale
             this.messageInput = ''; // Effacer le champ après l'envoi
+        }
+    }
+
+    createGame(): void {
+        if (this.gameId.trim() && this.playerName.trim()) {
+            console.log(this.gameId, this.playerName);
+            this.socketService.createGame(this.gameId, this.playerName);
+        } else {
+            this.messages.push('Veuillez entrer un ID de jeu et un nom.');
         }
     }
 

@@ -14,12 +14,15 @@ export class SocketClientService {
         });
     }
 
-    // Émission d'un message
+    createGame(gameId: string, playerName: string) {
+        console.log(gameId, playerName);
+        this.socket.emit('createGame', { gameId, playerName });
+    }
+
     sendMessage(message: string): void {
         this.socket.emit('message', message);
     }
 
-    // Écoute des messages
     receiveMessage(): Observable<string> {
         return new Observable((observer) => {
             this.socket.on('message', (data: string) => observer.next(data));

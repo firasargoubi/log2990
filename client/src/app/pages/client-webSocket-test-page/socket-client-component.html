@@ -1,5 +1,12 @@
+<div id="createGameForm">
+  <input [(ngModel)]="gameId" type="text" placeholder="ID de la partie" />
+  <input [(ngModel)]="playerName" type="text" placeholder="Votre nom" />
+  <button (click)="createGame()">Créer la partie</button>
+</div>
+
 <div id="chat">
   <h2>Clavardage</h2>
+
   <div id="messages">
     <div>
       @for (message of messages; track message) {
