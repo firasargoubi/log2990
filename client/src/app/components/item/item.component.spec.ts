@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ItemComponent } from './item.component';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
-import { ObjectsTypes } from '@app/interfaces/objectsTypes';
+import { ObjectsTypes } from '@app/interfaces/objects-types';
 import { of, Subject } from 'rxjs';
 import { OBJECT_NAMES } from '@app/Consts/app.constants';
 
@@ -50,7 +50,7 @@ describe('ItemComponent', () => {
         component.type = ObjectsTypes.BOOTS;
         component.ngOnInit();
 
-        expect(component.spawnCounter).toBe(0);
+        expect(component.spawnCounter).toBeUndefined();
         expect(component.isPlaced).toBe(false);
     });
 
@@ -64,12 +64,6 @@ describe('ItemComponent', () => {
         spawnCounter$.next(0);
         expect(component.spawnCounter).toBe(0);
         expect(component.isPlaced).toBe(true);
-    });
-
-    it('should emit itemAdded event on ngOnInit', () => {
-        spyOn(component.itemAdded, 'emit');
-        component.ngOnInit();
-        expect(component.itemAdded.emit).toHaveBeenCalledWith(component);
     });
 
     it('should update spawnCounter and set isPlaced to true when spawnCounter$ emits 0', () => {
@@ -138,7 +132,7 @@ describe('ItemComponent', () => {
         expect(component.name).toBe(OBJECT_NAMES.vortex);
 
         component.type = ObjectsTypes.RANDOM;
-        expect(component.name).toBe( OBJECT_NAMES.gnome);
+        expect(component.name).toBe(OBJECT_NAMES.gnome);
 
         component.type = 999;
         expect(component.name).toBe(OBJECT_NAMES.undefined);

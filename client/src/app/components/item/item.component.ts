@@ -1,10 +1,10 @@
 import { CdkDrag } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ObjectsTypes } from '@app/interfaces/objectsTypes';
-import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { GAME_IMAGES, OBJECT_NAMES, OBJECTS_DESCRIPTION } from '@app/Consts/app.constants';
+import { ObjectsTypes } from '@app/interfaces/objects-types';
+import { ObjectCounterService } from '@app/services/objects-counter.service';
 
 @Component({
     selector: 'app-item',
@@ -14,10 +14,11 @@ import { GAME_IMAGES, OBJECT_NAMES, OBJECTS_DESCRIPTION } from '@app/Consts/app.
 })
 export class ItemComponent implements OnInit {
     @Input() type: number;
-    @Output() itemAdded = new EventEmitter<ItemComponent>();
+    objectsTypes = ObjectsTypes;
     isPlaced: boolean = false;
     tooltipText: string | null = null;
-    spawnCounter: number = 0;
+    spawnCounter: number;
+    randomCounter: number;
     objectCounterService: ObjectCounterService;
 
     descriptions: { [key: string]: string } = {
@@ -33,6 +34,16 @@ export class ItemComponent implements OnInit {
 
     constructor(objectCounterService: ObjectCounterService) {
         this.objectCounterService = objectCounterService;
+        if (this.type === ObjectsTypes.SPAWN) {
+            this.objectCounterService.spawnCounter$.subscribe((count) => {
+                this.spawnCounter = count;
+            });
+        }
+        if (this.type === ObjectsTypes.RANDOM) {
+            this.objectCounterService.counter$.subscribe((count) => {
+                this.spawnCounter = count;
+            });
+        }
     }
 
     get image(): string {
@@ -85,11 +96,12 @@ export class ItemComponent implements OnInit {
         if (this.type === ObjectsTypes.SPAWN) {
             this.objectCounterService.spawnCounter$.pipe().subscribe((value) => {
                 this.spawnCounter = value;
-                if (value === 0) {
+                if (value <= 0) {
                     this.isPlaced = true;
+                } else {
+                    this.isPlaced = false;
                 }
             });
         }
-        this.itemAdded.emit(this);
     }
 }

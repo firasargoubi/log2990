@@ -114,7 +114,11 @@ export const OBJECTS_DESCRIPTION = {
 export const EDITION_PAGE_CONSTANTS = {
     errorGameNameRequired: 'Le nom du jeu est requis.',
     errorGameDescriptionRequired: 'La description du jeu est requise.',
-    errorInvalidName: 'Le nom est invalide.',
+    errorInvalidSpawns: 'Il faut mettre tous les points de departs (2 min).',
+    errorInvalidMinTiles: 'Il faut que la moitie soit couverte de tuiles de terrain (eau, glace, terre).',
+    errorInvalidAccess: 'Il faut pouvoir acceder a toutes les tuiles',
+    errorInvalidDoors: "Une de vos portes n'est pas valide",
+    errorGameNameExists: 'Ce nom de jeu existe déjà.',
     successGameLoaded: 'Jeu chargé avec succès.',
     errorGameLoad: 'Impossible de charger le jeu.',
     successGameSaved: 'Jeu sauvegardé avec succès.',
@@ -130,3 +134,4 @@ export const OBJECT_COUNT = {
     medium: 4,
     large: 6,
 };
+export const OBJECT_MULTIPLIER = 10;

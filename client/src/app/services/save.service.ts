@@ -1,11 +1,12 @@
 import { inject, Injectable } from '@angular/core';
-import { SaveMessage } from '@app/interfaces/saveMessage';
+import { SaveMessage } from '@app/interfaces/save-message';
 import { Tile } from '@app/interfaces/tile';
-import { TileTypes } from '@app/interfaces/tileTypes';
+import { TileTypes } from '@app/interfaces/tile-types';
 import { Subject } from 'rxjs';
 import { GameService } from './game.service';
 import { Game } from '@app/interfaces/game.model';
 import { catchError } from 'rxjs/operators';
+import { OBJECT_COUNT, OBJECT_MULTIPLIER } from '@app/Consts/app.constants';
 
 const WANTED_TILE_PERCENTAGE = 0.5;
 @Injectable({
@@ -18,6 +19,7 @@ export class SaveService {
     validBoard: boolean = false;
     saveActive = new Subject<boolean>();
     resetActive = new Subject<boolean>();
+    games: Game[] = [];
     isSave$ = this.saveActive.asObservable();
     isReset$ = this.resetActive.asObservable();
     gameService = inject(GameService);
@@ -43,12 +45,20 @@ export class SaveService {
         for (const row of this.board) {
             const newRow: number[] = [];
             for (const tile of row) {
-                const objectValue = tile.object ? tile.object * 10 : 0;
+                const objectValue = tile.object ? tile.object * OBJECT_MULTIPLIER : 0;
                 newRow.push(tile.type + objectValue);
             }
             board.push(newRow);
         }
         return board;
+    }
+
+    updateGames(games: Game[]): void {
+        this.games = games;
+    }
+
+    getGameNames(id: string): string[] {
+        return this.games.filter((game) => game.id !== id).map((game) => game.name);
     }
 
     verifyBoard(board: Tile[][]): void {
@@ -75,8 +85,7 @@ export class SaveService {
             this.gameService
                 .updateGame(game.id, gameData)
                 .pipe(
-                    catchError((error) => {
-                        console.error('Update game failed, creating a new game instead:', error);
+                    catchError(() => {
                         return this.gameService.createGame(gameData);
                     }),
                 )
@@ -85,10 +94,10 @@ export class SaveService {
     }
 
     verifySpawnPoints(): boolean {
-        let count: number = 0;
+        let count = 0;
         for (const row of this.board) {
             for (const tile of row) {
-                if (tile.object === 6) count++;
+                if (tile.object === OBJECT_COUNT.large) count++;
             }
         }
         return count >= 2;

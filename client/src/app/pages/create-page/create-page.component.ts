@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
@@ -9,12 +9,8 @@ import { GameCreationCardComponent } from '@app/components/game-creation-card/ga
 import { Game } from '@app/interfaces/game.model';
 import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
-import { Observable, Subscription, interval } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import { CREATE_PAGE_CONSTANTS, GAME_MODES, GAME_SIZE } from '@app/Consts/app.constants';
-
-const PULLING_INTERVAL = 5000;
-
 @Component({
     selector: 'app-create-page',
     standalone: true,
@@ -22,11 +18,10 @@ const PULLING_INTERVAL = 5000;
     templateUrl: './create-page.component.html',
     styleUrls: ['./create-page.component.scss'],
 })
-export class CreatePageComponent implements OnInit, OnDestroy {
+export class CreatePageComponent implements OnInit {
     @Input() games$: Observable<Game[]> = new Observable<Game[]>();
     games: Game[] = [];
     notificationService = inject(NotificationService);
-    private pollingSubscription!: Subscription;
     private modeTranslation: Record<string, string> = GAME_MODES;
     private sizeTranslation: Record<string, string> = GAME_SIZE;
 
@@ -37,19 +32,6 @@ export class CreatePageComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.loadGames();
-
-        this.pollingSubscription = interval(PULLING_INTERVAL)
-            .pipe(switchMap(() => this.gameService.fetchVisibleGames()))
-            .subscribe({
-                next: (updatedGames) => {
-                    this.games = updatedGames.map((game) => ({
-                        ...game,
-                        mode: this.translateMode(game.mode),
-                        mapSize: this.translateSize(game.mapSize),
-                    }));
-                },
-                error: () => this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorRefreshGames),
-            });
     }
 
     translateMode(mode: string): string {
@@ -60,13 +42,24 @@ export class CreatePageComponent implements OnInit, OnDestroy {
         return this.sizeTranslation[size] || size;
     }
 
-    ngOnDestroy(): void {
-        if (this.pollingSubscription) {
-            this.pollingSubscription.unsubscribe();
-        }
+    onBoxClick(game: Game): void {
+        this.gameService.verifyGameAccessible(game.id).subscribe({
+            next: (isAccessible) => {
+                if (isAccessible) {
+                    this.openBoxFormDialog(game);
+                } else {
+                    this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorGameDeleted);
+                    this.loadGames();
+                }
+            },
+            error: () => {
+                this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorGameDeleted);
+                this.loadGames();
+            },
+        });
     }
 
-    onBoxClick(game: Game): void {
+    openBoxFormDialog(game: Game): void {
         const translatedGame = {
             ...game,
             mode: this.translateMode(game.mode),
@@ -91,8 +84,8 @@ export class CreatePageComponent implements OnInit, OnDestroy {
             next: (allGames) => {
                 this.games = allGames.map((game) => ({
                     ...game,
-                    mode: this.translateMode(game.mode), // ✅ Always translate mode
-                    mapSize: this.translateSize(game.mapSize), // ✅ Always translate size
+                    mode: this.translateMode(game.mode),
+                    mapSize: this.translateSize(game.mapSize),
                 }));
             },
             error: () => this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorLoadingGames),
