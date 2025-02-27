@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { GameControlsComponent } from '@app/components/game-controls/game-controls.component';
 import { PlayerListComponent } from '@app/components/player-list/player-list.component';
+import { GAME_IMAGES } from '@app/Consts/app.constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { GameLobby } from '@common/game-lobby';
 import { Player } from '@common/player';
@@ -16,8 +17,8 @@ export class WaitingPageComponent implements OnInit {
     lobby: GameLobby | null = null;
     currentPlayer: Player = {
         id: '1234',
-        name: 'hamido',
-        avatar: '',
+        name: 'foo',
+        avatar: GAME_IMAGES.fawn,
         isHost: true,
     };
     hostId: string = '1234';
@@ -31,8 +32,8 @@ export class WaitingPageComponent implements OnInit {
         });
         this.lobbyService.addPlayerToLobby(lobbyId, {
             id: '5678',
-            name: 'rapido',
-            avatar: '',
+            name: 'bar',
+            avatar: GAME_IMAGES.bear,
             isHost: false,
         });
     }
