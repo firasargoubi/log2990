@@ -32,17 +32,6 @@ export class CreatePageComponent implements OnInit {
 
     ngOnInit(): void {
         this.loadGames();
-
-        this.gameService.fetchVisibleGames().subscribe({
-            next: (updatedGames) => {
-                this.games = updatedGames.map((game) => ({
-                    ...game,
-                    mode: this.translateMode(game.mode),
-                    mapSize: this.translateSize(game.mapSize),
-                }));
-            },
-            error: () => this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorRefreshGames),
-        });
     }
 
     translateMode(mode: string): string {
@@ -60,9 +49,13 @@ export class CreatePageComponent implements OnInit {
                     this.openBoxFormDialog(game);
                 } else {
                     this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorGameDeleted);
+                    this.loadGames();
                 }
             },
-            error: () => this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorGameDeleted),
+            error: () => {
+                this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorGameDeleted);
+                this.loadGames();
+            },
         });
     }
 

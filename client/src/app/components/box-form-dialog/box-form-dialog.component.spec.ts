@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { GameService } from '@app/services/game.service';
 import { throwError, of } from 'rxjs';
@@ -10,7 +10,6 @@ import { Game } from '@app/interfaces/game.model';
 import { NotificationService } from '@app/services/notification.service';
 import { CREATE_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 
-const TIME = 5000;
 const DEFAULT_STAT_VALUE = 4;
 const INCREASED_ATTRIBUTE = 6;
 const SIX_VALUE_DICE = 6;
@@ -133,40 +132,6 @@ describe('BoxFormDialogComponent', () => {
         expect(component.form.value.defense).toBe(FOUR_VALUE_DICE);
     });
 
-    it('should start polling for game updates and stop on destroy', fakeAsync(() => {
-        const mockGames: Game[] = [
-            {
-                id: '1',
-                name: 'Test Game',
-                isVisible: false,
-                board: [],
-                mapSize: 'medium',
-                mode: 'classic',
-                previewImage: 'path/to/image.jpg',
-                description: 'Test game description',
-                lastModified: new Date(),
-                objects: [],
-            },
-        ];
-        mockGameService.fetchVisibleGames.and.returnValue(of(mockGames));
-
-        component.ngOnInit();
-        tick(TIME);
-
-        expect(component.gameList.length).toBe(1);
-        component.ngOnDestroy();
-        expect(mockGameService.fetchVisibleGames).toHaveBeenCalled();
-    }));
-
-    it('should handle polling error', fakeAsync(() => {
-        mockGameService.fetchVisibleGames.and.returnValue(throwError(() => new Error('Fetch failed')));
-
-        component.ngOnInit();
-        tick(TIME);
-
-        expect(mockNotificationService.showError).toHaveBeenCalledWith('Erreur lors du rafraîchissement des jeux');
-    }));
-
     it('should select avatar correctly', () => {
         const avatar = 'assets/perso/2.jpg';
         component.selectAvatar(avatar);
@@ -198,11 +163,6 @@ describe('BoxFormDialogComponent', () => {
         expect(routerSpy).not.toHaveBeenCalled();
     });
 
-    it('should unsubscribe from polling on destroy', () => {
-        const unsubscribeSpy = spyOn(component['pollingSubscription'], 'unsubscribe');
-        component.ngOnDestroy();
-        expect(unsubscribeSpy).toHaveBeenCalled();
-    });
 
     it('should save form to localStorage and navigate when form is valid', async () => {
         component.gameList = [

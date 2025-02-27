@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { NotificationService } from '@app/services/notification.service';
 
 describe('CreatePageComponent', () => {
     let component: CreatePageComponent;
@@ -19,6 +20,7 @@ describe('CreatePageComponent', () => {
     let matDialogSpy: jasmine.SpyObj<MatDialog>;
     let mockDialogRef: jasmine.SpyObj<MatDialogRef<BoxFormDialogComponent>>;
     let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
+    let notificationServiceSpy: jasmine.SpyObj<NotificationService>;
 
     beforeEach(async () => {
         const mockGamesSubject = new BehaviorSubject<Game[]>([
@@ -56,7 +58,7 @@ describe('CreatePageComponent', () => {
 
         gameServiceSpy = jasmine.createSpyObj('GameService', ['fetchVisibleGames', 'verifyGameAccessible']);
         gameServiceSpy.fetchVisibleGames.and.returnValue(mockGamesSubject.asObservable());
-
+        notificationServiceSpy = jasmine.createSpyObj('NotificationService', ['showSuccess', 'showError']);
         const activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], { snapshot: { params: {} } });
 
         matDialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
@@ -80,6 +82,7 @@ describe('CreatePageComponent', () => {
                 { provide: MatDialog, useValue: matDialogSpy },
                 { provide: ActivatedRoute, useValue: activatedRouteSpy },
                 { provide: MatSnackBar, useValue: snackBarSpy },
+                { provide: NotificationService, useValue: notificationServiceSpy },
             ],
         }).compileComponents();
 
@@ -155,6 +158,24 @@ describe('CreatePageComponent', () => {
         discardPeriodicTasks();
     }));
 
+    it('should check if the game exists before opening the dialog', fakeAsync(() => {
+        gameServiceSpy.verifyGameAccessible.and.returnValue(of(true));
+        component.onBoxClick(component.games[0]);
+        expect(matDialogSpy.open).toHaveBeenCalled();
+    }));
+
+    it('should block the dialog if the game is not available', fakeAsync(() => {
+        gameServiceSpy.verifyGameAccessible.and.returnValue(of(false));
+        component.onBoxClick(component.games[0]);
+        expect(notificationServiceSpy.showError).toHaveBeenCalled();
+    }));
+
+    it('should handle error from server when checking game availability', fakeAsync(() => {
+        gameServiceSpy.verifyGameAccessible.and.returnValue(throwError(() => new Error('Error')));
+        component.onBoxClick(component.games[0]);
+        expect(notificationServiceSpy.showError).toHaveBeenCalled();
+    }));
+
     it('should handle error when fetching games fails', fakeAsync(() => {
         gameServiceSpy.fetchVisibleGames.and.returnValue(throwError(() => new Error('Error')));
 
@@ -162,10 +183,7 @@ describe('CreatePageComponent', () => {
         tick();
         fixture.detectChanges();
 
-        expect(snackBarSpy.open).toHaveBeenCalledWith('Erreur lors du chargement des jeux', 'Fermer', {
-            duration: 3000,
-            panelClass: ['error-notification'],
-        });
+        expect(notificationServiceSpy.showError).toHaveBeenCalled();
 
         discardPeriodicTasks();
     }));

@@ -1,18 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, Inject } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
 import { Game } from '@app/interfaces/game.model';
 import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
-import { Subscription, interval } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
 import { CREATE_PAGE_CONSTANTS, GAME_IMAGES } from '@app/Consts/app.constants';
 
 const DEFAULT_STAT_VALUE = 4;
 const SIX_VALUE_DICE = 6;
-const PULLING_INTERVAL = 5000;
 
 @Component({
     selector: 'app-box-form-dialog',
@@ -20,7 +17,7 @@ const PULLING_INTERVAL = 5000;
     styleUrls: ['./box-form-dialog.component.scss'],
     imports: [CommonModule, RouterModule],
 })
-export class BoxFormDialogComponent implements OnInit, OnDestroy {
+export class BoxFormDialogComponent {
     form: FormGroup;
     gameList: Game[] = [];
     notificationService = inject(NotificationService);
@@ -43,7 +40,6 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
     attributeClicked$: boolean = false;
     diceClicked$: boolean = false;
 
-    private pollingSubscription!: Subscription;
     constructor(
         public dialogRef: MatDialogRef<BoxFormDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: { boxId: string; game: Game; gameList: Game[] },
@@ -68,25 +64,6 @@ export class BoxFormDialogComponent implements OnInit, OnDestroy {
 
     get gameExists(): boolean {
         return this.gameList.some((game) => game.id === this.data.game.id);
-    }
-
-    ngOnInit(): void {
-        this.pollingSubscription = interval(PULLING_INTERVAL)
-            .pipe(switchMap(() => this.gameService.fetchVisibleGames()))
-            .subscribe({
-                next: (updatedGames) => {
-                    if (JSON.stringify(this.gameList) !== JSON.stringify(updatedGames)) {
-                        this.gameList = updatedGames;
-                    }
-                },
-                error: () => this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorRefreshGames),
-            });
-    }
-
-    ngOnDestroy(): void {
-        if (this.pollingSubscription) {
-            this.pollingSubscription.unsubscribe();
-        }
     }
 
     closeDialog(): void {

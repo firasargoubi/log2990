@@ -171,4 +171,26 @@ describe('GameController', () => {
         expect(response.status).to.equal(StatusCodes.BAD_REQUEST);
         expect(response.body.error).to.equal('Fetching game failed');
     });
+
+    it('GET /game/validate/:id should validate a game', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        gameServiceStub.getGameById.resolves(mockGame as any);
+        const response = await request(app).get(`/game/validate/${mockGame.id}`);
+        expect(response.status).to.equal(StatusCodes.OK);
+        expect(response.body.valid).to.equal(true);
+    });
+
+    it('GET /game/validate/:id should return 404 if game invalid', async () => {
+        gameServiceStub.getGameById.resolves(null);
+        const response = await request(app).get(`/game/validate/${mockGame.id}`);
+        expect(response.status).to.equal(StatusCodes.NOT_FOUND);
+        expect(response.body.error).to.equal('Game not found');
+    });
+
+    it('GET /game/validate/:id should return 400 if validation fails', async () => {
+        gameServiceStub.getGameById.rejects(new Error('Validation failed'));
+        const response = await request(app).get(`/game/validate/${mockGame.id}`);
+        expect(response.status).to.equal(StatusCodes.BAD_REQUEST);
+        expect(response.body.error).to.equal('Validation failed');
+    });
 });
