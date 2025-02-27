@@ -163,7 +163,6 @@ describe('BoxFormDialogComponent', () => {
         expect(routerSpy).not.toHaveBeenCalled();
     });
 
-
     it('should save form to localStorage and navigate when form is valid', async () => {
         component.gameList = [
             {

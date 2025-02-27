@@ -39,7 +39,10 @@ describe('BoardComponent', () => {
             currentTool: -1,
             toolSaved: -1,
         });
-        saveServiceSpy = jasmine.createSpyObj('SaveService', ['verifyBoard', 'getGameNames'], { isSave$: new Subject<boolean>(), isReset$: of(false) });
+        saveServiceSpy = jasmine.createSpyObj('SaveService', ['verifyBoard', 'getGameNames'], {
+            isSave$: new Subject<boolean>(),
+            isReset$: of(false),
+        });
         gameServiceSpy = jasmine.createSpyObj('GameService', ['fetchGames']);
         errorServiceSpy = jasmine.createSpyObj('ErrorService', ['handleError']);
 
