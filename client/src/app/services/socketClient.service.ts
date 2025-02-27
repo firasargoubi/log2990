@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { Observable } from 'rxjs';
-import { environement } from 'src/environments/environment';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
     providedIn: 'root',
@@ -10,7 +10,7 @@ export class SocketClientService {
     private socket: Socket;
 
     constructor() {
-        this.socket = io(environement.serverUrl, {
+        this.socket = io(environment.serverUrl, {
             transports: ['websocket', 'polling'],
         });
     }
