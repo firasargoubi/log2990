@@ -22,6 +22,7 @@ export class SaveService {
     validBoard: boolean = false;
     saveActive = new Subject<boolean>();
     resetActive = new Subject<boolean>();
+    games: Game[] = [];
     isSave$ = this.saveActive.asObservable();
     isReset$ = this.resetActive.asObservable();
     gameService = inject(GameService);
@@ -53,6 +54,14 @@ export class SaveService {
             board.push(newRow);
         }
         return board;
+    }
+
+    updateGames(games: Game[]): void {
+        this.games = games;
+    }
+
+    getGameNames(id: string): string[] {
+        return this.games.filter((game) => game.id !== id).map((game) => game.name);
     }
 
     verifyBoard(board: Tile[][]): void {

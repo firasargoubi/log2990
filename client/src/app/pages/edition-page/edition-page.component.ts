@@ -39,9 +39,23 @@ export class EditionPageComponent implements OnInit {
         objects: [],
     };
 
+    gameReference: Game = {
+        id: '',
+        name: '',
+        mapSize: 'small',
+        mode: 'normal',
+        previewImage: '',
+        description: '',
+        lastModified: new Date(),
+        isVisible: true,
+        board: [],
+        objects: [],
+    };
+
     showErrorPopup: boolean = false;
     saveState: boolean = false;
     gameLoaded: boolean = false;
+    gameNames: string[] = [];
     errorMessage: string = '';
 
     saveService = inject(SaveService);
@@ -58,6 +72,7 @@ export class EditionPageComponent implements OnInit {
         this.game.id = this.route.snapshot.params['id'];
         this.game.mode = this.route.snapshot.queryParams['mode'] || 'normal';
         this.game.mapSize = this.route.snapshot.queryParams['size'] || 'large';
+        this.gameNames = this.saveService.getGameNames(this.game.id);
         this.loadGame();
     }
 
@@ -101,7 +116,9 @@ export class EditionPageComponent implements OnInit {
         if (!this.game.description) {
             this.errorService.addMessage(EDITION_PAGE_CONSTANTS.errorGameDescriptionRequired);
         }
-
+        if (this.gameNames.includes(this.game.name)) {
+            this.errorService.addMessage(EDITION_PAGE_CONSTANTS.errorGameNameExists);
+        }
         this.saveService.alertBoardForVerification(true);
         const saveStatus: Partial<SaveMessage> = this.saveService.currentStatus;
 
@@ -127,7 +144,7 @@ export class EditionPageComponent implements OnInit {
     }
 
     resetBoard() {
-        window.location.reload();
+        this.game = { ...this.gameReference };
     }
 
     loadGame() {
@@ -137,12 +154,10 @@ export class EditionPageComponent implements OnInit {
                 .pipe(
                     tap((gameSearched) => {
                         this.game = gameSearched;
+                        this.gameReference = gameSearched;
                         this.gameLoaded = true;
                         this.notificationService.showSuccess(EDITION_PAGE_CONSTANTS.successGameLoaded);
                         this.counterService.initializeCounter(this.objectNumber);
-                        setTimeout(() => {
-                            this.boardElement?.nativeElement?.dispatchEvent(new Event('updateBoard'));
-                        }, 0); // Forcer une mise à jour de l'affichage
                     }),
                     catchError(() => {
                         this.notificationService.showError(EDITION_PAGE_CONSTANTS.errorGameLoad);

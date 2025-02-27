@@ -76,6 +76,19 @@ export class GameController {
             }
         });
 
+        this.router.get('/validate/:id', async (req: Request, res: Response) => {
+            try {
+                const game = await this.gameService.getGameById(req.params.id);
+                if (!game || !game.isVisible) {
+                    res.status(StatusCodes.OK).json(false);
+                } else {
+                    res.status(StatusCodes.OK).json(true);
+                }
+            } catch (error) {
+                res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
+            }
+        });
+
         this.router.use((req: Request, res: Response) => {
             res.status(StatusCodes.NOT_FOUND).json({ error: 'Route not found' });
         });
