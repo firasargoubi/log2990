@@ -1,6 +1,6 @@
 <h2>Formulaire du jeu :</h2>
 
-<form (ngSubmit)="closeDialog()">
+<form (keydown.enter)="onSubmit($event)" (ngSubmit)="onSubmit($event)">
     <div>
         <label for="name">Nom:</label>
         <input id="name" type="text" placeholder="Entre le nom de ton personnage" maxlength="12" (input)="inputName($event)" required />
@@ -46,7 +46,7 @@
 
     <div class="actions">
         <button type="button" (click)="cancel()">Annuler</button>
-        <button mat-button type="submit" [disabled]="!formValid$" (click)="save()">Enregistrer</button>
+        <button mat-button type="button" [disabled]="!formValid$" (click)="save()">Enregistrer</button>
         <button type="button" (click)="resetAttributes()">Réinitialiser</button>
     </div>
 </form>

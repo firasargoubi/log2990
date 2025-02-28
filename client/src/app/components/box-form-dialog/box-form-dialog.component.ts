@@ -7,6 +7,8 @@ import { Game } from '@app/interfaces/game.model';
 import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
 import { CREATE_PAGE_CONSTANTS, GAME_IMAGES } from '@app/Consts/app.constants';
+import { LobbyService } from '@app/services/lobby.service';
+import { Player } from '@common/player';
 
 const DEFAULT_STAT_VALUE = 4;
 const SIX_VALUE_DICE = 6;
@@ -21,6 +23,7 @@ export class BoxFormDialogComponent {
     form: FormGroup;
     gameList: Game[] = [];
     notificationService = inject(NotificationService);
+    lobbyService = inject(LobbyService);
     avatars = [
         GAME_IMAGES.fawn,
         GAME_IMAGES.bear,
@@ -42,7 +45,7 @@ export class BoxFormDialogComponent {
 
     constructor(
         public dialogRef: MatDialogRef<BoxFormDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: { boxId: string; game: Game; gameList: Game[] },
+        @Inject(MAT_DIALOG_DATA) public data: { boxId: string; game: Game; gameList: Game[]; lobbyId: string },
         private gameService: GameService,
         private router: Router,
     ) {
@@ -112,9 +115,10 @@ export class BoxFormDialogComponent {
         this.diceClicked$ = false;
     }
 
-    async linkRoute(): Promise<void> {
-        if (!(this.form.get('name')?.value === 'New Player')) {
-            this.router.navigate(['/waiting']);
+    onSubmit(event: Event): void {
+        event.preventDefault(); // Prevent form refresh
+        if (this.formValid$) {
+            this.save();
         }
     }
 
@@ -126,9 +130,30 @@ export class BoxFormDialogComponent {
             return;
         }
         if (this.form.valid) {
-            localStorage.setItem('form', JSON.stringify(this.form.value));
-            this.linkRoute();
+            const formData = this.form.value;
+            // Create a Player instance using the Player interface
+            const playerData: Player = {
+                id: this.generatePlayerId(),
+                name: formData.name,
+                avatar: formData.avatar,
+                isHost: false,
+            };
+            // Add player to the lobby
+            this.lobbyService.addPlayerToLobby(this.data.lobbyId, playerData);
+            // Redirect to waiting page route waiting/:id
+            this.dialogRef.close();
+            this.router.navigate([`/waiting/${this.data.lobbyId}`], {
+                state: {
+                    playerData,
+                    gameId: this.data.game.id,
+                },
+                replaceUrl: true,
+            });
         }
+    }
+
+    private generatePlayerId(): string {
+        return crypto.randomUUID(); // Generates a secure UUID (e.g., "550e8400-e29b-41d4-a716-446655440000")
     }
 
     private loadGames(): void {

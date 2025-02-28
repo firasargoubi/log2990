@@ -26,6 +26,7 @@ const routes: Routes = [
     { path: 'admin', component: AdminPageComponent },
     { path: 'create', component: CreatePageComponent },
     { path: 'waiting', component: WaitingPageComponent },
+    { path: 'waiting/:id', component: WaitingPageComponent },
     { path: '**', redirectTo: '/home' },
 ];
 

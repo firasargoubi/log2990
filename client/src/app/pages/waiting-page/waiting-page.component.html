@@ -1,13 +1,21 @@
 <a routerLink="/main" class="logo-link">
     <img class="logo" src="assets/images/logo.png" alt="Logo" />
 </a>
-<div class="lobby-container">
-    @if (currentPlayer.isHost&&lobby) {
-    <app-game-controls [lobby]="lobby"> </app-game-controls>
-    }
-    <h2>Salle d'attente</h2>
-    <p>Code d'accès : {{ lobby?.id }}</p>
 
+<div class="lobby-container">
+    <!-- Show controls only if the current player is the host -->
+    @if (currentPlayer.isHost && lobby) {
+    <app-game-controls [lobby]="lobby"></app-game-controls>
+    }
+
+    <h2>Salle d'attente</h2>
+
+    <!-- ✅ Display the correct lobby ID -->
+    <p>
+        Code d'accès : <strong>{{ lobby?.id }}</strong>
+    </p>
+
+    <!-- ✅ Display players in the lobby -->
     <app-player-list [currentPlayer]="currentPlayer" [players]="lobby?.players || []" [hostId]="hostId" (removePlayer)="removePlayer($event)">
     </app-player-list>
 </div>

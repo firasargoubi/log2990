@@ -11,6 +11,7 @@ import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
 import { Observable } from 'rxjs';
 import { CREATE_PAGE_CONSTANTS, GAME_MODES, GAME_SIZE } from '@app/Consts/app.constants';
+import { LobbyService } from '@app/services/lobby.service';
 @Component({
     selector: 'app-create-page',
     standalone: true,
@@ -22,6 +23,8 @@ export class CreatePageComponent implements OnInit {
     @Input() games$: Observable<Game[]> = new Observable<Game[]>();
     games: Game[] = [];
     notificationService = inject(NotificationService);
+    lobbyService = inject(LobbyService);
+    lobbyId: string = '';
     private modeTranslation: Record<string, string> = GAME_MODES;
     private sizeTranslation: Record<string, string> = GAME_SIZE;
 
@@ -46,6 +49,10 @@ export class CreatePageComponent implements OnInit {
         this.gameService.verifyGameAccessible(game.id).subscribe({
             next: (isAccessible) => {
                 if (isAccessible) {
+                    // Create a new lobby if not already created
+                    if (!this.lobbyId) {
+                        this.lobbyId = this.lobbyService.createLobby(4);
+                    }
                     this.openBoxFormDialog(game);
                 } else {
                     this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorGameDeleted);
@@ -67,7 +74,7 @@ export class CreatePageComponent implements OnInit {
         };
 
         const dialogRef = this.dialog.open(BoxFormDialogComponent, {
-            data: { boxId: game.id, game: translatedGame, gameList: this.games },
+            data: { boxId: game.id, game: translatedGame, gameList: this.games, lobbyId: this.lobbyId },
         });
 
         dialogRef.afterClosed().subscribe({
