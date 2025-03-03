@@ -22,8 +22,20 @@ export class SocketClientService {
         });
     }
 
-    createGame(gameId: string, playerName: string) {
-        this.socket.emit('createGame', { gameId, playerName });
+    createGame(playerName: string) {
+        this.socket.emit('createGame', { playerName });
+    }
+
+    receiveGameCreated(): Observable<{ gameId: string }> {
+        return new Observable((observer) => {
+            this.socket.on('gameCreated', (data: { gameId: string }) => observer.next(data));
+        });
+    }
+
+    receivePlayerJoined(): Observable<{ gameId: string; playerId: string; playerName: string }> {
+        return new Observable((observer) => {
+            this.socket.on('playerJoined', (data: { gameId: string; playerId: string; playerName: string }) => observer.next(data));
+        });
     }
 
     joinGame(gameId: string, playerName: string): void {

@@ -4,6 +4,11 @@ import { Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
+interface CreatedGame {
+    gameId: string;
+    players: { name: string }[];
+}
+
 @Component({
     selector: 'app-chat',
     templateUrl: './socket-client-component.html',
@@ -13,12 +18,11 @@ import { CommonModule } from '@angular/common';
 })
 export class ChatComponent implements OnInit, OnDestroy {
     messages: string[] = [];
-    createdGames: string[] = []; // Liste locale des jeux créés
+    createdGames: CreatedGame[] = [];
     messageInput: string = '';
-    createGameId: string = ''; // ID pour créer une partie
-    createPlayerName: string = ''; // Nom du joueur pour créer une partie
-    joinGameId: string = ''; // ID pour rejoindre une partie
-    joinPlayerName: string = ''; // Nom du joueur pour rejoindre une partie
+    createPlayerName: string = '';
+    joinGameId: string = '';
+    joinPlayerName: string = '';
     private messageSubscription!: Subscription;
 
     constructor(private socketService: SocketClientService) {}
@@ -32,30 +36,51 @@ export class ChatComponent implements OnInit, OnDestroy {
             console.error('Erreur reçue:', error);
             this.messages.push(`Erreur: ${error}`);
         });
+
+        this.socketService.receiveGameCreated().subscribe((data) => {
+            this.createdGames.push({ gameId: data.gameId, players: [{ name: this.createPlayerName }] });
+        });
+
+        this.socketService.receivePlayerJoined().subscribe((data) => {
+            console.log('coucou je suis dans receivePlayerJoined');
+            const game = this.createdGames.find((g) => g.gameId === data.gameId);
+            if (game) {
+                console.log("coucou j'ai trouvé un jeu");
+                const playerExists = game.players.some((player) => player.name === data.playerName);
+                if (!playerExists) {
+                    game.players.push({ name: data.playerName });
+                    // Utilisez concat pour forcer une nouvelle référence
+                    this.createdGames = this.createdGames.concat(); // ou utilisez [...this.createdGames]
+                    console.log('Après mise à jour des joueurs dans le jeu:', game);
+                }
+            } else {
+                this.createdGames.push({
+                    gameId: data.gameId,
+                    players: [{ name: data.playerName }],
+                });
+            }
+
+            // Vérifiez la mise à jour de createdGames ici
+            for (const createdGame of this.createdGames) {
+                console.log('Partie actuelle:', createdGame);
+                console.log('Liste des joueurs:', createdGame.players);
+            }
+        });
     }
 
     sendMessage(): void {
         if (this.messageInput.trim()) {
             this.socketService.sendMessage(this.messageInput);
-            this.messageInput = ''; // Effacer le champ après l'envoi
+            this.messageInput = '';
         }
     }
     createGame(): void {
-        const gameId = this.createGameId.trim().toLowerCase();
         const playerName = this.createPlayerName.trim();
-
-        if (!gameId || !playerName) {
+        if (!playerName) {
             this.messages.push('Veuillez entrer un ID de jeu et un nom.');
             return;
         }
-        if (this.createdGames.includes(gameId)) {
-            this.messages.push(`Le jeu "${gameId}" existe déjà.`);
-            return;
-        }
-        console.log('Envoi de la création du jeu:', gameId, playerName);
-        this.socketService.createGame(gameId, playerName);
-        this.createdGames.push(gameId);
-        this.createGameId = '';
+        this.socketService.createGame(playerName);
         this.createPlayerName = '';
     }
 
@@ -69,7 +94,6 @@ export class ChatComponent implements OnInit, OnDestroy {
         }
         console.log('Rejoindre la partie:', gameId, playerName);
         this.socketService.joinGame(gameId, playerName);
-
         this.joinGameId = '';
         this.joinPlayerName = '';
     }

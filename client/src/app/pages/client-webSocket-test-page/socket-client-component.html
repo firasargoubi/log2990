@@ -5,10 +5,25 @@
 </div>
 
 <div id="createGameForm">
-  <input [(ngModel)]="createGameId" type="text" placeholder="ID de la partie" />
   <input [(ngModel)]="createPlayerName" type="text" placeholder="Votre nom" />
   <button (click)="createGame()">Créer la partie</button>
 </div>
+
+@if (createdGames) {
+  <div id="createdGames">
+    <h2>Parties créées</h2>
+    <div>
+      @for (game of createdGames; track game) {
+        <div>
+          <p>{{game.gameId}}</p>
+          @for (player of game.players; track player) {
+            <p>{{player.name}}</p>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}
 
 <div id="chat">
   <h2>Clavardage</h2>

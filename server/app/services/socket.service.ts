@@ -1,6 +1,6 @@
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
-
+import { v4 as uuidv4 } from 'uuid';
 interface Player {
     id: string;
     name: string;
@@ -26,8 +26,8 @@ export class SocketService {
     init(): void {
         this.io.on('connection', (socket: Socket) => {
             console.log(`User connected: ${socket.id}`);
-            socket.on('createGame', (data: { gameId: string; playerName: string }) => {
-                const gameId = data.gameId.trim().toLowerCase();
+            socket.on('createGame', (data: { playerName: string }) => {
+                const gameId = uuidv4();
                 const playerName = data.playerName.trim();
                 if (this.rooms[gameId]) {
                     socket.emit('error', 'Cette partie existe déjà.');
@@ -35,6 +35,7 @@ export class SocketService {
                 }
                 this.rooms[gameId] = { id: gameId, players: [], isStarted: false };
                 this.joinGame(socket, gameId, playerName);
+                socket.emit('gameCreated', { gameId });
             });
 
             socket.on('joinGame', (data: { gameId: string; playerName: string }) => {
