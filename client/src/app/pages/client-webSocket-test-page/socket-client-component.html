@@ -4,11 +4,7 @@
     <!-- Section de Création de Partie -->
     <div class="section">
         <h3>Créer une Partie</h3>
-        <input 
-            type="text" 
-            [(ngModel)]="createPlayerName" 
-            placeholder="Entrez votre nom"
-        />
+        <input type="text" [(ngModel)]="createPlayerName" placeholder="Entrez votre nom" />
         <button (click)="createGame()">Créer</button>
     </div>
 
@@ -20,9 +16,7 @@
                 <strong>Code de la Partie :</strong> {{ game.gameId }} <br />
                 <strong>Joueurs :</strong>
                 <ul>
-                    <li *ngFor="let player of game.players">
-                        {{ player.name }}
-                    </li>
+                    <li *ngFor="let player of game.players">{{ player.name }}</li>
                 </ul>
             </li>
         </ul>
@@ -31,30 +25,18 @@
     <!-- Section de Rejoindre une Partie -->
     <div class="section">
         <h3>Rejoindre une Partie</h3>
-        <input 
-            type="text" 
-            [(ngModel)]="joinGameId" 
-            placeholder="Code de la partie"
-        />
-        <input 
-            type="text" 
-            [(ngModel)]="joinPlayerName" 
-            placeholder="Votre nom"
-        />
+        <input type="text" [(ngModel)]="joinGameId" placeholder="Code de la partie" />
+        <input type="text" [(ngModel)]="joinPlayerName" placeholder="Votre nom" />
         <button (click)="joinGame()">Rejoindre</button>
     </div>
 
     <!-- Section de Messages -->
-    <div class="section">
+    <div class="section" *ngIf="currentGame && messagesByGame[currentGame.gameId]">
         <h3>Chat</h3>
         <ul>
-            <li *ngFor="let message of messages">{{ message }}</li>
+            <li *ngFor="let message of messagesByGame[currentGame.gameId]"><strong>{{ message.playerName }} :</strong> {{ message.message }}</li>
         </ul>
-        <input 
-            type="text" 
-            [(ngModel)]="messageInput" 
-            placeholder="Écrire un message"
-        />
+        <input type="text" [(ngModel)]="messageInput" placeholder="Écrire un message" />
         <button (click)="sendMessage()">Envoyer</button>
     </div>
 </div>

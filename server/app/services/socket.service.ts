@@ -8,13 +8,14 @@ interface GameRoom {
     id: string;
     players: Player[];
     isStarted: boolean;
+    messages: { playerName: string; message: string }[];
 }
 
 export class SocketService {
     private io: Server;
     private rooms: Record<string, GameRoom> = {};
     constructor(server: HttpServer) {
-        console.log('Initialisation du serveur WebSocket...');
+        // console.log('Initialisation du serveur WebSocket...');
         this.io = new Server(server, {
             cors: {
                 origin: '*',
@@ -25,8 +26,7 @@ export class SocketService {
 
     init(): void {
         this.io.on('connection', (socket: Socket) => {
-            console.log(`User connected: ${socket.id}`);
-
+            // console.log(`User connected: ${socket.id}`);
             socket.on('createGame', (data: { playerName: string }) => {
                 this.createGame(socket, data.playerName);
             });
@@ -37,28 +37,37 @@ export class SocketService {
 
             socket.on('message', (data: { gameId: string; message: string; playerName: string }) => {
                 const { gameId, message, playerName } = data;
+
                 if (!this.rooms[gameId]) {
                     socket.emit('error', "La partie n'existe pas.");
                     return;
                 }
-                console.log(`Message reçu de ${playerName} dans la partie ${gameId}: ${message}`);
-                this.io.to(gameId).emit('message', { playerName, message });
-            });
+                const game = this.rooms[gameId];
+                const isPlayerInGame = game.players.some((player) => player.name === playerName);
+                if (!isPlayerInGame) {
+                    socket.emit('error', 'Vous ne pouvez pas écrire dans ce chat.');
+                    return;
+                }
+                game.messages.push({ playerName, message });
+                // console.log(`Message reçu de ${playerName} dans la partie ${gameId}: ${message}`);
 
-            socket.on('disconnect', () => {
-                this.handleDisconnect(socket);
+                this.io.to(gameId).emit('message', { gameId, playerName, message });
             });
         });
     }
     private createGame(socket: Socket, playerName: string) {
         const gameId = this.generateUniqueGameId();
-
-        console.log(`Partie créée avec le code : ${gameId}`);
-
-        this.rooms[gameId] = { id: gameId, players: [], isStarted: false };
+        // console.log(`Partie créée avec le code : ${gameId}`);
+        if (!this.rooms[gameId]) {
+            this.rooms[gameId] = { id: gameId, players: [], isStarted: false, messages: [] };
+        }
         this.joinGame(socket, gameId, playerName);
 
-        socket.emit('gameCreated', { gameId });
+        if (!socket.rooms.has(gameId)) {
+            // console.log("Envoi de l'événement gameCreated pour", gameId);
+            socket.emit('gameCreated', { gameId });
+        }
+        this.io.to(gameId).emit('chatCreated', { gameId, messages: [] });
     }
 
     private joinGame(socket: Socket, gameId: string, playerName: string) {
@@ -75,33 +84,14 @@ export class SocketService {
 
         this.io.to(gameId).emit('playerJoined', { gameId, playerName });
     }
-
+    // maybe mauvaise a revoir
     private generateUniqueGameId(): string {
         let gameId: string;
         do {
-            gameId = Math.floor(1000 + Math.random() * 9000).toString(); // Code 4 chiffres
-        } while (this.rooms[gameId]); // Vérifie unicité dans `this.rooms`
+            gameId = Math.floor(1000 + Math.random() * 9000).toString();
+        } while (this.rooms[gameId]);
 
         return gameId;
-    }
-
-    private handleDisconnect(socket: Socket) {
-        console.log(`User disconnected: ${socket.id}`);
-
-        for (const [gameId, game] of Object.entries(this.rooms)) {
-            const playerIndex = game.players.findIndex((p) => p.id === socket.id);
-
-            if (playerIndex !== -1) {
-                game.players.splice(playerIndex, 1);
-                this.io.to(gameId).emit('playerLeft', game.players);
-
-                if (game.players.length === 0) {
-                    delete this.rooms[gameId];
-                    console.log(`Salle ${gameId} supprimée car vide.`);
-                }
-                break;
-            }
-        }
     }
 
     private joinGameRequest(socket: Socket, data: { gameId: string; playerName: string }) {
@@ -126,5 +116,14 @@ export class SocketService {
         }
 
         this.joinGame(socket, gameId, playerName);
+        this.io.to(gameId).emit('playerListUpdated', {
+            gameId,
+            players: game.players.map((player) => ({ name: player.name })),
+        });
+
+        socket.emit('previousMessages', {
+            gameId,
+            messages: game.messages,
+        });
     }
 }

@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
-
+interface ChatMessage {
+    playerName: string;
+    message: string;
+}
 @Injectable({
     providedIn: 'root',
 })
@@ -46,12 +49,49 @@ export class SocketClientService {
         this.socket.emit('message', { gameId, message, playerName });
     }
 
-    receiveMessage(): Observable<{ playerName: string; message: string }> {
+    receiveMessage(): Observable<{ gameId: string; playerName: string; message: string }> {
         return new Observable((observer) => {
-            this.socket.on('message', (data: { playerName: string; message: string }) => observer.next(data));
+            this.socket.on('message', (data: { gameId: string; playerName: string; message: string }) => {
+                observer.next(data);
+            });
 
             return () => {
                 this.socket.off('message');
+            };
+        });
+    }
+
+    receivePreviousMessages(): Observable<{ gameId: string; messages: { playerName: string; message: string }[] }> {
+        return new Observable((observer) => {
+            this.socket.on('previousMessages', (data: { gameId: string; messages: { playerName: string; message: string }[] }) => {
+                observer.next(data);
+            });
+
+            return () => {
+                this.socket.off('previousMessages');
+            };
+        });
+    }
+
+    receivePlayerListUpdated(): Observable<{ gameId: string; players: { name: string }[] }> {
+        return new Observable((observer) => {
+            this.socket.on('playerListUpdated', (data: { gameId: string; players: { name: string }[] }) => {
+                observer.next(data);
+            });
+
+            return () => {
+                this.socket.off('playerListUpdated');
+            };
+        });
+    }
+    receiveChatCreated(): Observable<{ gameId: string; messages: ChatMessage[] }> {
+        return new Observable((observer) => {
+            this.socket.on('chatCreated', (data: { gameId: string; messages: ChatMessage[] }) => {
+                observer.next(data);
+            });
+
+            return () => {
+                this.socket.off('chatCreated');
             };
         });
     }
