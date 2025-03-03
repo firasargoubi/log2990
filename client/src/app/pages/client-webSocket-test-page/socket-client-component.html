@@ -1,40 +1,60 @@
-<div id="joinGameForm">
-  <input [(ngModel)]="joinGameId" type="text" placeholder="ID de la partie" />
-  <input [(ngModel)]="joinPlayerName" type="text" placeholder="Votre nom" />
-  <button (click)="joinGame()">Rejoindre la partie</button>
-</div>
+<div class="container">
+    <h2>Chat et Gestion des Parties</h2>
 
-<div id="createGameForm">
-  <input [(ngModel)]="createPlayerName" type="text" placeholder="Votre nom" />
-  <button (click)="createGame()">Créer la partie</button>
-</div>
-
-@if (createdGames) {
-  <div id="createdGames">
-    <h2>Parties créées</h2>
-    <div>
-      @for (game of createdGames; track game) {
-        <div>
-          <p>{{game.gameId}}</p>
-          @for (player of game.players; track player) {
-            <p>{{player.name}}</p>
-          }
-        </div>
-      }
+    <!-- Section de Création de Partie -->
+    <div class="section">
+        <h3>Créer une Partie</h3>
+        <input 
+            type="text" 
+            [(ngModel)]="createPlayerName" 
+            placeholder="Entrez votre nom"
+        />
+        <button (click)="createGame()">Créer</button>
     </div>
-  </div>
-}
 
-<div id="chat">
-  <h2>Clavardage</h2>
+    <!-- Section des Parties Créées -->
+    <div class="section">
+        <h3>Parties en Cours</h3>
+        <ul>
+            <li *ngFor="let game of createdGames">
+                <strong>Code de la Partie :</strong> {{ game.gameId }} <br />
+                <strong>Joueurs :</strong>
+                <ul>
+                    <li *ngFor="let player of game.players">
+                        {{ player.name }}
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
 
-  <div id="messages">
-    <div>
-      @for (message of messages; track message) {
-        <p>{{message}} </p>
-    }
-    </div>      
-  </div>
-  <input [(ngModel)]="messageInput" type="text" placeholder="Écrivez un message..." />
-  <button (click)="sendMessage()">Envoyer</button>
+    <!-- Section de Rejoindre une Partie -->
+    <div class="section">
+        <h3>Rejoindre une Partie</h3>
+        <input 
+            type="text" 
+            [(ngModel)]="joinGameId" 
+            placeholder="Code de la partie"
+        />
+        <input 
+            type="text" 
+            [(ngModel)]="joinPlayerName" 
+            placeholder="Votre nom"
+        />
+        <button (click)="joinGame()">Rejoindre</button>
+    </div>
+
+    <!-- Section de Messages -->
+    <div class="section">
+        <h3>Chat</h3>
+        <ul>
+            <li *ngFor="let message of messages">{{ message }}</li>
+        </ul>
+        <input 
+            type="text" 
+            [(ngModel)]="messageInput" 
+            placeholder="Écrire un message"
+        />
+        <button (click)="sendMessage()">Envoyer</button>
+    </div>
 </div>

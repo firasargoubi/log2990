@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { io, Socket } from 'socket.io-client';
 import { Observable } from 'rxjs';
+import { io, Socket } from 'socket.io-client';
 
 @Injectable({
     providedIn: 'root',
@@ -42,13 +42,17 @@ export class SocketClientService {
         this.socket.emit('joinGame', { gameId, playerName });
     }
 
-    sendMessage(message: string): void {
-        this.socket.emit('message', message);
+    sendMessage(gameId: string, message: string, playerName: string): void {
+        this.socket.emit('message', { gameId, message, playerName });
     }
 
-    receiveMessage(): Observable<string> {
+    receiveMessage(): Observable<{ playerName: string; message: string }> {
         return new Observable((observer) => {
-            this.socket.on('message', (data: string) => observer.next(data));
+            this.socket.on('message', (data: { playerName: string; message: string }) => observer.next(data));
+
+            return () => {
+                this.socket.off('message');
+            };
         });
     }
 }

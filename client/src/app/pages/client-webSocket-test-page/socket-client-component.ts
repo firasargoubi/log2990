@@ -1,8 +1,8 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { SocketClientService } from '@app/services/socketClient.service';
 import { Subscription } from 'rxjs';
-import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 
 interface CreatedGame {
     gameId: string;
@@ -23,13 +23,15 @@ export class ChatComponent implements OnInit, OnDestroy {
     createPlayerName: string = '';
     joinGameId: string = '';
     joinPlayerName: string = '';
+    currentPlayerName: string = '';
+    currentGame: CreatedGame | null = null;
     private messageSubscription!: Subscription;
 
     constructor(private socketService: SocketClientService) {}
 
     ngOnInit(): void {
         this.messageSubscription = this.socketService.receiveMessage().subscribe((message) => {
-            this.messages.push(message);
+            this.messages.push(`${message.playerName}: ${message.message}`);
         });
 
         this.socketService.receiveError().subscribe((error) => {
@@ -38,64 +40,83 @@ export class ChatComponent implements OnInit, OnDestroy {
         });
 
         this.socketService.receiveGameCreated().subscribe((data) => {
-            this.createdGames.push({ gameId: data.gameId, players: [{ name: this.createPlayerName }] });
+            const existingGame = this.createdGames.find((g) => g.gameId === data.gameId);
+            if (!existingGame) {
+                this.createdGames.push({ gameId: data.gameId, players: [{ name: this.createPlayerName }] });
+            }
         });
 
         this.socketService.receivePlayerJoined().subscribe((data) => {
-            console.log('coucou je suis dans receivePlayerJoined');
             const game = this.createdGames.find((g) => g.gameId === data.gameId);
             if (game) {
-                console.log("coucou j'ai trouvé un jeu");
                 const playerExists = game.players.some((player) => player.name === data.playerName);
                 if (!playerExists) {
                     game.players.push({ name: data.playerName });
-                    // Utilisez concat pour forcer une nouvelle référence
-                    this.createdGames = this.createdGames.concat(); // ou utilisez [...this.createdGames]
-                    console.log('Après mise à jour des joueurs dans le jeu:', game);
+                    this.createdGames = [...this.createdGames];
                 }
             } else {
-                this.createdGames.push({
-                    gameId: data.gameId,
-                    players: [{ name: data.playerName }],
-                });
-            }
-
-            // Vérifiez la mise à jour de createdGames ici
-            for (const createdGame of this.createdGames) {
-                console.log('Partie actuelle:', createdGame);
-                console.log('Liste des joueurs:', createdGame.players);
+                this.createdGames.push({ gameId: data.gameId, players: [{ name: data.playerName }] });
             }
         });
     }
 
     sendMessage(): void {
+        if (!this.currentPlayerName) {
+            this.messages.push('Vous devez être dans une partie pour envoyer un message.');
+            return;
+        }
+
+        let activeGame = this.createdGames.find((g) => g.players.some((p) => p.name.toLowerCase() === this.currentPlayerName.toLowerCase()));
+
+        if (!activeGame && this.joinGameId) {
+            activeGame = this.createdGames.find((g) => g.gameId === this.joinGameId);
+        }
+
+        if (!activeGame) {
+            this.messages.push('Vous devez être dans une partie pour envoyer un message.');
+            return;
+        }
+
         if (this.messageInput.trim()) {
-            this.socketService.sendMessage(this.messageInput);
+            this.socketService.sendMessage(activeGame.gameId, this.messageInput, this.currentPlayerName);
             this.messageInput = '';
         }
     }
+
     createGame(): void {
         const playerName = this.createPlayerName.trim();
         if (!playerName) {
-            this.messages.push('Veuillez entrer un ID de jeu et un nom.');
+            this.messages.push('Veuillez entrer un nom.');
             return;
         }
+
         this.socketService.createGame(playerName);
         this.createPlayerName = '';
+        this.currentPlayerName = playerName;
+
+        this.socketService.receiveGameCreated().subscribe((data) => {
+            const existingGame = this.createdGames.find((g) => g.gameId === data.gameId);
+            if (!existingGame) {
+                const newGame: CreatedGame = { gameId: data.gameId, players: [{ name: playerName }] };
+                this.createdGames.push(newGame);
+                this.currentGame = newGame;
+            }
+        });
     }
 
     joinGame(): void {
-        const gameId = this.joinGameId.trim().toLowerCase();
+        const gameId = this.joinGameId.trim();
         const playerName = this.joinPlayerName.trim();
 
         if (!gameId || !playerName) {
             this.messages.push('Veuillez entrer un ID de jeu et un nom.');
             return;
         }
-        console.log('Rejoindre la partie:', gameId, playerName);
+
         this.socketService.joinGame(gameId, playerName);
         this.joinGameId = '';
         this.joinPlayerName = '';
+        this.currentPlayerName = playerName;
     }
 
     ngOnDestroy(): void {
