@@ -1,0 +1,51 @@
+.error-message {
+    color: #f44336;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+  }
+  
+  form {
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    
+    div {
+      margin-bottom: 16px;
+    }
+    
+    button {
+      margin-right: 8px;
+      padding: 8px 16px;
+      border-radius: 4px;
+      
+      &:first-of-type {
+        background-color: #3f51b5;
+        color: white;
+        border: none;
+        
+        &:disabled {
+          background-color: #cccccc;
+          cursor: not-allowed;
+        }
+      }
+      
+      &:last-of-type {
+        background-color: transparent;
+        border: 1px solid #ccc;
+      }
+    }
+    
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      
+      &:focus {
+        outline: none;
+        border-color: #3f51b5;
+      }
+    }
+  }
