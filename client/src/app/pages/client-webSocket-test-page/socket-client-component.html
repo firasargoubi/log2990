@@ -29,6 +29,31 @@
         <input type="text" [(ngModel)]="joinPlayerName" placeholder="Votre nom" />
         <button (click)="joinGame()">Rejoindre</button>
     </div>
+    <!-- Section de pour terminer une partie par un créateur -->
+    <div class="section">
+        <h3>Terminer une Partie</h3>
+        <input 
+            type="text" 
+            [(ngModel)]="endGameId" 
+            placeholder="Code de la partie"
+        />
+        <button *ngIf="currentPlayerIsHost" (click)="endGame()">Terminer</button>
+    </div>
+
+    <div class="section">
+        <h3>Quitter une partie</h3>
+        <input 
+            type="text" 
+            [(ngModel)]="gameToLeave" 
+            placeholder="Code de la partie"
+        />
+        <input 
+            type="text" 
+            [(ngModel)]="playerToLeave" 
+            placeholder="Votre nom"
+        />
+        <button *ngIf="!currentPlayerIsHost" (click)="leaveGame()">Quitter</button>
+    </div>
 
     <!-- Section de Messages -->
     <div class="section" *ngIf="currentGame && messagesByGame[currentGame.gameId]">

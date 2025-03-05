@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { SocketClientService } from '@app/services/socketClient.service';
+import { SocketClientService } from '@app/services/socket-client.service';
 import { Subscription } from 'rxjs';
 
 interface CreatedGame {
     gameId: string;
     players: { name: string }[];
+    hostId?: string;
 }
 interface ChatMessage {
     playerName: string;
@@ -22,13 +23,18 @@ interface ChatMessage {
 })
 export class ChatComponent implements OnInit, OnDestroy {
     messagesByGame: { [gameId: string]: ChatMessage[] } = {};
+    messages: string[] = [];
     createdGames: CreatedGame[] = [];
     messageInput: string = '';
     createPlayerName: string = '';
+    endGameId: string = '';
     joinGameId: string = '';
     joinPlayerName: string = '';
     currentPlayerName: string = '';
     currentGame: CreatedGame | null = null;
+    currentPlayerIsHost: boolean = false;
+    gameToLeave: string = '';
+    playerToLeave: string = '';
     private messageSubscription!: Subscription;
 
     constructor(private socketService: SocketClientService) {}
@@ -42,7 +48,6 @@ export class ChatComponent implements OnInit, OnDestroy {
         });
 
         this.socketService.receiveError().subscribe((error) => {
-            // console.error('Erreur reçue:', error);
             if (this.currentGame) {
                 this.messagesByGame[this.currentGame.gameId].push({ playerName: 'Système', message: error });
             }
@@ -88,8 +93,6 @@ export class ChatComponent implements OnInit, OnDestroy {
         });
 
         this.socketService.receivePlayerListUpdated().subscribe((data) => {
-            // console.log(' Mise à jour des joueurs pour la partie :', data);
-
             const game = this.createdGames.find((g) => g.gameId === data.gameId);
             if (game) {
                 game.players = data.players;
@@ -97,12 +100,17 @@ export class ChatComponent implements OnInit, OnDestroy {
             }
         });
         this.socketService.receiveChatCreated().subscribe((data) => {
-            // console.log('Zone de clavardage créée pour la partie :', data.gameId);
-
             if (!this.messagesByGame[data.gameId]) {
                 this.messagesByGame[data.gameId] = data.messages;
             }
             this.currentGame = this.createdGames.find((g) => g.gameId === data.gameId) || null;
+        });
+        this.socketService.receiveGameEnded().subscribe((data) => {
+            this.messages.push(`La partie ${data.gameId} a été terminée.`);
+            this.createdGames = this.createdGames.filter((g) => g.gameId !== data.gameId);
+            if (this.currentGame?.gameId === data.gameId) {
+                this.currentGame = null;
+            }
         });
     }
 
@@ -125,6 +133,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.socketService.createGame(playerName);
         this.createPlayerName = '';
         this.currentPlayerName = playerName;
+        this.currentPlayerIsHost = true;
 
         this.socketService.receiveGameCreated().subscribe((data) => {
             const newGame: CreatedGame = { gameId: data.gameId, players: [{ name: playerName }] };
@@ -133,6 +142,29 @@ export class ChatComponent implements OnInit, OnDestroy {
             this.messagesByGame[newGame.gameId] = [];
         });
     }
+
+    endGame(): void {
+        const endGameId = this.endGameId.trim();
+        if (!endGameId) {
+            this.messages.push('Vous devez être dans une partie pour la terminer.');
+            return;
+        }
+        this.socketService.endGame(endGameId);
+    }
+
+    leaveGame(): void {
+        const gameToLeave = this.createdGames.find((game) => game.gameId === this.gameToLeave);
+        const player = gameToLeave?.players.find((p: { name: string }) => p.name === this.playerToLeave);
+        if (gameToLeave && player) {
+            this.messages.push(`Le joueur ${player.name} a quitté la partie.`);
+            this.socketService.leaveGame(gameToLeave.gameId, player.name);
+            gameToLeave.players = gameToLeave.players.filter((p: { name: string }) => p.name !== player.name);
+            this.createdGames = [...this.createdGames];
+            this.currentPlayerName = '';
+        }
+        this.gameToLeave = '';
+    }
+
     joinGame(): void {
         const gameId = this.joinGameId.trim();
         const playerName = this.joinPlayerName.trim();
