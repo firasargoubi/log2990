@@ -1,0 +1,61 @@
+#chat {
+  max-width: 500px; /* Augmenter la largeur pour plus d'espace */
+  margin: auto;
+  border: 1px solid #ccc;
+  padding: 20px; /* Plus d'espace pour une présentation aérée */
+  background-color: #f9f9f9; /* Ajouter un fond léger */
+  border-radius: 8px; /* Coins arrondis */
+}
+
+h2 {
+  text-align: center; /* Centrer le titre */
+  margin-bottom: 20px; /* Espacement en dessous du titre */
+}
+
+#messages {
+  height: 300px;
+  overflow-y: auto;
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 20px; /* Espacement entre les messages et le champ d'entrée */
+  padding-right: 10px; /* Ajout d'un padding pour un meilleur alignement */
+}
+
+input {
+  width: calc(100% - 20px); /* Ajuster la largeur pour qu'elle occupe tout l'espace */
+  padding: 10px; /* Un peu plus d'espace pour une saisie confortable */
+  margin-bottom: 10px; /* Espacement entre les champs */
+  border-radius: 4px; /* Coins arrondis */
+  border: 1px solid #ccc;
+  font-size: 16px; /* Augmenter la taille de la police pour plus de confort */
+}
+
+button {
+  width: 100%; /* Le bouton occupe toute la largeur disponible */
+  padding: 10px; /* Ajouter un peu de padding pour un bouton plus grand */
+  background-color: #007bff; /* Couleur de fond pour attirer l'attention */
+  color: white;
+  border: none;
+  border-radius: 4px; /* Coins arrondis */
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0056b3; /* Changer la couleur du bouton au survol */
+}
+
+#chat input[type="text"] {
+  margin-bottom: 10px;
+}
+
+#chat .form-container {
+  display: flex;
+  flex-direction: column;
+}
+
+#messages p {
+  padding: 5px 0;
+  margin: 0;
+  border-bottom: 1px solid #ddd; /* Séparer les messages par une ligne fine */
+}

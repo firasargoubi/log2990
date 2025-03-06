@@ -49,6 +49,7 @@
         "@common": "out/common"
     },
     "dependencies": {
+        "@types/socket.io": "^3.0.1",
         "cookie-parser": "1.4.7",
         "cors": "2.8.5",
         "express": "4.21.2",
@@ -60,10 +61,13 @@
         "prettier": "3.4.2",
         "reflect-metadata": "0.2.2",
         "serve-favicon": "2.5.0",
+        "socket.io": "^4.8.1",
+        "socket.io-client": "^4.8.1",
         "swagger-jsdoc": "6.2.8",
         "swagger-ui-express": "5.0.0",
         "typedi": "0.10.0",
-        "uuid": "^11.0.5"
+        "uuid": "^11.0.5",
+        "ws": "^8.18.1"
     },
     "devDependencies": {
         "@types/body-parser": "1.19.5",

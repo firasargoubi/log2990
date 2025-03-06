@@ -11,6 +11,7 @@ import { MainPageComponent } from '@app/pages/main-page/main-page.component';
 import { WaitingPageComponent } from '@app/pages/waiting-page/waiting-page.component';
 import { environment } from './environments/environment';
 import { CreatePageComponent } from '@app/pages/create-page/create-page.component';
+import { ChatComponent  } from '@app/pages/client-webSocket-test-page/socket-client-component';
 
 if (environment.production) {
     enableProdMode();
@@ -27,6 +28,7 @@ const routes: Routes = [
     { path: 'create', component: CreatePageComponent },
     { path: 'waiting', component: WaitingPageComponent },
     { path: 'waiting/:id', component: WaitingPageComponent },
+    { path: 'socketTest', component: ChatComponent },
     { path: '**', redirectTo: '/home' },
 ];
 
