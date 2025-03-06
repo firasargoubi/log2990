@@ -5,16 +5,13 @@ import { FormsModule } from '@angular/forms';
 import { TileComponent } from '@app/components/tile/tile.component';
 import { Coordinates } from '@app/interfaces/coordinates';
 import { Game } from '@app/interfaces/game.model';
-import { MapSize } from '@app/interfaces/map-size';
 import { Tile } from '@app/interfaces/tile';
-import { ErrorService } from '@app/services/error.service';
-import { GameService } from '@app/services/game.service';
+import { BoardService } from '@app/services/board.service';
 import { MouseService } from '@app/services/mouse.service';
 import { SaveService } from '@app/services/save.service';
 import { TileService } from '@app/services/tile.service';
-import { OBJECT_MULTIPLIER } from '@app/Consts/app.constants';
+import { GameSize, GameType, RIGHT_CLICK } from '@app/Consts/app.constants';
 
-const RIGHT_CLICK = 2;
 @Component({
     selector: 'app-board',
     imports: [TileComponent, CommonModule, FormsModule],
@@ -25,8 +22,8 @@ export class BoardComponent implements OnInit {
     @Input() game: Game = {
         id: '',
         name: '',
-        mapSize: 'small',
-        mode: 'normal',
+        mapSize: GameSize.Small,
+        mode: GameType.Classic,
         previewImage: '',
         description: '',
         lastModified: new Date(),
@@ -35,40 +32,29 @@ export class BoardComponent implements OnInit {
         objects: [],
     };
     @ViewChildren(TileComponent) tileComponents!: QueryList<TileComponent>;
-    board: Tile[][] = [];
-    selectedTiles: Coordinates[] = [];
-    objectHeld: boolean = false;
-    mouseService = inject(MouseService);
-    tileService = inject(TileService);
-    saveService = inject(SaveService);
-    errorService = inject(ErrorService);
-    gameService = inject(GameService);
 
-    constructor(private cdr: ChangeDetectorRef) {
+    private mouseService = inject(MouseService);
+    private tileService = inject(TileService);
+    private saveService = inject(SaveService);
+    private boardService = inject(BoardService);
+    private cdr: ChangeDetectorRef = inject(ChangeDetectorRef);
+
+    constructor() {
         this.saveService.isSave$.pipe(takeUntilDestroyed()).subscribe((isActive: boolean) => {
             if (isActive) {
                 this.reloadTiles();
-                this.saveService.verifyBoard(this.board);
+                this.saveService.verifyBoard(this.boardService.board);
             }
         });
         this.tileService.resetTool();
     }
 
     get mapSize(): number {
-        switch (this.game.mapSize) {
-            case 'small':
-                return MapSize.SMALL;
-            case 'medium':
-                return MapSize.MEDIUM;
-            case 'large':
-                return MapSize.LARGE;
-            default:
-                return MapSize.SMALL;
-        }
+        return this.boardService.getMapSize(this.game.mapSize);
     }
 
     get tiles(): Tile[][] {
-        return this.board;
+        return this.boardService.board;
     }
 
     ngOnInit() {
@@ -77,41 +63,22 @@ export class BoardComponent implements OnInit {
     }
 
     initializeBoard(): void {
-        this.board = [];
-        if (this.game.id) {
-            for (let i = 0; i < this.mapSize; i++) {
-                const row: Tile[] = [];
-                for (let j = 0; j < this.mapSize; j++) {
-                    const tileType = this.game.board[i][j] % OBJECT_MULTIPLIER;
-                    const objectType = Math.floor(this.game.board[i][j] / OBJECT_MULTIPLIER);
-                    row.push({ type: tileType, object: objectType, x: i, y: j, id: `${i}-${j}` });
-                }
-                this.board.push(row);
-            }
-        } else {
-            for (let i = 0; i < this.mapSize; i++) {
-                const row: Tile[] = [];
-                for (let j = 0; j < this.mapSize; j++) {
-                    row.push({ type: 0, object: 0, x: i, y: j, id: `${i}-${j}` });
-                }
-                this.board.push(row);
-            }
-        }
+        this.boardService.initializeBoard(this.game, this.mapSize);
     }
 
     loadBoard(board: Tile[][]): void {
-        this.board = board;
+        this.boardService.loadBoard(board);
     }
 
     onMouseUpBoard(): void {
         this.mouseService.onMouseUp();
-        this.objectHeld = false;
+        this.boardService.objectHeld = false;
         this.tileService.getToolSaved();
     }
 
     onMouseOverBoard(tile: Tile) {
         this.mouseService.onMouseMove({ x: tile.x, y: tile.y });
-        if (this.mouseService.mousePressed && !this.objectHeld) {
+        if (this.mouseService.mousePressed && !this.boardService.objectHeld) {
             this.modifyTile(tile);
         }
     }
@@ -127,14 +94,14 @@ export class BoardComponent implements OnInit {
                 this.tileService.deleteTool();
             }
         } else if (tile.object) {
-            this.objectHeld = true;
+            this.boardService.objectHeld = true;
             return;
         }
         this.modifyTile(tile);
     }
 
     deleteObject(tile: Tile) {
-        tile.object = 0;
+        this.boardService.deleteObject(tile);
     }
 
     onMouseLeaveBoard() {
@@ -143,7 +110,9 @@ export class BoardComponent implements OnInit {
 
     onObjectChanged(event: number, tile: Tile) {
         tile.object = event;
+        this.boardService.notifyBoardChange();
     }
+
     reloadTiles() {
         for (let i = 0; i < this.mapSize ** 2; i++) {
             const tileComponent = this.tileComponents.get(i);
@@ -152,8 +121,10 @@ export class BoardComponent implements OnInit {
             }
         }
     }
-    modifyTile(coordinate: Coordinates): void {
-        this.tileService.modifyTile(this.board[coordinate.x][coordinate.y]);
+
+    modifyTile(tile: Coordinates): void {
+        this.tileService.modifyTile(this.boardService.board[tile.x][tile.y]);
+        this.boardService.notifyBoardChange();
     }
 
     onRightClickBoard(event: MouseEvent): void {

@@ -69,7 +69,7 @@ export class TileComponent implements OnInit {
             this.objectID = id;
             const item = new ItemComponent(this.counterService);
             item.type = objectData.id;
-            item.tooltipText = objectData.description;
+            // Item component doesn't have tooltipText property
             return item;
         }
         return null;

@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { RouterLink } from '@angular/router';
 import { GameListComponent } from '@app/components/game-list/game-list.component';
-import { ADMIN_PAGE_CONSTANTS, GAME_MODES, GAME_SIZE } from '@app/Consts/app.constants';
+import { ADMIN_PAGE_CONSTANTS, GameSize, GameType } from '@app/Consts/app.constants';
 import { Game } from '@app/interfaces/game.model';
 import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
@@ -21,22 +21,20 @@ export class AdminPageComponent implements OnInit {
     private saveService = inject(SaveService);
     private notificationService = inject(NotificationService);
     private isFirstLoad = true;
-    private modeTranslation: Record<string, string> = GAME_MODES;
-    private sizeTranslation: Record<string, string> = GAME_SIZE;
 
     ngOnInit(): void {
         this.fetchGames();
     }
 
-    translateMode(mode: string): string {
-        return this.modeTranslation[mode] || mode;
+    private translateMode(mode: string): GameType {
+        return mode as GameType;
     }
 
-    translateSize(size: string): string {
-        return this.sizeTranslation[size] || size;
+    private translateSize(size: string): GameSize {
+        return size as GameSize;
     }
 
-    fetchGames() {
+    fetchGames(): void {
         this.gameService
             .fetchGames()
             .pipe(
@@ -60,11 +58,11 @@ export class AdminPageComponent implements OnInit {
             .subscribe();
     }
 
-    onDeleteGame() {
+    onDeleteGame(): void {
         this.fetchGames();
     }
 
-    onToggleVisibility() {
+    onToggleVisibility(): void {
         this.fetchGames();
     }
 }

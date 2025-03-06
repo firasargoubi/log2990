@@ -3,6 +3,7 @@ import { Component, inject, Inject } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
+import { PageUrl } from '@app/Consts/route-constants';
 import { Game } from '@app/interfaces/game.model';
 import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
@@ -20,7 +21,12 @@ const SIX_VALUE_DICE = 6;
 export class BoxFormDialogComponent {
     form: FormGroup;
     gameList: Game[] = [];
-    notificationService = inject(NotificationService);
+    // Services
+    private notificationService = inject(NotificationService);
+    private router = inject(Router);
+    // Route constants
+    readonly PageUrl = PageUrl;
+
     avatars = [
         GAME_IMAGES.fawn,
         GAME_IMAGES.bear,
@@ -44,7 +50,6 @@ export class BoxFormDialogComponent {
         public dialogRef: MatDialogRef<BoxFormDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: { boxId: string; game: Game; gameList: Game[] },
         private gameService: GameService,
-        private router: Router,
     ) {
         this.loadGames();
 
@@ -112,9 +117,9 @@ export class BoxFormDialogComponent {
         this.diceClicked$ = false;
     }
 
-    async linkRoute(): Promise<void> {
+    linkRoute(): void {
         if (!(this.form.get('name')?.value === 'New Player')) {
-            this.router.navigate(['/waiting']);
+            this.router.navigate([PageUrl.Waiting]);
         }
     }
 

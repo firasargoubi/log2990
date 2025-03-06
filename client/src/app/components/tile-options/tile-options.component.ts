@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { TileComponent } from '@app/components/tile/tile.component';
 import { Tile } from '@app/interfaces/tile';
-import { TileTypes } from '@app/interfaces/tile-types';
+import { TileTypes } from '@app/Consts/app.constants';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TileService } from '@app/services/tile.service';
 
@@ -14,15 +14,14 @@ import { TileService } from '@app/services/tile.service';
 })
 export class TileOptionsComponent implements OnInit {
     options: Tile[] = [];
-
-    tileService = inject(TileService);
-
     descriptions: { [key: string]: string } = {
         [TileTypes.Water]: "L'eau minimise les mouvements",
         [TileTypes.Ice]: 'Attention la glace est très glissante',
         [TileTypes.DoorClosed]: 'Une porte peut être ouverte!.',
         [TileTypes.Wall]: 'Un mur empêce tous les mouvements.',
     };
+
+    private tileService = inject(TileService);
 
     get tiles(): Tile[] {
         return this.options;
@@ -32,7 +31,7 @@ export class TileOptionsComponent implements OnInit {
         this.initializeOptions();
     }
 
-    initializeOptions(): void {
+    private initializeOptions(): void {
         this.options = [];
         const MAX_TILE = 6;
         for (let i = TileTypes.Water; i <= MAX_TILE; i++) {
@@ -58,7 +57,7 @@ export class TileOptionsComponent implements OnInit {
         }
     }
 
-    setAllTilesUnselected(): void {
+    private setAllTilesUnselected(): void {
         this.options.forEach((tile) => (tile.selected = false));
     }
 }

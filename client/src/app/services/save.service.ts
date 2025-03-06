@@ -12,26 +12,34 @@ const WANTED_TILE_PERCENTAGE = 0.5;
 const SMALL_MAP = 10;
 const MEDIUM_MAP = 15;
 const LARGE_MAP = 20;
+
 @Injectable({
     providedIn: 'root',
 })
 export class SaveService {
-    board: Tile[][] = [];
-    countSeen: number = 0;
+    private board: Tile[][] = [];
+    private countSeen: number = 0;
+
     currentStatus: Partial<SaveMessage>;
-    validBoard: boolean = false;
-    saveActive = new Subject<boolean>();
-    resetActive = new Subject<boolean>();
-    games: Game[] = [];
+    private saveActive = new Subject<boolean>();
+    private resetActive = new Subject<boolean>();
+    private games: Game[] = [];
+
     isSave$ = this.saveActive.asObservable();
     isReset$ = this.resetActive.asObservable();
-    gameService = inject(GameService);
+    private gameService = inject(GameService);
 
-    get boardSize(): number {
+    /**
+     * Get the total number of cells in the board
+     */
+    private get boardSize(): number {
         return this.board.length * this.board[0].length;
     }
 
-    get boardTerrainTiles(): number {
+    /**
+     * Get the number of terrain tiles on the board
+     */
+    private get boardTerrainTiles(): number {
         let count = 0;
         for (const row of this.board) {
             for (const tile of row) {
@@ -43,6 +51,9 @@ export class SaveService {
         return count;
     }
 
+    /**
+     * Convert the board to a 2D array of integers
+     */
     get intBoard(): number[][] {
         const board: number[][] = [];
         for (const row of this.board) {
@@ -56,14 +67,23 @@ export class SaveService {
         return board;
     }
 
+    /**
+     * Update the list of games
+     */
     updateGames(games: Game[]): void {
         this.games = games;
     }
 
+    /**
+     * Get a list of game names, excluding the one with the given ID
+     */
     getGameNames(id: string): string[] {
         return this.games.filter((game) => game.id !== id).map((game) => game.name);
     }
 
+    /**
+     * Verify the board for valid configuration
+     */
     verifyBoard(board: Tile[][]): void {
         this.board = board;
         this.currentStatus = {
@@ -74,10 +94,13 @@ export class SaveService {
         };
     }
 
+    /**
+     * Save a game to the server
+     */
     saveGame(game: Game): void {
         const gameData: Game = {
             ...game,
-            board: this.intBoard, // Ensure board data is included
+            board: this.intBoard,
             lastModified: new Date(),
             isVisible: false,
         };
@@ -96,6 +119,9 @@ export class SaveService {
         }
     }
 
+    /**
+     * Verify that the board has the correct number of spawn points
+     */
     verifySpawnPoints(size: number): boolean {
         let count = 0;
         for (const row of this.board) {
@@ -115,6 +141,9 @@ export class SaveService {
         }
     }
 
+    /**
+     * Verify that doors are correctly placed
+     */
     verifyDoors(): boolean {
         for (let i = 0; i < this.board.length; i++) {
             for (let j = 0; j < this.board[i].length; j++) {
@@ -130,23 +159,29 @@ export class SaveService {
         return true;
     }
 
+    /**
+     * Verify that doors connect to walls correctly
+     */
     verifyConnectingDoors(i: number, j: number): boolean {
-        return (
-            (this.board[i - 1][j].type < TileTypes.DoorClosed &&
-                this.board[i + 1][j].type < TileTypes.DoorClosed &&
-                this.board[i][j - 1].type === TileTypes.Wall &&
-                this.board[i][j + 1].type === TileTypes.Wall) ||
-            (this.board[i - 1][j].type === TileTypes.Wall &&
-                this.board[i + 1][j].type === TileTypes.Wall &&
-                this.board[i][j - 1].type < TileTypes.DoorClosed &&
-                this.board[i][j + 1].type < TileTypes.DoorClosed)
-        );
+        // Check for horizontal door (walls on sides, open spaces above and below)
+        const isHorizontalDoor = this.isTileAccessible(i - 1, j) && this.isTileAccessible(i + 1, j) && this.isWall(i, j - 1) && this.isWall(i, j + 1);
+
+        // Check for vertical door (walls above and below, open spaces on sides)
+        const isVerticalDoor = this.isWall(i - 1, j) && this.isWall(i + 1, j) && this.isTileAccessible(i, j - 1) && this.isTileAccessible(i, j + 1);
+
+        return isHorizontalDoor || isVerticalDoor;
     }
 
+    /**
+     * Verify that enough tiles are terrain
+     */
     verifyTilePercentage(): boolean {
         return this.boardTerrainTiles / this.boardSize >= WANTED_TILE_PERCENTAGE;
     }
 
+    /**
+     * Verify that all tiles are accessible
+     */
     verifyAccessible(): boolean {
         let i = 0;
         let j = 0;
@@ -168,7 +203,10 @@ export class SaveService {
         return this.countSeen === this.boardTerrainTiles;
     }
 
-    resetSeen(): void {
+    /**
+     * Reset the seen status for all tiles
+     */
+    private resetSeen(): void {
         for (const row of this.board) {
             for (const tile of row) {
                 tile.seen = false;
@@ -176,6 +214,34 @@ export class SaveService {
         }
     }
 
+    private isWall(i: number, j: number): boolean {
+        return this.isInBounds(i, j) && this.board[i][j].type === TileTypes.Wall;
+    }
+
+    /**
+     * Check if a tile is accessible (not a wall and not a door)
+     */
+    private isTileAccessible(i: number, j: number): boolean {
+        return this.isInBounds(i, j) && this.board[i][j].type < TileTypes.DoorClosed;
+    }
+
+    /**
+     * Check if coordinates are within board bounds
+     */
+    private isInBounds(i: number, j: number): boolean {
+        return i >= 0 && i < this.board.length && j >= 0 && j < this.board[0].length;
+    }
+
+    /**
+     * Check if a position is valid and not a wall
+     */
+    private isValid(i: number, j: number): boolean {
+        return this.isInBounds(i, j) && this.board[i][j].type !== TileTypes.Wall;
+    }
+
+    /**
+     * Depth-first search to verify all tiles are accessible
+     */
     verifyAccessibleDFS(i: number, j: number): void {
         if (this.isValid(i - 1, j) && !this.board[i - 1][j].seen) {
             this.board[i - 1][j].seen = true;
@@ -197,17 +263,17 @@ export class SaveService {
             this.countSeen++;
             this.verifyAccessibleDFS(i, j + 1);
         }
-        return;
     }
-
-    isValid(i: number, j: number): boolean {
-        return i >= 0 && i < this.board.length && j >= 0 && j < this.board.length && this.board[i][j].type !== TileTypes.Wall;
-    }
-
+    /**
+     * Notify components that the board should be verified
+     */
     alertBoardForVerification(value: boolean) {
         this.saveActive.next(value);
     }
 
+    /**
+     * Notify components that the board should be reset
+     */
     alertBoardForReset(value: boolean) {
         this.resetActive.next(value);
     }
