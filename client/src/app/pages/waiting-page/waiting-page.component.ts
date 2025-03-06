@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { GameControlsComponent } from '@app/components/game-controls/game-controls.component';
 import { PlayerListComponent } from '@app/components/player-list/player-list.component';
@@ -7,6 +7,7 @@ import { GAME_IMAGES } from '@app/Consts/app.constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { GameLobby } from '@common/game-lobby';
 import { Player } from '@common/player';
+import { CurrentPlayerService } from '@app/services/current-player.service';
 
 @Component({
     selector: 'app-waiting-page',
@@ -20,32 +21,24 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
         id: '0000',
         name: 'Unknown',
         avatar: GAME_IMAGES.fawn,
-        isHost: true,
+        isHost: false,
+        life: 0,
+        speed: 0,
+        attack: 0,
+        defense: 0,
     };
     hostId: string = '0000';
     private lobbySubscription!: Subscription;
 
-    private router = inject(Router);
     private route = inject(ActivatedRoute);
     private lobbyService = inject(LobbyService);
+    private currentPlayerService = inject(CurrentPlayerService);
 
     constructor() {
-        // Extract navigation state for player data (if available)
-        const nav = this.router.getCurrentNavigation();
-        if (nav?.extras?.state) {
-            const state = nav.extras.state as { playerData: Player; gameId: string };
-            if (state.playerData) {
-                this.currentPlayer = {
-                    id: crypto.randomUUID(),
-                    name: state.playerData.name,
-                    avatar: state.playerData.avatar,
-                    isHost: true,
-                };
-                this.hostId = this.currentPlayer.id;
-            }
-        } else {
-            // Optionally redirect if no state was passed
-            this.router.navigate(['/create'], { replaceUrl: true });
+        const storedData = this.currentPlayerService.getCurrentPlayer();
+        if (storedData && storedData.player) {
+            this.currentPlayer = storedData.player;
+            this.hostId = storedData.player.id;
         }
     }
 

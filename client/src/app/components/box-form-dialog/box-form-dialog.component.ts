@@ -9,9 +9,9 @@ import { NotificationService } from '@app/services/notification.service';
 import { CREATE_PAGE_CONSTANTS, GAME_IMAGES } from '@app/Consts/app.constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { Player } from '@common/player';
+import { CurrentPlayerService } from '@app/services/current-player.service';
 
 const DEFAULT_STAT_VALUE = 4;
-const SIX_VALUE_DICE = 6;
 
 @Component({
     selector: 'app-box-form-dialog',
@@ -24,6 +24,7 @@ export class BoxFormDialogComponent {
     gameList: Game[] = [];
     notificationService = inject(NotificationService);
     lobbyService = inject(LobbyService);
+    currentPlayerService = inject(CurrentPlayerService);
     avatars = [
         GAME_IMAGES.fawn,
         GAME_IMAGES.bear,
@@ -42,6 +43,8 @@ export class BoxFormDialogComponent {
     formValid$: boolean = false;
     attributeClicked$: boolean = false;
     diceClicked$: boolean = false;
+    increasedAttribute: string | null = null;
+    diceAttribute: string | null = null;
 
     constructor(
         public dialogRef: MatDialogRef<BoxFormDialogComponent>,
@@ -69,6 +72,10 @@ export class BoxFormDialogComponent {
         return this.gameList.some((game) => game.id === this.data.game.id);
     }
 
+    get isFormComplete(): boolean {
+        return this.form.valid && !!this.increasedAttribute && !!this.diceAttribute;
+    }
+
     closeDialog(): void {
         if (this.form.valid) {
             this.dialogRef.close(this.form.value);
@@ -90,18 +97,14 @@ export class BoxFormDialogComponent {
 
     increase(attribute: string): void {
         if (!this.attributeClicked$) {
-            const formControl = this.form.get(attribute);
-            const currentValue = formControl?.value;
-            formControl?.setValue(currentValue + 2);
             this.attributeClicked$ = true;
+            this.increasedAttribute = attribute;
         }
     }
 
     pickDice(attribute: string): void {
-        const opposite = attribute === 'attack' ? 'defense' : 'attack';
-        this.form.get(attribute)?.setValue(SIX_VALUE_DICE);
-        this.form.get(opposite)?.setValue(DEFAULT_STAT_VALUE);
         this.diceClicked$ = true;
+        this.diceAttribute = attribute;
     }
 
     resetAttributes(): void {
@@ -116,14 +119,22 @@ export class BoxFormDialogComponent {
     }
 
     onSubmit(event: Event): void {
-        event.preventDefault(); // Prevent form refresh
-        if (this.formValid$) {
+        event.preventDefault();
+        if (this.isFormComplete) {
             this.save();
+        } else {
+            this.notificationService.showError(
+                'Veuillez attribuer le bonus de +2 pour la vie ou la vitesse et le bonus de dé (6 faces) pour l’attaque ou la défense.',
+            );
         }
     }
 
     save(): void {
         this.form.updateValueAndValidity();
+        if (!this.increasedAttribute || !this.diceAttribute) {
+            this.notificationService.showError('Veuillez remplir toutes les conditions de bonus.');
+            return;
+        }
         const gameExists = this.gameList.some((game) => game.id === this.data.game.id);
         if (!gameExists || !this.data.game.isVisible) {
             this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorGameDeleted);
@@ -131,29 +142,46 @@ export class BoxFormDialogComponent {
         }
         if (this.form.valid) {
             const formData = this.form.value;
-            // Create a Player instance using the Player interface
+            const bonus: { life?: number; speed?: number; attack?: number; defense?: number } = {};
+            if (this.increasedAttribute === 'life') {
+                bonus.life = 2;
+            } else if (this.increasedAttribute === 'speed') {
+                bonus.speed = 2;
+            }
+            if (!this.diceAttribute) {
+                if (this.increasedAttribute === 'attack') {
+                    bonus.attack = 2;
+                } else if (this.increasedAttribute === 'defense') {
+                    bonus.defense = 2;
+                }
+            }
+            if (this.diceAttribute === 'attack') {
+                bonus.attack = 6;
+                bonus.defense = 4;
+            } else if (this.diceAttribute === 'defense') {
+                bonus.defense = 6;
+                bonus.attack = 4;
+            }
             const playerData: Player = {
                 id: this.generatePlayerId(),
                 name: formData.name,
                 avatar: formData.avatar,
                 isHost: false,
+                life: formData.life,
+                speed: formData.speed,
+                attack: formData.attack,
+                defense: formData.defense,
+                bonus,
             };
-            // Add player to the lobby
             this.lobbyService.addPlayerToLobby(this.data.lobbyId, playerData);
-            // Redirect to waiting page route waiting/:id
+            this.currentPlayerService.setCurrentPlayer(playerData, this.data.game.id);
             this.dialogRef.close();
-            this.router.navigate([`/waiting/${this.data.lobbyId}`], {
-                state: {
-                    playerData,
-                    gameId: this.data.game.id,
-                },
-                replaceUrl: true,
-            });
+            this.router.navigate([`/waiting/${this.data.lobbyId}`], { replaceUrl: true });
         }
     }
 
     private generatePlayerId(): string {
-        return crypto.randomUUID(); // Generates a secure UUID (e.g., "550e8400-e29b-41d4-a716-446655440000")
+        return crypto.randomUUID();
     }
 
     private loadGames(): void {
