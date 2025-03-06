@@ -9,13 +9,14 @@ import { Player } from '@common/player';
 export class LobbyService {
     private lobbies = new Map<string, BehaviorSubject<GameLobby>>();
 
-    createLobby(maxPlayers: number): string {
+    createLobby(maxPlayers: number, gameId: string): string {
         const lobbyId = this.generateId();
         const newLobby: GameLobby = {
             id: lobbyId,
             players: [],
             isLocked: false,
             maxPlayers,
+            gameId,
         };
         this.lobbies.set(lobbyId, new BehaviorSubject<GameLobby>(newLobby));
         return lobbyId;
@@ -30,7 +31,6 @@ export class LobbyService {
         if (lobbySubject) {
             const lobby = lobbySubject.value;
             if (!lobby.isLocked && lobby.players.length < lobby.maxPlayers) {
-                // If the lobby has no players, make the added player the host
                 if (lobby.players.length === 0) {
                     player.isHost = true;
                 } else {

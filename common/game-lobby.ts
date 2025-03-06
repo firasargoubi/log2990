@@ -5,4 +5,5 @@ export interface GameLobby {
     players: Player[];
     isLocked: boolean;
     maxPlayers: number;
+    gameId: string;
 }

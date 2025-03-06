@@ -49,9 +49,8 @@ export class CreatePageComponent implements OnInit {
         this.gameService.verifyGameAccessible(game.id).subscribe({
             next: (isAccessible) => {
                 if (isAccessible) {
-                    // Create a new lobby if not already created
                     if (!this.lobbyId) {
-                        this.lobbyId = this.lobbyService.createLobby(4);
+                        this.lobbyId = this.lobbyService.createLobby(4, game.id);
                     }
                     this.openBoxFormDialog(game);
                 } else {
