@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose';
+import { Game as GameInterface } from '@common/game.interface';
 
 const gameSchema = new Schema({
     id: { type: String, required: true, unique: true },
@@ -10,6 +11,7 @@ const gameSchema = new Schema({
     lastModified: { type: Date, default: Date.now },
     isVisible: { type: Boolean, required: true },
     board: { type: [[Number]], required: true, default: Array },
+    objects: { type: Array, required: true, default: Array },
 });
 
-export const game = model('Game', gameSchema);
+export const game = model<GameInterface>('Game', gameSchema);

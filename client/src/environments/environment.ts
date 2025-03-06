@@ -4,7 +4,7 @@
 
 export const environment = {
     production: false,
-    serverUrl: 'http://localhost:3000/api/game',
+    serverUrl: 'http://localhost:3000/',
     serverWebSocketUrl: 'http://localhost:3000',
 };
 
