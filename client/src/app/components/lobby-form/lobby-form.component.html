@@ -1,0 +1,28 @@
+<h2>Joindre une partie</h2>
+<form>
+    <div>
+        <label for="id">Identifiant de partie: </label>
+        <input
+            id="id"
+            type="text"
+            name="gameid"
+            [(ngModel)]="gameid"
+            (input)="resetError()"
+            placeholder="Entre l'identifiant de la partie à rejoindre"
+            maxlength="6"
+            required
+        />
+    </div>
+
+    <!-- Message d'erreur -->
+    <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+    </div>
+
+    <div>
+        <button type="button" (click)="validateGameId()" [disabled]="isLoading || !gameid">
+            {{ isLoading ? 'Vérification...' : 'Rejoindre' }}
+        </button>
+        <button type="button" (click)="closeDialog()">Annuler</button>
+    </div>
+</form>
