@@ -5,8 +5,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { BoardComponent } from '@app/components/board/board.component';
 import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
-import { EDITION_PAGE_CONSTANTS, OBJECT_COUNT, GameSize, GameType } from '@app/Consts/app.constants';
-import { Game } from '@common/game.interface';
+import { EDITION_PAGE_CONSTANTS, OBJECT_COUNT } from '@app/Consts/app.constants';
+import { Game, GameSize, GameType } from '@common/game.interface';
 import { MapSize } from '@app/interfaces/map-size';
 import { BoardService } from '@app/services/board.service';
 import { ErrorService } from '@app/services/error.service';
@@ -27,7 +27,6 @@ import { catchError, EMPTY, tap } from 'rxjs';
 export class EditionPageComponent implements OnInit {
     @ViewChild('board', { static: false }) boardElement: ElementRef;
 
-    // Service injections
     private notificationService = inject(NotificationService);
     private saveService = inject(SaveService);
     private errorService = inject(ErrorService);
@@ -39,7 +38,6 @@ export class EditionPageComponent implements OnInit {
     private router = inject(Router);
     private route = inject(ActivatedRoute);
 
-    // Component state
     game: Game = this.createEmptyGame();
     gameReference: Game = this.createEmptyGame();
     showErrorPopup: boolean = false;
@@ -51,21 +49,18 @@ export class EditionPageComponent implements OnInit {
     constructor() {
         this.gameLoaded = false;
         this.game.id = this.route.snapshot.params['id'];
-        this.game.mode = this.route.snapshot.queryParams['mode'] ? GameType.Classic : GameType.Classic;
-        this.game.mapSize = this.route.snapshot.queryParams['size'] ? GameSize.Large : GameSize.Small;
+        this.game.mode = this.route.snapshot.queryParams['mode'] ? GameType.classic : GameType.classic;
+        this.game.mapSize = this.route.snapshot.queryParams['size'] ? GameSize.large : GameSize.small;
         this.gameNames = this.saveService.getGameNames(this.game.id);
         this.loadGame();
     }
 
-    /**
-     * Create an empty game object
-     */
     private createEmptyGame(): Game {
         return {
             id: '',
             name: '',
-            mapSize: GameSize.Small,
-            mode: GameType.Classic,
+            mapSize: GameSize.small,
+            mode: GameType.classic,
             previewImage: '',
             description: '',
             lastModified: new Date(),
@@ -77,11 +72,11 @@ export class EditionPageComponent implements OnInit {
 
     get mapSize(): number {
         switch (this.game.mapSize) {
-            case GameSize.Small:
+            case GameSize.small:
                 return MapSize.SMALL;
-            case GameSize.Medium:
+            case GameSize.medium:
                 return MapSize.MEDIUM;
-            case GameSize.Large:
+            case GameSize.large:
                 return MapSize.LARGE;
             default:
                 return MapSize.SMALL;
@@ -90,11 +85,11 @@ export class EditionPageComponent implements OnInit {
 
     get objectNumber(): number {
         switch (this.game.mapSize) {
-            case GameSize.Small:
+            case GameSize.small:
                 return OBJECT_COUNT.small;
-            case GameSize.Medium:
+            case GameSize.medium:
                 return OBJECT_COUNT.medium;
-            case GameSize.Large:
+            case GameSize.large:
                 return OBJECT_COUNT.large;
             default:
                 return OBJECT_COUNT.small;
@@ -110,18 +105,13 @@ export class EditionPageComponent implements OnInit {
 
     async saveBoard() {
         try {
-            // First validate the game
             const isValid = this.validationService.validateGame(this.game, this.gameNames);
 
-            // If validation passes and no error popup is shown
             if (isValid && !this.showErrorPopup) {
-                // Prepare the game data
                 await this.prepareGameData();
 
-                // Save the game
                 this.saveService.saveGame(this.game);
 
-                // Show success message
                 this.saveState = true;
                 this.errorService.addMessage(EDITION_PAGE_CONSTANTS.successGameLoaded);
             }
@@ -130,16 +120,11 @@ export class EditionPageComponent implements OnInit {
         }
     }
 
-    /**
-     * Prepares the game data for saving
-     */
     private async prepareGameData(): Promise<void> {
-        // Get the board state
         this.game.board = this.saveService.intBoard;
         this.game.name = this.game.name.trim();
         this.game.description = this.game.description.trim();
 
-        // Capture board preview image
         this.game.previewImage = await this.imageService.captureBoardFromTiles(this.boardService.board);
     }
 

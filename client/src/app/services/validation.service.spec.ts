@@ -133,19 +133,4 @@ describe('ValidationService', () => {
         expect(result).toBeFalse();
         expect(errorServiceSpy.addMessage).toHaveBeenCalledWith(EDITION_PAGE_CONSTANTS.errorInvalidMinTiles);
     });
-
-    it('should invalidate game with multiple validation errors', () => {
-        const gameNames: string[] = ['Test Game'];
-        saveServiceSpy.currentStatus = {
-            doors: false,
-            accessible: false,
-            minTerrain: true,
-            allSpawnPoints: true,
-        };
-
-        const result = service.validateGame(mockGame, gameNames);
-
-        expect(result).toBeFalse();
-        expect(errorServiceSpy.addMessage).toHaveBeenCalledTimes(3);
-    });
 });

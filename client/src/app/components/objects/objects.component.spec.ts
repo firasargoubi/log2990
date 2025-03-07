@@ -1,141 +1,189 @@
-/* eslint-disable @typescript-eslint/no-magic-numbers */
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { NavigationEnd, Router } from '@angular/router';
-import { ItemComponent } from '@app/components/item/item.component';
-import { ObjectsTypes } from '@app/Consts/app.constants';
+import { ObjectsComponent } from './objects.component';
+import { MAX_OBJECTS, ObjectsTypes } from '@app/Consts/app.constants';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { of, Subject } from 'rxjs';
-import { ObjectsComponent } from './objects.component';
+import { ItemModel } from '@app/interfaces/item.model';
 
 describe('ObjectsComponent', () => {
     let component: ObjectsComponent;
     let fixture: ComponentFixture<ObjectsComponent>;
-    let mockCounterService: jasmine.SpyObj<ObjectCounterService>;
-    let mockRouter: jasmine.SpyObj<Router>;
+    let counterServiceSpy: jasmine.SpyObj<ObjectCounterService>;
+    let routerSpy: jasmine.SpyObj<Router>;
     let spawnCounter$: Subject<number>;
 
     beforeEach(async () => {
         spawnCounter$ = new Subject<number>();
 
-        mockCounterService = jasmine.createSpyObj('ObjectCounterService', ['incrementCounter'], {
+        counterServiceSpy = jasmine.createSpyObj('ObjectCounterService', ['incrementCounter'], {
             counter$: of(0),
             spawnCounter$: spawnCounter$.asObservable(),
         });
 
-        mockRouter = jasmine.createSpyObj('Router', ['navigate'], {
+        routerSpy = jasmine.createSpyObj('Router', ['navigate'], {
             events: of(new NavigationEnd(1, '/', '/home')),
         });
 
         await TestBed.configureTestingModule({
             imports: [ObjectsComponent],
             providers: [
-                { provide: ObjectCounterService, useValue: mockCounterService },
-                { provide: Router, useValue: mockRouter },
+                { provide: ObjectCounterService, useValue: counterServiceSpy },
+                { provide: Router, useValue: routerSpy },
             ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(ObjectsComponent);
         component = fixture.componentInstance;
+        fixture.detectChanges();
     });
 
     it('should create the component', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should initialize range with values from 0 to 7', () => {
-        expect(component.range).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+    it('should initialize with a range of values from 0 to MAX_OBJECTS', () => {
+        expect(component.range.length).toBe(MAX_OBJECTS + 1);
+        expect(component.range[0]).toBe(0);
+        expect(component.range[MAX_OBJECTS]).toBe(MAX_OBJECTS);
     });
 
-    it('should subscribe to spawnCounter$ and update items when value is 0', () => {
-        // Ensure ObjectsTypes.SPAWN is defined in the mock setup
-        const spawnIndex = ObjectsTypes.SPAWN || 0;
+    describe('Item initialization and updates', () => {
+        it('should initialize items during ngOnInit', () => {
+            component.items = [];
+            component.ngOnInit();
 
-        const mockItem = new ItemComponent(mockCounterService);
-        mockItem.type = spawnIndex;
-        mockItem.isPlaced = false;
+            expect(component.items.length).toBe(MAX_OBJECTS + 1);
+            expect(component.items.every((item) => item instanceof ItemModel)).toBeTrue();
+        });
 
-        // Ensure the array has enough elements
-        component.items = [];
-        component.items[spawnIndex] = mockItem;
+        it('should update spawn item when spawnCounter$ emits 0', () => {
+            component.ngOnInit();
 
-        spawnCounter$.next(0);
+            const spawnIndex = component.items.findIndex((item) => item.type === ObjectsTypes.SPAWN);
+            expect(spawnIndex).not.toBe(-1);
 
-        expect(component.items[spawnIndex].isPlaced).toBeTrue();
+            expect(component.items[spawnIndex].isPlaced).toBeFalse();
+
+            spawnCounter$.next(0);
+            fixture.detectChanges();
+
+            expect(component.items[spawnIndex].isPlaced).toBeTrue();
+        });
+
+        it('should reset component on NavigationEnd event', () => {
+            component.items = [];
+
+            component.ngOnInit();
+
+            expect(component.items.length).toBe(MAX_OBJECTS + 1);
+        });
     });
 
-    it('should call resetComponent on init', () => {
-        spyOn(component, 'resetComponent');
-        component.ngOnInit();
-        expect(component.resetComponent).toHaveBeenCalled();
+    describe('Internal behavior', () => {
+        it('should have the correct range initialized', () => {
+            expect(component.range).toContain(3);
+            expect(component.range).toContain(4);
+            expect(component.range).toContain(5);
+        });
+
+        it('should call counterService.incrementCounter when handling drag and drop', () => {
+            const testItem = new ItemModel(2); // Type 2
+            testItem.isPlaced = true;
+
+            component.items = [testItem];
+
+            const mockEvent: Partial<CdkDragDrop<ItemModel[]>> = {
+                previousContainer: { data: component.items } as any,
+                container: { data: [] } as any,
+                previousIndex: 0,
+                currentIndex: 0,
+                item: {} as any,
+                isPointerOverContainer: true,
+                distance: { x: 0, y: 0 },
+                dropPoint: { x: 0, y: 0 },
+                event: {} as any,
+            };
+
+            component.drop(mockEvent as CdkDragDrop<ItemModel[]>);
+
+            expect(counterServiceSpy.incrementCounter).toHaveBeenCalledWith(2);
+        });
     });
 
-    it('should call resetComponent on NavigationEnd event', () => {
-        spyOn(component, 'resetComponent');
-        component.ngOnInit();
-        expect(component.resetComponent).toHaveBeenCalled();
+    describe('Drag and drop handling', () => {
+        it('should handle drag-and-drop event correctly', () => {
+            const testItem = new ItemModel(ObjectsTypes.BOOTS);
+            testItem.isPlaced = true;
+
+            component.items = [testItem];
+
+            const mockEvent: Partial<CdkDragDrop<ItemModel[]>> = {
+                previousContainer: { data: component.items } as any,
+                container: { data: [] } as any,
+                previousIndex: 0,
+                currentIndex: 0,
+                item: {} as any,
+                isPointerOverContainer: true,
+                distance: { x: 0, y: 0 },
+                dropPoint: { x: 0, y: 0 },
+                event: {} as any,
+            };
+
+            component.drop(mockEvent as CdkDragDrop<ItemModel[]>);
+
+            expect(testItem.isPlaced).toBeFalse();
+            expect(counterServiceSpy.incrementCounter).toHaveBeenCalledWith(testItem.type);
+        });
+
+        it('should not modify items if containers are the same', () => {
+            const testItem = new ItemModel(ObjectsTypes.BOOTS);
+
+            component.items = [testItem];
+
+            counterServiceSpy.incrementCounter.calls.reset();
+
+            const containerE = { data: component.items, id: 'same' } as any;
+            const mockEvent: Partial<CdkDragDrop<ItemModel[]>> = {
+                previousContainer: containerE,
+                container: containerE,
+                previousIndex: 0,
+                currentIndex: 0,
+                item: {} as any,
+                isPointerOverContainer: true,
+                distance: { x: 0, y: 0 },
+                dropPoint: { x: 0, y: 0 },
+                event: {} as any,
+            };
+
+            component.drop(mockEvent as CdkDragDrop<ItemModel[]>);
+
+            expect(counterServiceSpy.incrementCounter).not.toHaveBeenCalled();
+        });
     });
 
-    it('should reset items array in resetComponent', () => {
-        component.resetComponent();
-        expect(component.items.length).toBe(8);
-        expect(component.items.every((item) => item instanceof ItemComponent)).toBeTrue();
+    describe('Lifecycle methods', () => {
+        it('should unsubscribe from all subscriptions on destroy', () => {
+            const mockSub1 = jasmine.createSpyObj('Subscription', ['unsubscribe']);
+            const mockSub2 = jasmine.createSpyObj('Subscription', ['unsubscribe']);
+
+            (component as any).subscriptions = [mockSub1, mockSub2];
+
+            component.ngOnDestroy();
+
+            expect(mockSub1.unsubscribe).toHaveBeenCalled();
+            expect(mockSub2.unsubscribe).toHaveBeenCalled();
+        });
     });
 
-    it('should generate a correct range of numbers', () => {
-        const result = component.generateRange(3, 6);
-        expect(result).toEqual([3, 4, 5, 6]);
-    });
+    describe('Map size input', () => {
+        it('should handle map size input', () => {
+            component.mapSize = 'large';
+            fixture.detectChanges();
 
-    it('should call incrementCounter in ObjectCounterService when incrementCounter is called', () => {
-        const mockItem = new ItemComponent(mockCounterService);
-        mockItem.type = 2;
-
-        component.incrementCounter(mockItem);
-
-        expect(mockCounterService.incrementCounter).toHaveBeenCalledWith(2);
-    });
-
-    it('should handle drag-and-drop event correctly', () => {
-        const item1 = new ItemComponent(mockCounterService);
-        item1.type = 1;
-        item1.isPlaced = true;
-
-        const item2 = new ItemComponent(mockCounterService);
-        item2.type = 2;
-
-        component.items = [item1, item2];
-
-        const event: CdkDragDrop<ItemComponent[]> = {
-            previousContainer: { data: component.items } as never,
-            container: { data: [] } as never,
-            previousIndex: 0,
-            currentIndex: 0,
-            item: {} as never,
-            isPointerOverContainer: true,
-            distance: { x: 0, y: 0 },
-            dropPoint: {
-                x: 0,
-                y: 0,
-            },
-            event: {} as never,
-        };
-
-        spyOn(component, 'incrementCounter');
-
-        component.drop(event);
-
-        expect(item1.isPlaced).toBeFalse();
-        expect(component.incrementCounter).toHaveBeenCalledWith(item1);
-    });
-
-    it('should unsubscribe from subscriptions on destroy', () => {
-        const mockSubscription = jasmine.createSpyObj('Subscription', ['unsubscribe']);
-
-        component['subscriptions'].push(mockSubscription);
-
-        component.ngOnDestroy();
-
-        expect(mockSubscription.unsubscribe).toHaveBeenCalled();
+            expect(component.mapSize).toBe('large');
+        });
     });
 });

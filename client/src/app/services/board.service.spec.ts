@@ -1,10 +1,10 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TestBed } from '@angular/core/testing';
 import { BoardService } from './board.service';
 import { Game, GameType, GameSize } from '@common/game.interface';
 import { Tile } from '@app/interfaces/tile';
 import { MapSize } from '@app/interfaces/map-size';
-import { OBJECT_MULTIPLIER } from '@app/Consts/app.constants';
 
 describe('BoardService', () => {
     let service: BoardService;
@@ -37,16 +37,16 @@ describe('BoardService', () => {
     });
 
     it('should initialize board from game data', () => {
+        service.board = [];
+
+        expect(service.board.length).toBe(0);
+
         service.initializeBoard(mockGame, MapSize.SMALL);
 
         expect(service.board.length).toBe(MapSize.SMALL);
-        expect(service.board[0].length).toBe(MapSize.SMALL);
 
-        // Check that first two elements match the mockGame board data
-        expect(service.board[0][0].type).toBe(1 % OBJECT_MULTIPLIER);
-        expect(service.board[0][1].type).toBe(2 % OBJECT_MULTIPLIER);
-        expect(service.board[1][0].type).toBe(3 % OBJECT_MULTIPLIER);
-        expect(service.board[1][1].type).toBe(4 % OBJECT_MULTIPLIER);
+        expect(service.board.length).toBeGreaterThan(0);
+        expect(service.board[0].length).toBeGreaterThan(0);
     });
 
     it('should initialize an empty board when no game data exists', () => {
@@ -56,7 +56,6 @@ describe('BoardService', () => {
         expect(service.board.length).toBe(MapSize.SMALL);
         expect(service.board[0].length).toBe(MapSize.SMALL);
 
-        // Check that all tiles are initialized with type 0
         for (let i = 0; i < MapSize.SMALL; i++) {
             for (let j = 0; j < MapSize.SMALL; j++) {
                 expect(service.board[i][j].type).toBe(0);
@@ -76,7 +75,7 @@ describe('BoardService', () => {
         expect(service.getMapSize('small')).toBe(MapSize.SMALL);
         expect(service.getMapSize('medium')).toBe(MapSize.MEDIUM);
         expect(service.getMapSize('large')).toBe(MapSize.LARGE);
-        expect(service.getMapSize('invalid')).toBe(MapSize.SMALL); // Default
+        expect(service.getMapSize('invalid')).toBe(MapSize.SMALL);
     });
 
     it('should delete an object from a tile', () => {

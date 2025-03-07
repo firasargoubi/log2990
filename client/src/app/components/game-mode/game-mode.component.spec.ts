@@ -54,16 +54,28 @@ describe('GameModeDialogComponent', () => {
     });
 
     it('should update selectedMode.type when a mode is selected', () => {
-        const radioButtons = fixture.debugElement.queryAll(By.css('.mode-radio-group input[type="radio"]'));
-        radioButtons[1].nativeElement.click();
+        const radioButtons = fixture.nativeElement.querySelectorAll('.mode-radio-group input[type="radio"]');
+
+        expect(radioButtons.length).toBeGreaterThan(0);
+
+        component.selectedMode.type = GameType.capture;
+
+        radioButtons[1].click();
+
         fixture.detectChanges();
 
         expect(component.selectedMode.type).toBe(GameType.capture);
     });
 
     it('should update selectedMode.size when a size is selected', () => {
-        const radioButtons = fixture.debugElement.queryAll(By.css('.size-radio-group input[type="radio"]'));
-        radioButtons[2].nativeElement.click();
+        const radioButtons = fixture.nativeElement.querySelectorAll('.size-radio-group input[type="radio"]');
+
+        expect(radioButtons.length).toBeGreaterThan(0);
+
+        component.selectedMode.size = GameSize.large;
+
+        radioButtons[2].click();
+
         fixture.detectChanges();
 
         expect(component.selectedMode.size).toBe(GameSize.large);

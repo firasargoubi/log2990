@@ -14,16 +14,9 @@ export class ValidationService {
         private saveService: SaveService,
     ) {}
 
-    /**
-     * Validates a game before saving
-     * @param game The game to validate
-     * @param gameNames List of existing game names to check for duplicates
-     * @returns True if valid, false otherwise
-     */
     validateGame(game: Game, gameNames: string[]): boolean {
         let isValid = true;
 
-        // Validate required fields - ensuring strings aren't just whitespace
         if (!game.name || !game.name.trim()) {
             this.errorService.addMessage(EDITION_PAGE_CONSTANTS.errorGameNameRequired);
             isValid = false;
@@ -34,17 +27,14 @@ export class ValidationService {
             isValid = false;
         }
 
-        // Check for duplicate names
         if (game.name && game.name.trim() && gameNames.includes(game.name.trim())) {
             this.errorService.addMessage(EDITION_PAGE_CONSTANTS.errorGameNameExists);
             isValid = false;
         }
 
-        // Trigger board verification
         this.saveService.alertBoardForVerification(true);
         const saveStatus: Partial<SaveMessage> = this.saveService.currentStatus;
 
-        // Validate board structure
         if (!saveStatus.doors) {
             this.errorService.addMessage(EDITION_PAGE_CONSTANTS.errorInvalidDoors);
             isValid = false;
