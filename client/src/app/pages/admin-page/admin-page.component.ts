@@ -26,14 +26,6 @@ export class AdminPageComponent implements OnInit {
         this.fetchGames();
     }
 
-    private translateMode(mode: string): GameType {
-        return mode as GameType;
-    }
-
-    private translateSize(size: string): GameSize {
-        return size as GameSize;
-    }
-
     fetchGames(): void {
         this.gameService
             .fetchGames()
@@ -64,5 +56,13 @@ export class AdminPageComponent implements OnInit {
 
     onToggleVisibility(): void {
         this.fetchGames();
+    }
+
+    private translateMode(mode: string): GameType {
+        return mode as GameType;
+    }
+
+    private translateSize(size: string): GameSize {
+        return size as GameSize;
     }
 }

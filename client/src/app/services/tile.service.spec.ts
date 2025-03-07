@@ -87,4 +87,100 @@ describe('TileService', () => {
 
         expect(service.currentTool).toEqual(1);
     });
+    describe('Tool Management', () => {
+        it('should handle multiple tool save and restore operations', () => {
+            service.currentTool = TileTypes.Water;
+            service.saveTool();
+
+            service.currentTool = TileTypes.Wall;
+            service.getToolSaved();
+
+            expect(service.currentTool).toBe(TileTypes.Water);
+        });
+
+        it('should reset tool completely', () => {
+            service.currentTool = TileTypes.Water;
+            service.saveTool();
+            service.resetTool();
+
+            expect(service.currentTool).toBe(-1);
+            expect(service.toolSaved).toBe(0);
+        });
+
+        it('should delete tool setting it to 0', () => {
+            service.currentTool = TileTypes.Water;
+            service.deleteTool();
+
+            expect(service.currentTool).toBe(0);
+        });
+    });
+
+    describe('Tile Modification Edge Cases', () => {
+        it('should not modify tile with an object when tool is not door', () => {
+            const tile: Tile = {
+                type: TileTypes.Grass,
+                x: 1,
+                y: 1,
+                id: '1-1',
+                object: 1,
+            };
+            const originalTile = { ...tile };
+
+            service.currentTool = TileTypes.Wall;
+            service.modifyTile(tile);
+
+            expect(tile).toEqual(originalTile);
+        });
+
+        it('should allow door state toggle for door tiles without objects', () => {
+            const tile: Tile = {
+                type: TileTypes.DoorClosed,
+                x: 1,
+                y: 1,
+                id: '1-1',
+                object: 0,
+            };
+
+            service.currentTool = TileTypes.DoorClosed;
+            service.modifyTile(tile);
+
+            expect(tile.type).toBe(TileTypes.DoorOpen);
+
+            service.modifyTile(tile);
+
+            expect(tile.type).toBe(TileTypes.DoorClosed);
+        });
+
+        it('should not toggle door state if tile has an object', () => {
+            const tile: Tile = {
+                type: TileTypes.DoorClosed,
+                x: 1,
+                y: 1,
+                id: '1-1',
+                object: 1,
+            };
+            const originalTile = { ...tile };
+
+            service.currentTool = TileTypes.DoorClosed;
+            service.modifyTile(tile);
+
+            expect(tile).toEqual(originalTile);
+        });
+
+        it('should ignore tool operations when currentTool is -1', () => {
+            const tile: Tile = {
+                type: TileTypes.Grass,
+                x: 1,
+                y: 1,
+                id: '1-1',
+                object: 0,
+            };
+            const originalTile = { ...tile };
+
+            service.currentTool = -1;
+            service.modifyTile(tile);
+
+            expect(tile).toEqual(originalTile);
+        });
+    });
 });

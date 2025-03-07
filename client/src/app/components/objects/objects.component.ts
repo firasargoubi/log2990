@@ -50,6 +50,15 @@ export class ObjectsComponent implements OnInit, OnDestroy {
         this.subscriptions.forEach((sub) => sub.unsubscribe());
     }
 
+    drop(event: CdkDragDrop<ItemModel[]>): void {
+        const draggedItem = event.previousContainer.data[event.previousIndex];
+        if (event.previousContainer !== event.container) {
+            draggedItem.isPlaced = false;
+            event.previousContainer.data.splice(event.previousIndex, 1);
+            this.incrementCounter(draggedItem);
+        }
+    }
+
     private resetComponent(): void {
         this.items = [];
         for (const type of this.range) {
@@ -64,14 +73,5 @@ export class ObjectsComponent implements OnInit, OnDestroy {
 
     private incrementCounter(item: ItemModel): void {
         this.counterService.incrementCounter(item.type);
-    }
-
-    drop(event: CdkDragDrop<ItemModel[]>): void {
-        const draggedItem = event.previousContainer.data[event.previousIndex];
-        if (event.previousContainer !== event.container) {
-            draggedItem.isPlaced = false;
-            event.previousContainer.data.splice(event.previousIndex, 1);
-            this.incrementCounter(draggedItem);
-        }
     }
 }

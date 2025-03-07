@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/member-ordering */
 import { Injectable } from '@angular/core';
 import { Game } from '@common/game.interface';
 import { Tile } from '@app/interfaces/tile';
@@ -21,21 +22,19 @@ export class BoardService {
     get board(): Tile[][] {
         return this.boardSubject.value;
     }
+    get selectedTiles(): Coordinates[] {
+        return this.selectedTilesSubject.value;
+    }
+    get objectHeld(): boolean {
+        return this.objectsHeldSubject.value;
+    }
 
     set board(value: Tile[][]) {
         this.boardSubject.next(value);
     }
 
-    get objectHeld(): boolean {
-        return this.objectsHeldSubject.value;
-    }
-
     set objectHeld(value: boolean) {
         this.objectsHeldSubject.next(value);
-    }
-
-    get selectedTiles(): Coordinates[] {
-        return this.selectedTilesSubject.value;
     }
 
     set selectedTiles(value: Coordinates[]) {

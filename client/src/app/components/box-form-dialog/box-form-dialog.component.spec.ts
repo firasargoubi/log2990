@@ -78,7 +78,7 @@ describe('BoxFormDialogComponent', () => {
         spyOn(localStorage, 'setItem');
         spyOn(component, 'linkRoute');
 
-        component.form.get('name')?.setValue(''); // Make form invalid
+        component.form.get('name')?.setValue('');
 
         await component.save();
 

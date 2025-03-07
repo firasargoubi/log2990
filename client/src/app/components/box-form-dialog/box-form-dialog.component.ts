@@ -21,12 +21,6 @@ const SIX_VALUE_DICE = 6;
 export class BoxFormDialogComponent {
     form: FormGroup;
     gameList: Game[] = [];
-    // Services
-    private notificationService = inject(NotificationService);
-    private router = inject(Router);
-    // Route constants
-    readonly PageUrl = PageUrl;
-
     avatars = [
         GAME_IMAGES.fawn,
         GAME_IMAGES.bear,
@@ -45,6 +39,9 @@ export class BoxFormDialogComponent {
     formValid$: boolean = false;
     attributeClicked$: boolean = false;
     diceClicked$: boolean = false;
+
+    private notificationService = inject(NotificationService);
+    private router = inject(Router);
 
     constructor(
         public dialogRef: MatDialogRef<BoxFormDialogComponent>,

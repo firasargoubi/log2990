@@ -1,4 +1,3 @@
-// client/src/app/Consts/route-constants.ts
 export enum PageUrl {
     Home = '/home',
     Edit = '/edit',

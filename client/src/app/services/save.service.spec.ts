@@ -16,7 +16,6 @@ describe('SaveService', () => {
     let gameServiceSpy: jasmine.SpyObj<GameService>;
 
     beforeEach(() => {
-        // Create a spy for the GameService
         gameServiceSpy = jasmine.createSpyObj('GameService', ['createGame', 'updateGame']);
 
         TestBed.configureTestingModule({
@@ -40,7 +39,6 @@ describe('SaveService', () => {
 
             service.verifyBoard(board);
 
-            // Test for side effects via intBoard which calculates based on the board
             const result = service.intBoard;
             expect(result.length).toBe(3);
             expect(result[0].length).toBe(1);
@@ -112,7 +110,7 @@ describe('SaveService', () => {
                 ],
                 [
                     { type: TileTypes.Wall, x: 1, y: 0, id: '4', object: 0 },
-                    { type: TileTypes.DoorClosed, x: 1, y: 1, id: '5', object: 0 }, // Door in the middle
+                    { type: TileTypes.DoorClosed, x: 1, y: 1, id: '5', object: 0 },
                     { type: TileTypes.Wall, x: 1, y: 2, id: '6', object: 0 },
                 ],
                 [
@@ -124,7 +122,6 @@ describe('SaveService', () => {
 
             service.verifyBoard(board);
 
-            // Use the public method to test
             expect(service.verifyConnectingDoors(1, 1)).toBeTrue();
         });
 
@@ -137,7 +134,7 @@ describe('SaveService', () => {
                 ],
                 [
                     { type: TileTypes.Grass, x: 1, y: 0, id: '4', object: 0 },
-                    { type: TileTypes.DoorClosed, x: 1, y: 1, id: '5', object: 0 }, // Door in the middle
+                    { type: TileTypes.DoorClosed, x: 1, y: 1, id: '5', object: 0 },
                     { type: TileTypes.Grass, x: 1, y: 2, id: '6', object: 0 },
                 ],
                 [
@@ -174,7 +171,7 @@ describe('SaveService', () => {
                 ],
                 [
                     { type: TileTypes.Grass, x: 1, y: 0, id: '4', object: 0 },
-                    { type: TileTypes.DoorClosed, x: 1, y: 1, id: '5', object: 0 }, // Door without proper wall neighbors
+                    { type: TileTypes.DoorClosed, x: 1, y: 1, id: '5', object: 0 },
                     { type: TileTypes.Grass, x: 1, y: 2, id: '6', object: 0 },
                 ],
                 [
@@ -354,8 +351,6 @@ describe('SaveService', () => {
         });
 
         it('should verify DFS traversal works correctly', () => {
-            // We have to work with the methods that are public
-            // This test is indirect but checks if DFS marks reachable tiles
             const board: Tile[][] = [
                 [
                     { type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 0, seen: false },
@@ -368,16 +363,12 @@ describe('SaveService', () => {
             ];
 
             service.verifyBoard(board);
-
-            // Create a test condition we can check
-            // If DFS works, the board should be fully accessible
             expect(service.verifyAccessible()).toBeTrue();
         });
     });
 
     describe('Game management functions', () => {
         it('should return game names excluding the specified ID', () => {
-            // Use a backdoor to set private property
             Object.defineProperty(service, 'games', {
                 value: [{ id: '1', name: 'Game 1' } as Game, { id: '2', name: 'Game 2' } as Game, { id: '3', name: 'Game 3' } as Game],
             });
@@ -392,8 +383,7 @@ describe('SaveService', () => {
 
             service.updateGames(games);
 
-            // Test through a method that uses the games list
-            const result = service.getGameNames('3'); // ID that doesn't exist
+            const result = service.getGameNames('3');
             expect(result).toEqual(['Game 1', 'Game 2']);
         });
 
@@ -411,7 +401,6 @@ describe('SaveService', () => {
 
             service.verifyBoard(board);
 
-            // 3/4 tiles are terrain (not wall), so percentage should be enough
             expect(service.verifyTilePercentage()).toBeTrue();
         });
 
@@ -429,7 +418,6 @@ describe('SaveService', () => {
 
             service.verifyBoard(board);
 
-            // Only 1/4 tiles are terrain, should be insufficient
             expect(service.verifyTilePercentage()).toBeFalse();
         });
     });

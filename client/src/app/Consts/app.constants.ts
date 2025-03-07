@@ -1,4 +1,3 @@
-// Constants related to App configuration
 import { GameSize, GameType } from '@common/game.interface';
 
 export const APP_CONSTANTS = {
@@ -6,7 +5,6 @@ export const APP_CONSTANTS = {
     actionLabel: 'Fermer',
 };
 
-// Object Types Constants - These could eventually be moved to common if server needs them
 export enum ObjectsTypes {
     BOOTS = 0,
     SWORD = 1,
@@ -18,10 +16,8 @@ export enum ObjectsTypes {
     RANDOM = 7,
 }
 
-// Export GameType and GameSize from common
 export { GameType, GameSize };
 
-// Tile Types Constants
 export enum TileTypes {
     Grass = 1,
     Water = 2,
@@ -31,27 +27,23 @@ export enum TileTypes {
     Wall = 6,
 }
 
-// Map Size Constants
 export enum MapSize {
     SMALL = 10,
     MEDIUM = 15,
     LARGE = 20,
 }
 
-// Object Amount Constants
 export enum ObjectAmount {
     SMALL = 2,
     MEDIUM = 4,
     LARGE = 6,
 }
 
-// Game Interface
 export interface GameMode {
     type: GameType;
     size: GameSize;
 }
 
-// File system related constants
 export const DEFAULT_STAT_VALUE = 4;
 export const SIX_VALUE_DICE = 6;
 export const MAX_OBJECTS = 7;
@@ -61,7 +53,6 @@ export const WANTED_TILE_PERCENTAGE = 0.5;
 export const OBJECT_MULTIPLIER = 10;
 export const RIGHT_CLICK = 2;
 
-// UI Message Constants
 export const GAME_CARD_CONSTANTS = {
     successDeleteMessage: 'Jeu supprimé avec succès',
     errorDeleteMessage: 'Impossible de supprimer le jeu',
@@ -102,7 +93,6 @@ export const EDITION_PAGE_CONSTANTS = {
     successGameSaved: 'Jeu sauvegardé avec succès.',
 };
 
-// Image Assets Constants
 export const GAME_IMAGES = {
     fawn: 'assets/avatar/1.jpg',
     bear: 'assets/avatar/2.jpg',
@@ -136,7 +126,6 @@ export const GAME_IMAGES = {
     undefined: 'assets/objects/undefined.png',
 };
 
-// Game Settings Translation Maps
 export const GAME_MODES = {
     classic: 'Classique',
     capture: 'Capture',
@@ -160,7 +149,6 @@ export const OBJECT_COUNT = {
     large: 6,
 };
 
-// Game Objects Display Information
 export const OBJECT_NAMES = {
     boots: 'Bottes de vitesse',
     sword: 'Épée de puissance',

@@ -31,6 +31,17 @@ export class TileOptionsComponent implements OnInit {
         this.initializeOptions();
     }
 
+    selectTileOption(tile: Tile): void {
+        if (tile.selected) {
+            this.tileService.copyTileTool(-1);
+            this.setAllTilesUnselected();
+        } else {
+            this.tileService.copyTileTool(tile.type);
+            this.setAllTilesUnselected();
+            tile.selected = true;
+        }
+    }
+
     private initializeOptions(): void {
         this.options = [];
         const MAX_TILE = 6;
@@ -43,17 +54,6 @@ export class TileOptionsComponent implements OnInit {
                     y: 0,
                     id: `${i}`,
                 });
-        }
-    }
-
-    selectTileOption(tile: Tile): void {
-        if (tile.selected) {
-            this.tileService.copyTileTool(-1);
-            this.setAllTilesUnselected();
-        } else {
-            this.tileService.copyTileTool(tile.type);
-            this.setAllTilesUnselected();
-            tile.selected = true;
         }
     }
 

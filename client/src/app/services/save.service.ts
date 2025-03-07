@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/member-ordering */
 import { inject, Injectable } from '@angular/core';
 import { OBJECT_COUNT, OBJECT_MULTIPLIER, ObjectsTypes } from '@app/Consts/app.constants';
 import { Game } from '@common/game.interface';
@@ -17,38 +18,17 @@ const LARGE_MAP = 20;
     providedIn: 'root',
 })
 export class SaveService {
+    currentStatus: Partial<SaveMessage>;
+
     private board: Tile[][] = [];
     private countSeen: number = 0;
-
-    currentStatus: Partial<SaveMessage>;
     private saveActive = new Subject<boolean>();
     private resetActive = new Subject<boolean>();
     private games: Game[] = [];
-
+    private gameService = inject(GameService);
     isSave$ = this.saveActive.asObservable();
     isReset$ = this.resetActive.asObservable();
-    private gameService = inject(GameService);
 
-    private get boardSize(): number {
-        return this.board.length * this.board[0].length;
-    }
-
-
-    private get boardTerrainTiles(): number {
-        let count = 0;
-        for (const row of this.board) {
-            for (const tile of row) {
-                if (tile.type < TileTypes.Wall) {
-                    count++;
-                }
-            }
-        }
-        return count;
-    }
-
-    /**
-     * Convert the board to a 2D array of integers
-     */
     get intBoard(): number[][] {
         const board: number[][] = [];
         for (const row of this.board) {
@@ -60,6 +40,21 @@ export class SaveService {
             board.push(newRow);
         }
         return board;
+    }
+    private get boardSize(): number {
+        return this.board.length * this.board[0].length;
+    }
+
+    private get boardTerrainTiles(): number {
+        let count = 0;
+        for (const row of this.board) {
+            for (const tile of row) {
+                if (tile.type < TileTypes.Wall) {
+                    count++;
+                }
+            }
+        }
+        return count;
     }
 
     updateGames(games: Game[]): void {
@@ -168,30 +163,6 @@ export class SaveService {
         return this.countSeen === this.boardTerrainTiles;
     }
 
-    private resetSeen(): void {
-        for (const row of this.board) {
-            for (const tile of row) {
-                tile.seen = false;
-            }
-        }
-    }
-
-    private isWall(i: number, j: number): boolean {
-        return this.isInBounds(i, j) && this.board[i][j].type === TileTypes.Wall;
-    }
-
-    private isTileAccessible(i: number, j: number): boolean {
-        return this.isInBounds(i, j) && this.board[i][j].type < TileTypes.DoorClosed;
-    }
-
-    private isInBounds(i: number, j: number): boolean {
-        return i >= 0 && i < this.board.length && j >= 0 && j < this.board[0].length;
-    }
-
-    private isValid(i: number, j: number): boolean {
-        return this.isInBounds(i, j) && this.board[i][j].type !== TileTypes.Wall;
-    }
-
     verifyAccessibleDFS(i: number, j: number): void {
         if (this.isValid(i - 1, j) && !this.board[i - 1][j].seen) {
             this.board[i - 1][j].seen = true;
@@ -220,5 +191,29 @@ export class SaveService {
 
     alertBoardForReset(value: boolean) {
         this.resetActive.next(value);
+    }
+
+    private resetSeen(): void {
+        for (const row of this.board) {
+            for (const tile of row) {
+                tile.seen = false;
+            }
+        }
+    }
+
+    private isWall(i: number, j: number): boolean {
+        return this.isInBounds(i, j) && this.board[i][j].type === TileTypes.Wall;
+    }
+
+    private isTileAccessible(i: number, j: number): boolean {
+        return this.isInBounds(i, j) && this.board[i][j].type < TileTypes.DoorClosed;
+    }
+
+    private isInBounds(i: number, j: number): boolean {
+        return i >= 0 && i < this.board.length && j >= 0 && j < this.board[0].length;
+    }
+
+    private isValid(i: number, j: number): boolean {
+        return this.isInBounds(i, j) && this.board[i][j].type !== TileTypes.Wall;
     }
 }

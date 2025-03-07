@@ -27,6 +27,14 @@ import { catchError, EMPTY, tap } from 'rxjs';
 export class EditionPageComponent implements OnInit {
     @ViewChild('board', { static: false }) boardElement: ElementRef;
 
+    game: Game = this.createEmptyGame();
+    gameReference: Game = this.createEmptyGame();
+    showErrorPopup: boolean = false;
+    saveState: boolean = false;
+    gameLoaded: boolean = false;
+    gameNames: string[] = [];
+    errorMessage: string = '';
+
     private notificationService = inject(NotificationService);
     private saveService = inject(SaveService);
     private errorService = inject(ErrorService);
@@ -38,14 +46,6 @@ export class EditionPageComponent implements OnInit {
     private router = inject(Router);
     private route = inject(ActivatedRoute);
 
-    game: Game = this.createEmptyGame();
-    gameReference: Game = this.createEmptyGame();
-    showErrorPopup: boolean = false;
-    saveState: boolean = false;
-    gameLoaded: boolean = false;
-    gameNames: string[] = [];
-    errorMessage: string = '';
-
     constructor() {
         this.gameLoaded = false;
         this.game.id = this.route.snapshot.params['id'];
@@ -53,21 +53,6 @@ export class EditionPageComponent implements OnInit {
         this.game.mapSize = this.route.snapshot.queryParams['size'] ? GameSize.large : GameSize.small;
         this.gameNames = this.saveService.getGameNames(this.game.id);
         this.loadGame();
-    }
-
-    private createEmptyGame(): Game {
-        return {
-            id: '',
-            name: '',
-            mapSize: GameSize.small,
-            mode: GameType.classic,
-            previewImage: '',
-            description: '',
-            lastModified: new Date(),
-            isVisible: true,
-            board: [],
-            objects: [],
-        };
     }
 
     get mapSize(): number {
@@ -120,14 +105,6 @@ export class EditionPageComponent implements OnInit {
         }
     }
 
-    private async prepareGameData(): Promise<void> {
-        this.game.board = this.saveService.intBoard;
-        this.game.name = this.game.name.trim();
-        this.game.description = this.game.description.trim();
-
-        this.game.previewImage = await this.imageService.captureBoardFromTiles(this.boardService.board);
-    }
-
     resetBoard() {
         this.game = { ...this.gameReference };
         this.boardService.initializeBoard(this.game, this.mapSize);
@@ -168,5 +145,28 @@ export class EditionPageComponent implements OnInit {
             this.router.navigate(['/admin']);
         }
         this.saveState = false;
+    }
+
+    private createEmptyGame(): Game {
+        return {
+            id: '',
+            name: '',
+            mapSize: GameSize.small,
+            mode: GameType.classic,
+            previewImage: '',
+            description: '',
+            lastModified: new Date(),
+            isVisible: true,
+            board: [],
+            objects: [],
+        };
+    }
+
+    private async prepareGameData(): Promise<void> {
+        this.game.board = this.saveService.intBoard;
+        this.game.name = this.game.name.trim();
+        this.game.description = this.game.description.trim();
+
+        this.game.previewImage = await this.imageService.captureBoardFromTiles(this.boardService.board);
     }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
@@ -90,7 +91,7 @@ describe('ObjectsComponent', () => {
         });
 
         it('should call counterService.incrementCounter when handling drag and drop', () => {
-            const testItem = new ItemModel(2); // Type 2
+            const testItem = new ItemModel(2);
             testItem.isPlaced = true;
 
             component.items = [testItem];

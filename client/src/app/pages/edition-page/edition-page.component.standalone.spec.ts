@@ -20,7 +20,6 @@ import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
 import { EDITION_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 
-// Mock Components
 const routes: Routes = [];
 
 @Component({
@@ -117,7 +116,6 @@ describe('EditionPageComponent Standalone', () => {
             ],
         }).compileComponents();
 
-        // Replace real components with mocks
         TestBed.overrideComponent(EditionPageComponent, {
             add: { imports: [MockBoardComponent] },
             remove: { imports: [BoardComponent] },

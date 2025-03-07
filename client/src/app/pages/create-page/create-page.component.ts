@@ -23,21 +23,12 @@ export class CreatePageComponent implements OnInit {
     @Input() games$: Observable<Game[]> = new Observable<Game[]>();
     games: Game[] = [];
 
-    // Services injection
     private notificationService = inject(NotificationService);
     private dialog = inject(MatDialog);
     private gameService = inject(GameService);
 
     ngOnInit(): void {
         this.loadGames();
-    }
-
-    private translateMode(mode: string): GameType {
-        return mode as GameType;
-    }
-
-    private translateSize(size: string): GameSize {
-        return size as GameSize;
     }
 
     onBoxClick(game: Game): void {
@@ -55,6 +46,14 @@ export class CreatePageComponent implements OnInit {
                 this.loadGames();
             },
         });
+    }
+
+    private translateMode(mode: string): GameType {
+        return mode as GameType;
+    }
+
+    private translateSize(size: string): GameSize {
+        return size as GameSize;
     }
 
     private openBoxFormDialog(game: Game): void {

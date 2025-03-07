@@ -1,3 +1,4 @@
+/* eslint-disable import/no-deprecated */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
@@ -14,7 +15,6 @@ describe('GameService', () => {
     let notificationServiceSpy: jasmine.SpyObj<NotificationService>;
     let baseUrl: string;
 
-    // Sample data for tests
     const mockGame: Game = {
         id: '123',
         name: 'Test Game',
@@ -32,7 +32,6 @@ describe('GameService', () => {
     };
 
     beforeEach(() => {
-        // Create a spy for the NotificationService
         notificationServiceSpy = jasmine.createSpyObj('NotificationService', ['showSuccess', 'showError', 'showInfo']);
 
         TestBed.configureTestingModule({
@@ -46,7 +45,6 @@ describe('GameService', () => {
     });
 
     afterEach(() => {
-        // Verify that there are no outstanding HTTP requests
         httpMock.verify();
     });
 
@@ -230,7 +228,6 @@ describe('GameService', () => {
         it('should handle errors when verifying game name', () => {
             service.verifyGameName(mockGame).subscribe({
                 next: (result) => {
-                    // Should not get here with empty observable
                     expect(result).toBeFalsy();
                 },
             });
@@ -258,7 +255,6 @@ describe('GameService', () => {
 
             service.verifyGameAccessible(gameId).subscribe({
                 next: (result) => {
-                    // Should not get here with empty observable
                     expect(result).toBeFalsy();
                 },
             });

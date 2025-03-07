@@ -104,7 +104,6 @@ export class ItemComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
-        // Properly unsubscribe to prevent memory leaks
         this.subscriptions.forEach((sub) => sub.unsubscribe());
     }
 }
