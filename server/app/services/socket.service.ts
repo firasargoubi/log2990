@@ -1,12 +1,13 @@
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
-import { RANDOM_NUMBER_GENERATOR } from '@app/constants/constants-compute';
-import { AMOUNT_PLAYERS } from '@app/constants/constants-game';
-import { Player } from '@app/interface/player';
-import { GameRoom } from '@app/interface/game-room';
+import { GameLobby } from '@common/game-lobby';
+import { Player } from '@common/player';
+import { Game } from '@common/game.interface';
+
 export class SocketService {
     private io: Server;
-    private rooms: Record<string, GameRoom> = {};
+    private lobbies = new Map<string, GameLobby>();
+
     constructor(server: HttpServer) {
         this.io = new Server(server, {
             cors: {
@@ -18,129 +19,126 @@ export class SocketService {
 
     init(): void {
         this.io.on('connection', (socket: Socket) => {
-            socket.on('createGame', (data: { playerName: string }) => {
-                this.createGame(socket, data.playerName);
+            socket.on('createLobby', (game: Game) => {
+                const lobbyId = this.createLobby(game);
+                socket.emit('lobbyCreated', { lobbyId });
             });
 
-            socket.on('joinGame', (data: { gameId: string; playerName: string }) => {
-                this.handleJoinGameRequest(socket, data);
+            socket.on('joinLobby', (data: { lobbyId: string; player: Player }) => {
+                this.handleJoinLobbyRequest(socket, data.lobbyId, data.player);
             });
 
-            socket.on('message', (data: { gameId: string; message: string; playerName: string }) => {
-                const { gameId, message, playerName } = data;
-
-                if (!this.rooms[gameId]) {
-                    socket.emit('error', "La partie n'existe pas.");
-                    return;
-                }
-                const game = this.rooms[gameId];
-                const isPlayerInGame = game.players.some((player) => player.name === playerName);
-                if (!isPlayerInGame) {
-                    socket.emit('error', 'Vous ne pouvez pas écrire dans ce chat.');
-                    return;
-                }
-                game.messages.push({ playerName, message });
-                this.io.to(gameId).emit('message', { gameId, playerName, message });
+            socket.on('leaveLobby', (data: { lobbyId: string; playerName: string }) => {
+                this.leaveLobby(socket, data.lobbyId, data.playerName);
             });
 
-            socket.on('endGame', (data: { gameId: string }) => {
-                this.endGame(socket, data.gameId);
+            socket.on('lockLobby', (lobbyId: string) => {
+                this.lockLobby(socket, lobbyId);
             });
 
-            socket.on('leaveGame', (data: { gameId: string; playerName: string }) => {
-                this.leaveGame(socket, data.gameId, data.playerName);
+            socket.on('getLobby', (lobbyId: string, callback: (lobby: GameLobby | null) => void) => {
+                const lobby = this.lobbies.get(lobbyId);
+                callback(lobby || null);
             });
         });
     }
-    private createGame(socket: Socket, playerName: string) {
-        const gameId = this.generateUniqueGameId();
-        if (!this.rooms[gameId]) {
-            this.rooms[gameId] = { id: gameId, players: [], isStarted: false, messages: [] };
-        }
-        this.joinGame(socket, gameId, playerName);
 
-        if (!socket.rooms.has(gameId)) {
-            socket.emit('gameCreated', { gameId });
-        }
-        this.io.to(gameId).emit('chatCreated', { gameId, messages: [] });
+    private createLobby(game: Game): string {
+        const maxPlayers = this.getMaxPlayers(game.mapSize);
+        const lobbyId = this.generateId();
+
+        const newLobby: GameLobby = {
+            id: lobbyId,
+            players: [],
+            isLocked: false,
+            maxPlayers,
+            gameId: game.id,
+        };
+
+        this.lobbies.set(lobbyId, newLobby);
+        this.updateLobby(lobbyId);
+        return lobbyId;
     }
 
-    private joinGame(socket: Socket, gameId: string, playerName: string) {
-        const game = this.rooms[gameId];
-        const isNameTaken = game.players.some((p) => p.name === playerName);
-        if (isNameTaken) {
-            socket.emit('error', 'Ce nom est déjà pris dans cette partie.');
+    private handleJoinLobbyRequest(socket: Socket, lobbyId: string, player: Player) {
+        const lobby = this.lobbies.get(lobbyId);
+        if (!lobby) {
+            socket.emit('error', 'Lobby not found.');
             return;
         }
-        const player: Player = { id: socket.id, name: playerName };
-        game.players.push(player);
-        socket.join(gameId);
-        this.io.to(gameId).emit('playerJoined', { gameId, playerName });
-    }
-    private generateUniqueGameId(): string {
-        let gameId: string;
-        do {
-            gameId = Math.floor(RANDOM_NUMBER_GENERATOR.randomAdder + Math.random() * RANDOM_NUMBER_GENERATOR.randomMultiplier).toString();
-        } while (this.rooms[gameId]);
-        return gameId;
+        if (lobby.isLocked || lobby.players.length >= lobby.maxPlayers) {
+            socket.emit('error', 'Lobby is locked or full.');
+            return;
+        }
+
+        player.isHost = lobby.players.length === 0;
+        lobby.players.push(player);
+        socket.join(lobbyId);
+        this.io.to(lobbyId).emit('playerJoined', { lobbyId, player });
+        this.updateLobby(lobbyId);
     }
 
-    private handleJoinGameRequest(socket: Socket, data: { gameId: string; playerName: string }) {
-        const gameId = data.gameId.trim();
-        const playerName = data.playerName.trim();
-        const game = this.rooms[gameId];
-        const isPlayerAlreadyInGame = game.players.some((p) => p.id === socket.id && p.name === playerName);
-        if (!this.rooms[gameId]) {
-            socket.emit('error', "Cette partie n'existe pas.");
+    private leaveLobby(socket: Socket, lobbyId: string, playerName: string) {
+        const lobby = this.lobbies.get(lobbyId);
+        if (!lobby) {
+            socket.emit('error', 'Lobby not found.');
             return;
         }
-        if (game.players.length >= AMOUNT_PLAYERS.maxPlayers) {
-            socket.emit('error', 'La partie est pleine.');
-            return;
-        }
-        if (isPlayerAlreadyInGame) {
-            socket.emit('error', 'Vous êtes déjà dans cette partie.');
-            return;
-        }
-        this.joinGame(socket, gameId, playerName);
-        this.io.to(gameId).emit('playerListUpdated', {
-            gameId,
-            players: game.players.map((player) => ({ name: player.name })),
-        });
-        socket.emit('previousMessages', {
-            gameId,
-            messages: game.messages,
-        });
-    }
 
-    private leaveGame(socket: Socket, gameId: string, playerName: string) {
-        const game = this.rooms[gameId];
-        if (!game) {
-            socket.emit('error', "Cette partie n'existe pas.");
-            return;
-        }
-        const playerIndex = game.players.findIndex((p) => p.name === playerName);
+        const playerIndex = lobby.players.findIndex((p) => p.name === playerName);
         if (playerIndex === -1) {
-            socket.emit('error', "Vous n'êtes pas dans cette partie.");
+            socket.emit('error', 'Player not found in lobby.');
             return;
         }
-        game.players.splice(playerIndex, 1);
-        socket.leave(gameId);
+
+        lobby.players.splice(playerIndex, 1);
+        socket.leave(lobbyId);
+        this.io.to(lobbyId).emit('playerLeft', { lobbyId, playerName });
+        this.updateLobby(lobbyId);
     }
 
-    private endGame(socket: Socket, gameId: string) {
-        const game = this.rooms[gameId];
-        const isHost = game.players.length === 0 || game.players[0].id !== socket.id;
-        if (!game) {
-            socket.emit('error', "Cette partie n'existe pas.");
+    private lockLobby(socket: Socket, lobbyId: string) {
+        const lobby = this.lobbies.get(lobbyId);
+        if (!lobby) {
+            socket.emit('error', 'Lobby not found.');
             return;
         }
-        if (isHost) {
-            socket.emit('error', "Vous devez être l'hôte de la partie pour la terminer.");
-            return;
+
+        lobby.isLocked = true;
+        this.io.to(lobbyId).emit('lobbyLocked', { lobbyId });
+        this.updateLobby(lobbyId);
+    }
+
+    private getMaxPlayers(mapSize: string): number {
+        switch (mapSize.toLowerCase()) {
+            case 'small':
+            case 'petite':
+                return 2;
+            case 'medium':
+            case 'moyenne':
+                return 4;
+            case 'large':
+            case 'grande':
+                return 6;
+            default:
+                return 2;
         }
-        this.io.to(gameId).emit('gameEnded', { gameId });
-        delete this.rooms[gameId];
-        this.io.socketsLeave(gameId);
+    }
+
+    private generateId(): string {
+        let id: string;
+        do {
+            id = Math.floor(Math.random() * 10000)
+                .toString()
+                .padStart(4, '0');
+        } while (this.lobbies.has(id));
+        return id;
+    }
+
+    private updateLobby(lobbyId: string) {
+        const lobby = this.lobbies.get(lobbyId);
+        if (lobby) {
+            this.io.to(lobbyId).emit('lobbyUpdated', { lobbyId, lobby });
+        }
     }
 }

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit, inject } from '@angular/core';
+import { Component, Input, OnInit, inject, OnDestroy } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
@@ -11,7 +11,8 @@ import { Game } from '@app/interfaces/game.model';
 import { GameService } from '@app/services/game.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
+
 @Component({
     selector: 'app-create-page',
     standalone: true,
@@ -19,7 +20,7 @@ import { Observable } from 'rxjs';
     templateUrl: './create-page.component.html',
     styleUrls: ['./create-page.component.scss'],
 })
-export class CreatePageComponent implements OnInit {
+export class CreatePageComponent implements OnInit, OnDestroy {
     @Input() games$: Observable<Game[]> = new Observable<Game[]>();
     games: Game[] = [];
     notificationService = inject(NotificationService);
@@ -27,6 +28,7 @@ export class CreatePageComponent implements OnInit {
     lobbyId: string = '';
     private modeTranslation: Record<string, string> = GAME_MODES;
     private sizeTranslation: Record<string, string> = GAME_SIZE;
+    private subscriptions: Subscription[] = [];
 
     constructor(
         private dialog: MatDialog,
@@ -35,6 +37,29 @@ export class CreatePageComponent implements OnInit {
 
     ngOnInit(): void {
         this.loadGames();
+
+        this.subscriptions.push(
+            this.lobbyService.onLobbyCreated().subscribe({
+                next: (data) => {
+                    this.lobbyId = data.lobbyId;
+                },
+                error: (err) => {
+                    this.notificationService.showError('Failed to create lobby: ' + err);
+                },
+            }),
+        );
+
+        this.subscriptions.push(
+            this.lobbyService.onError().subscribe({
+                next: (error) => {
+                    this.notificationService.showError(error);
+                },
+            }),
+        );
+    }
+
+    ngOnDestroy(): void {
+        this.subscriptions.forEach((sub) => sub.unsubscribe());
     }
 
     translateMode(mode: string): string {
@@ -50,9 +75,21 @@ export class CreatePageComponent implements OnInit {
             next: (isAccessible) => {
                 if (isAccessible) {
                     if (!this.lobbyId) {
-                        this.lobbyId = this.lobbyService.createLobby(4, game.id);
+                        this.lobbyService.createLobby(game);
+                        this.subscriptions.push(
+                            this.lobbyService.onLobbyCreated().subscribe({
+                                next: (data) => {
+                                    this.lobbyId = data.lobbyId;
+                                    this.openBoxFormDialog(game);
+                                },
+                                error: (err) => {
+                                    this.notificationService.showError('Failed to create lobby: ' + err);
+                                },
+                            }),
+                        );
+                    } else {
+                        this.openBoxFormDialog(game);
                     }
-                    this.openBoxFormDialog(game);
                 } else {
                     this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorGameDeleted);
                     this.loadGames();
@@ -66,14 +103,8 @@ export class CreatePageComponent implements OnInit {
     }
 
     openBoxFormDialog(game: Game): void {
-        const translatedGame = {
-            ...game,
-            mode: this.translateMode(game.mode),
-            mapSize: this.translateSize(game.mapSize),
-        };
-
         const dialogRef = this.dialog.open(BoxFormDialogComponent, {
-            data: { boxId: game.id, game: translatedGame, gameList: this.games, lobbyId: this.lobbyId },
+            data: { boxId: game.id, game, gameList: this.games, lobbyId: this.lobbyId },
         });
 
         dialogRef.afterClosed().subscribe({

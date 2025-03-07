@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Inject } from '@angular/core';
+import { Component, inject, Inject, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
@@ -10,6 +10,7 @@ import { CREATE_PAGE_CONSTANTS, GAME_IMAGES } from '@app/Consts/app.constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { Player } from '@common/player';
 import { CurrentPlayerService } from '@app/services/current-player.service';
+import { Subscription } from 'rxjs';
 
 const DEFAULT_STAT_VALUE = 4;
 
@@ -19,7 +20,7 @@ const DEFAULT_STAT_VALUE = 4;
     styleUrls: ['./box-form-dialog.component.scss'],
     imports: [CommonModule, RouterModule],
 })
-export class BoxFormDialogComponent {
+export class BoxFormDialogComponent implements OnDestroy {
     form: FormGroup;
     gameList: Game[] = [];
     notificationService = inject(NotificationService);
@@ -45,6 +46,7 @@ export class BoxFormDialogComponent {
     diceClicked$: boolean = false;
     increasedAttribute: string | null = null;
     diceAttribute: string | null = null;
+    private subscriptions: Subscription[] = [];
 
     constructor(
         public dialogRef: MatDialogRef<BoxFormDialogComponent>,
@@ -66,6 +68,25 @@ export class BoxFormDialogComponent {
         this.form.statusChanges.subscribe(() => {
             this.formValid$ = this.form.valid;
         });
+
+        this.subscriptions.push(
+            this.lobbyService.onPlayerJoined().subscribe({
+                next: (socketData) => {
+                    if (socketData.lobbyId === this.data.lobbyId) {
+                        this.dialogRef.close();
+                        this.router.navigate([`/waiting/${this.data.lobbyId}`], { replaceUrl: true });
+                    }
+                },
+            }),
+        );
+
+        this.subscriptions.push(
+            this.lobbyService.onError().subscribe({
+                next: (error) => {
+                    this.notificationService.showError(error);
+                },
+            }),
+        );
     }
 
     get gameExists(): boolean {
@@ -74,6 +95,10 @@ export class BoxFormDialogComponent {
 
     get isFormComplete(): boolean {
         return this.form.valid && !!this.increasedAttribute && !!this.diceAttribute;
+    }
+
+    ngOnDestroy(): void {
+        this.subscriptions.forEach((sub) => sub.unsubscribe());
     }
 
     closeDialog(): void {
@@ -173,10 +198,10 @@ export class BoxFormDialogComponent {
                 defense: formData.defense,
                 bonus,
             };
-            this.lobbyService.addPlayerToLobby(this.data.lobbyId, playerData);
+
+            this.lobbyService.joinLobby(this.data.lobbyId, playerData);
+
             this.currentPlayerService.setCurrentPlayer(playerData, this.data.game.id);
-            this.dialogRef.close();
-            this.router.navigate([`/waiting/${this.data.lobbyId}`], { replaceUrl: true });
         }
     }
 

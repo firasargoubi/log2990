@@ -28,7 +28,7 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
         defense: 0,
     };
     hostId: string = '0000';
-    private lobbySubscription!: Subscription;
+    private subscriptions: Subscription[] = [];
 
     private route = inject(ActivatedRoute);
     private lobbyService = inject(LobbyService);
@@ -45,24 +45,48 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         const lobbyId = this.route.snapshot.paramMap.get('id');
         if (lobbyId) {
-            const lobbyObservable = this.lobbyService.getLobby(lobbyId);
-            if (lobbyObservable) {
-                this.lobbySubscription = lobbyObservable.subscribe((lobby) => {
+            this.subscriptions.push(
+                this.lobbyService.getLobby(lobbyId).subscribe((lobby) => {
                     this.lobby = lobby;
-                });
-            }
+                }),
+            );
+
+            this.subscriptions.push(
+                this.lobbyService.onLobbyUpdated().subscribe((data) => {
+                    if (data.lobbyId === lobbyId) {
+                        this.lobby = data.lobby;
+                    }
+                }),
+            );
+
+            this.subscriptions.push(
+                this.lobbyService.onPlayerJoined().subscribe((data) => {
+                    if (data.lobbyId === lobbyId) {
+                        this.lobby?.players.push(data.player);
+                    }
+                }),
+            );
+
+            this.subscriptions.push(
+                this.lobbyService.onPlayerLeft().subscribe((data) => {
+                    if (this.lobby) {
+                        this.lobby.players = this.lobby.players.filter((player) => player.name !== data.playerName);
+                    }
+                }),
+            );
         }
     }
 
     ngOnDestroy(): void {
-        if (this.lobbySubscription) {
-            this.lobbySubscription.unsubscribe();
-        }
+        this.subscriptions.forEach((sub) => sub.unsubscribe());
     }
 
     removePlayer(playerId: string): void {
         if (this.lobby) {
-            this.lobby.players = this.lobby.players.filter((player) => player.id !== playerId);
+            const player = this.lobby.players.find((p) => p.id === playerId);
+            if (player) {
+                this.lobbyService.leaveLobby(this.lobby.id, player.name);
+            }
         }
     }
 }
