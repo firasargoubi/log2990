@@ -6,7 +6,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { MatRadioModule } from '@angular/material/radio';
 import { By } from '@angular/platform-browser';
 import { GameModeDialogComponent } from '@app/components/game-mode/game-mode.component';
-import { GameType, GameSize } from '@app/Consts/app.constants';
+import { GameType, GameSize } from '@common/game.interface';
 
 describe('GameModeDialogComponent', () => {
     let component: GameModeDialogComponent;
@@ -58,7 +58,7 @@ describe('GameModeDialogComponent', () => {
         radioButtons[1].nativeElement.click();
         fixture.detectChanges();
 
-        expect(component.selectedMode.type).toBe(GameType.Capture);
+        expect(component.selectedMode.type).toBe(GameType.capture);
     });
 
     it('should update selectedMode.size when a size is selected', () => {
@@ -66,7 +66,7 @@ describe('GameModeDialogComponent', () => {
         radioButtons[2].nativeElement.click();
         fixture.detectChanges();
 
-        expect(component.selectedMode.size).toBe(GameSize.Large);
+        expect(component.selectedMode.size).toBe(GameSize.large);
     });
 
     it('should call dialogRef.close() with no data when cancel is clicked', () => {

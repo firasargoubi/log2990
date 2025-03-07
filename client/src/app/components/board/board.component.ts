@@ -4,13 +4,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { TileComponent } from '@app/components/tile/tile.component';
 import { Coordinates } from '@app/interfaces/coordinates';
-import { Game } from '@common/game.interface';
+import { Game, GameSize, GameType } from '@common/game.interface';
 import { Tile } from '@app/interfaces/tile';
 import { BoardService } from '@app/services/board.service';
 import { MouseService } from '@app/services/mouse.service';
 import { SaveService } from '@app/services/save.service';
 import { TileService } from '@app/services/tile.service';
-import { GameSize, GameType, RIGHT_CLICK } from '@app/Consts/app.constants';
+import { RIGHT_CLICK } from '@app/Consts/app.constants';
 
 @Component({
     selector: 'app-board',
@@ -22,8 +22,8 @@ export class BoardComponent implements OnInit {
     @Input() game: Game = {
         id: '',
         name: '',
-        mapSize: GameSize.Small,
-        mode: GameType.Classic,
+        mapSize: GameSize.small,
+        mode: GameType.classic,
         previewImage: '',
         description: '',
         lastModified: new Date(),

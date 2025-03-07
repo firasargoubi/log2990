@@ -3,7 +3,7 @@ import { GameListComponent } from './game-list.component';
 import { HttpClient, HttpHandler } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
-import { Game } from '@common/game.interface';
+import { Game, GameSize, GameType } from '@common/game.interface';
 import { GameModeDialogComponent } from '@app/components/game-mode/game-mode.component';
 import { MatDialogRef } from '@angular/material/dialog';
 
@@ -37,8 +37,8 @@ describe('GameListComponent', () => {
             id: '1',
             name: 'Test Game',
             description: 'Test Description',
-            mode: 'normal',
-            mapSize: 'medium',
+            mode: GameType.classic,
+            mapSize: GameSize.medium,
             isVisible: true,
             board: [
                 [0, 0],
@@ -60,8 +60,8 @@ describe('GameListComponent', () => {
             id: '1',
             name: 'Test Game',
             description: 'Test Description',
-            mode: 'normal',
-            mapSize: 'medium',
+            mode: GameType.classic,
+            mapSize: GameSize.medium,
             isVisible: true,
             board: [
                 [0, 0],
@@ -84,8 +84,8 @@ describe('GameListComponent', () => {
                 id: '1',
                 name: 'Test Game 1',
                 description: 'Test Description 1',
-                mode: 'normal',
-                mapSize: 'medium',
+                mode: GameType.classic,
+                mapSize: GameSize.medium,
                 isVisible: true,
                 board: [
                     [0, 0],
@@ -99,8 +99,8 @@ describe('GameListComponent', () => {
                 id: '2',
                 name: 'Test Game 2',
                 description: 'Test Description 2',
-                mode: 'normal',
-                mapSize: 'medium',
+                mode: GameType.classic,
+                mapSize: GameSize.medium,
                 isVisible: true,
                 board: [
                     [0, 0],

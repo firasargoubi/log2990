@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TestBed } from '@angular/core/testing';
 import { BoardService } from './board.service';
-import { Game } from '@common/game.interface';
+import { Game, GameType, GameSize } from '@common/game.interface';
 import { Tile } from '@app/interfaces/tile';
 import { MapSize } from '@app/interfaces/map-size';
 import { OBJECT_MULTIPLIER } from '@app/Consts/app.constants';
@@ -12,8 +12,8 @@ describe('BoardService', () => {
     const mockGame: Game = {
         id: '1',
         name: 'Test Game',
-        mapSize: 'small',
-        mode: 'classic',
+        mapSize: GameSize.small,
+        mode: GameType.classic,
         previewImage: '',
         description: 'Test description',
         lastModified: new Date(),

@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 import { TestBed } from '@angular/core/testing';
 import { ValidationService } from './validation.service';
 import { ErrorService } from './error.service';
 import { SaveService } from './save.service';
-import { Game } from '@common/game.interface';
+import { Game, GameSize, GameType } from '@common/game.interface';
 import { EDITION_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 
 describe('ValidationService', () => {
@@ -13,8 +14,8 @@ describe('ValidationService', () => {
     const mockGame: Game = {
         id: '1',
         name: 'Test Game',
-        mapSize: 'small',
-        mode: 'classic',
+        mapSize: GameSize.small,
+        mode: GameType.classic,
         previewImage: '',
         description: 'Test description',
         lastModified: new Date(),
@@ -145,6 +146,6 @@ describe('ValidationService', () => {
         const result = service.validateGame(mockGame, gameNames);
 
         expect(result).toBeFalse();
-        expect(errorServiceSpy.addMessage).toHaveBeenCalledTimes(3); // Name duplicate, doors, accessible
+        expect(errorServiceSpy.addMessage).toHaveBeenCalledTimes(3);
     });
 });

@@ -11,7 +11,7 @@ import { ErrorService } from '@app/services/error.service';
 import { GameService } from '@app/services/game.service';
 import { of, Subject } from 'rxjs';
 import { Tile } from '@app/interfaces/tile';
-import { Game } from '@common/game.interface';
+import { Game, GameSize, GameType } from '@common/game.interface';
 import { Coordinates } from '@app/interfaces/coordinates';
 import { MapSize } from '@app/interfaces/map-size';
 
@@ -21,7 +21,7 @@ const CUSTOM_GAME = {
     id: 'abcd',
     name: 'Wow',
     description: 'Avec Item',
-    mapSize: 'small',
+    mapSize: GameSize.small,
     board: Array.from({ length: MAP_SIZE }, () => Array(MAP_SIZE).fill(TILE_VALUE)),
 };
 describe('BoardComponent', () => {
@@ -182,8 +182,8 @@ describe('BoardComponent', () => {
         const mockGame: Game = {
             id: '1',
             name: 'Test Game',
-            mapSize: 'small',
-            mode: 'normal',
+            mode: GameType.classic,
+            mapSize: GameSize.small,
             previewImage: '',
             description: '',
             lastModified: new Date(),
