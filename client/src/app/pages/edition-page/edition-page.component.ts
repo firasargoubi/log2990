@@ -6,7 +6,7 @@ import { BoardComponent } from '@app/components/board/board.component';
 import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
 import { EDITION_PAGE_CONSTANTS, OBJECT_COUNT, GameSize, GameType } from '@app/Consts/app.constants';
-import { Game } from '@app/interfaces/game.model';
+import { Game } from '@common/game.interface';
 import { MapSize } from '@app/interfaces/map-size';
 import { BoardService } from '@app/services/board.service';
 import { ErrorService } from '@app/services/error.service';

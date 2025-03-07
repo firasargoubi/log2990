@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { Game } from '@app/interfaces/game.model';
+import { Game } from '@common/game.interface';
 import { MapSize } from '@app/interfaces/map-size';
 import { Tile } from '@app/interfaces/tile';
 import { TileTypes } from '@app/interfaces/tile-types';

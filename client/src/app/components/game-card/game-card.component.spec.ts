@@ -4,7 +4,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ActivatedRoute } from '@angular/router';
 import { ConfirmDeleteComponent } from '@app/components/confirm-delete/confirm-delete.component';
-import { Game } from '@app/interfaces/game.model';
+import { Game } from '@common/game.interface';
 import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
 import { of, throwError } from 'rxjs';

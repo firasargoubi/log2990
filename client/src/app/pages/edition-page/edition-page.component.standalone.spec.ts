@@ -6,7 +6,7 @@ import { Component, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { of, Subject, throwError } from 'rxjs';
 import { EditionPageComponent } from './edition-page.component';
-import { Game } from '@app/interfaces/game.model';
+import { Game } from '@common/game.interface';
 import { ErrorService } from '@app/services/error.service';
 import { GameService } from '@app/services/game.service';
 import { SaveService } from '@app/services/save.service';

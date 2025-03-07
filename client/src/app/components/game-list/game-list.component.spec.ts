@@ -3,7 +3,7 @@ import { GameListComponent } from './game-list.component';
 import { HttpClient, HttpHandler } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
-import { Game } from '@app/interfaces/game.model';
+import { Game } from '@common/game.interface';
 import { GameModeDialogComponent } from '@app/components/game-mode/game-mode.component';
 import { MatDialogRef } from '@angular/material/dialog';
 

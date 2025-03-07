@@ -6,7 +6,7 @@ import { BoxFormDialogComponent } from './box-form-dialog.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
-import { Game } from '@app/interfaces/game.model';
+import { Game } from '@common/game.interface';
 import { NotificationService } from '@app/services/notification.service';
 import { CREATE_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 

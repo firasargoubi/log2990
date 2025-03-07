@@ -1,20 +1,34 @@
 // Constants related to App configuration
+import { GameSize, GameType } from '@common/game.interface';
+
 export const APP_CONSTANTS = {
     notificationDelay: 3000,
     actionLabel: 'Fermer',
 };
 
-// Game Type Constants
-export enum GameType {
-    Classic = 'classic',
-    Capture = 'capture',
+// Object Types Constants - These could eventually be moved to common if server needs them
+export enum ObjectsTypes {
+    BOOTS = 0,
+    SWORD = 1,
+    POTION = 2,
+    WAND = 3,
+    CRYSTAL = 4,
+    JUICE = 5,
+    SPAWN = 6,
+    RANDOM = 7,
 }
 
-// Game Size Constants
-export enum GameSize {
-    Small = 'small',
-    Medium = 'medium',
-    Large = 'large',
+// Export GameType and GameSize from common
+export { GameType, GameSize };
+
+// Tile Types Constants
+export enum TileTypes {
+    Grass = 1,
+    Water = 2,
+    Ice = 3,
+    DoorClosed = 4,
+    DoorOpen = 5,
+    Wall = 6,
 }
 
 // Map Size Constants
@@ -29,28 +43,6 @@ export enum ObjectAmount {
     SMALL = 2,
     MEDIUM = 4,
     LARGE = 6,
-}
-
-// Object Types Constants
-export enum ObjectsTypes {
-    BOOTS = 0,
-    SWORD = 1,
-    POTION = 2,
-    WAND = 3,
-    CRYSTAL = 4,
-    JUICE = 5,
-    SPAWN = 6,
-    RANDOM = 7,
-}
-
-// Tile Types Constants
-export enum TileTypes {
-    Grass = 1,
-    Water = 2,
-    Ice = 3,
-    DoorClosed = 4,
-    DoorOpen = 5,
-    Wall = 6,
 }
 
 // Game Interface

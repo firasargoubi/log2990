@@ -5,7 +5,7 @@ import { of, throwError } from 'rxjs';
 import SpyObj = jasmine.SpyObj;
 import { AdminPageComponent } from './admin-page.component';
 import { GameService } from '@app/services/game.service';
-import { Game } from '@app/interfaces/game.model';
+import { Game } from '@common/game.interface';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { NotificationService } from '@app/services/notification.service';
 

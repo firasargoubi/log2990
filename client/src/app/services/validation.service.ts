@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { EDITION_PAGE_CONSTANTS } from '@app/Consts/app.constants';
-import { Game } from '@app/interfaces/game.model';
+import { Game } from '@common/game.interface';
 import { SaveMessage } from '@app/interfaces/save-message';
 import { ErrorService } from '@app/services/error.service';
 import { SaveService } from '@app/services/save.service';

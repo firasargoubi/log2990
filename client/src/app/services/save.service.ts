@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { OBJECT_COUNT, OBJECT_MULTIPLIER, ObjectsTypes } from '@app/Consts/app.constants';
-import { Game } from '@app/interfaces/game.model';
+import { Game } from '@common/game.interface';
 import { SaveMessage } from '@app/interfaces/save-message';
 import { Tile } from '@app/interfaces/tile';
 import { TileTypes } from '@app/interfaces/tile-types';

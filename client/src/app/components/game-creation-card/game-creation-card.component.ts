@@ -3,7 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Game } from '@app/interfaces/game.model';
+import { Game } from '@common/game.interface';
 
 @Component({
     selector: 'app-game-creation-card',

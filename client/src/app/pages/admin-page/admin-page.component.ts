@@ -3,7 +3,7 @@ import { MatCardModule } from '@angular/material/card';
 import { RouterLink } from '@angular/router';
 import { GameListComponent } from '@app/components/game-list/game-list.component';
 import { ADMIN_PAGE_CONSTANTS, GameSize, GameType } from '@app/Consts/app.constants';
-import { Game } from '@app/interfaces/game.model';
+import { Game } from '@common/game.interface';
 import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
 import { SaveService } from '@app/services/save.service';

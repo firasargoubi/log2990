@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Game } from '@app/interfaces/game.model';
+import { Game } from '@common/game.interface';
 import { Tile } from '@app/interfaces/tile';
 import { MapSize } from '@app/interfaces/map-size';
 import { Coordinates } from '@app/interfaces/coordinates';

@@ -11,7 +11,7 @@ import { ErrorService } from '@app/services/error.service';
 import { GameService } from '@app/services/game.service';
 import { of, Subject } from 'rxjs';
 import { Tile } from '@app/interfaces/tile';
-import { Game } from '@app/interfaces/game.model';
+import { Game } from '@common/game.interface';
 import { Coordinates } from '@app/interfaces/coordinates';
 import { MapSize } from '@app/interfaces/map-size';
 

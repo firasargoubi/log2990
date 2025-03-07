@@ -4,7 +4,7 @@ import { GameService } from '@app/services/game.service';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { of, BehaviorSubject, throwError } from 'rxjs';
-import { Game } from '@app/interfaces/game.model';
+import { Game } from '@common/game.interface';
 import { BoxFormDialogComponent } from '@app/components/box-form-dialog/box-form-dialog.component';
 import { GameCreationCardComponent } from '@app/components/game-creation-card/game-creation-card.component';
 import { CommonModule } from '@angular/common';
