@@ -5,8 +5,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { BoardComponent } from '@app/components/board/board.component';
 import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
-import { EDITION_PAGE_CONSTANTS, OBJECT_COUNT } from '@app/Consts/app.constants';
-import { Game, GameSize, GameType } from '@common/game.interface';
+import { EDITION_PAGE_CONSTANTS, OBJECT_COUNT, GameSize, GameType } from '@app/Consts/app.constants';
+import { Game } from '@common/game.interface';
 import { MapSize } from '@app/interfaces/map-size';
 import { BoardService } from '@app/services/board.service';
 import { ErrorService } from '@app/services/error.service';
@@ -34,7 +34,6 @@ export class EditionPageComponent implements OnInit {
     gameLoaded: boolean = false;
     gameNames: string[] = [];
     errorMessage: string = '';
-
     private notificationService = inject(NotificationService);
     private saveService = inject(SaveService);
     private errorService = inject(ErrorService);
@@ -49,7 +48,7 @@ export class EditionPageComponent implements OnInit {
     constructor() {
         this.gameLoaded = false;
         this.game.id = this.route.snapshot.params['id'];
-        this.game.mode = this.route.snapshot.queryParams['mode'] ? GameType.classic : GameType.classic;
+        this.game.mode = this.route.snapshot.queryParams['mode'] ? GameType.classic : GameType.capture;
         this.game.mapSize = this.route.snapshot.queryParams['size'] ? GameSize.large : GameSize.small;
         this.gameNames = this.saveService.getGameNames(this.game.id);
         this.loadGame();

@@ -6,7 +6,7 @@ import { Tile } from '@app/interfaces/tile';
 import { TileTypes } from '@app/interfaces/tile-types';
 import { ObjectsTypes } from '@app/Consts/app.constants';
 
-describe('ImageService Additional Coverage', () => {
+describe('ImageService Test', () => {
     let service: ImageService;
 
     beforeEach(() => {
