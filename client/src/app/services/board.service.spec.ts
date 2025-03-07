@@ -37,16 +37,10 @@ describe('BoardService', () => {
     });
 
     it('should initialize board from game data', () => {
-        service.board = [];
+        service.initializeBoard(mockGame, 2);
 
-        expect(service.board.length).toBe(0);
-
-        service.initializeBoard(mockGame, MapSize.SMALL);
-
-        expect(service.board.length).toBe(MapSize.SMALL);
-
-        expect(service.board.length).toBeGreaterThan(0);
-        expect(service.board[0].length).toBeGreaterThan(0);
+        expect(service.board.length).toBe(2);
+        expect(service.board[0].length).toBe(2);
     });
 
     it('should initialize an empty board when no game data exists', () => {

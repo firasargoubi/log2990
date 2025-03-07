@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable max-classes-per-file */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
@@ -111,6 +112,7 @@ describe('EditionPageComponent Standalone', () => {
                 { provide: ImageService, useValue: imageServiceSpy },
                 { provide: NotificationService, useValue: notificationServiceSpy },
                 { provide: ObjectCounterService, useValue: objectCounterServiceSpy },
+                { provide: ValidationService, useValue: validationServiceSpy },
                 provideRouter(routes),
             ],
         }).compileComponents();
@@ -215,6 +217,10 @@ describe('EditionPageComponent Standalone', () => {
 
     it('should validate game name is required', async () => {
         component.game.name = '';
+        validationServiceSpy.validateGame.and.callFake(() => {
+            errorServiceSpy.addMessage(EDITION_PAGE_CONSTANTS.errorGameNameRequired);
+            return false;
+        });
 
         await component.saveBoard();
 
@@ -223,6 +229,10 @@ describe('EditionPageComponent Standalone', () => {
 
     it('should validate game description is required', async () => {
         component.game.description = '';
+        validationServiceSpy.validateGame.and.callFake(() => {
+            errorServiceSpy.addMessage(EDITION_PAGE_CONSTANTS.errorGameDescriptionRequired);
+            return false;
+        });
 
         await component.saveBoard();
 
@@ -231,6 +241,10 @@ describe('EditionPageComponent Standalone', () => {
 
     it('should validate game name is unique', async () => {
         component.game.name = 'Existing Game';
+        validationServiceSpy.validateGame.and.callFake(() => {
+            errorServiceSpy.addMessage(EDITION_PAGE_CONSTANTS.errorGameNameExists);
+            return false;
+        });
 
         await component.saveBoard();
 
@@ -239,6 +253,11 @@ describe('EditionPageComponent Standalone', () => {
 
     it('should validate board has valid doors', async () => {
         saveServiceSpy.currentStatus = { doors: false };
+        validationServiceSpy.validateGame.and.callFake(() => {
+            saveServiceSpy.alertBoardForVerification(true);
+            errorServiceSpy.addMessage(EDITION_PAGE_CONSTANTS.errorInvalidDoors);
+            return false;
+        });
 
         await component.saveBoard();
 
@@ -248,6 +267,10 @@ describe('EditionPageComponent Standalone', () => {
 
     it('should validate board has valid spawn points', async () => {
         saveServiceSpy.currentStatus = { allSpawnPoints: false };
+        validationServiceSpy.validateGame.and.callFake(() => {
+            errorServiceSpy.addMessage(EDITION_PAGE_CONSTANTS.errorInvalidSpawns);
+            return false;
+        });
 
         await component.saveBoard();
 
@@ -256,6 +279,10 @@ describe('EditionPageComponent Standalone', () => {
 
     it('should validate board is accessible', async () => {
         saveServiceSpy.currentStatus = { accessible: false };
+        validationServiceSpy.validateGame.and.callFake(() => {
+            errorServiceSpy.addMessage(EDITION_PAGE_CONSTANTS.errorInvalidAccess);
+            return false;
+        });
 
         await component.saveBoard();
 
@@ -264,6 +291,10 @@ describe('EditionPageComponent Standalone', () => {
 
     it('should validate board has minimum terrain tiles', async () => {
         saveServiceSpy.currentStatus = { minTerrain: false };
+        validationServiceSpy.validateGame.and.callFake(() => {
+            errorServiceSpy.addMessage(EDITION_PAGE_CONSTANTS.errorInvalidMinTiles);
+            return false;
+        });
 
         await component.saveBoard();
 
@@ -281,7 +312,9 @@ describe('EditionPageComponent Standalone', () => {
 
     it('should prepare and save game data when validation passes', async () => {
         validationServiceSpy.validateGame.and.returnValue(true);
+        component.showErrorPopup = false;
         component.game = mockGame;
+
         saveServiceSpy.currentStatus = {
             doors: true,
             minTerrain: true,

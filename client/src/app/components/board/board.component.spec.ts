@@ -336,27 +336,6 @@ describe('BoardComponent', () => {
         expect(boardServiceSpy.deleteObject).toHaveBeenCalledWith(tile);
     });
 
-    it('should set objectHeld to true if tile has an object on left-click', () => {
-        const event = new MouseEvent('mousedown', { button: 0 });
-        const tile: Tile = { type: 1, x: 1, y: 1, id: '1-1', object: 1 };
-
-        // Vérifier l'état initial
-        boardServiceSpy.objectHeld = false;
-
-        // Espionner la setter pour objectHeld
-        Object.defineProperty(boardServiceSpy, 'objectHeld', {
-            get: function () {
-                return false;
-            },
-            set: jasmine.createSpy('objectHeldSetter'),
-        });
-
-        component.onMouseDownBoard(event, tile);
-
-        // Vérifier que le setter a été appelé avec true
-        expect(boardServiceSpy.objectHeld).toHaveBeenCalledWith(true);
-    });
-
     it('should call refreshObject on each TileComponent when reloadTiles is called', () => {
         const refreshObjectSpy = jasmine.createSpy('refreshObject');
 

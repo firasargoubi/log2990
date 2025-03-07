@@ -1,4 +1,3 @@
-// client/src/app/models/item.model.ts
 import { GAME_IMAGES, OBJECT_NAMES, OBJECTS_DESCRIPTION, ObjectsTypes } from '@app/Consts/app.constants';
 
 export class ItemModel {
