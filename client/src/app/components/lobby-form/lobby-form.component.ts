@@ -52,6 +52,7 @@ export class LobbyFormComponent {
                     data: {
                         lobbyId: this.lobbyId,
                         boxId: response.gameId,
+                        isJoining: true,
                     },
                 });
 

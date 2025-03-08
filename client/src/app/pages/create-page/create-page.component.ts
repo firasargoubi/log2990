@@ -104,7 +104,7 @@ export class CreatePageComponent implements OnInit, OnDestroy {
 
     openBoxFormDialog(game: Game): void {
         const dialogRef = this.dialog.open(BoxFormDialogComponent, {
-            data: { boxId: game.id, game, gameList: this.games, lobbyId: this.lobbyId },
+            data: { boxId: game.id, game, gameList: this.games, lobbyId: this.lobbyId, isJoining: false },
         });
 
         dialogRef.afterClosed().subscribe({

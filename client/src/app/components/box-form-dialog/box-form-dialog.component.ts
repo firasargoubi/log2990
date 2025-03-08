@@ -50,7 +50,7 @@ export class BoxFormDialogComponent implements OnDestroy {
 
     constructor(
         public dialogRef: MatDialogRef<BoxFormDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: { boxId: string; game: Game; gameList: Game[]; lobbyId: string },
+        @Inject(MAT_DIALOG_DATA) public data: { boxId: string; game: Game; gameList: Game[]; lobbyId: string; isJoining: boolean },
         private gameService: GameService,
         private router: Router,
     ) {
@@ -155,6 +155,60 @@ export class BoxFormDialogComponent implements OnDestroy {
     }
 
     save(): void {
+        if (this.data.isJoining) {
+            this.saveJoin();
+        } else {
+            this.saveCreate();
+        }
+    }
+
+    saveJoin(): void {
+        this.form.updateValueAndValidity();
+        if (!this.increasedAttribute || !this.diceAttribute) {
+            this.notificationService.showError('Veuillez remplir toutes les conditions de bonus.');
+            return;
+        }
+
+        if (this.form.valid) {
+            const formData = this.form.value;
+            const bonus: { life?: number; speed?: number; attack?: number; defense?: number } = {};
+            if (this.increasedAttribute === 'life') {
+                bonus.life = 2;
+            } else if (this.increasedAttribute === 'speed') {
+                bonus.speed = 2;
+            }
+            if (!this.diceAttribute) {
+                if (this.increasedAttribute === 'attack') {
+                    bonus.attack = 2;
+                } else if (this.increasedAttribute === 'defense') {
+                    bonus.defense = 2;
+                }
+            }
+            if (this.diceAttribute === 'attack') {
+                bonus.attack = 6;
+                bonus.defense = 4;
+            } else if (this.diceAttribute === 'defense') {
+                bonus.defense = 6;
+                bonus.attack = 4;
+            }
+            const playerData: Player = {
+                id: this.generatePlayerId(),
+                name: formData.name,
+                avatar: formData.avatar,
+                isHost: false,
+                life: formData.life,
+                speed: formData.speed,
+                attack: formData.attack,
+                defense: formData.defense,
+                bonus,
+            };
+
+            this.lobbyService.joinLobby(this.data.lobbyId, playerData);
+
+            this.currentPlayerService.setCurrentPlayer(playerData, this.data.game.id);
+        }
+    }
+    saveCreate(): void {
         this.form.updateValueAndValidity();
         if (!this.increasedAttribute || !this.diceAttribute) {
             this.notificationService.showError('Veuillez remplir toutes les conditions de bonus.');
