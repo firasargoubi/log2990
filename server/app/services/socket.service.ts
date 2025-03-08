@@ -40,6 +40,10 @@ export class SocketService {
                 const lobby = this.lobbies.get(lobbyId);
                 callback(lobby || null);
             });
+
+            socket.on('verifyRoom', (data: { gameId: string }, callback: (exists: boolean) => void) => {
+                this.verifyRoom(socket, data.gameId, callback);
+            });
         });
     }
 
@@ -139,6 +143,17 @@ export class SocketService {
         const lobby = this.lobbies.get(lobbyId);
         if (lobby) {
             this.io.to(lobbyId).emit('lobbyUpdated', { lobbyId, lobby });
+        }
+    }
+
+    private verifyRoom(socket: Socket, lobbyId: string, callback: (exists: boolean) => void) {
+        const lobby = this.lobbies.get(lobbyId);
+        const exists = !!lobby;
+
+        callback(exists);
+
+        if (!exists) {
+            socket.emit('error', "Cette partie n'existe pas.");
         }
     }
 }

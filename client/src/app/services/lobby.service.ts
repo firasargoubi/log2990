@@ -88,4 +88,13 @@ export class LobbyService {
             });
         });
     }
+
+    verifyRoom(gameId: string): Observable<boolean> {
+        return new Observable((observer) => {
+            this.socket.emit('verifyRoom', { gameId }, (exists: boolean) => {
+                observer.next(exists);
+                observer.complete();
+            });
+        });
+    }
 }

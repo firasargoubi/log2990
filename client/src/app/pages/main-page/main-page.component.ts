@@ -16,10 +16,6 @@ export class MainPageComponent {
     dialog = inject(MatDialog);
     message: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
-    onJoinClick(): void {
-        this.openLobbyForm();
-    }
-
     openLobbyForm(): void {
         const dialogRef: MatDialogRef<LobbyFormComponent> = this.dialog.open(LobbyFormComponent, {
             width: '400px',
