@@ -41,7 +41,12 @@ export class SocketService {
                 callback(lobby || null);
             });
 
-            socket.on('verifyRoom', (data: { gameId: string }, callback: (exists: boolean) => void) => {
+            socket.on('getGameId', (lobbyId: string, callback: (gameId: string | null) => void) => {
+                const lobby = this.lobbies.get(lobbyId);
+                callback(lobby?.gameId || null);
+            });
+
+            socket.on('verifyRoom', (data: { gameId: string }, callback: (response: { exists: boolean; isLocked?: boolean }) => void) => {
                 this.verifyRoom(socket, data.gameId, callback);
             });
         });
@@ -146,14 +151,21 @@ export class SocketService {
         }
     }
 
-    private verifyRoom(socket: Socket, lobbyId: string, callback: (exists: boolean) => void) {
+    private verifyRoom(socket: Socket, lobbyId: string, callback: (response: { exists: boolean; isLocked?: boolean }) => void) {
         const lobby = this.lobbies.get(lobbyId);
-        const exists = !!lobby;
 
-        callback(exists);
-
-        if (!exists) {
+        if (!lobby) {
+            callback({ exists: false });
             socket.emit('error', "Cette partie n'existe pas.");
+            return;
         }
+
+        if (lobby.isLocked) {
+            callback({ exists: false, isLocked: true });
+            socket.emit('error', 'Cette partie est verrouillée.');
+            return;
+        }
+
+        callback({ exists: true });
     }
 }

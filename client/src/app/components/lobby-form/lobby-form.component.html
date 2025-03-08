@@ -6,7 +6,7 @@
             id="id"
             type="text"
             name="gameid"
-            [(ngModel)]="gameid"
+            [(ngModel)]="lobbyId"
             (input)="resetError()"
             placeholder="Entre l'identifiant de la partie à rejoindre"
             maxlength="4"
@@ -20,7 +20,7 @@
     </div>
 
     <div>
-        <button type="button" (click)="validateGameId()" [disabled]="isLoading || !gameid">
+        <button type="button" (click)="validateGameId()" [disabled]="isLoading || !lobbyId">
             {{ isLoading ? 'Vérification...' : 'Rejoindre' }}
         </button>
         <button type="button" (click)="closeDialog()">Annuler</button>

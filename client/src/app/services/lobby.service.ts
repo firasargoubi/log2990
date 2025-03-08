@@ -73,6 +73,14 @@ export class LobbyService {
         });
     }
 
+    getGameId(lobbyId: string): Observable<string> {
+        return new Observable((observer) => {
+            this.socket.emit('getGameId', lobbyId, (gameId: string) => {
+                observer.next(gameId);
+            });
+        });
+    }
+
     onLobbyUpdated(): Observable<{ lobbyId: string; lobby: GameLobby }> {
         return new Observable((observer) => {
             this.socket.on('lobbyUpdated', (data: { lobbyId: string; lobby: GameLobby }) => {
@@ -89,10 +97,10 @@ export class LobbyService {
         });
     }
 
-    verifyRoom(gameId: string): Observable<boolean> {
+    verifyRoom(gameId: string): Observable<{ exists: boolean; isLocked?: boolean }> {
         return new Observable((observer) => {
-            this.socket.emit('verifyRoom', { gameId }, (exists: boolean) => {
-                observer.next(exists);
+            this.socket.emit('verifyRoom', { gameId }, (response: { exists: boolean; isLocked?: boolean }) => {
+                observer.next(response);
                 observer.complete();
             });
         });

@@ -2,8 +2,9 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { LobbyService } from '@app/services/lobby.service';
+import { BoxFormDialogComponent } from '@app/components/box-form-dialog/box-form-dialog.component';
 
 @Component({
     selector: 'app-lobby-form',
@@ -12,7 +13,7 @@ import { LobbyService } from '@app/services/lobby.service';
     imports: [CommonModule, FormsModule],
 })
 export class LobbyFormComponent {
-    gameid: string = '';
+    lobbyId: string = '';
     errorMessage: string = '';
     isLoading: boolean = false;
     gameExists: boolean = false;
@@ -20,21 +21,46 @@ export class LobbyFormComponent {
     constructor(
         private dialogRef: MatDialogRef<LobbyFormComponent>,
         private lobbyService: LobbyService,
+        private dialog: MatDialog,
     ) {}
 
     validateGameId(): void {
         this.isLoading = true;
         this.errorMessage = '';
 
-        this.lobbyService.verifyRoom(this.gameid).subscribe((exists: boolean) => {
-            this.gameExists = exists;
-            if (this.gameExists) {
+        this.lobbyService.verifyRoom(this.lobbyId).subscribe((response: { exists: boolean; isLocked?: boolean }) => {
+            if (response.exists) {
                 this.isLoading = false;
-                this.dialogRef.close(this.gameid);
+                this.dialogRef.close(this.lobbyId);
+                this.openBoxFormDialog();
             } else {
-                this.errorMessage = "Cette partie n'existe pas. Veuillez vérifier l'identifiant.";
                 this.isLoading = false;
+                if (response.isLocked) {
+                    this.errorMessage = 'Cette partie est verrouillée. Vous ne pouvez pas la rejoindre.';
+                } else {
+                    this.errorMessage = "Cette partie n'existe pas. Veuillez vérifier l'identifiant.";
+                }
             }
+        });
+    }
+
+    openBoxFormDialog(): void {
+        this.lobbyService.getLobby(this.lobbyId).subscribe({
+            next: (response) => {
+                const dialogRef = this.dialog.open(BoxFormDialogComponent, {
+                    width: '400px',
+                    data: {
+                        lobbyId: this.lobbyId,
+                        boxId: response.gameId,
+                    },
+                });
+
+                dialogRef.afterClosed().subscribe((result) => {
+                    if (result) {
+                        this.dialogRef.close(this.lobbyId);
+                    }
+                });
+            },
         });
     }
 
