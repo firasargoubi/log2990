@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { io, Socket } from 'socket.io-client';
-import { Observable } from 'rxjs';
-import { Player } from '@common/player';
 import { Game } from '@app/interfaces/game.model';
 import { GameLobby } from '@common/game-lobby';
+import { Player } from '@common/player';
+import { Observable } from 'rxjs';
+import { io, Socket } from 'socket.io-client';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -100,6 +100,24 @@ export class LobbyService {
     verifyRoom(gameId: string): Observable<{ exists: boolean; isLocked?: boolean }> {
         return new Observable((observer) => {
             this.socket.emit('verifyRoom', { gameId }, (response: { exists: boolean; isLocked?: boolean }) => {
+                observer.next(response);
+                observer.complete();
+            });
+        });
+    }
+
+    verifyAvatars(lobbyId: string): Observable<{ avatars: string[] }> {
+        return new Observable((observer) => {
+            this.socket.emit('verifyAvatars', { lobbyId }, (response: { avatars: string[] }) => {
+                observer.next(response);
+                observer.complete();
+            });
+        });
+    }
+
+    verifyUsername(lobbyId: string): Observable<{ usernames: string[] }> {
+        return new Observable((observer) => {
+            this.socket.emit('verifyUsername', { lobbyId }, (response: { usernames: string[] }) => {
                 observer.next(response);
                 observer.complete();
             });

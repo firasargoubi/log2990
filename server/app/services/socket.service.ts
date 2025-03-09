@@ -1,8 +1,8 @@
+import { GameLobby } from '@common/game-lobby';
+import { Game } from '@common/game.interface';
+import { Player } from '@common/player';
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
-import { GameLobby } from '@common/game-lobby';
-import { Player } from '@common/player';
-import { Game } from '@common/game.interface';
 
 export class SocketService {
     private io: Server;
@@ -48,6 +48,14 @@ export class SocketService {
 
             socket.on('verifyRoom', (data: { gameId: string }, callback: (response: { exists: boolean; isLocked?: boolean }) => void) => {
                 this.verifyRoom(socket, data.gameId, callback);
+            });
+
+            socket.on('verifyAvatars', (data: { lobbyId: string }, callback: (response: { avatars: string[] }) => void) => {
+                this.verifyAvatars(socket, data.lobbyId, callback);
+            });
+
+            socket.on('verifyUsername', (data: { lobbyId: string }, callback: (response: { usernames: string[] }) => void) => {
+                this.verifyUsername(socket, data.lobbyId, callback);
             });
         });
     }
@@ -167,5 +175,35 @@ export class SocketService {
         }
 
         callback({ exists: true });
+    }
+
+    private verifyAvatars(socket: Socket, lobbyId: string, callback: (data: { avatars: string[] }) => void) {
+        const lobby = this.lobbies.get(lobbyId);
+        if (!lobby) {
+            socket.emit('error', "Cette partie n'existe pas.");
+            return;
+        }
+        if (lobby.isLocked) {
+            socket.emit('error', 'Cette partie est verrouillée.');
+            return;
+        }
+
+        const usedAvatars = lobby.players.map((player) => player.avatar);
+        callback({ avatars: usedAvatars });
+    }
+
+    private verifyUsername(socket: Socket, lobbyId: string, callback: (data: { usernames: string[] }) => void) {
+        const lobby = this.lobbies.get(lobbyId);
+        if (!lobby) {
+            socket.emit('error', "Cette partie n'existe pas.");
+            return;
+        }
+        if (lobby.isLocked) {
+            socket.emit('error', 'Cette partie est verrouillée.');
+            return;
+        }
+
+        const usedUsernames = lobby.players.map((player) => player.name);
+        callback({ usernames: usedUsernames });
     }
 }

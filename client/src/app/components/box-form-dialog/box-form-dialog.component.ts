@@ -3,13 +3,13 @@ import { Component, inject, Inject, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
-import { Game } from '@app/interfaces/game.model';
-import { GameService } from '@app/services/game.service';
-import { NotificationService } from '@app/services/notification.service';
 import { CREATE_PAGE_CONSTANTS, GAME_IMAGES } from '@app/Consts/app.constants';
-import { LobbyService } from '@app/services/lobby.service';
-import { Player } from '@common/player';
+import { Game } from '@app/interfaces/game.model';
 import { CurrentPlayerService } from '@app/services/current-player.service';
+import { GameService } from '@app/services/game.service';
+import { LobbyService } from '@app/services/lobby.service';
+import { NotificationService } from '@app/services/notification.service';
+import { Player } from '@common/player';
 import { Subscription } from 'rxjs';
 
 const DEFAULT_STAT_VALUE = 4;
@@ -55,6 +55,10 @@ export class BoxFormDialogComponent implements OnDestroy {
         private router: Router,
     ) {
         this.loadGames();
+
+        this.lobbyService.verifyAvatars(this.data.lobbyId).subscribe((response: { avatars: string[] }) => {
+            this.avatars = this.avatars.filter((a) => !response.avatars.includes(a));
+        });
 
         this.form = new FormGroup({
             name: new FormControl('New Player', [Validators.required]),
@@ -168,7 +172,6 @@ export class BoxFormDialogComponent implements OnDestroy {
             this.notificationService.showError('Veuillez remplir toutes les conditions de bonus.');
             return;
         }
-
         if (this.form.valid) {
             const formData = this.form.value;
             const bonus: { life?: number; speed?: number; attack?: number; defense?: number } = {};
@@ -191,21 +194,32 @@ export class BoxFormDialogComponent implements OnDestroy {
                 bonus.defense = 6;
                 bonus.attack = 4;
             }
-            const playerData: Player = {
-                id: this.generatePlayerId(),
-                name: formData.name,
-                avatar: formData.avatar,
-                isHost: false,
-                life: formData.life,
-                speed: formData.speed,
-                attack: formData.attack,
-                defense: formData.defense,
-                bonus,
-            };
 
-            this.lobbyService.joinLobby(this.data.lobbyId, playerData);
+            this.lobbyService.verifyUsername(this.data.lobbyId).subscribe((response: { usernames: string[] }) => {
+                const baseName = formData.name.replace(/^\s+|\s+$/g, '');
+                let uniqueName = baseName;
+                let counter = 2;
+                while (response.usernames.includes(uniqueName)) {
+                    uniqueName = `${baseName}-${counter}`;
+                    counter++;
+                }
 
-            this.currentPlayerService.setCurrentPlayer(playerData, this.data.game.id);
+                const playerData: Player = {
+                    id: this.generatePlayerId(),
+                    name: uniqueName,
+                    avatar: formData.avatar,
+                    isHost: false,
+                    life: formData.life,
+                    speed: formData.speed,
+                    attack: formData.attack,
+                    defense: formData.defense,
+                    bonus,
+                };
+
+                this.lobbyService.joinLobby(this.data.lobbyId, playerData);
+
+                this.currentPlayerService.setCurrentPlayer(playerData, this.data.game.id);
+            });
         }
     }
     saveCreate(): void {
