@@ -15,7 +15,7 @@
         Code d'accès : <strong>{{ lobby?.id }}</strong>
     </p>
 
-    <button (click)="startGame()">Commencer la partie</button>
+    <button (click)="startGame()" [disabled]="!lobby || !currentPlayer">Start Game</button>
 
     <!-- ✅ Display players in the lobby -->
     <app-player-list [currentPlayer]="currentPlayer" [players]="lobby?.players || []" [hostId]="hostId" (removePlayer)="removePlayer($event)">

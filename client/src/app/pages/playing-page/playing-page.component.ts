@@ -6,8 +6,7 @@ import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { GameLobby } from '@common/game-lobby';
 import { Player } from '@common/player';
-import { Subject, Subscription } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 import { BoardComponent } from 'src/app/components/board/board.component';
 import { CountdownComponent } from 'src/app/components/countdown-timer/countdown-timer.component';
 import { GameInfoComponent } from 'src/app/components/game-info/game-info.component';
@@ -21,14 +20,10 @@ import { PlayerInfoComponent } from 'src/app/components/player-info/player-info.
     styleUrls: ['./playing-page.component.scss'],
 })
 export class PlayingPageComponent implements OnInit, OnDestroy {
-    showErrorPopup: boolean = false;
-    saveState: boolean = false;
-    gameLoaded: boolean = false;
-    errorMessage: string = '';
-    objectNumber: number = 0;
     lobby: GameLobby | null = null;
     currentPlayer: Player | null = null;
     players: Player[] = [];
+    gameLoaded: boolean = false;
     game: Game = {
         id: '',
         name: '',
@@ -38,124 +33,85 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         description: '',
         lastModified: new Date(),
         isVisible: true,
-        board: [], // The board will be initialized when the game is fetched
+        board: [],
         objects: [],
     };
     activePlayer: string = ''; // Active player name
-    private destroy$ = new Subject<void>(); // For handling unsubscriptions
     private subscriptions: Subscription[] = [];
 
+    private route = inject(ActivatedRoute);
     private lobbyService = inject(LobbyService);
     private gameService = inject(GameService);
-
-    constructor(
-        private route: ActivatedRoute,
-        private router: Router,
-        private notificationService: NotificationService,
-    ) {}
+    private router = inject(Router);
+    private notificationService = inject(NotificationService);
 
     ngOnInit(): void {
+        // Récupération de l'ID du lobby et du joueur à partir des paramètres de l'URL
         const lobbyId = this.route.snapshot.paramMap.get('id');
         const playerId = this.route.snapshot.paramMap.get('playerId');
 
+        console.log('Lobby ID:', lobbyId); // Debug
+        console.log('Player ID:', playerId); // Debug
         if (lobbyId && playerId) {
-            // Récupérer le lobby à partir du service
-            this.subscriptions.push(
-                this.lobbyService.getLobby(lobbyId).subscribe((lobby) => {
-                    if (lobby) {
-                        this.lobby = lobby;
-                        this.currentPlayer = lobby.players.find((p) => p.id === playerId) || null;
-                    } else {
-                        this.notificationService.showError('Lobby not found!');
-                    }
-                }),
-            );
-
-            // Écoute des mises à jour du lobby
-            this.subscriptions.push(
-                this.lobbyService.onLobbyUpdated().subscribe((data) => {
-                    if (data.lobbyId === lobbyId) {
-                        this.lobby = data.lobby;
-                        this.currentPlayer = data.lobby.players.find((p) => p.id === playerId) || null;
-                    }
-                }),
-            );
-
-            // Écouter la sortie des joueurs du lobby
-            this.subscriptions.push(
-                this.lobbyService.onPlayerLeft().subscribe((data) => {
-                    if (this.lobby && data.playerName === this.currentPlayer?.name) {
-                        this.notificationService.showError("Vous avez été expulsé par l'administrateur");
-                        this.router.navigate(['/main'], { replaceUrl: true });
-                    }
-                }),
-            );
+            this.loadLobby(lobbyId, playerId); // Charger le lobby et le joueur
         } else {
-            this.notificationService.showError('Lobby ID or Player ID is missing.');
+            this.notificationService.showError('Lobby ID or Player ID is missing!');
         }
     }
 
     ngOnDestroy(): void {
-        // Annuler tous les abonnements pour éviter les fuites de mémoire
-        this.subscriptions.forEach((sub) => sub.unsubscribe());
+        this.subscriptions.forEach((sub) => sub.unsubscribe()); // Se désabonner des abonnements
     }
 
+    // Méthode pour charger le lobby et le joueur à partir du service
     loadLobby(lobbyId: string, playerId: string): void {
-        const lobbyObservable = this.lobbyService.getLobby(lobbyId);
+        this.subscriptions.push(
+            this.lobbyService.getLobby(lobbyId).subscribe({
+                next: (lobby) => {
+                    if (lobby) {
+                        this.lobby = lobby; // Récupérer les informations du lobby
+                        this.currentPlayer = lobby.players.find((player) => player.id === playerId) || null; // Trouver le joueur dans le lobby
 
-        if (lobbyObservable) {
-            lobbyObservable
-                .pipe(takeUntil(this.destroy$)) // Automatically unsubscribes on destroy
-                .subscribe({
-                    next: (lobby) => {
-                        if (lobby) {
-                            this.lobby = lobby; // Store the fetched lobby data
-                            this.currentPlayer = lobby.players.find((player) => player.id === playerId) || null;
-
-                            this.loadGame(lobby.gameId); // Load the game using the game ID from the lobby
+                        if (this.currentPlayer) {
+                            console.log('Player found:', this.currentPlayer);
+                            this.loadGame(lobby.gameId); // Charger le jeu avec l'ID du jeu du lobby
+                            // Vous pouvez charger d'autres informations du jeu si nécessaire
                         } else {
-                            this.handleError('Lobby not found!');
+                            this.notificationService.showError('Player not found in the lobby');
                         }
-                    },
-                    error: () => this.handleError('Error loading lobby data'),
-                });
-        } else {
-            this.handleError('Lobby not available!');
-        }
+                    } else {
+                        this.notificationService.showError('Lobby not found!');
+                    }
+                },
+                error: (err) => {
+                    this.notificationService.showError('Error loading lobby: ' + err);
+                },
+            }),
+        );
     }
 
     loadGame(gameId: string): void {
-        this.gameService
-            .fetchGameById(gameId)
-            .pipe(takeUntil(this.destroy$)) // Automatically unsubscribes on destroy
-            .subscribe({
-                next: (game: Game) => {
-                    this.game = game;
-                    if (!this.game?.board || this.game.board.length === 0) {
-                        this.handleError('No board available for this game');
-                    }
-                    this.gameLoaded = true;
-                    this.notificationService.showSuccess('Game loaded successfully');
-                },
-                error: () => this.handleError('Error loading game data'),
-            });
+        this.gameService.fetchGameById(gameId).subscribe({
+            next: (game: Game) => {
+                this.game = game;
+                console.log('Game loaded:', game); // Debug
+                if (!this.game?.board || this.game.board.length === 0) {
+                    this.notificationService.showError('No board available for this game');
+                }
+                this.gameLoaded = true; // Marquer que le jeu est chargé
+            },
+            error: (err) => {
+                this.notificationService.showError('Error loading game: ' + err);
+            },
+        });
     }
 
     resetBoard() {
         window.location.reload();
     }
 
-    closePopup() {
-        this.errorMessage = '';
-        this.showErrorPopup = false;
-        if (this.saveState) {
-            this.router.navigate(['/admin']);
-        }
-        this.saveState = false;
-    }
-
     endTurn() {
-        // Logic to end the turn
+        // Logique pour terminer le tour
     }
 
     abandon() {
@@ -163,16 +119,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     attack() {
-        // Attack logic
+        // Logique pour attaquer
     }
 
     defend() {
-        // Defend logic
-    }
-
-    private handleError(message: string): void {
-        this.notificationService.showError(message);
-        this.errorMessage = message;
-        this.showErrorPopup = true;
+        // Logique pour se défendre
     }
 }

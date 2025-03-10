@@ -38,7 +38,8 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         const lobbyId = this.route.snapshot.paramMap.get('id');
         const player = this.route.snapshot.paramMap.get('playerId');
-        if (lobbyId) {
+
+        if (lobbyId && player) {
             this.subscriptions.push(
                 this.lobbyService.getLobby(lobbyId).subscribe((lobby) => {
                     this.lobby = lobby;
@@ -83,23 +84,13 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
         }
     }
 
-    loadLobby(lobbyId: string, playerId: string | null): void {
-        this.subscriptions.push(
-            this.lobbyService.getLobby(lobbyId).subscribe((lobby) => {
-                if (lobby) {
-                    this.lobby = lobby;
-                    this.currentPlayer = lobby.players.find((p) => p.id === playerId) || this.currentPlayer;
-                    this.hostId = lobby.players.find((p) => p.isHost)?.id || '';
-                }
-            }),
-        );
-    }
+    // Methode pour démarrer le jeu et envoyer vers la page de jeu
     startGame(): void {
-        if (this.lobby && this.lobby.gameId) {
-            // Redirige vers la page du jeu en passant les paramètres de lobby et de joueur
+        if (this.lobby && this.currentPlayer) {
+            this.router.navigate([`/play/${this.lobby.id}/${this.currentPlayer.id}`]);
             console.log('Lobby ID:', this.lobby.id); // Debug
             console.log('Player ID:', this.currentPlayer.id); // Debug
-            this.router.navigate([`/play/${this.lobby.id}/${this.currentPlayer.id}`]);
+            // Redirige vers la page du jeu avec les bons paramètres
         } else {
             this.notificationService.showError('Game cannot be started yet.');
         }
