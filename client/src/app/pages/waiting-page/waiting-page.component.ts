@@ -1,6 +1,5 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Subscription } from 'rxjs';
 import { GameControlsComponent } from '@app/components/game-controls/game-controls.component';
 import { PlayerListComponent } from '@app/components/player-list/player-list.component';
 import { GAME_IMAGES } from '@app/Consts/app.constants';
@@ -8,6 +7,7 @@ import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { GameLobby } from '@common/game-lobby';
 import { Player } from '@common/player';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-waiting-page',
@@ -38,7 +38,8 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         const lobbyId = this.route.snapshot.paramMap.get('id');
         const player = this.route.snapshot.paramMap.get('playerId');
-        if (lobbyId) {
+
+        if (lobbyId && player) {
             this.subscriptions.push(
                 this.lobbyService.getLobby(lobbyId).subscribe((lobby) => {
                     this.lobby = lobby;
@@ -74,12 +75,33 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
         this.subscriptions.forEach((sub) => sub.unsubscribe());
     }
 
+    isHost() {
+        return this.currentPlayer.id === this.hostId;
+    }
+
     removePlayer(playerId: string): void {
         if (this.lobby) {
             const player = this.lobby.players.find((p) => p.id === playerId);
             if (player) {
                 this.lobbyService.leaveLobby(this.lobby.id, player.name);
             }
+        }
+    }
+
+    lockRoom(): void {
+        if (this.lobby?.id) {
+            this.lobbyService.lockLobby(this.lobby.id);
+        }
+    }
+
+    startGame(): void {
+        if (this.lobby && this.currentPlayer) {
+            this.router.navigate([`/play/${this.lobby.id}/${this.currentPlayer.id}`]);
+            console.log('Lobby ID:', this.lobby.id); // Debug
+            console.log('Player ID:', this.currentPlayer.id); // Debug
+            // Redirige vers la page du jeu avec les bons paramètres
+        } else {
+            this.notificationService.showError('Game cannot be started yet.');
         }
     }
 }

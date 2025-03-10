@@ -134,6 +134,16 @@ export class BoxFormDialogComponent implements OnDestroy {
         this.diceAttribute = attribute;
     }
 
+    isRoomLocked(): boolean {
+        let isLocked = false;
+        this.lobbyService.getLobby(this.data.lobbyId).subscribe((lobby) => {
+            if (lobby.maxPlayers === lobby.players.length) {
+                this.lobbyService.lockLobby(this.data.lobbyId);
+                isLocked = true;
+            }
+        });
+        return isLocked;
+    }
     resetAttributes(): void {
         this.form.patchValue({
             life: DEFAULT_STAT_VALUE,
@@ -213,8 +223,12 @@ export class BoxFormDialogComponent implements OnDestroy {
                     defense: formData.defense,
                     bonus,
                 };
-
-                this.lobbyService.joinLobby(this.data.lobbyId, playerData);
+                if (this.isRoomLocked()) {
+                    this.notificationService.showError('The room is complete');
+                    return;
+                } else {
+                    this.lobbyService.joinLobby(this.data.lobbyId, playerData);
+                }
             });
         }
     }

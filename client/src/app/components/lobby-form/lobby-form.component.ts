@@ -25,9 +25,17 @@ export class LobbyFormComponent {
     ) {}
 
     validateGameId(): void {
+        this.lobbyService.getLobby(this.lobbyId).subscribe((lobby) => {
+            if (lobby.maxPlayers === lobby.players.length) {
+                this.lobbyService.lockLobby(lobby.id);
+                this.errorMessage = 'La partie est pleine.';
+                return;
+            } else {
+                this.errorMessage = '';
+            }
+        });
         this.isLoading = true;
         this.errorMessage = '';
-
         this.lobbyService.verifyRoom(this.lobbyId).subscribe((response: { exists: boolean; isLocked?: boolean }) => {
             if (response.exists) {
                 this.isLoading = false;
