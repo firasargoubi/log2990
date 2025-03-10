@@ -1,27 +1,188 @@
-.player-card {
+app-player-list {
+    display: block;
+    background-color: rgba(255, 255, 255, 0.6);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: inset 0 0 8px rgba(73, 115, 66, 0.2);
+    position: relative;
+  }
+  
+  app-player-list:before {
+    content: "🐾";
+    position: absolute;
+    top: -15px;
+    left: 20px;
+    font-size: 1.4rem;
+  }
+  
+  app-game-controls {
+    display: block;
+    margin-bottom: 30px;
+    padding: 15px;
+    background-color: rgba(158, 186, 99, 0.3);
+    border-radius: 12px;
+    border: 2px dashed #9eba63;
+  }
+  
+  /* Player Card Styling */
+  .player-card {
     display: flex;
-    flex-direction: column;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #fff;
-    max-width: 250px;
-    .player-preview {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 10px;
-    }
-    .player-info {
-        .player-name {
-            font-weight: bold;
-        }
-    }
-    .player-actions {
-        display: flex;
-        justify-content: flex-end;
-        button {
-            margin: 0 5px;
-        }
-    }
-}
+    background-color: #f0f7e6 !important;
+    border: 2px solid #9eba63 !important;
+    border-radius: 12px !important;
+    margin-bottom: 15px !important;
+    padding: 12px !important;
+    box-shadow: 0 4px 8px rgba(73, 115, 66, 0.15) !important;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .player-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(73, 115, 66, 0.2) !important;
+  }
+  
+  /* Add a little nature detail to each card */
+  .player-card:before {
+    content: "🌱";
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    font-size: 0.9rem;
+    opacity: 0.7;
+  }
+  
+  .player-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #9eba63;
+    box-shadow: 0 0 0 3px rgba(63, 120, 63, 0.3);
+    margin-right: 15px;
+    flex-shrink: 0;
+  }
+  
+  .player-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .player-info {
+    flex: 1;
+  }
+  
+  .player-info ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0 0 10px 0;
+  }
+  
+  .player-info ul li {
+    display: inline-block;
+    margin-right: 10px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.8rem;
+    color: #125d0c;
+  }
+  
+  /* Special "host" badge */
+  .player-info ul li:nth-child(2) {
+    background-color: #9eba63;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    position: relative;
+    top: -2px;
+  }
+  
+  .player-name {
+    font-weight: bold;
+    color: #3f783f;
+  }
+  
+  .player-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .player-stats p {
+    margin: 0;
+    padding: 6px 10px;
+    background-color: rgba(184, 213, 139, 0.3);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    text-align: left;
+    font-family: 'Courier New', monospace;
+    color: #125d0c;
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Animal emoji indicators for stats */
+  .player-stats p:nth-child(1):before {
+    content: "❤️"; /* Heart for life */
+    margin-right: 5px;
+    font-size: 0.9rem;
+  }
+  
+  .player-stats p:nth-child(2):before {
+    content: "🐇"; /* Rabbit for speed */
+    margin-right: 5px;
+    font-size: 0.9rem;
+  }
+  
+  .player-stats p:nth-child(3):before {
+    content: "🦁"; /* Lion for attack */
+    margin-right: 5px;
+    font-size: 0.9rem;
+  }
+  
+  .player-stats p:nth-child(4):before {
+    content: "🐢"; /* Turtle for defense */
+    margin-right: 5px;
+    font-size: 0.9rem;
+  }
+  
+  /* Bonus indicators */
+  .player-stats span {
+    color: #5a9b20;
+    font-weight: bold;
+    margin-left: 4px;
+  }
+  
+  .player-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  button.action {
+    background-color: transparent !important;
+    border: none !important;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  
+  button.action:hover {
+    transform: scale(1.2);
+  }
+  
+  button.action.remove i {
+    font-style: normal;
+    font-size: 1.4rem;
+  }
+  
+  /* Add some animal tracks at the bottom */
+  app-player-list:after {
+    content: "🐾 🐾 🐾";
+    display: block;
+    text-align: right;
+    margin-top: 15px;
+    font-size: 1rem;
+    opacity: 0.7;
+  }

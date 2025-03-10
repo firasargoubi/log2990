@@ -78,7 +78,7 @@ export class BoxFormDialogComponent implements OnDestroy {
                 next: (socketData) => {
                     if (socketData.lobbyId === this.data.lobbyId) {
                         this.dialogRef.close();
-                        this.router.navigate([`/waiting/${this.data.lobbyId}`], { replaceUrl: true });
+                        this.router.navigate([`/waiting/${socketData.lobbyId}/${socketData.player.id}`], { replaceUrl: true });
                     }
                 },
             }),

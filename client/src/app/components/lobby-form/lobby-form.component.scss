@@ -1,51 +1,199 @@
-.error-message {
-    color: #f44336;
-    margin-top: 8px;
-    margin-bottom: 8px;
-    font-size: 0.9rem;
-  }
+h2 {
+  color: #3f783f; /* Forest green */
+  font-family: 'Press Start 2P', cursive;
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 1.5rem;
+  padding: 15px 0;
+  position: relative;
+  text-shadow: 2px 2px 0px rgba(184, 213, 139, 0.7);
+  letter-spacing: 1px;
+}
+
+/* Add cute animal decorations to title */
+h2:after {
+  content: "🦊"; /* Fox emoji */
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.8rem;
+}
   
-  form {
-    display: flex;
-    flex-direction: column;
-    padding: 16px;
-    
-    div {
-      margin-bottom: 16px;
-    }
-    
-    button {
-      margin-right: 8px;
-      padding: 8px 16px;
-      border-radius: 4px;
-      
-      &:first-of-type {
-        background-color: #3f51b5;
-        color: white;
-        border: none;
-        
-        &:disabled {
-          background-color: #cccccc;
-          cursor: not-allowed;
-        }
-      }
-      
-      &:last-of-type {
-        background-color: transparent;
-        border: 1px solid #ccc;
-      }
-    }
-    
-    input {
-      width: 100%;
-      padding: 8px;
-      margin-top: 4px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      
-      &:focus {
-        outline: none;
-        border-color: #3f51b5;
-      }
-    }
-  }
+h2:before {
+  content: "🌿"; /* Plant emoji */
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.8rem;
+}
+
+.error-message {
+  color: #e05c3b; /* Warm orange-red like a fox */
+  margin-top: 8px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  font-family: 'Press Start 2P', cursive;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background-color: #f0f7e6; /* Light leafy background */
+  border-radius: 15px;
+  border: 3px solid #9eba63; /* Mossy border */
+  box-shadow: 0 6px 12px rgba(73, 115, 66, 0.2);
+}
+  
+form div {
+  margin-bottom: 20px;
+  background: #9eba63; /* Mossy green */
+  border-radius: 50px;
+  padding: 16px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+form div:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(19, 93, 12, 0.2);
+}
+
+form div:before {
+  position: absolute;
+  left: 10px;
+  top: -10px;
+}
+
+/* Exception for error message div */
+div.error-message {
+  background: transparent;
+  padding: 4px 12px;
+  color: #e05c3b;
+  border-radius: 0;
+}
+
+div.error-message:before {
+  content: "🦝"; /* Change to raccoon for error */
+  left: -5px;
+}
+
+div.error-message:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Exception for buttons div */
+div:last-of-type {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  background: transparent;
+  padding: 0;
+}
+
+div:last-of-type:before {
+  content: none;
+}
+
+div:last-of-type:hover {
+  transform: none;
+  box-shadow: none;
+}
+  
+form label {
+  color: #125d0c; /* Deep forest green */
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.9rem;
+  display: block;
+  margin-bottom: 8px;
+}
+  
+form input {
+  width: 90%;
+  padding: 12px;
+  margin-top: 8px;
+  border: 2px solid #b8d58b; /* Light green border */
+  border-radius: 50px;
+  background-color: rgba(255, 255, 255, 0.8);
+  font-family: 'Courier New', monospace;
+}
+
+form input:focus {
+  outline: none;
+  border-color: #125d0c; /* Deep forest green */
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(18, 93, 12, 0.2);
+}
+
+form input::placeholder {
+  color: #9eba63; /* Mossy green */
+}
+  
+form button {
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+form button:first-of-type {
+  background-color: #125d0c; /* Deep forest green */
+  color: white;
+  border: none;
+  position: relative;
+  padding-left: 36px;
+}
+
+form button:first-of-type:before {
+  content: "🦉"; /* Owl emoji */
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+form button:first-of-type:hover:not(:disabled) {
+  background-color: #1a7a10;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(19, 93, 12, 0.3);
+}
+
+form button:first-of-type:disabled {
+  background-color: #b8d58b; /* Light green */
+  cursor: not-allowed;
+}
+
+form button:last-of-type {
+  background-color: transparent;
+  border: 2px solid #9eba63; /* Mossy border */
+  color: #3f783f; /* Forest green */
+  position: relative;
+  padding-left: 36px;
+}
+
+form button:last-of-type:before {
+  content: "🦢"; /* Swan emoji */
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+form button:last-of-type:hover {
+  background-color: rgba(158, 186, 99, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Add some cute animal footprints at the bottom of the form */
+form:after {
+  content: "🐾 🐾 🐾";
+  display: block;
+  text-align: right;
+  margin-top: 10px;
+  font-size: 1.2rem;
+}

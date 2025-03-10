@@ -14,8 +14,8 @@ export class PlayerCardComponent {
     @Input() hostId: string = '';
     @Output() remove = new EventEmitter<string>();
 
-    isHost(player: Player): boolean {
-        return player.id === this.hostId;
+    isHost(): boolean {
+        return this.currentPlayer.id === this.hostId;
     }
 
     onRemovePlayer(): void {

@@ -7,7 +7,6 @@ import { GAME_IMAGES } from '@app/Consts/app.constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { GameLobby } from '@common/game-lobby';
 import { Player } from '@common/player';
-import { CurrentPlayerService } from '@app/services/current-player.service';
 
 @Component({
     selector: 'app-waiting-page',
@@ -32,22 +31,16 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
 
     private route = inject(ActivatedRoute);
     private lobbyService = inject(LobbyService);
-    private currentPlayerService = inject(CurrentPlayerService);
-
-    constructor() {
-        const storedData = this.currentPlayerService.getCurrentPlayer();
-        if (storedData && storedData.player) {
-            this.currentPlayer = storedData.player;
-            this.hostId = storedData.player.id;
-        }
-    }
 
     ngOnInit(): void {
         const lobbyId = this.route.snapshot.paramMap.get('id');
+        const player = this.route.snapshot.paramMap.get('playerId');
         if (lobbyId) {
             this.subscriptions.push(
                 this.lobbyService.getLobby(lobbyId).subscribe((lobby) => {
                     this.lobby = lobby;
+                    this.currentPlayer = lobby.players.find((p) => p.id === player) || this.currentPlayer;
+                    this.hostId = lobby.players.find((p) => p.isHost)?.id || '';
                 }),
             );
 
@@ -55,6 +48,8 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
                 this.lobbyService.onLobbyUpdated().subscribe((data) => {
                     if (data.lobbyId === lobbyId) {
                         this.lobby = data.lobby;
+                        this.currentPlayer = data.lobby.players.find((p) => p.id === player) || this.currentPlayer;
+                        this.hostId = data.lobby.players.find((p) => p.isHost)?.id || '';
                     }
                 }),
             );

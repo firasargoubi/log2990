@@ -18,7 +18,7 @@ export class MainPageComponent {
 
     openLobbyForm(): void {
         const dialogRef: MatDialogRef<LobbyFormComponent> = this.dialog.open(LobbyFormComponent, {
-            width: '400px',
+            width: '700px',
             height: '400px',
         });
 
