@@ -1,0 +1,21 @@
+<div class="player-info">
+    <div class="player-header">
+        @if (currentPlayer.isHost && lobby) {
+        <app-game-controls [lobby]="lobby"></app-game-controls>
+        }
+
+        <app-player-list [currentPlayer]="currentPlayer" [players]="lobby?.players || []" [hostId]="hostId" (removePlayer)="removePlayer($event)">
+        </app-player-list>
+    </div>
+
+    <div class="player-stats">
+        <h2>{{ currentPlayer.name }}</h2>
+        <img />Avatar : {{ currentPlayer.avatar }}
+        <p><strong>Points de vie:</strong> {{ currentPlayer.life }}</p>
+        <p><strong>Vitesse:</strong> {{ currentPlayer.speed }}</p>
+        <p><strong>Attaque:</strong> {{ currentPlayer.attack }}</p>
+        <p><strong>Dé d'attaque:</strong>{{ currentPlayer.bonus?.attack }}</p>
+        <p><strong>Défense:</strong> {{ currentPlayer.defense }}</p>
+        <p><strong>Dé de défense:</strong>{{ currentPlayer.bonus?.defense }}</p>
+    </div>
+</div>

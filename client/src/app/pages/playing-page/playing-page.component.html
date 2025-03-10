@@ -1,0 +1,47 @@
+<div class="game-container">
+    <div class="sidebar-left">
+        <div class="component-box">
+            <app-countdown-timer></app-countdown-timer>
+        </div>
+        <div class="component-box">
+            <app-player-info></app-player-info>
+        </div>
+        <div class="component-box">
+            <app-inventory></app-inventory>
+        </div>
+    </div>
+
+    <!-- Main Content: Game Board (Game Details) -->
+    <section class="main-content">
+        @if (gameLoaded) {
+        <div #board class="board-container">
+            <app-board [game]="game!"></app-board>
+        </div>
+        }
+    </section>
+
+    <!-- Sidebar Right: Game Info, Chat, Action Buttons -->
+    <div class="sidebar-right">
+        <div class="component-box">
+            <app-game-info
+                [gameName]="game.name ?? ''"
+                [gameDescription]="game.description ?? ''"
+                [gameMode]="game.mode ?? 'Default Mode'"
+                [mapSize]="game.mapSize ?? 'Default Size'"
+                [playerCount]="lobby ? lobby.players.length : 0"
+                [activePlayer]="activePlayer"
+                [players]="lobby?.players ?? []"
+            >
+            </app-game-info>
+            <!-- Display game info -->
+        </div>
+        <div class="component-box">
+            <div class="action-buttons">
+                <button (click)="attack()">Attaquer</button>
+                <button (click)="defend()">Défendre</button>
+                <button (click)="endTurn()">Fin de tour</button>
+                <button (click)="abandon()" routerLink="/home">Abandonner</button>
+            </div>
+        </div>
+    </div>
+</div>

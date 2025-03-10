@@ -9,6 +9,7 @@ import { AppComponent } from '@app/pages/app/app.component';
 import { CreatePageComponent } from '@app/pages/create-page/create-page.component';
 import { EditionPageComponent } from '@app/pages/edition-page/edition-page.component';
 import { MainPageComponent } from '@app/pages/main-page/main-page.component';
+import { PlayingPageComponent } from '@app/pages/playing-page/playing-page.component';
 import { WaitingPageComponent } from '@app/pages/waiting-page/waiting-page.component';
 import { environment } from './environments/environment';
 
@@ -27,6 +28,8 @@ const routes: Routes = [
     { path: 'create', component: CreatePageComponent },
     { path: 'waiting', component: WaitingPageComponent },
     { path: 'waiting/:id/:playerId', component: WaitingPageComponent },
+    { path: 'play', component: PlayingPageComponent },
+    { path: 'play/:id/:playerId', component: PlayingPageComponent },
     { path: '**', redirectTo: '/home' },
 ];
 

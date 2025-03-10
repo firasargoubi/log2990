@@ -10,7 +10,7 @@ export interface Player {
     bonus?: {
         life?: number;
         speed?: number;
-        attack?: number;
-        defense?: number;
+        attack?: 'D4' | 'D6';
+        defense?: 'D4' | 'D6';
     };
 }

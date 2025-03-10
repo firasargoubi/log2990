@@ -25,15 +25,13 @@
                 }
             </p>
             <p>
-                Attaque: {{ player.attack }}
-                @if (player.bonus?.attack) {
-                <span>(+{{ player.bonus?.attack }})</span>
+                Attaque: @if (player.bonus?.attack) {
+                <span>{{ player.bonus?.attack }}</span>
                 }
             </p>
             <p>
-                Défense: {{ player.defense }}
-                @if (player.bonus?.defense) {
-                <span>(+{{ player.bonus?.defense }})</span>
+                Défense: @if (player.bonus?.defense) {
+                <span>{{ player.bonus?.defense }}</span>
                 }
             </p>
         </div>

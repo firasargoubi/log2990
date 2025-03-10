@@ -1,6 +1,5 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Subscription } from 'rxjs';
 import { GameControlsComponent } from '@app/components/game-controls/game-controls.component';
 import { PlayerListComponent } from '@app/components/player-list/player-list.component';
 import { GAME_IMAGES } from '@app/Consts/app.constants';
@@ -8,6 +7,7 @@ import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { GameLobby } from '@common/game-lobby';
 import { Player } from '@common/player';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-waiting-page',
@@ -80,6 +80,28 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
             if (player) {
                 this.lobbyService.leaveLobby(this.lobby.id, player.name);
             }
+        }
+    }
+
+    loadLobby(lobbyId: string, playerId: string | null): void {
+        this.subscriptions.push(
+            this.lobbyService.getLobby(lobbyId).subscribe((lobby) => {
+                if (lobby) {
+                    this.lobby = lobby;
+                    this.currentPlayer = lobby.players.find((p) => p.id === playerId) || this.currentPlayer;
+                    this.hostId = lobby.players.find((p) => p.isHost)?.id || '';
+                }
+            }),
+        );
+    }
+    startGame(): void {
+        if (this.lobby && this.lobby.gameId) {
+            // Redirige vers la page du jeu en passant les paramètres de lobby et de joueur
+            console.log('Lobby ID:', this.lobby.id); // Debug
+            console.log('Player ID:', this.currentPlayer.id); // Debug
+            this.router.navigate([`/play/${this.lobby.id}/${this.currentPlayer.id}`]);
+        } else {
+            this.notificationService.showError('Game cannot be started yet.');
         }
     }
 }

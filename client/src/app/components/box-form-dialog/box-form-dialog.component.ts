@@ -172,7 +172,7 @@ export class BoxFormDialogComponent implements OnDestroy {
         }
         if (this.form.valid) {
             const formData = this.form.value;
-            const bonus: { life?: number; speed?: number; attack?: number; defense?: number } = {};
+            const bonus: { life?: number; speed?: number; attack?: 'D4' | 'D6'; defense?: 'D4' | 'D6' } = {};
             if (this.increasedAttribute === 'life') {
                 bonus.life = 2;
             } else if (this.increasedAttribute === 'speed') {
@@ -180,17 +180,17 @@ export class BoxFormDialogComponent implements OnDestroy {
             }
             if (!this.diceAttribute) {
                 if (this.increasedAttribute === 'attack') {
-                    bonus.attack = 2;
+                    bonus.attack = 'D4';
                 } else if (this.increasedAttribute === 'defense') {
-                    bonus.defense = 2;
+                    bonus.defense = 'D4';
                 }
             }
             if (this.diceAttribute === 'attack') {
-                bonus.attack = 6;
-                bonus.defense = 4;
+                bonus.attack = 'D6';
+                bonus.defense = 'D4';
             } else if (this.diceAttribute === 'defense') {
-                bonus.defense = 6;
-                bonus.attack = 4;
+                bonus.defense = 'D6';
+                bonus.attack = 'D4';
             }
 
             this.lobbyService.verifyUsername(this.data.lobbyId).subscribe((response: { usernames: string[] }) => {
@@ -231,7 +231,7 @@ export class BoxFormDialogComponent implements OnDestroy {
         }
         if (this.form.valid) {
             const formData = this.form.value;
-            const bonus: { life?: number; speed?: number; attack?: number; defense?: number } = {};
+            const bonus: { life?: number; speed?: number; attack?: 'D4' | 'D6'; defense?: 'D4' | 'D6' } = {};
             if (this.increasedAttribute === 'life') {
                 bonus.life = 2;
             } else if (this.increasedAttribute === 'speed') {
@@ -239,17 +239,17 @@ export class BoxFormDialogComponent implements OnDestroy {
             }
             if (!this.diceAttribute) {
                 if (this.increasedAttribute === 'attack') {
-                    bonus.attack = 2;
+                    bonus.attack = 'D4';
                 } else if (this.increasedAttribute === 'defense') {
-                    bonus.defense = 2;
+                    bonus.defense = 'D4';
                 }
             }
             if (this.diceAttribute === 'attack') {
-                bonus.attack = 6;
-                bonus.defense = 4;
+                bonus.attack = 'D6';
+                bonus.defense = 'D4';
             } else if (this.diceAttribute === 'defense') {
-                bonus.defense = 6;
-                bonus.attack = 4;
+                bonus.defense = 'D6';
+                bonus.attack = 'D4';
             }
             const playerData: Player = {
                 id: '',
