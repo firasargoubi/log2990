@@ -4,7 +4,21 @@
             <app-countdown-timer></app-countdown-timer>
         </div>
         <div class="component-box">
-            <app-player-info></app-player-info>
+            <ul>
+                <li><strong>Name:</strong> {{ currentPlayer?.name }}</li>
+                <li><strong>Avatar:</strong> <img [src]="currentPlayer?.avatar" alt="Avatar" width="50" height="50" /></li>
+                <li><strong>Vie:</strong> {{ currentPlayer?.life }}</li>
+                <li><strong>Rapidité:</strong> {{ currentPlayer?.speed }}</li>
+                <li><strong>Attaque:</strong> {{ currentPlayer?.attack }}</li>
+                <li><strong>Défense:</strong> {{ currentPlayer?.defense }}</li>
+            </ul>
+            <ul>
+                Bonus :
+                <li><strong>Bonus Vie:</strong> {{ currentPlayer?.bonus?.life }}</li>
+                <li><strong>Bonus Rapidité:</strong> {{ currentPlayer?.bonus?.speed }}</li>
+                <li><strong>Dé attaque:</strong> {{ currentPlayer?.bonus?.attack }}</li>
+                <li><strong>Dé défense:</strong> {{ currentPlayer?.bonus?.defense }}</li>
+            </ul>
         </div>
         <div class="component-box">
             <app-inventory></app-inventory>
@@ -24,24 +38,22 @@
     <div class="sidebar-right">
         <div class="component-box">
             <app-game-info
-                [gameName]="game.name ?? ''"
-                [gameDescription]="game.description ?? ''"
-                [gameMode]="game.mode ?? 'Default Mode'"
                 [mapSize]="game.mapSize ?? 'Default Size'"
                 [playerCount]="lobby ? lobby.players.length : 0"
-                [activePlayer]="activePlayer"
+                [activePlayer]="currentPlayer?.name ?? 'Unknown Player'"
                 [players]="lobby?.players ?? []"
             >
             </app-game-info>
             <!-- Display game info -->
         </div>
         <div class="component-box">
-            <div class="action-buttons">
-                <button (click)="attack()">Attaquer</button>
-                <button (click)="defend()">Défendre</button>
-                <button (click)="endTurn()">Fin de tour</button>
-                <button (click)="abandon()" routerLink="/home">Abandonner</button>
-            </div>
+            <app-messages></app-messages>
+        </div>
+        <div class="action-buttons">
+            <button (click)="attack()">Attaquer</button>
+            <button (click)="defend()">Défendre</button>
+            <button (click)="endTurn()">Fin de tour</button>
+            <button (click)="abandon()" routerLink="/home">Abandonner</button>
         </div>
     </div>
 </div>

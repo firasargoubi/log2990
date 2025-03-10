@@ -11,11 +11,11 @@ import { BoardComponent } from 'src/app/components/board/board.component';
 import { CountdownComponent } from 'src/app/components/countdown-timer/countdown-timer.component';
 import { GameInfoComponent } from 'src/app/components/game-info/game-info.component';
 import { InventoryComponent } from 'src/app/components/inventory/inventory.component';
-import { PlayerInfoComponent } from 'src/app/components/player-info/player-info.component';
+import { MessagesComponent } from 'src/app/components/messages/messages.component';
 
 @Component({
     selector: 'app-playing-page',
-    imports: [CountdownComponent, PlayerInfoComponent, InventoryComponent, GameInfoComponent, BoardComponent],
+    imports: [CountdownComponent, InventoryComponent, GameInfoComponent, BoardComponent, MessagesComponent],
     templateUrl: './playing-page.component.html',
     styleUrls: ['./playing-page.component.scss'],
 })
@@ -50,8 +50,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         const lobbyId = this.route.snapshot.paramMap.get('id');
         const playerId = this.route.snapshot.paramMap.get('playerId');
 
-        console.log('Lobby ID:', lobbyId); // Debug
-        console.log('Player ID:', playerId); // Debug
         if (lobbyId && playerId) {
             this.loadLobby(lobbyId, playerId); // Charger le lobby et le joueur
         } else {
@@ -73,7 +71,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                         this.currentPlayer = lobby.players.find((player) => player.id === playerId) || null; // Trouver le joueur dans le lobby
 
                         if (this.currentPlayer) {
-                            console.log('Player found:', this.currentPlayer);
                             this.loadGame(lobby.gameId); // Charger le jeu avec l'ID du jeu du lobby
                             // Vous pouvez charger d'autres informations du jeu si nécessaire
                         } else {
@@ -94,7 +91,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.gameService.fetchGameById(gameId).subscribe({
             next: (game: Game) => {
                 this.game = game;
-                console.log('Game loaded:', game); // Debug
                 if (!this.game?.board || this.game.board.length === 0) {
                     this.notificationService.showError('No board available for this game');
                 }
@@ -115,7 +111,12 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     abandon() {
-        this.router.navigate(['/home']);
+        // Vérifier que le lobby et le joueur actuel existent
+        if (this.lobby && this.currentPlayer) {
+            // Appeler la méthode `leaveLobby` du service pour quitter le lobby
+            this.lobbyService.leaveLobby(this.lobby.id, this.currentPlayer.name);
+            this.router.navigate(['/home']);
+        }
     }
 
     attack() {

@@ -1,21 +1,33 @@
-.messages {
-    background-color: #e4e4e4;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-}
-
 .tabs {
     display: flex;
-    gap: 10px;
+    justify-content: space-around;
+    margin-bottom: 10px;
 }
 
-.tab {
+button {
     padding: 10px;
-    background-color: #ddd;
     cursor: pointer;
+    border: none;
+    background-color: #f0f0f0;
 }
 
-.tab.active {
-    background-color: #b7e4d9;
+button.active {
+    background-color: #cce7ff;
+}
+
+.chat-tab,
+.event-log-tab {
+    margin: 10px 0;
+}
+
+.chat-messages,
+.event-log {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
 }
