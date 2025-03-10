@@ -1,10 +1,11 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { GameControlsComponent } from '@app/components/game-controls/game-controls.component';
 import { PlayerListComponent } from '@app/components/player-list/player-list.component';
 import { GAME_IMAGES } from '@app/Consts/app.constants';
 import { LobbyService } from '@app/services/lobby.service';
+import { NotificationService } from '@app/services/notification.service';
 import { GameLobby } from '@common/game-lobby';
 import { Player } from '@common/player';
 
@@ -31,6 +32,8 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
 
     private route = inject(ActivatedRoute);
     private lobbyService = inject(LobbyService);
+    private router = inject(Router);
+    private notificationService = inject(NotificationService);
 
     ngOnInit(): void {
         const lobbyId = this.route.snapshot.paramMap.get('id');
@@ -55,17 +58,12 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
             );
 
             this.subscriptions.push(
-                this.lobbyService.onPlayerJoined().subscribe((data) => {
-                    if (data.lobbyId === lobbyId) {
-                        this.lobby?.players.push(data.player);
-                    }
-                }),
-            );
-
-            this.subscriptions.push(
                 this.lobbyService.onPlayerLeft().subscribe((data) => {
                     if (this.lobby) {
-                        this.lobby.players = this.lobby.players.filter((player) => player.name !== data.playerName);
+                        if (data.playerName === this.currentPlayer.name) {
+                            this.notificationService.showError("Vous avez été expulsé par l'administrateur");
+                            this.router.navigate(['/main'], { replaceUrl: true });
+                        }
                     }
                 }),
             );

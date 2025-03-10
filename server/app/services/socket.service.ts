@@ -87,7 +87,7 @@ export class SocketService {
             socket.emit('error', 'Lobby is locked or full.');
             return;
         }
-
+        player.id = socket.id;
         player.isHost = lobby.players.length === 0;
         lobby.players.push(player);
         socket.join(lobbyId);
@@ -155,7 +155,8 @@ export class SocketService {
     private updateLobby(lobbyId: string) {
         const lobby = this.lobbies.get(lobbyId);
         if (lobby) {
-            this.io.to(lobbyId).emit('lobbyUpdated', { lobbyId, lobby });
+            const lobbyCopy = JSON.parse(JSON.stringify(lobby));
+            this.io.to(lobbyId).emit('lobbyUpdated', { lobbyId, lobby: lobbyCopy });
         }
     }
 

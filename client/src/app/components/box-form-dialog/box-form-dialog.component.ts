@@ -5,7 +5,6 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
 import { CREATE_PAGE_CONSTANTS, GAME_IMAGES } from '@app/Consts/app.constants';
 import { Game } from '@app/interfaces/game.model';
-import { CurrentPlayerService } from '@app/services/current-player.service';
 import { GameService } from '@app/services/game.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
@@ -25,7 +24,6 @@ export class BoxFormDialogComponent implements OnDestroy {
     gameList: Game[] = [];
     notificationService = inject(NotificationService);
     lobbyService = inject(LobbyService);
-    currentPlayerService = inject(CurrentPlayerService);
     avatars = [
         GAME_IMAGES.fawn,
         GAME_IMAGES.bear,
@@ -205,7 +203,7 @@ export class BoxFormDialogComponent implements OnDestroy {
                 }
 
                 const playerData: Player = {
-                    id: this.generatePlayerId(),
+                    id: '',
                     name: uniqueName,
                     avatar: formData.avatar,
                     isHost: false,
@@ -217,8 +215,6 @@ export class BoxFormDialogComponent implements OnDestroy {
                 };
 
                 this.lobbyService.joinLobby(this.data.lobbyId, playerData);
-
-                this.currentPlayerService.setCurrentPlayer(playerData, this.data.game.id);
             });
         }
     }
@@ -256,7 +252,7 @@ export class BoxFormDialogComponent implements OnDestroy {
                 bonus.attack = 4;
             }
             const playerData: Player = {
-                id: this.generatePlayerId(),
+                id: '',
                 name: formData.name,
                 avatar: formData.avatar,
                 isHost: false,
@@ -268,13 +264,7 @@ export class BoxFormDialogComponent implements OnDestroy {
             };
 
             this.lobbyService.joinLobby(this.data.lobbyId, playerData);
-
-            this.currentPlayerService.setCurrentPlayer(playerData, this.data.game.id);
         }
-    }
-
-    private generatePlayerId(): string {
-        return crypto.randomUUID();
     }
 
     private loadGames(): void {
