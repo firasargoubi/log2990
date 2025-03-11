@@ -85,6 +85,8 @@ export const CREATE_PAGE_CONSTANTS = {
     errorLoadingGames: 'Erreur lors du chargement des jeux',
     errorGameDeleted: 'Ce jeu a été supprimé ou sa visibilité a changéee entre temps, Veuillez choisir un autre jeu.',
     errorLobbyCreation: 'Impossible de créer le lobby',
+    errorMissingBonuses: 'Veuillez attribuer le bonus de +2 pour la vie ou la vitesse et le bonus de dé (6 faces) pour l’attaque ou la défense.',
+    errorEmptyBonuses: 'Veuillez remplir toutes les conditions de bonus.',
 };
 
 export const EDITION_PAGE_CONSTANTS = {
