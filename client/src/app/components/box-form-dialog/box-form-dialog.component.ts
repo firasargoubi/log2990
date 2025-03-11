@@ -194,7 +194,7 @@ export class BoxFormDialogComponent implements OnDestroy {
             }
 
             this.lobbyService.verifyUsername(this.data.lobbyId).subscribe((response: { usernames: string[] }) => {
-                const baseName = formData.name.replace(/^\s+|\s+$/g, '');
+                const baseName = formData.name.trim();
                 let uniqueName = baseName;
                 let counter = 2;
                 while (response.usernames.includes(uniqueName)) {
@@ -253,7 +253,7 @@ export class BoxFormDialogComponent implements OnDestroy {
             }
             const playerData: Player = {
                 id: '',
-                name: formData.name,
+                name: formData.name.trim(),
                 avatar: formData.avatar,
                 isHost: false,
                 life: formData.life,
