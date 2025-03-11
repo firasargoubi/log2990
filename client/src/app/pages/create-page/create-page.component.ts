@@ -6,11 +6,12 @@ import { MatDialog } from '@angular/material/dialog';
 import { RouterLink } from '@angular/router';
 import { BoxFormDialogComponent } from '@app/components/box-form-dialog/box-form-dialog.component';
 import { GameCreationCardComponent } from '@app/components/game-creation-card/game-creation-card.component';
-import { Game } from '@app/interfaces/game.model';
+import { CREATE_PAGE_CONSTANTS, GameSize, GameType } from '@app/Consts/app.constants';
+import { Game } from '@common/game.interface';
 import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
 import { Observable } from 'rxjs';
-import { CREATE_PAGE_CONSTANTS, GAME_MODES, GAME_SIZE } from '@app/Consts/app.constants';
+
 @Component({
     selector: 'app-create-page',
     standalone: true,
@@ -21,25 +22,13 @@ import { CREATE_PAGE_CONSTANTS, GAME_MODES, GAME_SIZE } from '@app/Consts/app.co
 export class CreatePageComponent implements OnInit {
     @Input() games$: Observable<Game[]> = new Observable<Game[]>();
     games: Game[] = [];
-    notificationService = inject(NotificationService);
-    private modeTranslation: Record<string, string> = GAME_MODES;
-    private sizeTranslation: Record<string, string> = GAME_SIZE;
 
-    constructor(
-        private dialog: MatDialog,
-        private gameService: GameService,
-    ) {}
+    private notificationService = inject(NotificationService);
+    private dialog = inject(MatDialog);
+    private gameService = inject(GameService);
 
     ngOnInit(): void {
         this.loadGames();
-    }
-
-    translateMode(mode: string): string {
-        return this.modeTranslation[mode] || mode;
-    }
-
-    translateSize(size: string): string {
-        return this.sizeTranslation[size] || size;
     }
 
     onBoxClick(game: Game): void {
@@ -59,7 +48,15 @@ export class CreatePageComponent implements OnInit {
         });
     }
 
-    openBoxFormDialog(game: Game): void {
+    private translateMode(mode: string): GameType {
+        return mode as GameType;
+    }
+
+    private translateSize(size: string): GameSize {
+        return size as GameSize;
+    }
+
+    private openBoxFormDialog(game: Game): void {
         const translatedGame = {
             ...game,
             mode: this.translateMode(game.mode),

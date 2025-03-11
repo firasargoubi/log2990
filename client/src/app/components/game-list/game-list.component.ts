@@ -5,7 +5,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { GameCardComponent } from '@app/components/game-card/game-card.component';
 import { GameModeDialogComponent } from '@app/components/game-mode/game-mode.component';
-import { Game } from '@app/interfaces/game.model';
+import { Game } from '@common/game.interface';
 
 @Component({
     selector: 'app-game-list',

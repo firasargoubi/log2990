@@ -4,7 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { Game } from '@app/interfaces/game.model';
+import { Game, GameSize, GameType } from '@common/game.interface';
 
 describe('GameCardComponent', () => {
     let component: GameCreationCardComponent;
@@ -13,8 +13,8 @@ describe('GameCardComponent', () => {
     const mockGame: Game = {
         id: '1',
         name: 'Test Game',
-        mapSize: 'large',
-        mode: 'capture',
+        mapSize: GameSize.large,
+        mode: GameType.capture,
         previewImage: 'https://via.placeholder.com/150',
         description: 'A test game description',
         lastModified: new Date(),

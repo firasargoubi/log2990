@@ -1,31 +1,47 @@
+/* eslint-disable import/no-deprecated */
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 import { TestBed } from '@angular/core/testing';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { GameService } from './game.service';
-import { Game } from '@app/interfaces/game.model';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { Game, GameSize, GameType } from '@common/game.interface';
+import { environment } from 'src/environments/environment';
+import { ApiEndpoint, ApiRoutes } from '@common/api.endpoints';
 import { NotificationService } from './notification.service';
+import { GAME_SERVICE_CONSTANTS } from '@app/Consts/app.constants';
 
 describe('GameService', () => {
-    let httpMock: HttpTestingController;
     let service: GameService;
-    let baseUrl: string;
+    let httpMock: HttpTestingController;
     let notificationServiceSpy: jasmine.SpyObj<NotificationService>;
+    let baseUrl: string;
+
+    const mockGame: Game = {
+        id: '123',
+        name: 'Test Game',
+        mapSize: GameSize.medium,
+        mode: GameType.classic,
+        previewImage: 'test-image.png',
+        description: 'This is a test game.',
+        lastModified: new Date(),
+        isVisible: true,
+        board: [
+            [1, 2],
+            [3, 4],
+        ],
+        objects: [],
+    };
 
     beforeEach(() => {
-        notificationServiceSpy = jasmine.createSpyObj('NotificationService', ['showError']);
+        notificationServiceSpy = jasmine.createSpyObj('NotificationService', ['showSuccess', 'showError', 'showInfo']);
 
         TestBed.configureTestingModule({
-            providers: [
-                GameService,
-                provideHttpClient(withInterceptorsFromDi()),
-                provideHttpClientTesting(),
-                { provide: NotificationService, useValue: notificationServiceSpy },
-            ],
+            imports: [HttpClientTestingModule],
+            providers: [GameService, { provide: NotificationService, useValue: notificationServiceSpy }],
         });
 
         service = TestBed.inject(GameService);
         httpMock = TestBed.inject(HttpTestingController);
-        baseUrl = service['baseUrl'];
+        baseUrl = `${environment.serverUrl}${ApiRoutes.Game}`;
     });
 
     afterEach(() => {
@@ -36,244 +52,241 @@ describe('GameService', () => {
         expect(service).toBeTruthy();
     });
 
-    it('should delete a game', () => {
-        const gameId = '123';
-        service.deleteGame(gameId).subscribe();
+    describe('deleteGame', () => {
+        it('should delete a game by ID', () => {
+            const gameId = '123';
 
-        const req = httpMock.expectOne(`${baseUrl}/${gameId}`);
-        expect(req.request.method).toBe('DELETE');
-        req.flush({});
-    });
+            service.deleteGame(gameId).subscribe((result) => {
+                expect(result === undefined || result === null).toBeTrue();
+            });
 
-    it('should handle error when deleting a game', () => {
-        const gameId = '123';
-        service.deleteGame(gameId).subscribe((response) => {
-            expect(response).toEqual(void 0);
+            const req = httpMock.expectOne(`${baseUrl}/${gameId}`);
+            expect(req.request.method).toBe('DELETE');
+            req.flush(null);
         });
 
-        const req = httpMock.expectOne(`${baseUrl}/${gameId}`);
-        req.error(new ErrorEvent('Network error'));
+        it('should handle errors when deleting a game', () => {
+            const gameId = '123';
 
-        expect(notificationServiceSpy.showError).toHaveBeenCalledWith('Impossible de supprimer le jeu');
+            service.deleteGame(gameId).subscribe({
+                error: (error) => {
+                    expect(error).toBeTruthy();
+                },
+            });
+
+            const req = httpMock.expectOne(`${baseUrl}/${gameId}`);
+            req.error(new ErrorEvent('Network error'));
+
+            expect(notificationServiceSpy.showError).toHaveBeenCalledWith(GAME_SERVICE_CONSTANTS.errorDeleteGame);
+        });
     });
 
-    it('should update game visibility', () => {
-        const gameId = '123';
-        const isVisible = true;
-        const mockGame: Game = {
-            id: gameId,
-            name: 'Test Game',
-            isVisible,
-            mapSize: 'medium',
-            mode: 'normal',
-            previewImage: '',
-            description: '',
-            lastModified: new Date(),
-            board: [],
-            objects: [],
-        };
+    describe('updateGame', () => {
+        it('should update a game with given ID and modifications', () => {
+            const gameId = '123';
+            const updates = { name: 'Updated Game' };
 
-        service.updateVisibility(gameId, isVisible).subscribe((game) => {
-            expect(game).toEqual(mockGame);
+            service.updateGame(gameId, updates).subscribe((result) => {
+                expect(result).toEqual({ ...mockGame, ...updates });
+            });
+
+            const req = httpMock.expectOne(`${baseUrl}/${gameId}`);
+            expect(req.request.method).toBe('PATCH');
+            expect(req.request.body).toEqual(updates);
+            req.flush({ ...mockGame, ...updates });
         });
-
-        const req = httpMock.expectOne(`${baseUrl}/${gameId}`);
-        expect(req.request.method).toBe('PATCH');
-        expect(req.request.body).toEqual({ isVisible });
-        req.flush(mockGame);
     });
 
-    it('should handle error when updating game visibility', () => {
-        const gameId = '123';
-        service.updateVisibility(gameId, true).subscribe((response) => {
-            expect(response).toEqual({} as Game);
+    describe('updateVisibility', () => {
+        it('should update game visibility', () => {
+            const gameId = '123';
+            const isVisible = false;
+            const updatedGame = { ...mockGame, isVisible };
+
+            service.updateVisibility(gameId, isVisible).subscribe((result) => {
+                expect(result).toEqual(updatedGame);
+            });
+
+            const req = httpMock.expectOne(`${baseUrl}/${gameId}`);
+            expect(req.request.method).toBe('PATCH');
+            expect(req.request.body).toEqual({ isVisible });
+            req.flush(updatedGame);
         });
 
-        const req = httpMock.expectOne(`${baseUrl}/${gameId}`);
-        req.error(new ErrorEvent('Network error'));
+        it('should handle errors when updating visibility', () => {
+            const gameId = '123';
+            const isVisible = false;
 
-        expect(notificationServiceSpy.showError).toHaveBeenCalledWith('Impossible de modifier la visibilité.');
+            service.updateVisibility(gameId, isVisible).subscribe({
+                error: (error) => {
+                    expect(error).toBeTruthy();
+                },
+            });
+
+            const req = httpMock.expectOne(`${baseUrl}/${gameId}`);
+            req.error(new ErrorEvent('Network error'));
+
+            expect(notificationServiceSpy.showError).toHaveBeenCalledWith(GAME_SERVICE_CONSTANTS.errorUpdateVisibility);
+        });
     });
 
-    it('should update a game', () => {
-        const gameId = '123';
-        const gameModif: Partial<Game> = { name: 'Updated Game' };
-        const mockUpdatedGame: Game = {
-            id: gameId,
-            name: 'Updated Game',
-            isVisible: true,
-            mapSize: 'medium',
-            mode: 'normal',
-            previewImage: '',
-            description: '',
-            lastModified: new Date(),
-            board: [],
-            objects: [],
-        };
+    describe('fetchGames', () => {
+        it('should fetch all games', () => {
+            const mockGames: Game[] = [mockGame];
 
-        service.updateGame(gameId, gameModif).subscribe((game) => {
-            expect(game).toEqual(mockUpdatedGame);
+            service.fetchGames().subscribe((games) => {
+                expect(games).toEqual(mockGames);
+            });
+
+            const req = httpMock.expectOne(`${baseUrl}${ApiEndpoint.AllGames}`);
+            expect(req.request.method).toBe('GET');
+            req.flush(mockGames);
         });
 
-        const req = httpMock.expectOne(`${baseUrl}/${gameId}`);
-        expect(req.request.method).toBe('PATCH');
-        expect(req.request.body).toEqual(gameModif);
-        req.flush(mockUpdatedGame);
+        it('should handle errors when fetching games', () => {
+            service.fetchGames().subscribe({
+                error: (error) => {
+                    expect(error).toBeTruthy();
+                },
+            });
+
+            const req = httpMock.expectOne(`${baseUrl}${ApiEndpoint.AllGames}`);
+            req.error(new ErrorEvent('Network error'));
+
+            expect(notificationServiceSpy.showError).toHaveBeenCalledWith(GAME_SERVICE_CONSTANTS.errorFetchGames);
+        });
     });
 
-    it('should fetch all games', () => {
-        const mockGames: Game[] = [
-            {
-                id: '1',
-                name: 'Game 1',
-                isVisible: true,
-                mapSize: 'medium',
-                mode: 'normal',
-                previewImage: '',
-                description: '',
-                lastModified: new Date(),
-                board: [],
-                objects: [],
-            },
-        ];
+    describe('fetchVisibleGames', () => {
+        it('should fetch only visible games', () => {
+            const mockVisibleGames: Game[] = [mockGame];
 
-        service.fetchGames().subscribe((games) => {
-            expect(games).toEqual(mockGames);
+            service.fetchVisibleGames().subscribe((games) => {
+                expect(games).toEqual(mockVisibleGames);
+            });
+
+            const req = httpMock.expectOne(`${baseUrl}${ApiEndpoint.VisibleGames}`);
+            expect(req.request.method).toBe('GET');
+            req.flush(mockVisibleGames);
         });
 
-        const req = httpMock.expectOne(`${baseUrl}/all`);
-        expect(req.request.method).toBe('GET');
-        req.flush(mockGames);
+        it('should handle errors when fetching visible games', () => {
+            service.fetchVisibleGames().subscribe({
+                error: (error) => {
+                    expect(error).toBeTruthy();
+                },
+            });
+
+            const req = httpMock.expectOne(`${baseUrl}${ApiEndpoint.VisibleGames}`);
+            req.error(new ErrorEvent('Network error'));
+
+            expect(notificationServiceSpy.showError).toHaveBeenCalledWith(GAME_SERVICE_CONSTANTS.errorFetchVisibleGames);
+        });
     });
 
-    it('should handle error when fetching all games', () => {
-        service.fetchGames().subscribe((response) => {
-            expect(response).toEqual({} as Game[]);
+    describe('fetchGameById', () => {
+        it('should fetch a game by ID', () => {
+            const gameId = '123';
+
+            service.fetchGameById(gameId).subscribe((game) => {
+                expect(game).toEqual(mockGame);
+            });
+
+            const req = httpMock.expectOne(`${baseUrl}/${gameId}`);
+            expect(req.request.method).toBe('GET');
+            req.flush(mockGame);
         });
 
-        const req = httpMock.expectOne(`${baseUrl}/all`);
-        req.error(new ErrorEvent('Network error'));
+        it('should handle errors when fetching a game by ID', () => {
+            const gameId = '123';
 
-        expect(notificationServiceSpy.showError).toHaveBeenCalledWith('Impossible de récupérer les jeux');
+            service.fetchGameById(gameId).subscribe({
+                error: (error) => {
+                    expect(error).toBeTruthy();
+                },
+            });
+
+            const req = httpMock.expectOne(`${baseUrl}/${gameId}`);
+            req.error(new ErrorEvent('Network error'));
+
+            expect(notificationServiceSpy.showError).toHaveBeenCalledWith(GAME_SERVICE_CONSTANTS.errorFetchGameDetails);
+        });
     });
 
-    it('should fetch visible games', () => {
-        const mockGames: Game[] = [
-            {
-                id: '1',
-                name: 'Game 1',
-                isVisible: true,
-                mapSize: 'medium',
-                mode: 'normal',
-                previewImage: '',
-                description: '',
-                lastModified: new Date(),
-                board: [],
-                objects: [],
-            },
-        ];
+    describe('verifyGameName', () => {
+        it('should verify if a game name is valid', () => {
+            service.verifyGameName(mockGame).subscribe((result) => {
+                expect(result).toBeTrue();
+            });
 
-        service.fetchVisibleGames().subscribe((games) => {
-            expect(games).toEqual(mockGames);
+            const req = httpMock.expectOne(`${baseUrl}/validateName`);
+            expect(req.request.method).toBe('POST');
+            expect(req.request.body).toEqual(mockGame);
+            req.flush(true);
         });
 
-        const req = httpMock.expectOne(`${baseUrl}/visible`);
-        expect(req.request.method).toBe('GET');
-        req.flush(mockGames);
+        it('should handle errors when verifying game name', () => {
+            service.verifyGameName(mockGame).subscribe({
+                next: (result) => {
+                    expect(result).toBeFalsy();
+                },
+            });
+
+            const req = httpMock.expectOne(`${baseUrl}/validateName`);
+            req.error(new ErrorEvent('Network error'));
+        });
     });
 
-    it('should handle error when fetching visible games', () => {
-        service.fetchVisibleGames().subscribe((response) => {
-            expect(response).toEqual({} as Game[]);
+    describe('verifyGameAccessible', () => {
+        it('should verify if a game is accessible', () => {
+            const gameId = '123';
+
+            service.verifyGameAccessible(gameId).subscribe((result) => {
+                expect(result).toBeTrue();
+            });
+
+            const req = httpMock.expectOne(`${baseUrl}${ApiEndpoint.Validate}/${gameId}`);
+            expect(req.request.method).toBe('GET');
+            req.flush(true);
         });
 
-        const req = httpMock.expectOne(`${baseUrl}/visible`);
-        req.error(new ErrorEvent('Network error'));
+        it('should handle errors when verifying game accessibility', () => {
+            const gameId = '123';
 
-        expect(notificationServiceSpy.showError).toHaveBeenCalledWith('Impossible de récupérer les jeux visibles.');
+            service.verifyGameAccessible(gameId).subscribe({
+                next: (result) => {
+                    expect(result).toBeFalsy();
+                },
+            });
+
+            const req = httpMock.expectOne(`${baseUrl}${ApiEndpoint.Validate}/${gameId}`);
+            req.error(new ErrorEvent('Network error'));
+        });
     });
 
-    it('should fetch a game by ID', () => {
-        const gameId = '123';
-        const mockGame: Game = {
-            id: gameId,
-            name: 'Test Game',
-            isVisible: true,
-            mapSize: 'medium',
-            mode: 'normal',
-            previewImage: '',
-            description: '',
-            lastModified: new Date(),
-            board: [],
-            objects: [],
-        };
+    describe('createGame', () => {
+        it('should create a new game', () => {
+            service.createGame(mockGame).subscribe((result) => {
+                expect(result).toEqual(mockGame);
+            });
 
-        service.fetchGameById(gameId).subscribe((game) => {
-            expect(game).toEqual(mockGame);
+            const req = httpMock.expectOne(`${baseUrl}${ApiEndpoint.Create}`);
+            expect(req.request.method).toBe('POST');
+            expect(req.request.body).toEqual(mockGame);
+            req.flush(mockGame);
         });
 
-        const req = httpMock.expectOne(`${baseUrl}/${gameId}`);
-        expect(req.request.method).toBe('GET');
-        req.flush(mockGame);
-    });
+        it('should handle errors when creating a game', () => {
+            service.createGame(mockGame).subscribe({
+                error: (error) => {
+                    expect(error).toBeTruthy();
+                },
+            });
 
-    it('should handle error when fetching a game by ID', () => {
-        const gameId = '123';
-        service.fetchGameById(gameId).subscribe((response) => {
-            expect(response).toEqual({} as Game);
+            const req = httpMock.expectOne(`${baseUrl}${ApiEndpoint.Create}`);
+            req.error(new ErrorEvent('Network error'));
+
+            expect(notificationServiceSpy.showError).toHaveBeenCalledWith(GAME_SERVICE_CONSTANTS.errorCreateGame);
         });
-
-        const req = httpMock.expectOne(`${baseUrl}/${gameId}`);
-        req.error(new ErrorEvent('Network error'));
-
-        expect(notificationServiceSpy.showError).toHaveBeenCalledWith('Impossible de récupérer les détails du jeu.');
-    });
-
-    it('should create a game', () => {
-        const mockGame: Game = {
-            id: '123',
-            name: 'New Game',
-            isVisible: true,
-            mapSize: 'medium',
-            mode: 'normal',
-            previewImage: '',
-            description: '',
-            lastModified: new Date(),
-            board: [],
-            objects: [],
-        };
-
-        service.createGame(mockGame).subscribe((game) => {
-            expect(game).toEqual(mockGame);
-        });
-
-        const req = httpMock.expectOne(`${baseUrl}/create`);
-        expect(req.request.method).toBe('POST');
-        expect(req.request.body).toEqual(mockGame);
-        req.flush(mockGame);
-    });
-
-    it('should handle error when creating a game', () => {
-        const mockGame: Game = {
-            id: '123',
-            name: 'New Game',
-            isVisible: true,
-            mapSize: 'medium',
-            mode: 'normal',
-            previewImage: '',
-            description: '',
-            lastModified: new Date(),
-            board: [],
-            objects: [],
-        };
-
-        service.createGame(mockGame).subscribe((response) => {
-            expect(response).toEqual({} as Game);
-        });
-
-        const req = httpMock.expectOne(`${baseUrl}/create`);
-        req.error(new ErrorEvent('Network error'));
-
-        expect(notificationServiceSpy.showError).toHaveBeenCalledWith('Impossible de créer le jeu.');
     });
 });
