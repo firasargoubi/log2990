@@ -91,6 +91,7 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
     lockRoom(): void {
         if (this.lobby?.id) {
             this.lobbyService.lockLobby(this.lobby.id);
+            this.notificationService.showSuccess('Cette partie est vérouillée');
         }
     }
 

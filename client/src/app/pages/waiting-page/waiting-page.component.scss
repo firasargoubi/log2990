@@ -140,3 +140,28 @@ strong {
     font-size: 1.5rem;
   }
 }
+
+button.action.promote {
+  width: 80px;
+  height: 80px;
+  display: block;
+  margin: 20px auto;
+  border-radius: 50%;
+  background-color: #f0f7e6;
+  border: 3px solid #9eba63;
+  box-shadow: 0 4px 8px rgba(73, 115, 66, 0.3);
+  
+  /* Centrer l'icône dans le bouton */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  i {
+    font-size: 40px; /* Icône de verrouillage agrandie */
+  }
+  
+  &:hover {
+    transform: scale(1.05);
+    background-color: #e8f5d8;
+  }
+}
