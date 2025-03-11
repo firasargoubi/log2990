@@ -8,6 +8,7 @@ import { NotificationService } from '@app/services/notification.service';
 import { GameLobby } from '@common/game-lobby';
 import { Player } from '@common/player';
 import { Subscription } from 'rxjs';
+import { PageUrl } from '@app/Consts/route-constants';
 
 @Component({
     selector: 'app-waiting-page',
@@ -63,7 +64,7 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
                     if (this.lobby) {
                         if (data.playerName === this.currentPlayer.name) {
                             this.notificationService.showError("Vous avez été expulsé par l'administrateur");
-                            this.router.navigate(['/main'], { replaceUrl: true });
+                            this.router.navigate([PageUrl.Home], { replaceUrl: true });
                         }
                     }
                 }),
