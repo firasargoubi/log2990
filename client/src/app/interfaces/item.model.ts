@@ -1,25 +1,13 @@
-import { CdkDrag } from '@angular/cdk/drag-drop';
-import { CommonModule } from '@angular/common';
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { GAME_IMAGES, OBJECT_NAMES, OBJECTS_DESCRIPTION, ObjectsTypes } from '@app/Consts/app.constants';
-import { ObjectCounterService } from '@app/services/objects-counter.service';
-import { Subscription } from 'rxjs';
 
-@Component({
-    selector: 'app-item',
-    imports: [CdkDrag, CommonModule, MatTooltipModule],
-    templateUrl: './item.component.html',
-    styleUrls: ['./item.component.scss'],
-})
-export class ItemComponent implements OnInit, OnDestroy {
-    @Input() type: number;
-    @Input() isPlaced: boolean = false;
+export class ItemModel {
+    type: number;
+    isPlaced: boolean = false;
+    tooltipText: string | null = null;
 
-    objectsTypes = ObjectsTypes;
-    private subscriptions: Subscription[] = [];
-
-    constructor(public objectCounterService: ObjectCounterService) {}
+    constructor(type: number) {
+        this.type = type;
+    }
 
     get image(): string {
         switch (this.type) {
@@ -88,22 +76,5 @@ export class ItemComponent implements OnInit, OnDestroy {
             default:
                 return OBJECTS_DESCRIPTION.undefined;
         }
-    }
-
-    ngOnInit(): void {
-        if (this.type === ObjectsTypes.SPAWN) {
-            const subscription = this.objectCounterService.spawnCounter$.subscribe((value) => {
-                if (value <= 0) {
-                    this.isPlaced = true;
-                } else {
-                    this.isPlaced = false;
-                }
-            });
-            this.subscriptions.push(subscription);
-        }
-    }
-
-    ngOnDestroy(): void {
-        this.subscriptions.forEach((sub) => sub.unsubscribe());
     }
 }

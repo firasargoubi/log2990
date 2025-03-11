@@ -3,8 +3,9 @@ import { Component, inject, Inject, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
+import { PageUrl } from '@app/Consts/route-constants';
+import { Game } from '@common/game.interface';
 import { CREATE_PAGE_CONSTANTS, GAME_IMAGES } from '@app/Consts/app.constants';
-import { Game } from '@app/interfaces/game.model';
 import { GameService } from '@app/services/game.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
@@ -22,7 +23,6 @@ const DEFAULT_STAT_VALUE = 4;
 export class BoxFormDialogComponent implements OnDestroy {
     form: FormGroup;
     gameList: Game[] = [];
-    notificationService = inject(NotificationService);
     lobbyService = inject(LobbyService);
     avatars = [
         GAME_IMAGES.fawn,
@@ -46,11 +46,13 @@ export class BoxFormDialogComponent implements OnDestroy {
     diceAttribute: string | null = null;
     private subscriptions: Subscription[] = [];
 
+    private notificationService = inject(NotificationService);
+    private router = inject(Router);
+
     constructor(
         public dialogRef: MatDialogRef<BoxFormDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: { boxId: string; game: Game; gameList: Game[]; lobbyId: string; isJoining: boolean },
         private gameService: GameService,
-        private router: Router,
     ) {
         this.loadGames();
 
@@ -76,7 +78,7 @@ export class BoxFormDialogComponent implements OnDestroy {
                 next: (socketData) => {
                     if (socketData.lobbyId === this.data.lobbyId) {
                         this.dialogRef.close();
-                        this.router.navigate([`/waiting/${socketData.lobbyId}/${socketData.player.id}`], { replaceUrl: true });
+                        this.router.navigate([`${PageUrl.Waiting}/${socketData.lobbyId}/${socketData.player.id}`], { replaceUrl: true });
                     }
                 },
             }),

@@ -1,33 +1,70 @@
+import { GameSize, GameType } from '@common/game.interface';
+
 export const APP_CONSTANTS = {
     notificationDelay: 3000,
     actionLabel: 'Fermer',
 };
 
-export enum GameType {
-    Classic = 'classic',
-    Capture = 'capture',
+export enum ObjectsTypes {
+    BOOTS = 0,
+    SWORD = 1,
+    POTION = 2,
+    WAND = 3,
+    CRYSTAL = 4,
+    JUICE = 5,
+    SPAWN = 6,
+    RANDOM = 7,
 }
 
-export enum GameSize {
-    Small = 'small',
-    Medium = 'medium',
-    Large = 'large',
+export { GameType, GameSize };
+
+export enum TileTypes {
+    Grass = 1,
+    Water = 2,
+    Ice = 3,
+    DoorClosed = 4,
+    DoorOpen = 5,
+    Wall = 6,
+}
+
+export enum MapSize {
+    SMALL = 10,
+    MEDIUM = 15,
+    LARGE = 20,
+}
+
+export enum ObjectAmount {
+    SMALL = 2,
+    MEDIUM = 4,
+    LARGE = 6,
 }
 
 export interface GameMode {
     type: GameType;
     size: GameSize;
 }
+
+export const DEFAULT_STAT_VALUE = 4;
+export const SIX_VALUE_DICE = 6;
+export const MAX_OBJECTS = 7;
+export const MAX_TILE = 6;
+export const PULLING_INTERVAL = 5000;
+export const WANTED_TILE_PERCENTAGE = 0.5;
+export const OBJECT_MULTIPLIER = 10;
+export const RIGHT_CLICK = 2;
+
 export const GAME_CARD_CONSTANTS = {
     successDeleteMessage: 'Jeu supprimé avec succès',
     errorDeleteMessage: 'Impossible de supprimer le jeu',
     successVisibilityMessage: 'Visibilité du jeu mise à jour',
     errorVisibilityMessage: 'Impossible de modifier la visibilité',
 };
+
 export const ADMIN_PAGE_CONSTANTS = {
     successFetchMessage: 'Jeux chargés avec succès',
     errorFetchMessage: 'Chargement des jeux impossible, réessayez plus tard.',
 };
+
 export const GAME_SERVICE_CONSTANTS = {
     errorDeleteGame: 'Impossible de supprimer le jeu',
     errorUpdateVisibility: 'Impossible de modifier la visibilité.',
@@ -41,6 +78,19 @@ export const CREATE_PAGE_CONSTANTS = {
     errorRefreshGames: 'Erreur lors du rafraîchissement des jeux',
     errorLoadingGames: 'Erreur lors du chargement des jeux',
     errorGameDeleted: 'Ce jeu a été supprimé ou sa visibilité a changéee entre temps, Veuillez choisir un autre jeu.',
+};
+
+export const EDITION_PAGE_CONSTANTS = {
+    errorGameNameRequired: 'Le nom du jeu est requis.',
+    errorGameDescriptionRequired: 'La description du jeu est requise.',
+    errorInvalidSpawns: 'Il faut mettre tous les points de departs.',
+    errorInvalidMinTiles: 'Il faut que la moitie soit couverte de tuiles de terrain (eau, glace, terre).',
+    errorInvalidAccess: 'Il faut pouvoir acceder a toutes les tuiles',
+    errorInvalidDoors: "Une de vos portes n'est pas valide",
+    errorGameNameExists: 'Ce nom de jeu existe déjà.',
+    successGameLoaded: 'Jeu chargé avec succès.',
+    errorGameLoad: 'Impossible de charger le jeu.',
+    successGameSaved: 'Jeu sauvegardé avec succès.',
 };
 
 export const GAME_IMAGES = {
@@ -81,11 +131,22 @@ export const GAME_MODES = {
     capture: 'Capture',
 };
 
-// Map Size Translation Dictionary
 export const GAME_SIZE = {
     small: 'Petite',
     medium: 'Moyenne',
     large: 'Grande',
+};
+
+export const MAP_SIZES = {
+    small: 'small',
+    medium: 'medium',
+    large: 'large',
+};
+
+export const OBJECT_COUNT = {
+    small: 2,
+    medium: 4,
+    large: 6,
 };
 
 export const OBJECT_NAMES = {
@@ -111,38 +172,3 @@ export const OBJECTS_DESCRIPTION = {
     gnome: 'Ce petit gnome farceur a un cadeau pour vous. À vos risque et périls...',
     undefined: 'Objet inconnu',
 };
-export const EDITION_PAGE_CONSTANTS = {
-    errorGameNameRequired: 'Le nom du jeu est requis.',
-    errorGameDescriptionRequired: 'La description du jeu est requise.',
-    errorInvalidSpawns: 'Il faut mettre tous les points de departs.',
-    errorInvalidMinTiles: 'Il faut que la moitie soit couverte de tuiles de terrain (eau, glace, terre).',
-    errorInvalidAccess: 'Il faut pouvoir acceder a toutes les tuiles',
-    errorInvalidDoors: "Une de vos portes n'est pas valide",
-    errorGameNameExists: 'Ce nom de jeu existe déjà.',
-    successGameLoaded: 'Jeu chargé avec succès.',
-    errorGameLoad: 'Impossible de charger le jeu.',
-    successGameSaved: 'Jeu sauvegardé avec succès.',
-};
-export const MAP_SIZES = {
-    small: 'small',
-    medium: 'medium',
-    large: 'large',
-};
-
-export const OBJECT_COUNT = {
-    small: 2,
-    medium: 4,
-    large: 6,
-};
-export const OBJECT_MULTIPLIER = 10;
-
-export enum ObjectsTypes {
-    BOOTS = 0,
-    SWORD = 1,
-    POTION = 2,
-    WAND = 3,
-    CRYSTAL = 4,
-    JUICE = 5,
-    SPAWN = 6,
-    RANDOM = 7,
-}

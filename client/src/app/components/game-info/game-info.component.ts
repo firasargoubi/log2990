@@ -1,7 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
-import { GameControlsComponent } from '@app/components/game-controls/game-controls.component';
-import { PlayerListComponent } from '@app/components/player-list/player-list.component';
 
 export interface Player {
     id: string;
@@ -24,7 +22,7 @@ export interface Player {
     selector: 'app-game-info',
     templateUrl: './game-info.component.html',
     styleUrls: ['./game-info.component.scss'],
-    imports: [CommonModule, PlayerListComponent, GameControlsComponent],
+    imports: [CommonModule],
 })
 export class GameInfoComponent implements OnInit {
     @Input() gameName: string = '';

@@ -179,7 +179,7 @@ describe('TileComponent', () => {
         spyOn(component.objectMoved, 'emit');
 
         const event: CdkDragDrop<ItemComponent[]> = {
-            previousContainer: { data: [item], id: 'tile-container-1' } as any, // Autre container
+            previousContainer: { data: [item], id: 'tile-container-1' } as any,
             container: { data: [], id: 'tile-container-2' } as any,
             previousIndex: 0,
             currentIndex: 0,

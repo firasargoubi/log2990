@@ -1,14 +1,12 @@
-// common/game.interface.ts
-
 export enum GameType {
-    Classic = 'classic',
-    Capture = 'capture',
+    classic = 'classic',
+    capture = 'capture',
 }
 
 export enum GameSize {
-    Small = 'small',
-    Medium = 'medium',
-    Large = 'large',
+    small = 'small',
+    medium = 'medium',
+    large = 'large',
 }
 
 export interface GameObjectPlacement {

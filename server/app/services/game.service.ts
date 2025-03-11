@@ -1,21 +1,11 @@
 import { game } from '@app/classes/game.model';
 import { Service } from 'typedi';
 import { v4 as uuidv4 } from 'uuid';
+import { Game } from '@common/game.interface';
 
-interface GameData {
-    id?: string;
-    name: string;
-    description: string;
-    mode: string;
-    previewImage: string;
-    mapSize: string;
-    lastModified?: Date;
-    isVisible: boolean;
-    board: number[][];
-}
 @Service()
 export class GameService {
-    async createGame(gameData: GameData) {
+    async createGame(gameData: Game) {
         if (!gameData.id) {
             gameData.id = uuidv4();
         }
@@ -27,7 +17,7 @@ export class GameService {
         return await game.find();
     }
 
-    async editGame(id: string, updates: Partial<GameData>) {
+    async editGame(id: string, updates: Partial<Game>) {
         return await game.findOneAndUpdate({ id }, updates, { new: true });
     }
 

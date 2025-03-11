@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Game } from '@app/interfaces/game.model';
+import { Game } from '@common/game.interface';
 import { GameLobby } from '@common/game-lobby';
 import { Player } from '@common/player';
 import { Observable } from 'rxjs';
@@ -13,7 +13,7 @@ export class LobbyService {
     private socket: Socket;
 
     constructor() {
-        this.socket = io(environment.serverWebSocketUrl, {
+        this.socket = io(environment.serverUrl, {
             transports: ['websocket', 'polling'],
         });
     }

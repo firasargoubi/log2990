@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Game } from '@app/interfaces/game.model';
+import { Game, GameSize, GameType } from '@common/game.interface';
 import { GameService } from '@app/services/game.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
@@ -27,8 +27,8 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     game: Game = {
         id: '',
         name: '',
-        mapSize: 'small',
-        mode: 'normal',
+        mapSize: GameSize.small,
+        mode: GameType.classic,
         previewImage: '',
         description: '',
         lastModified: new Date(),

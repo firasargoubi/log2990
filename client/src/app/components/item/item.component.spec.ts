@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ItemComponent } from './item.component';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
@@ -8,10 +9,14 @@ describe('ItemComponent', () => {
     let component: ItemComponent;
     let fixture: ComponentFixture<ItemComponent>;
     let objectCounterServiceSpy: jasmine.SpyObj<ObjectCounterService>;
+    let spawnCounterSubject: Subject<number>;
 
     beforeEach(async () => {
+        spawnCounterSubject = new Subject<number>();
+
         objectCounterServiceSpy = jasmine.createSpyObj('ObjectCounterService', [], {
-            spawnCounter$: of(0),
+            spawnCounter$: spawnCounterSubject.asObservable(),
+            randomCounter$: of(0),
         });
 
         await TestBed.configureTestingModule({
@@ -29,12 +34,12 @@ describe('ItemComponent', () => {
     });
 
     it('should return "assets/objects/undefined.png" when type is invalid in image getter', () => {
-        component.type = 999; // Invalid type
+        component.type = 999;
         expect(component.image).toBe('assets/objects/undefined.png');
     });
 
     it('should return Objet inconnu when type is invalid in name getter', () => {
-        component.type = 999; // Invalid type
+        component.type = 999;
         expect(component.name).toBe('Objet inconnu');
     });
 
@@ -42,41 +47,46 @@ describe('ItemComponent', () => {
         expect(component.objectCounterService).toBe(objectCounterServiceSpy);
     });
 
-    it('should not subscribe to spawnCounter$ if type is not SPAWN', () => {
-        const spawnCounter$ = new Subject<number>();
-        objectCounterServiceSpy.spawnCounter$ = spawnCounter$;
-
+    it('should not change isPlaced for non-SPAWN objects', () => {
         component.type = ObjectsTypes.BOOTS;
+        component.isPlaced = false;
+
         component.ngOnInit();
 
-        expect(component.spawnCounter).toBeUndefined();
-        expect(component.isPlaced).toBe(false);
+        expect(component.isPlaced).toBeFalse();
+
+        spawnCounterSubject.next(0);
+        fixture.detectChanges();
+
+        expect(component.isPlaced).toBeFalse();
     });
 
-    it('should set isPlaced to true when spawnCounter$ emits 0', () => {
-        const spawnCounter$ = new Subject<number>();
-        objectCounterServiceSpy.spawnCounter$ = spawnCounter$;
-
+    it('should set isPlaced to true when spawnCounter$ emits 0 for SPAWN type', () => {
         component.type = ObjectsTypes.SPAWN;
+        component.isPlaced = false;
+
         component.ngOnInit();
 
-        spawnCounter$.next(0);
-        expect(component.spawnCounter).toBe(0);
-        expect(component.isPlaced).toBe(true);
+        expect(component.isPlaced).toBeFalse();
+
+        spawnCounterSubject.next(0);
+        fixture.detectChanges();
+
+        expect(component.isPlaced).toBeTrue();
     });
 
-    it('should update spawnCounter and set isPlaced to true when spawnCounter$ emits 0', () => {
-        const spawnCounter$ = new Subject<number>();
-        objectCounterServiceSpy.spawnCounter$ = spawnCounter$;
-
+    it('should set isPlaced to false when spawnCounter$ emits > 0 for SPAWN type', () => {
         component.type = ObjectsTypes.SPAWN;
+        component.isPlaced = true;
+
         component.ngOnInit();
 
-        spawnCounter$.next(0);
+        expect(component.isPlaced).toBeTrue();
 
-        expect(component.spawnCounter).toBe(0);
+        spawnCounterSubject.next(2);
+        fixture.detectChanges();
 
-        expect(component.isPlaced).toBe(true);
+        expect(component.isPlaced).toBeFalse();
     });
 
     it('should return correct image path based on type', () => {
@@ -135,5 +145,23 @@ describe('ItemComponent', () => {
 
         component.type = 999;
         expect(component.name).toBe(OBJECT_NAMES.undefined);
+    });
+
+    it('should properly unsubscribe on destroy', () => {
+        component.type = ObjectsTypes.SPAWN;
+        component.ngOnInit();
+
+        const subscriptionSpy = spyOn<any>(component['subscriptions'][0], 'unsubscribe');
+
+        component.ngOnDestroy();
+
+        expect(subscriptionSpy).toHaveBeenCalled();
+    });
+
+    it('should not error when no subscriptions exist during destroy', () => {
+        component.type = ObjectsTypes.BOOTS;
+        component.ngOnInit();
+
+        expect(() => component.ngOnDestroy()).not.toThrow();
     });
 });

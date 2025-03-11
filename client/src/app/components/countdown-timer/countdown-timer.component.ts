@@ -6,7 +6,7 @@ const delay = 1000;
 @Component({
     selector: 'app-countdown-timer',
     templateUrl: './countdown-timer.component.html',
-    styleUrls: ['./countdown-timer.component.css'],
+    styleUrls: ['./countdown-timer.component.scss'],
 })
 export class CountdownComponent {
     @Input() countdown: number = countdown; // Voir cmt implementer

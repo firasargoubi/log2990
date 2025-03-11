@@ -4,7 +4,7 @@ import { GameService } from '@app/services/game.service';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { of, BehaviorSubject, throwError } from 'rxjs';
-import { Game } from '@app/interfaces/game.model';
+import { Game, GameSize, GameType } from '@common/game.interface';
 import { BoxFormDialogComponent } from '@app/components/box-form-dialog/box-form-dialog.component';
 import { GameCreationCardComponent } from '@app/components/game-creation-card/game-creation-card.component';
 import { CommonModule } from '@angular/common';
@@ -27,8 +27,8 @@ describe('CreatePageComponent', () => {
             {
                 id: '1',
                 name: 'Chess',
-                mapSize: 'medium',
-                mode: 'normal',
+                mapSize: GameSize.medium,
+                mode: GameType.classic,
                 previewImage: 'chess.png',
                 description: 'A normal board game.',
                 lastModified: new Date('2024-01-01T10:00:00Z'),
@@ -42,8 +42,8 @@ describe('CreatePageComponent', () => {
             {
                 id: '2',
                 name: 'Poker',
-                mapSize: 'medium',
-                mode: 'normal',
+                mapSize: GameSize.medium,
+                mode: GameType.classic,
                 previewImage: 'poker.png',
                 description: 'A popular card game.',
                 lastModified: new Date('2024-01-02T15:30:00Z'),
@@ -101,8 +101,8 @@ describe('CreatePageComponent', () => {
                 {
                     id: '1',
                     name: 'Chess',
-                    mapSize: 'medium',
-                    mode: 'normal',
+                    mapSize: GameSize.medium,
+                    mode: GameType.classic,
                     previewImage: 'chess.png',
                     description: 'A normal board game.',
                     lastModified: new Date(),
@@ -130,8 +130,8 @@ describe('CreatePageComponent', () => {
         const newMockGame: Game = {
             id: '3',
             name: 'Go',
-            mapSize: 'medium',
-            mode: 'normal',
+            mapSize: GameSize.medium,
+            mode: GameType.classic,
             previewImage: 'go.png',
             description: 'A normal board game.',
             lastModified: new Date(),

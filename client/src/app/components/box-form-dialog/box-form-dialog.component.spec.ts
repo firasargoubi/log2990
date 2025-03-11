@@ -6,7 +6,7 @@ import { BoxFormDialogComponent } from './box-form-dialog.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
-import { Game } from '@app/interfaces/game.model';
+import { Game, GameSize, GameType } from '@common/game.interface';
 import { NotificationService } from '@app/services/notification.service';
 import { CREATE_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 
@@ -78,7 +78,7 @@ describe('BoxFormDialogComponent', () => {
         spyOn(localStorage, 'setItem');
         spyOn(component, 'linkRoute');
 
-        component.form.get('name')?.setValue(''); // Make form invalid
+        component.form.get('name')?.setValue('');
 
         await component.save();
 
@@ -170,8 +170,8 @@ describe('BoxFormDialogComponent', () => {
                 name: 'Test Game',
                 isVisible: true,
                 board: [],
-                mapSize: 'medium',
-                mode: 'classic',
+                mapSize: GameSize.medium,
+                mode: GameType.classic,
                 previewImage: 'path/to/image.jpg',
                 description: 'Test game description',
                 lastModified: new Date(),
