@@ -7,19 +7,20 @@
     <app-game-controls [lobby]="lobby"></app-game-controls>
     }
 
-
     <p>
         Code d'accès : <strong>{{ lobby?.id }}</strong>
     </p>
 
-    <button (click)="startGame()" [disabled]="!lobby || !currentPlayer">Start Game</button>
+    @if ((lobby?.players?.length ?? 0) > 2 && currentPlayer.isHost) {
+    <button (click)="startGame()" [disabled]="!lobby || !currentPlayer || !lobby.isLocked">Start Game</button>
+    }
 
     <app-player-list [currentPlayer]="currentPlayer" [players]="lobby?.players || []" [hostId]="hostId" (removePlayer)="removePlayer($event)">
     </app-player-list>
 
     @if (isHost()) {
-        <button mat-icon-button (click)="lockRoom()" class="action promote" matTooltip="Promouvoir" matTooltipPosition="below">
-            <i>🔒</i>
-        </button>
-        }
+    <button mat-icon-button (click)="lockRoom()" class="action promote" matTooltip="Promouvoir" matTooltipPosition="below">
+        <i>🔒</i>
+    </button>
+    }
 </div>

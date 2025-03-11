@@ -101,6 +101,11 @@ export const EDITION_PAGE_CONSTANTS = {
     errorGameLoad: 'Impossible de charger le jeu.',
     successGameSaved: 'Jeu sauvegardé avec succès.',
 };
+export const WAITING_PAGE_CONSTANTS = {
+    gameLocked: 'La partie est verrouillée',
+    errorStartGame: 'Impossible de démarrer la partie',
+    errorPlayerKicked: "Vous avez été expulsé par l'administrateur",
+};
 
 export const GAME_IMAGES = {
     fawn: 'assets/avatar/1.jpg',
