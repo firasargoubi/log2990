@@ -7,9 +7,11 @@
 
     <p><strong>Joueurs:</strong></p>
     <ul>
-        <li *ngFor="let player of players">
-            {{ player.name }}
-            <!-- Afficher le nom de chaque joueur -->
-        </li>
+        @for(player of players; track $index;) {
+
+        {{
+            player.name
+        }}
+        }
     </ul>
 </div>

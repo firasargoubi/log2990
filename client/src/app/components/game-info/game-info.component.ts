@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 export interface Player {
     id: string;
@@ -24,7 +24,7 @@ export interface Player {
     styleUrls: ['./game-info.component.scss'],
     imports: [CommonModule],
 })
-export class GameInfoComponent implements OnInit {
+export class GameInfoComponent {
     @Input() gameName: string = '';
     @Input() gameDescription: string = '';
     @Input() gameMode: string = '';
@@ -32,12 +32,4 @@ export class GameInfoComponent implements OnInit {
     @Input() playerCount: number = 0;
     @Input() activePlayer: string = '';
     @Input() players: Player[] = [];
-
-    ngOnInit(): void {
-        if (this.players && this.players.length > 0) {
-            console.log('Players:', this.players);
-        } else {
-            console.warn('No players data available');
-        }
-    }
 }

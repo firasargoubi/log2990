@@ -3,32 +3,13 @@
     <button (click)="activeTab = 'eventLog'" [class.active]="activeTab === 'eventLog'">Journal de Jeu</button>
 </div>
 
-<div *ngIf="activeTab === 'chat'" class="chat-tab">
-    <h3>Clavardage</h3>
-    <div class="chat-messages" id="chatMessages">
-        <div *ngFor="let message of chatMessages">
-            <p>
-                <strong>{{ message.timestamp }} - {{ message.playerName }}:</strong> {{ message.message }}
-            </p>
-        </div>
-    </div>
+<div class="chat-messages" id="chatMessages"></div>
 
-    <input
-        #chatInput
-        type="text"
-        placeholder="Écrire un message..."
-        (keyup.enter)="addChatMessage('PlayerName', chatInput.value); chatInput.value = ''"
-    />
-</div>
+<input
+    #chatInput
+    type="text"
+    placeholder="Écrire un message..."
+    (keyup.enter)="addChatMessage('PlayerName', chatInput.value); chatInput.value = ''"
+/>
 
-<div *ngIf="activeTab === 'eventLog'" class="event-log-tab">
-    <h3>Journal de Jeu</h3>
-    <div class="event-log" id="eventLog">
-        <div *ngFor="let event of eventLog">
-            <p>
-                <strong>{{ event.timestamp }} - {{ event.eventType }}:</strong> {{ event.description }}
-                <span *ngIf="event.involvedPlayers.length > 0">[{{ event.involvedPlayers.join(', ') }}]</span>
-            </p>
-        </div>
-    </div>
-</div>
+<div class="event-log" id="eventLog"></div>

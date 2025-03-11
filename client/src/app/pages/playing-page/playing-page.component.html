@@ -38,7 +38,7 @@
     <div class="sidebar-right">
         <div class="component-box">
             <app-game-info
-                [mapSize]="game.mapSize ?? 'Default Size'"
+                [mapSize]="game.mapSize"
                 [playerCount]="lobby ? lobby.players.length : 0"
                 [activePlayer]="currentPlayer?.name ?? 'Unknown Player'"
                 [players]="lobby?.players ?? []"
