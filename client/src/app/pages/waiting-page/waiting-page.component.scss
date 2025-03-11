@@ -26,7 +26,7 @@
   padding: 40px; /* Increased padding */
   max-width: 1400px; /* Significantly increased from 1000px to 1400px */
   width: 90%; /* Added width percentage for better responsiveness */
-  margin: 120px auto 60px; /* Added top margin to push container down */
+  margin: 100px auto 60px; /* Added top margin to push container down */
   position: relative;
   min-height: 600px; /* Added minimum height to ensure enough space */
   overflow: auto; /* Added overflow to handle extreme content cases */
@@ -57,16 +57,11 @@
   transform: translate(25%, 25%);
 }
 
-h2 {
-  color: #3f783f; /* Forest green */
+h2[mat-dialog-title] {
+  color: #3f783f;
   font-family: 'Press Start 2P', cursive;
   text-align: center;
-  margin: 10px 0 40px; /* Increased bottom margin */
-  font-size: 2rem; /* Increased from 1.8rem */
-  padding: 20px 0; /* Increased padding */
-  position: relative;
-  text-shadow: 2px 2px 0px rgba(184, 213, 139, 0.7);
-  letter-spacing: 1px;
+  margin-bottom: 30px;
 }
 
 /* Fox and racoon emojis beside title */
@@ -143,5 +138,30 @@ strong {
   
   h2:before, h2:after {
     font-size: 1.5rem;
+  }
+}
+
+button.action.promote {
+  width: 80px;
+  height: 80px;
+  display: block;
+  margin: 20px auto;
+  border-radius: 50%;
+  background-color: #f0f7e6;
+  border: 3px solid #9eba63;
+  box-shadow: 0 4px 8px rgba(73, 115, 66, 0.3);
+  
+  /* Centrer l'icône dans le bouton */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  i {
+    font-size: 40px; /* Icône de verrouillage agrandie */
+  }
+  
+  &:hover {
+    transform: scale(1.05);
+    background-color: #e8f5d8;
   }
 }

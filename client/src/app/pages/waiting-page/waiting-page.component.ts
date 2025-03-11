@@ -75,6 +75,10 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
         this.subscriptions.forEach((sub) => sub.unsubscribe());
     }
 
+    isHost() {
+        return this.currentPlayer.id === this.hostId;
+    }
+
     removePlayer(playerId: string): void {
         if (this.lobby) {
             const player = this.lobby.players.find((p) => p.id === playerId);
@@ -84,12 +88,16 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
         }
     }
 
-    // Methode pour démarrer le jeu et envoyer vers la page de jeu
+    lockRoom(): void {
+        if (this.lobby?.id) {
+            this.lobbyService.lockLobby(this.lobby.id);
+            this.notificationService.showSuccess('Cette partie est vérouillée');
+        }
+    }
+
     startGame(): void {
         if (this.lobby && this.currentPlayer) {
             this.router.navigate([`/play/${this.lobby.id}/${this.currentPlayer.id}`]);
-            console.log('Lobby ID:', this.lobby.id); // Debug
-            console.log('Player ID:', this.currentPlayer.id); // Debug
             // Redirige vers la page du jeu avec les bons paramètres
         } else {
             this.notificationService.showError('Game cannot be started yet.');
