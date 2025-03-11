@@ -60,6 +60,9 @@ export const GAME_CARD_CONSTANTS = {
     errorVisibilityMessage: 'Impossible de modifier la visibilité',
 };
 
+export const MAIN_PAGE_CONSTANTS = {
+    successJoinMessage: 'Salle Rejointe',
+};
 export const ADMIN_PAGE_CONSTANTS = {
     successFetchMessage: 'Jeux chargés avec succès',
     errorFetchMessage: 'Chargement des jeux impossible, réessayez plus tard.',
@@ -78,6 +81,7 @@ export const CREATE_PAGE_CONSTANTS = {
     errorRefreshGames: 'Erreur lors du rafraîchissement des jeux',
     errorLoadingGames: 'Erreur lors du chargement des jeux',
     errorGameDeleted: 'Ce jeu a été supprimé ou sa visibilité a changéee entre temps, Veuillez choisir un autre jeu.',
+    errorLobbyCreation: 'Impossible de créer le lobby',
 };
 
 export const EDITION_PAGE_CONSTANTS = {

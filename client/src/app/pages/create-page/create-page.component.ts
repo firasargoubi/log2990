@@ -48,7 +48,7 @@ export class CreatePageComponent implements OnInit {
                                     this.openBoxFormDialog(game);
                                 },
                                 error: (err) => {
-                                    this.notificationService.showError('Failed to create lobby: ' + err);
+                                    this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorLobbyCreation + err);
                                 },
                             }),
                         );

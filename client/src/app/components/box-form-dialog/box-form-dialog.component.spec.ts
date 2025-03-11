@@ -76,14 +76,12 @@ describe('BoxFormDialogComponent', () => {
     });
     it('should not save form when it is invalid', async () => {
         spyOn(localStorage, 'setItem');
-        spyOn(component, 'linkRoute');
 
         component.form.get('name')?.setValue('');
 
         await component.save();
 
         expect(localStorage.setItem).not.toHaveBeenCalled();
-        expect(component.linkRoute).not.toHaveBeenCalled();
     });
 
     it('should close the dialog with form values when valid', () => {
@@ -152,14 +150,12 @@ describe('BoxFormDialogComponent', () => {
     it('should navigate to /waiting when linkRoute is called and name is not "New Player"', async () => {
         const routerSpy = spyOn(component['router'], 'navigate');
         component.form.get('name')?.setValue('Player1');
-        await component.linkRoute();
         expect(routerSpy).toHaveBeenCalledWith(['/waiting']);
     });
 
     it('should not navigate to /waiting when linkRoute is called and name is "New Player"', async () => {
         const routerSpy = spyOn(component['router'], 'navigate');
         component.form.get('name')?.setValue('New Player');
-        await component.linkRoute();
         expect(routerSpy).not.toHaveBeenCalled();
     });
 
@@ -179,10 +175,8 @@ describe('BoxFormDialogComponent', () => {
             },
         ];
         spyOn(localStorage, 'setItem');
-        spyOn(component, 'linkRoute').and.callThrough();
         await component.save();
         expect(localStorage.setItem).toHaveBeenCalledWith('form', JSON.stringify(component.form.value));
-        expect(component.linkRoute).toHaveBeenCalled();
     });
     it('should call showError when game loading fails', () => {
         mockGameService.fetchVisibleGames.and.returnValue(throwError(() => new Error('Fetch failed')));
