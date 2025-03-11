@@ -62,6 +62,9 @@ export const GAME_CARD_CONSTANTS = {
 
 export const MAIN_PAGE_CONSTANTS = {
     successJoinMessage: 'Salle Rejointe',
+    errorFullLobbyMessage: 'La salle est pleine',
+    errorLockedLobbyMessage: 'La salle est verrouillée',
+    errorJoinMessage: 'Impossible de rejoindre la salle',
 };
 export const ADMIN_PAGE_CONSTANTS = {
     successFetchMessage: 'Jeux chargés avec succès',
