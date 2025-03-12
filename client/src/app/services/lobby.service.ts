@@ -123,4 +123,12 @@ export class LobbyService {
             });
         });
     }
+
+    onHostDisconnected(): Observable<void> {
+        return new Observable((observer) => {
+            this.socket.on('hostDisconnected', () => {
+                observer.next();
+            });
+        });
+    }
 }

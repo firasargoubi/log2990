@@ -57,6 +57,16 @@ export class SocketService {
             socket.on('verifyUsername', (data: { lobbyId: string }, callback: (response: { usernames: string[] }) => void) => {
                 this.verifyUsername(socket, data.lobbyId, callback);
             });
+
+            socket.on('disconnect', () => {
+                for (const [lobbyId, lobby] of this.lobbies) {
+                    const host = lobby.players.find((player) => player.isHost);
+                    if (host && host.id === socket.id) {
+                        this.lobbies.delete(lobbyId);
+                        this.io.to(lobbyId).emit('hostDisconnected');
+                    }
+                }
+            });
         });
     }
 

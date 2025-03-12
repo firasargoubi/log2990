@@ -67,6 +67,14 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
                     }
                 }),
             );
+
+            this.subscriptions.push(
+                this.lobbyService.onHostDisconnected().subscribe(() => {
+                    this.notificationService.showError(WAITING_PAGE_CONSTANTS.lobbyCancelled);
+                    this.router.navigate([PageUrl.Home], { replaceUrl: true });
+                }),
+            );
+
             this.subscriptions.push(
                 this.lobbyService.onError().subscribe({
                     next: (error) => {
