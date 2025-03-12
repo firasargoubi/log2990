@@ -1,59 +1,39 @@
-<div class="game-container">
-    <div class="sidebar-left">
-        <div class="component-box">
-            <app-countdown-timer></app-countdown-timer>
-        </div>
-        <div class="component-box">
-            <ul>
-                <li><strong>Name:</strong> {{ currentPlayer?.name }}</li>
-                <li><strong>Avatar:</strong> <img [src]="currentPlayer?.avatar" alt="Avatar" width="50" height="50" /></li>
-                <li><strong>Vie:</strong> {{ currentPlayer?.life }}</li>
-                <li><strong>Rapidité:</strong> {{ currentPlayer?.speed }}</li>
-                <li><strong>Attaque:</strong> {{ currentPlayer?.attack }}</li>
-                <li><strong>Défense:</strong> {{ currentPlayer?.defense }}</li>
-            </ul>
-            <ul>
-                Bonus :
-                <li><strong>Bonus Vie:</strong> {{ currentPlayer?.bonus?.life }}</li>
-                <li><strong>Bonus Rapidité:</strong> {{ currentPlayer?.bonus?.speed }}</li>
-                <li><strong>Dé attaque:</strong> {{ currentPlayer?.bonus?.attack }}</li>
-                <li><strong>Dé défense:</strong> {{ currentPlayer?.bonus?.defense }}</li>
-            </ul>
-        </div>
-        <div class="component-box">
-            <app-inventory></app-inventory>
-        </div>
+<div class="playing-page">
+    <div class="header">
+        <app-game-info>
+        </app-game-info>
     </div>
 
-    <!-- Main Content: Game Board (Game Details) -->
-    <section class="main-content">
-        @if (gameLoaded) {
-        <div #board class="board-container">
-            <app-board [game]="game!"></app-board>
+    <div class="game-area">
+        <div class="sidebar left-sidebar">
+            <app-inventory >
+            </app-inventory>
         </div>
-        }
-    </section>
 
-    <!-- Sidebar Right: Game Info, Chat, Action Buttons -->
-    <div class="sidebar-right">
-        <div class="component-box">
-            <app-game-info
-                [mapSize]="game.mapSize"
-                [playerCount]="lobby ? lobby.players.length : 0"
-                [activePlayer]="currentPlayer?.name ?? 'Unknown Player'"
-                [players]="lobby?.players ?? []"
-            >
-            </app-game-info>
-            <!-- Display game info -->
+        <div class="main-board">
+            @if (gameState) {
+                <app-game-board
+                    [gameState]="gameState"
+                    [currentPlayerId]="currentPlayer?.id || ''"
+                    (moveRequest)="onMoveRequest($event)">
+                </app-game-board>
+            } @else {
+                <div class="loading">Chargement...</div>
+            }
+
+            <div class="controls">
+                <button 
+                    class="end-turn-button"
+                    [disabled]="!gameState || (gameState.currentPlayer !== currentPlayer?.id)"
+                    (click)="onEndTurn()">
+                    Terminer le tour
+                </button>
+            </div>
         </div>
-        <div class="component-box">
+
+        <div class="sidebar right-sidebar">
             <app-messages></app-messages>
-        </div>
-        <div class="action-buttons">
-            <button (click)="attack()">Attaquer</button>
-            <button (click)="defend()">Défendre</button>
-            <button (click)="endTurn()">Fin de tour</button>
-            <button (click)="abandon()" routerLink="/home">Abandonner</button>
+            <app-countdown-timer *ngIf="gameState?.currentPlayer === currentPlayer?.id"></app-countdown-timer>
         </div>
     </div>
 </div>

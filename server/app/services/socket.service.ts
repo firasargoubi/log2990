@@ -3,10 +3,15 @@ import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
+import { GameState } from '@app/interface/game-state';
+import { Coordinates } from '@common/coordinates';
+import { BoardService } from './board.service';
 
 export class SocketService {
     private io: Server;
     private lobbies = new Map<string, GameLobby>();
+    private gameStates = new Map<string, GameState>();
+    private boardService: BoardService;
 
     constructor(server: HttpServer) {
         this.io = new Server(server, {
@@ -15,6 +20,7 @@ export class SocketService {
                 methods: ['GET', 'POST'],
             },
         });
+        this.boardService = new BoardService();
     }
 
     init(): void {
@@ -56,6 +62,18 @@ export class SocketService {
 
             socket.on('verifyUsername', (data: { lobbyId: string }, callback: (response: { usernames: string[] }) => void) => {
                 this.verifyUsername(socket, data.lobbyId, callback);
+            });
+
+            socket.on('requestStart', (lobbyId: string) => {
+                this.handleRequestStart(socket, lobbyId);
+            });
+
+            socket.on('endTurn', (data: { lobbyId: string }) => {
+                this.handleEndTurn(socket, data.lobbyId);
+            });
+
+            socket.on('requestMovement', (data: { lobbyId: string; coordinate: Coordinates }) => {
+                this.handleRequestMovement(socket, data.lobbyId, data.coordinate);
             });
         });
     }
@@ -206,5 +224,121 @@ export class SocketService {
 
         const usedUsernames = lobby.players.map((player) => player.name);
         callback({ usernames: usedUsernames });
+    }
+
+    private async handleRequestStart(socket: Socket, lobbyId: string) {
+        const lobby = this.lobbies.get(lobbyId);
+        if (!lobby) {
+            socket.emit('error', 'Lobby not found.');
+            return;
+        }
+
+        const player = lobby.players.find((p) => p.id === socket.id);
+        if (!player || !player.isHost) {
+            socket.emit('error', 'Only the host can start the game.');
+            return;
+        }
+
+        const gameState = await this.boardService.initializeGameState(lobby);
+        this.gameStates.set(lobbyId, gameState);
+
+        lobby.isLocked = true;
+        this.updateLobby(lobbyId);
+
+        this.io.to(lobbyId).emit('gameStarted', { gameState });
+
+        this.startTurn(lobbyId);
+    }
+
+    private startTurn(lobbyId: string) {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) return;
+
+        // Calculate available moves for the current player
+        const updatedGameState = this.boardService.handleTurn(gameState);
+
+        // Store the updated game state
+        this.gameStates.set(lobbyId, updatedGameState);
+
+        // Notify all clients that a new turn has started
+        this.io.to(lobbyId).emit('turnStarted', {
+            gameState: updatedGameState,
+            currentPlayer: updatedGameState.currentPlayer,
+            availableMoves: updatedGameState.availableMoves,
+        });
+    }
+
+    private handleEndTurn(socket: Socket, lobbyId: string) {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) {
+            socket.emit('error', 'Game not found.');
+            return;
+        }
+
+        const currentPlayer = gameState.players.find((p: Player) => p.id === gameState.currentPlayer);
+        if (!currentPlayer || socket.id !== currentPlayer.id) {
+            socket.emit('error', "It's not your turn.");
+            return;
+        }
+
+        // Process end turn and get updated state with next player ready
+        const updatedGameState = this.boardService.handleEndTurn(gameState);
+
+        // Store the updated game state
+        this.gameStates.set(lobbyId, updatedGameState);
+
+        // Notify all clients about the turn ending
+        this.io.to(lobbyId).emit('turnEnded', {
+            gameState: updatedGameState,
+            previousPlayer: currentPlayer.id,
+            currentPlayer: updatedGameState.currentPlayer,
+        });
+
+        // Start the next turn
+        this.startTurn(lobbyId);
+    }
+
+    private handleRequestMovement(socket: Socket, lobbyId: string, coordinate: Coordinates) {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) {
+            socket.emit('error', 'Game not found.');
+            return;
+        }
+
+        // Find the current player by ID
+        const currentPlayer = gameState.players.find((p: Player) => p.id === gameState.currentPlayer);
+        if (!currentPlayer || socket.id !== currentPlayer.id) {
+            socket.emit('error', "It's not your turn.");
+            return;
+        }
+
+        // Check if the move is valid
+        if (!this.isValidMove(gameState, coordinate)) {
+            socket.emit('error', 'Invalid move.');
+            return;
+        }
+
+        // Process the movement and get updated state
+        const updatedGameState = this.boardService.handleMovement(gameState, coordinate);
+
+        // Store the updated game state
+        this.gameStates.set(lobbyId, updatedGameState);
+
+        // Send the updated state to all clients in the room
+        this.io.to(lobbyId).emit('movementProcessed', {
+            gameState: updatedGameState,
+            playerMoved: gameState.currentPlayer,
+            newPosition: coordinate,
+        });
+
+        // Check if the player has no more moves available
+        if (updatedGameState.availableMoves.length === 0) {
+            // End the turn if no more moves available
+            this.handleEndTurn(socket, lobbyId);
+        }
+    }
+
+    private isValidMove(gameState: GameState, coordinate: Coordinates): boolean {
+        return gameState.availableMoves.some((move: Coordinates) => move.x === coordinate.x && move.y === coordinate.y);
     }
 }

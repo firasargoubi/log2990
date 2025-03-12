@@ -1,129 +1,108 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Game, GameSize, GameType } from '@common/game.interface';
-import { GameService } from '@app/services/game.service';
-import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
-import { GameLobby } from '@common/game-lobby';
 import { Player } from '@common/player';
 import { Subscription } from 'rxjs';
-import { BoardComponent } from 'src/app/components/board/board.component';
 import { CountdownComponent } from 'src/app/components/countdown-timer/countdown-timer.component';
 import { GameInfoComponent } from 'src/app/components/game-info/game-info.component';
 import { InventoryComponent } from 'src/app/components/inventory/inventory.component';
 import { MessagesComponent } from 'src/app/components/messages/messages.component';
+import { GameBoardComponent } from 'src/app/components/game-board/game-board.component';
+import { GameState } from '@common/game-state';
+import { Coordinates } from '@common/coordinates';
+import { CommonModule } from '@angular/common';
+import { SocketClientService } from '@app/services/socket-client.service';
 
 @Component({
     selector: 'app-playing-page',
-    imports: [CountdownComponent, InventoryComponent, GameInfoComponent, BoardComponent, MessagesComponent],
+    imports: [CommonModule, CountdownComponent, InventoryComponent, GameInfoComponent, MessagesComponent, GameBoardComponent],
+    standalone: true,
     templateUrl: './playing-page.component.html',
     styleUrls: ['./playing-page.component.scss'],
 })
 export class PlayingPageComponent implements OnInit, OnDestroy {
-    lobby: GameLobby | null = null;
-    currentPlayer: Player | null = null;
-    players: Player[] = [];
-    gameLoaded: boolean = false;
-    game: Game = {
-        id: '',
-        name: '',
-        mapSize: GameSize.small,
-        mode: GameType.classic,
-        previewImage: '',
-        description: '',
-        lastModified: new Date(),
-        isVisible: true,
-        board: [],
-        objects: [],
-    };
-    activePlayer: string = ''; // Active player name
-    private subscriptions: Subscription[] = [];
-
-    private route = inject(ActivatedRoute);
-    private lobbyService = inject(LobbyService);
-    private gameService = inject(GameService);
+    private socketService = inject(SocketClientService);
     private router = inject(Router);
+    private route = inject(ActivatedRoute);
     private notificationService = inject(NotificationService);
 
-    ngOnInit(): void {
-        // Récupération de l'ID du lobby et du joueur à partir des paramètres de l'URL
-        const lobbyId = this.route.snapshot.paramMap.get('id');
-        const playerId = this.route.snapshot.paramMap.get('playerId');
+    lobbyId: string = '';
+    gameState: GameState | null = null;
+    currentPlayer: Player | null = null;
 
-        if (lobbyId && playerId) {
-            this.loadLobby(lobbyId, playerId); // Charger le lobby et le joueur
-        } else {
-            this.notificationService.showError('Lobby ID or Player ID is missing!');
-        }
+    private subscriptions: Subscription[] = [];
+
+    ngOnInit() {
+        // Get lobby ID from route params
+        this.route.params.subscribe((params) => {
+            const lobbyId = params['id'];
+            if (lobbyId) {
+                this.lobbyId = lobbyId;
+                this.setupSocketListeners();
+            } else {
+                this.router.navigate(['/main']);
+            }
+        });
     }
 
-    ngOnDestroy(): void {
-        this.subscriptions.forEach((sub) => sub.unsubscribe()); // Se désabonner des abonnements
+    ngOnDestroy() {
+        this.subscriptions.forEach((sub) => sub.unsubscribe());
+        this.socketService.disconnect();
     }
 
-    // Méthode pour charger le lobby et le joueur à partir du service
-    loadLobby(lobbyId: string, playerId: string): void {
+    setupSocketListeners() {
+        // Listen for game state updates
         this.subscriptions.push(
-            this.lobbyService.getLobby(lobbyId).subscribe({
-                next: (lobby) => {
-                    if (lobby) {
-                        this.lobby = lobby; // Récupérer les informations du lobby
-                        this.currentPlayer = lobby.players.find((player) => player.id === playerId) || null; // Trouver le joueur dans le lobby
+            this.socketService.onGameStarted().subscribe((data) => {
+                this.gameState = data.gameState;
+                this.getCurrentPlayer();
+            }),
 
-                        if (this.currentPlayer) {
-                            this.loadGame(lobby.gameId); // Charger le jeu avec l'ID du jeu du lobby
-                            // Vous pouvez charger d'autres informations du jeu si nécessaire
-                        } else {
-                            this.notificationService.showError('Player not found in the lobby');
-                        }
-                    } else {
-                        this.notificationService.showError('Lobby not found!');
-                    }
-                },
-                error: (err) => {
-                    this.notificationService.showError('Error loading lobby: ' + err);
-                },
+            this.socketService.onTurnStarted().subscribe((data) => {
+                this.gameState = data.gameState;
+                this.notifyPlayerTurn(data.currentPlayer);
+            }),
+
+            this.socketService.onTurnEnded().subscribe((data) => {
+                this.gameState = data.gameState;
+            }),
+
+            this.socketService.onMovementProcessed().subscribe((data) => {
+                this.gameState = data.gameState;
+            }),
+
+            this.socketService.onError().subscribe((error) => {
+                this.notificationService.showError(error);
             }),
         );
     }
 
-    loadGame(gameId: string): void {
-        this.gameService.fetchGameById(gameId).subscribe({
-            next: (game: Game) => {
-                this.game = game;
-                if (!this.game?.board || this.game.board.length === 0) {
-                    this.notificationService.showError('No board available for this game');
-                }
-                this.gameLoaded = true; // Marquer que le jeu est chargé
-            },
-            error: (err) => {
-                this.notificationService.showError('Error loading game: ' + err);
-            },
-        });
-    }
-
-    resetBoard() {
-        window.location.reload();
-    }
-
-    endTurn() {
-        // Logique pour terminer le tour
-    }
-
-    abandon() {
-        // Vérifier que le lobby et le joueur actuel existent
-        if (this.lobby && this.currentPlayer) {
-            // Appeler la méthode `leaveLobby` du service pour quitter le lobby
-            this.lobbyService.leaveLobby(this.lobby.id, this.currentPlayer.name);
-            this.router.navigate(['/home']);
+    getCurrentPlayer() {
+        if (this.gameState) {
+            this.currentPlayer = this.gameState.players.find((player) => player.id === this.socketService.getSocketId()) || null;
         }
     }
 
-    attack() {
-        // Logique pour attaquer
+    notifyPlayerTurn(playerId: string) {
+        if (this.currentPlayer && playerId === this.currentPlayer.id) {
+            this.notificationService.showSuccess("C'est votre tour!");
+        } else {
+            const player = this.gameState?.players.find((p) => p.id === playerId);
+            if (player) {
+                this.notificationService.showInfo(`C'est le tour de ${player.name}`);
+            }
+        }
     }
 
-    defend() {
-        // Logique pour se défendre
+    onMoveRequest(coordinate: Coordinates) {
+        if (this.gameState && this.currentPlayer && this.gameState.currentPlayer === this.currentPlayer.id) {
+            this.socketService.requestMovement(this.lobbyId, coordinate);
+        }
+    }
+
+    onEndTurn() {
+        if (this.gameState && this.currentPlayer && this.gameState.currentPlayer === this.currentPlayer.id) {
+            this.socketService.requestEndTurn(this.lobbyId);
+        }
     }
 }

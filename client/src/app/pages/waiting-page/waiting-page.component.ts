@@ -8,6 +8,7 @@ import { NotificationService } from '@app/services/notification.service';
 import { GameLobby } from '@common/game-lobby';
 import { Player } from '@common/player';
 import { Subscription } from 'rxjs';
+import { SocketClientService } from '@app/services/socket-client.service';
 
 @Component({
     selector: 'app-waiting-page',
@@ -16,7 +17,7 @@ import { Subscription } from 'rxjs';
     styleUrls: ['./waiting-page.component.scss'],
 })
 export class WaitingPageComponent implements OnInit, OnDestroy {
-    lobby: GameLobby | null = null;
+    lobby: GameLobby;
     currentPlayer: Player = {
         id: '0000',
         name: 'Unknown',
@@ -32,6 +33,7 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
 
     private route = inject(ActivatedRoute);
     private lobbyService = inject(LobbyService);
+    private socketService = inject(SocketClientService);
     private router = inject(Router);
     private notificationService = inject(NotificationService);
 
@@ -68,6 +70,13 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
                     }
                 }),
             );
+            this.subscriptions.push(
+                this.socketService.onGameStarted().subscribe((data) => {
+                    console.log('Game started, navigating to playing page', data);
+                    // Navigate to the playing page with the lobby ID
+                    this.router.navigate(['/play', this.lobby.id]);
+                }),
+            );
         }
     }
 
@@ -95,12 +104,11 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
         }
     }
 
-    startGame(): void {
-        if (this.lobby && this.currentPlayer) {
-            this.router.navigate([`/play/${this.lobby.id}/${this.currentPlayer.id}`]);
-            // Redirige vers la page du jeu avec les bons paramètres
+    startGame() {
+        if (this.isHost() && this.lobby.id) {
+            this.socketService.requestStart(this.lobby.id);
         } else {
-            this.notificationService.showError('Game cannot be started yet.');
+            this.notificationService.showError('Only the host can start the game');
         }
     }
 }

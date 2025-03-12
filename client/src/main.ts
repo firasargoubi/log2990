@@ -29,7 +29,7 @@ const routes: Routes = [
     { path: 'waiting', component: WaitingPageComponent },
     { path: 'waiting/:id/:playerId', component: WaitingPageComponent },
     { path: 'play', component: PlayingPageComponent },
-    { path: 'play/:id/:playerId', component: PlayingPageComponent },
+    { path: 'play/:id', component: PlayingPageComponent },
     { path: '**', redirectTo: '/home' },
 ];
 
