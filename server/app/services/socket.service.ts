@@ -1,12 +1,12 @@
+import { GameState } from '@app/interface/game-state';
+import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
 import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
-import { GameState } from '@app/interface/game-state';
-import { Coordinates } from '@common/coordinates';
+import { Container, Service } from 'typedi';
 import { BoardService } from './board.service';
-import { Service, Container } from 'typedi';
 
 @Service()
 export class SocketService {
@@ -250,6 +250,7 @@ export class SocketService {
 
     private verifyRoom(socket: Socket, lobbyId: string, callback: (response: { exists: boolean; isLocked?: boolean }) => void) {
         const lobby = this.lobbies.get(lobbyId);
+        const isLocked = lobby.maxPlayers === lobby.players.length || lobby.isLocked;
 
         if (!lobby) {
             callback({ exists: false });
@@ -257,13 +258,13 @@ export class SocketService {
             return;
         }
 
-        if (lobby.isLocked) {
+        if (isLocked) {
             callback({ exists: false, isLocked: true });
             socket.emit('error', 'Cette partie est verrouillée.');
             return;
         }
 
-        callback({ exists: true });
+        callback({ exists: true, isLocked: false });
     }
 
     private verifyAvatars(socket: Socket, lobbyId: string, callback: (data: { avatars: string[] }) => void) {
@@ -352,7 +353,7 @@ export class SocketService {
             console.log(`Available Moves: ${JSON.stringify(updatedGameState.availableMoves || [])}`);
             console.log(`Player Positions: ${JSON.stringify(Array.from(updatedGameState.playerPositions.entries()))}`);
             console.log(`Current Player Movement Points: ${updatedGameState.currentPlayerMovementPoints}`);
-            console.log(`------- END DEBUG INFO -------`);
+            console.log('------- END DEBUG INFO -------');
 
             this.gameStates.set(lobbyId, updatedGameState);
 
@@ -481,8 +482,7 @@ export class SocketService {
                     console.log(`Removing empty lobby ${lobbyId}`);
                     this.lobbies.delete(lobbyId);
                     this.gameStates.delete(lobbyId);
-                }
-                else if (this.gameStates.has(lobbyId)) {
+                } else if (this.gameStates.has(lobbyId)) {
                     this.handlePlayerLeaveGame(lobbyId, socket.id);
                 }
             }
@@ -510,7 +510,7 @@ export class SocketService {
         }
     }
 
-    private serializeGameState(gameState: GameState): any {
+    private serializeGameState(gameState: GameState): unknown {
         if (!gameState.availableMoves) {
             gameState.availableMoves = [];
             console.warn('availableMoves was undefined in gameState, set to empty array before serialization');

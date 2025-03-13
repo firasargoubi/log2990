@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { LobbyService } from '@app/services/lobby.service';
 import { BoxFormDialogComponent } from '@app/components/box-form-dialog/box-form-dialog.component';
 import { MAIN_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { LobbyService } from '@app/services/lobby.service';
 
 @Component({
     selector: 'app-lobby-form',
@@ -25,19 +25,10 @@ export class LobbyFormComponent {
     ) {}
 
     validateGameId(): void {
-        this.lobbyService.getLobby(this.lobbyId).subscribe((lobby) => {
-            if (lobby.maxPlayers === lobby.players.length) {
-                this.lobbyService.lockLobby(lobby.id);
-                this.errorMessage = MAIN_PAGE_CONSTANTS.errorFullLobbyMessage;
-                return;
-            } else {
-                this.errorMessage = '';
-            }
-        });
         this.isLoading = true;
         this.errorMessage = '';
         this.lobbyService.verifyRoom(this.lobbyId).subscribe((response: { exists: boolean; isLocked?: boolean }) => {
-            if (response.exists) {
+            if (response.exists && !response.isLocked) {
                 this.isLoading = false;
                 this.dialogRef.close(this.lobbyId);
                 this.openBoxFormDialog();
