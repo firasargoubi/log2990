@@ -1,7 +1,7 @@
 import { game } from '@app/classes/game.model';
+import { Game } from '@common/game.interface';
 import { Service } from 'typedi';
 import { v4 as uuidv4 } from 'uuid';
-import { Game } from '@common/game.interface';
 
 @Service()
 export class GameService {
