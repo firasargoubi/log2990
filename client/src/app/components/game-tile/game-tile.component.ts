@@ -44,8 +44,6 @@ export class GameTileComponent {
         if (!this.tile || !this.tile.object) return null;
 
         switch (this.tile.object) {
-            case 0:
-                return null;
             case ObjectsTypes.BOOTS:
                 return GAME_IMAGES.boots;
             case ObjectsTypes.SWORD:

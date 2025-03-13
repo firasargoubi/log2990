@@ -27,12 +27,10 @@ export class SocketService {
 
     init(): void {
         this.io.on('connection', (socket: Socket) => {
-            console.log(`Client connected: ${socket.id}`);
 
             socket.on('createLobby', (game: Game) => {
                 const lobbyId = this.createLobby(game);
                 socket.emit('lobbyCreated', { lobbyId });
-                console.log(`Lobby created: ${lobbyId} for game: ${game.id}`);
             });
 
             socket.on('joinLobby', (data: { lobbyId: string; player: Player }) => {
@@ -81,12 +79,7 @@ export class SocketService {
                 this.handleRequestMovement(socket, data.lobbyId, data.coordinate);
             });
 
-            socket.on('requestPath', (data: { lobbyId: string; destination: Coordinates }) => {
-                this.handlePathRequest(socket, data.lobbyId, data.destination);
-            });
-
             socket.on('disconnect', () => {
-                console.log(`Client disconnected: ${socket.id}`);
                 this.handleDisconnect(socket);
             });
         });
@@ -109,52 +102,6 @@ export class SocketService {
         return lobbyId;
     }
 
-    private handlePathRequest(socket: Socket, lobbyId: string, destination: Coordinates): void {
-        console.log(`Path requested for lobby ${lobbyId} by ${socket.id} to (${destination.x}, ${destination.y})`);
-
-        const gameState = this.gameStates.get(lobbyId);
-        if (!gameState) {
-            socket.emit('error', 'Game not found.');
-            return;
-        }
-
-        if (socket.id !== gameState.currentPlayer) {
-            socket.emit('error', "It's not your turn.");
-            return;
-        }
-
-        const playerPosition = gameState.playerPositions.get(socket.id);
-        if (!playerPosition) {
-            socket.emit('error', 'Player position not found.');
-            return;
-        }
-
-        const isValidDestination = gameState.availableMoves.some((move) => move.x === destination.x && move.y === destination.y);
-
-        if (!isValidDestination) {
-            socket.emit('pathCalculated', {
-                destination,
-                path: null,
-                valid: false,
-            });
-            return;
-        }
-
-        try {
-            const path = this.boardService.findShortestPath(gameState, playerPosition, destination);
-
-            socket.emit('pathCalculated', {
-                destination,
-                path,
-                valid: path !== null,
-            });
-
-            console.log(`Path calculation for ${socket.id} complete, valid: ${path !== null}`);
-        } catch (error) {
-            console.error(`Error calculating path for lobby ${lobbyId}:`, error);
-            socket.emit('error', `Path calculation error: ${error.message}`);
-        }
-    }
 
     private handleJoinLobbyRequest(socket: Socket, lobbyId: string, player: Player) {
         const lobby = this.lobbies.get(lobbyId);
@@ -175,8 +122,6 @@ export class SocketService {
         socket.join(lobbyId);
         this.io.to(lobbyId).emit('playerJoined', { lobbyId, player });
         this.updateLobby(lobbyId);
-
-        console.log(`Player ${player.name} (${socket.id}) joined lobby ${lobbyId}`);
     }
 
     private leaveLobby(socket: Socket, lobbyId: string, playerName: string) {
@@ -208,7 +153,6 @@ export class SocketService {
         lobby.isLocked = true;
         this.io.to(lobbyId).emit('lobbyLocked', { lobbyId });
         this.updateLobby(lobbyId);
-        console.log(`Lobby ${lobbyId} locked`);
     }
 
     private getMaxPlayers(mapSize: string): number {
@@ -296,7 +240,6 @@ export class SocketService {
     }
 
     private async handleRequestStart(socket: Socket, lobbyId: string) {
-        console.log(`Request to start game for lobby ${lobbyId} by ${socket.id}`);
 
         const lobby = this.lobbies.get(lobbyId);
         if (!lobby) {
@@ -311,7 +254,6 @@ export class SocketService {
         }
 
         try {
-            console.log(`Initializing game state for lobby ${lobbyId}`);
             const gameState = await this.boardService.initializeGameState(lobby);
 
             this.gameStates.set(lobbyId, gameState);
@@ -321,41 +263,28 @@ export class SocketService {
 
             const serializableGameState = this.serializeGameState(gameState);
 
-            console.log(`Game started for lobby ${lobbyId}`);
             this.io.to(lobbyId).emit('gameStarted', { gameState: serializableGameState });
 
             this.startTurn(lobbyId);
         } catch (error) {
-            console.error(`Error starting game for lobby ${lobbyId}:`, error);
             socket.emit('error', `Failed to start game: ${error.message}`);
         }
     }
 
     private startTurn(lobbyId: string) {
-        console.log(`Starting turn for lobby ${lobbyId}`);
 
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) {
-            console.error(`Game state not found for lobby ${lobbyId}`);
             return;
         }
 
         try {
             const updatedGameState = this.boardService.handleTurn(gameState);
 
-            console.log(`------- TURN START DEBUG INFO: Lobby ${lobbyId} -------`);
-            console.log(`Current Player: ${updatedGameState.currentPlayer}`);
-            console.log(`Available Moves Count: ${updatedGameState.availableMoves?.length || 0}`);
-            console.log(`Available Moves: ${JSON.stringify(updatedGameState.availableMoves || [])}`);
-            console.log(`Player Positions: ${JSON.stringify(Array.from(updatedGameState.playerPositions.entries()))}`);
-            console.log(`Current Player Movement Points: ${updatedGameState.currentPlayerMovementPoints}`);
-            console.log('------- END DEBUG INFO -------');
-
             this.gameStates.set(lobbyId, updatedGameState);
 
             if (!updatedGameState.availableMoves) {
                 updatedGameState.availableMoves = [];
-                console.warn('availableMoves was undefined in updatedGameState, set to empty array');
             }
 
             const serializableGameState = this.serializeGameState(updatedGameState);
@@ -366,19 +295,15 @@ export class SocketService {
                 availableMoves: [...updatedGameState.availableMoves],
             });
 
-            console.log(`Turn started for player ${updatedGameState.currentPlayer} in lobby ${lobbyId}`);
         } catch (error) {
-            console.error(`Error starting turn for lobby ${lobbyId}:`, error);
             this.io.to(lobbyId).emit('error', `Turn error: ${error.message}`);
         }
     }
 
     private handleEndTurn(socket: Socket, lobbyId: string) {
-        console.log(`End turn requested for lobby ${lobbyId} by ${socket.id}`);
 
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) {
-            console.error(`Game state not found for lobby ${lobbyId}`);
             socket.emit('error', 'Game not found.');
             return;
         }
@@ -403,17 +328,14 @@ export class SocketService {
                 currentPlayer: updatedGameState.currentPlayer,
             });
 
-            console.log(`Turn ended for player ${currentPlayerId}, next player: ${updatedGameState.currentPlayer}`);
 
             this.startTurn(lobbyId);
         } catch (error) {
-            console.error(`Error ending turn for lobby ${lobbyId}:`, error);
             socket.emit('error', `Failed to end turn: ${error.message}`);
         }
     }
 
     private handleRequestMovement(socket: Socket, lobbyId: string, coordinate: Coordinates) {
-        console.log(`Movement requested for lobby ${lobbyId} by ${socket.id} to (${coordinate.x}, ${coordinate.y})`);
 
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) {
@@ -444,14 +366,11 @@ export class SocketService {
                 newPosition: coordinate,
             });
 
-            console.log(`Player ${gameState.currentPlayer} moved to (${coordinate.x}, ${coordinate.y})`);
 
             if (updatedGameState.availableMoves.length === 0) {
-                console.log(`No more moves available for player ${gameState.currentPlayer}, ending turn`);
                 this.handleEndTurn(socket, lobbyId);
             }
         } catch (error) {
-            console.error(`Error processing movement for lobby ${lobbyId}:`, error);
             socket.emit('error', `Movement error: ${error.message}`);
         }
     }
@@ -465,7 +384,6 @@ export class SocketService {
             const playerIndex = lobby.players.findIndex((p) => p.id === socket.id);
             if (playerIndex !== -1) {
                 const player = lobby.players[playerIndex];
-                console.log(`Player ${player.name} (${socket.id}) disconnected from lobby ${lobbyId}`);
 
                 lobby.players.splice(playerIndex, 1);
                 socket.leave(lobbyId);
@@ -475,7 +393,6 @@ export class SocketService {
                 this.updateLobby(lobbyId);
 
                 if (lobby.players.length === 0) {
-                    console.log(`Removing empty lobby ${lobbyId}`);
                     this.lobbies.delete(lobbyId);
                     this.gameStates.delete(lobbyId);
                 } else if (this.gameStates.has(lobbyId)) {
@@ -489,7 +406,6 @@ export class SocketService {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
 
-        console.log(`Handling player ${playerId} leaving game in lobby ${lobbyId}`);
 
         if (gameState.currentPlayer === playerId) {
             const updatedGameState = this.boardService.handleEndTurn(gameState);
@@ -509,7 +425,6 @@ export class SocketService {
     private serializeGameState(gameState: GameState): unknown {
         if (!gameState.availableMoves) {
             gameState.availableMoves = [];
-            console.warn('availableMoves was undefined in gameState, set to empty array before serialization');
         }
 
         const stateCopy = {
@@ -517,10 +432,6 @@ export class SocketService {
             playerPositions: Object.fromEntries(gameState.playerPositions),
             availableMoves: [...gameState.availableMoves],
         };
-
-        console.log(`Serialized game state successfully. Available moves count: ${stateCopy.availableMoves.length}`);
-        console.log(`Current player: ${stateCopy.currentPlayer}`);
-        console.log(`Player positions: ${JSON.stringify(Object.keys(stateCopy.playerPositions))}`);
 
         return stateCopy;
     }
