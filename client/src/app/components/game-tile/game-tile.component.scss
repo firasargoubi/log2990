@@ -1,5 +1,3 @@
-/* Updated CSS for game-tile.component.scss */
-
 .board-tile {
   display: flex;
   justify-content: center;
@@ -12,40 +10,16 @@
   background-position: center;
   cursor: pointer;
   border: 1px solid rgba(0, 0, 0, 0.1);
+}
 
-  &.available-move {
-      position: relative;
-      border: 2px solid #4CAF50;
-      z-index: 1;
-      
-      &::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color: rgba(76, 175, 80, 0.2);
-          pointer-events: none;
-      }
-  }
+.board-tile.available-move {
+  border: 2px solid #4CAF50; /* Green border for available moves */
+  background-color: rgba(76, 175, 80, 0.2); /* Light green background */
+}
 
-  &.path-highlighted {
-      position: relative;
-      border: 2px solid #FFC107;
-      z-index: 1;
-      
-      &::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color: rgba(255, 193, 7, 0.2);
-          pointer-events: none;
-      }
-  }
+.board-tile.path-highlighted {
+  border: 2px solid #F44336; /* Red border for shortest path */
+  background-color: rgba(244, 67, 54, 0.2); /* Light red background */
 }
 
 .tile-image {
@@ -74,25 +48,14 @@
   width: 100%;
   height: 100%;
   z-index: 2;
-  
-  &.current-player {
-      &::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          border: 3px solid #ffd700;
-          pointer-events: none;
-      }
-  }
-  
-  &.local-player {
-      .avatar-image {
-          border: 3px solid #4fc3f7;
-      }
-  }
+}
+
+.player-marker.current-player .avatar-image {
+  border: 3px solid #ffd700; /* Gold border for current player */
+}
+
+.player-marker.local-player .avatar-image {
+  border: 3px solid #4fc3f7; /* Blue border for local player */
 }
 
 .avatar-image {

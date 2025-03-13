@@ -9,17 +9,17 @@
 .game-board {
   display: grid;
   background-color: #ccc;
-  grid-template-columns: repeat(var(--size), 1fr); /* Uses CSS variable for grid sizing */
+  grid-template-columns: repeat(var(--size), 1fr);
   grid-template-rows: repeat(var(--size), 1fr);
-  width: 650px;  /* Fixed width like in BoardComponent */
-  height: 650px; /* Fixed height like in BoardComponent */
-  gap: 1px;      /* Small gap between tiles */
+  width: 650px;  /* Fixed width matching BoardComponent */
+  height: 650px; /* Fixed height matching BoardComponent */
+  gap: 1px;
 }
 
-/* Support for responsive scaling */
+/* Responsive adjustments */
 @media (max-width: 700px) {
   .game-board {
-      width: 90vw;
-      height: 90vw;
+    width: 90vw;
+    height: 90vw;
   }
 }

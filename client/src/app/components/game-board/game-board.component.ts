@@ -29,40 +29,34 @@ export class GameBoardComponent implements OnInit, OnChanges {
     constructor(private lobbyService: LobbyService) {}
 
     ngOnInit() {
-        console.log('GameBoardComponent initialized');
-
         if (this.gameState) {
-            console.log('Initial game state available:', this.gameState);
-            console.log('Initial available moves:', this.gameState.availableMoves);
             this.initializeBoard();
             this.updateAvailableMoves();
-        } else {
-            console.warn('No initial game state available');
         }
 
         // Listen for path calculation results
         this.lobbyService.onPathCalculated().subscribe((data) => {
-            console.log('Path calculation received:', data);
             if (data.valid && data.path) {
                 const cacheKey = `${data.destination.x},${data.destination.y}`;
                 this.pathCache.set(cacheKey, data.path);
                 this.highlightedPath = data.path;
-                console.log('Path highlighted:', this.highlightedPath);
             }
         });
 
         // Listen for turn started events to update available moves
         this.lobbyService.onTurnStarted().subscribe((data) => {
-            console.log('Turn started event received in GameBoardComponent', data);
             if (data.gameState) {
-                console.log('GameState in turn started event:', data.gameState);
-                console.log('Is my turn?', data.currentPlayer === this.currentPlayerId);
-                console.log('Available moves in turn event:', data.availableMoves);
-
                 // Update available moves
                 this.availableMoves = data.availableMoves || [];
-                console.log('Available moves updated to:', this.availableMoves);
+
+                // Clear path highlighting when turn changes
+                this.clearPathHighlights();
             }
+        });
+
+        // Listen for movement processed events to clear path highlights
+        this.lobbyService.onMovementProcessed().subscribe(() => {
+            this.clearPathHighlights();
         });
     }
 
@@ -71,7 +65,6 @@ export class GameBoardComponent implements OnInit, OnChanges {
             this.initializeBoard();
             this.updateAvailableMoves();
             this.clearPathHighlights();
-            console.log('Game state changed, available moves:', this.availableMoves);
         }
     }
 
@@ -101,9 +94,7 @@ export class GameBoardComponent implements OnInit, OnChanges {
     private updateAvailableMoves() {
         if (this.gameState && this.gameState.availableMoves) {
             this.availableMoves = this.gameState.availableMoves || [];
-            console.log('Available moves updated from game state:', this.availableMoves);
         } else {
-            console.warn('Cannot update available moves: game state or availableMoves is undefined');
             this.availableMoves = [];
         }
     }
@@ -114,8 +105,7 @@ export class GameBoardComponent implements OnInit, OnChanges {
     }
 
     isAvailableMove(x: number, y: number): boolean {
-        const isAvailable = this.availableMoves.some((move) => move.x === x && move.y === y);
-        return isAvailable;
+        return this.availableMoves.some((move) => move.x === x && move.y === y);
     }
 
     isOnHighlightedPath(x: number, y: number): boolean {
