@@ -3,14 +3,16 @@ import { GameState } from '@app/interface/game-state';
 import { Player } from '@common/player';
 import { Coordinates } from '@common/coordinates';
 import { GameService } from './game.service';
-import { Service } from 'typedi';
+import { Service, Inject } from 'typedi';
 import { Game, ObjectsTypes } from '@common/game.interface';
 import { PathfindingService } from './pathfinding.service';
 
 @Service()
 export class BoardService {
-    private gameService: GameService;
-    private pathfindingService: PathfindingService;
+    constructor(
+        @Inject() private gameService: GameService,
+        @Inject() private pathfindingService: PathfindingService,
+    ) {}
 
     async getGameFromId(gameId: string): Promise<Game> {
         try {
@@ -27,22 +29,26 @@ export class BoardService {
     async initializeGameState(lobby: GameLobby): Promise<GameState> {
         const gameData = await this.getGameFromId(lobby.gameId);
 
+        // Create an initial game state
         const gameState: GameState = {
-            id: lobby.gameId,
+            id: lobby.id,
             players: [...lobby.players],
             currentPlayer: '',
             turnCounter: 0,
             playerPositions: new Map<string, Coordinates>(),
             availableMoves: [],
-            board: gameData.board, // Add this line to fix the error
+            board: gameData.board,
             gameBoard: gameData.board,
             currentPlayerMovementPoints: 0,
         };
 
+        // Assign spawn points to players
         await this.assignSpawnPoints(gameState);
 
+        // Sort players by speed
         this.sortPlayersBySpeed(gameState);
 
+        // Set the first player as the current player
         if (gameState.players.length > 0) {
             gameState.currentPlayer = gameState.players[0].id;
             gameState.currentPlayerMovementPoints = this.getPlayerMovementPoints(gameState.players[0]);
@@ -52,7 +58,7 @@ export class BoardService {
     }
 
     handleTurn(gameState: GameState): GameState {
-        const playerIndex = gameState.players.findIndex((p: Player) => p.id === gameState.currentPlayer);
+        const playerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
         if (playerIndex === -1) return gameState;
 
         const playerPosition = gameState.playerPositions.get(gameState.currentPlayer);
@@ -66,6 +72,10 @@ export class BoardService {
         gameState.availableMoves = this.findAllPaths(gameState, playerPosition);
 
         return gameState;
+    }
+
+    public findShortestPath(gameState: GameState, start: Coordinates, end: Coordinates): Coordinates[] | null {
+        return this.pathfindingService.findShortestPath(gameState, start, end, gameState.currentPlayerMovementPoints);
     }
 
     handleMovement(gameState: GameState, targetCoordinate: Coordinates): GameState {
@@ -109,6 +119,7 @@ export class BoardService {
 
         // Find the current player index
         const currentPlayerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
+        if (currentPlayerIndex === -1) return gameState;
 
         // Calculate the next player index using modulo to wrap around
         const nextPlayerIndex = (currentPlayerIndex + 1) % gameState.players.length;
@@ -129,39 +140,42 @@ export class BoardService {
     }
 
     private getPlayerMovementPoints(player: Player): number {
-        // Base movement points plus any bonuses
-        const baseMovementPoints = 3; // Default value, adjust as needed
+        // Base movement points plus any bonuses from speed
+        const baseMovementPoints = 3; // Default value
         const speedBonus = (player.speed || 0) + (player.bonus?.speed || 0);
         return baseMovementPoints + speedBonus;
     }
 
-    // Rest of your methods remain the same...
     private async assignSpawnPoints(gameState: GameState): Promise<void> {
-        // Find all spawn points on the board
+        // Find all spawn points on the board (Value = SPAWN * 10 + tileType)
         const spawnPoints: Coordinates[] = [];
         const boardSize = gameState.gameBoard.length;
 
         for (let x = 0; x < boardSize; x++) {
             for (let y = 0; y < boardSize; y++) {
+                // Check if this is a spawn point (object type 6 as per your constants)
                 if (Math.floor(gameState.gameBoard[x][y] / 10) === ObjectsTypes.SPAWN) {
                     spawnPoints.push({ x, y });
                 }
             }
         }
 
+        // Shuffle spawn points for random assignment
         this.shuffleArray(spawnPoints);
 
+        // Assign spawn points to players
         const assignedPoints = spawnPoints.slice(0, gameState.players.length);
-
         for (let i = 0; i < gameState.players.length; i++) {
             if (i < assignedPoints.length) {
                 gameState.playerPositions.set(gameState.players[i].id, assignedPoints[i]);
             }
         }
 
+        // Remove unused spawn points from the board
         if (spawnPoints.length > gameState.players.length) {
             for (let i = gameState.players.length; i < spawnPoints.length; i++) {
                 const { x, y } = spawnPoints[i];
+                // Keep the tile type (modulo 10) but remove the object
                 gameState.gameBoard[x][y] = gameState.gameBoard[x][y] % 10;
             }
         }

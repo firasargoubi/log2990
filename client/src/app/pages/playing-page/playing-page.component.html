@@ -1,12 +1,17 @@
 <div class="playing-page">
     <div class="header">
-        <app-game-info>
+        <app-game-info
+            [gameName]="getGameName()"
+            [mapSize]="getMapSize()"
+            [playerCount]="getPlayerCount()"
+            [activePlayer]="getActivePlayer()"
+            [players]="getPlayers()">
         </app-game-info>
     </div>
 
     <div class="game-area">
         <div class="sidebar left-sidebar">
-            <app-inventory >
+            <app-inventory>
             </app-inventory>
         </div>
 
@@ -15,16 +20,20 @@
                 <app-game-board
                     [gameState]="gameState"
                     [currentPlayerId]="currentPlayer?.id || ''"
+                    [lobbyId]="lobbyId"
                     (moveRequest)="onMoveRequest($event)">
                 </app-game-board>
             } @else {
-                <div class="loading">Chargement...</div>
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Chargement du jeu...</div>
+                </div>
             }
 
             <div class="controls">
                 <button 
                     class="end-turn-button"
-                    [disabled]="!gameState || (gameState.currentPlayer !== currentPlayer?.id)"
+                    [disabled]="!isCurrentPlayerTurn()"
                     (click)="onEndTurn()">
                     Terminer le tour
                 </button>
@@ -33,7 +42,9 @@
 
         <div class="sidebar right-sidebar">
             <app-messages></app-messages>
-            <app-countdown-timer *ngIf="gameState?.currentPlayer === currentPlayer?.id"></app-countdown-timer>
+            @if (isCurrentPlayerTurn()) {
+                <app-countdown-timer></app-countdown-timer>
+            }
         </div>
     </div>
 </div>

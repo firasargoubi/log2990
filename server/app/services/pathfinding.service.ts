@@ -21,25 +21,26 @@ export class PathfindingService {
             return Infinity;
         }
 
+        // Extract the tile type (ignoring objects, which are in tens place)
         const tileType = gameState.gameBoard[x][y] % 10;
         return this.getTileCost(tileType);
     }
 
-    // Get movement cost based on tile type using a switch case
+    // Get movement cost based on tile type
     private getTileCost(tileType: number): number {
         switch (tileType) {
             case TileTypes.Ice:
-                return 0;
+                return 0; // Ice has no movement cost (slide)
             case TileTypes.Grass:
             case TileTypes.DoorOpen:
-                return 1;
+                return 1; // Normal cost
             case TileTypes.Water:
-                return 2;
+                return 2; // Water is harder to move through
             case TileTypes.DoorClosed:
             case TileTypes.Wall:
-                return Infinity;
+                return Infinity; // Can't move through walls or closed doors
             default:
-                return Infinity;
+                return Infinity; // Unknown tile types are impassable
         }
     }
 
@@ -52,6 +53,7 @@ export class PathfindingService {
     // Check if a position is occupied by another player
     isPositionOccupied(gameState: GameState, position: Coordinates): boolean {
         for (const [playerId, playerPos] of gameState.playerPositions.entries()) {
+            // Skip the current player
             if (playerId !== gameState.currentPlayer && playerPos.x === position.x && playerPos.y === position.y) {
                 return true;
             }

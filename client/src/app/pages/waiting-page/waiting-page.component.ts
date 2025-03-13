@@ -8,13 +8,14 @@ import { NotificationService } from '@app/services/notification.service';
 import { GameLobby } from '@common/game-lobby';
 import { Player } from '@common/player';
 import { Subscription } from 'rxjs';
-import { SocketClientService } from '@app/services/socket-client.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
     selector: 'app-waiting-page',
-    imports: [RouterLink, GameControlsComponent, PlayerListComponent],
     templateUrl: './waiting-page.component.html',
     styleUrls: ['./waiting-page.component.scss'],
+    standalone: true,
+    imports: [CommonModule, RouterLink, GameControlsComponent, PlayerListComponent],
 })
 export class WaitingPageComponent implements OnInit, OnDestroy {
     lobby: GameLobby;
@@ -29,23 +30,25 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
         defense: 0,
     };
     hostId: string = '0000';
+    randomNumber: number = 1000;
     private subscriptions: Subscription[] = [];
 
     private route = inject(ActivatedRoute);
     private lobbyService = inject(LobbyService);
-    private socketService = inject(SocketClientService);
     private router = inject(Router);
     private notificationService = inject(NotificationService);
 
     ngOnInit(): void {
-        const lobbyId = this.route.snapshot.paramMap.get('id');
-        const player = this.route.snapshot.paramMap.get('playerId');
+        this.generateRandomNumber();
 
-        if (lobbyId && player) {
+        const lobbyId = this.route.snapshot.paramMap.get('id');
+        const playerId = this.route.snapshot.paramMap.get('playerId');
+
+        if (lobbyId && playerId) {
             this.subscriptions.push(
                 this.lobbyService.getLobby(lobbyId).subscribe((lobby) => {
                     this.lobby = lobby;
-                    this.currentPlayer = lobby.players.find((p) => p.id === player) || this.currentPlayer;
+                    this.currentPlayer = lobby.players.find((p) => p.id === playerId) || this.currentPlayer;
                     this.hostId = lobby.players.find((p) => p.isHost)?.id || '';
                 }),
             );
@@ -54,7 +57,7 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
                 this.lobbyService.onLobbyUpdated().subscribe((data) => {
                     if (data.lobbyId === lobbyId) {
                         this.lobby = data.lobby;
-                        this.currentPlayer = data.lobby.players.find((p) => p.id === player) || this.currentPlayer;
+                        this.currentPlayer = data.lobby.players.find((p) => p.id === playerId) || this.currentPlayer;
                         this.hostId = data.lobby.players.find((p) => p.isHost)?.id || '';
                     }
                 }),
@@ -70,11 +73,13 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
                     }
                 }),
             );
+
+            // Subscribe to game started event
             this.subscriptions.push(
-                this.socketService.onGameStarted().subscribe((data) => {
-                    console.log('Game started, navigating to playing page', data);
+                this.lobbyService.onGameStarted().subscribe((data) => {
+                    console.log('Game started event received in waiting page, navigating to play page');
                     // Navigate to the playing page with the lobby ID
-                    this.router.navigate(['/play', this.lobby.id]);
+                    this.router.navigate(['/play', lobbyId]);
                 }),
             );
         }
@@ -100,15 +105,21 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
     lockRoom(): void {
         if (this.lobby?.id) {
             this.lobbyService.lockLobby(this.lobby.id);
-            this.notificationService.showSuccess('Cette partie est vérouillée');
+            this.notificationService.showSuccess('Cette partie est verrouillée');
         }
     }
 
     startGame() {
-        if (this.isHost() && this.lobby.id) {
-            this.socketService.requestStart(this.lobby.id);
-        } else {
+        if (!this.isHost() || !this.lobby.id) {
             this.notificationService.showError('Only the host can start the game');
+            return;
         }
+
+        console.log(`Requesting game start for lobby ${this.lobby.id}`);
+        this.lobbyService.requestStartGame(this.lobby.id);
+    }
+
+    generateRandomNumber(): void {
+        this.randomNumber = Math.floor(Math.random() * 9000) + 1000;
     }
 }
