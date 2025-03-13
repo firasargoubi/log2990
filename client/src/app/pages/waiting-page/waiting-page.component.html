@@ -11,7 +11,7 @@
         Code d'accès : <strong>{{ lobby?.id }}</strong>
     </p>
 
-    @if ((lobby?.players?.length ?? 0) > 2 && currentPlayer.isHost) {
+    @if ((lobby?.players?.length ?? 0) >= 2 && currentPlayer.isHost) {
     <button (click)="startGame()" [disabled]="!lobby || !currentPlayer || !lobby.isLocked">Start Game</button>
     }
 

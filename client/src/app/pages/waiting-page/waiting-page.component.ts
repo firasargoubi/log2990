@@ -85,6 +85,13 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
                     },
                 }),
             );
+
+            this.subscriptions.push(
+                this.lobbyService.onGameStarted().subscribe(() => {
+                    this.lobbyService.setCurrentPlayer(this.currentPlayer);
+                    this.router.navigate([`${PageUrl.Play}/${lobbyId}`]);
+                }),
+            );
         }
     }
 
@@ -114,7 +121,7 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
 
     startGame(): void {
         if (this.lobby && this.currentPlayer) {
-            this.router.navigate([`${PageUrl.Play}/${this.lobby.id}/${this.currentPlayer.id}`]);
+            this.lobbyService.requestStartGame(this.lobby.id);
         } else {
             this.notificationService.showError(WAITING_PAGE_CONSTANTS.errorStartGame);
         }
