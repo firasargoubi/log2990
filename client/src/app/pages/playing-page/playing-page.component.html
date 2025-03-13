@@ -12,9 +12,6 @@
 
     <div class="sidebar-left">
         <div class="component-box">
-            <app-countdown-timer></app-countdown-timer>
-        </div>
-        <div class="component-box">
             <ul>
                 <li><strong>Name:</strong> {{ currentPlayer?.name }}</li>
                 <li><strong>Avatar:</strong> <img [src]="currentPlayer?.avatar" alt="Avatar" width="50" height="50" /></li>
@@ -37,20 +34,6 @@
     </div>
 
     <div class="game-area">
-        <div class="sidebar left-sidebar">
-            <app-inventory> </app-inventory>
-
-            <!-- Simple diagnostic panel (for development, can be removed in production) -->
-            <div *ngIf="debug" class="diagnostic-panel">
-                <div class="player-info">
-                    <p><strong>Your Player:</strong> {{ currentPlayer?.name || 'Not found' }}</p>
-                    <p><strong>Current Turn:</strong> {{ gameState?.currentPlayer || 'Unknown' }}</p>
-                    <p><strong>Is Your Turn:</strong> {{ isCurrentPlayerTurn() ? 'Yes' : 'No' }}</p>
-                    <button (click)="debugLogGameState()" class="debug-button">Log Game State</button>
-                </div>
-            </div>
-        </div>
-
         <div class="main-board">
             @if (gameState) {
             <app-game-board
