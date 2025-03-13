@@ -5,21 +5,47 @@
             [mapSize]="getMapSize()"
             [playerCount]="getPlayerCount()"
             [activePlayer]="getActivePlayer()"
-            [players]="getPlayers()">
+            [players]="getPlayers()"
+        >
         </app-game-info>
+    </div>
+
+    <div class="sidebar-left">
+        <div class="component-box">
+            <app-countdown-timer></app-countdown-timer>
+        </div>
+        <div class="component-box">
+            <ul>
+                <li><strong>Name:</strong> {{ currentPlayer?.name }}</li>
+                <li><strong>Avatar:</strong> <img [src]="currentPlayer?.avatar" alt="Avatar" width="50" height="50" /></li>
+                <li><strong>Vie:</strong> {{ currentPlayer?.life }}</li>
+                <li><strong>Rapidité:</strong> {{ currentPlayer?.speed }}</li>
+                <li><strong>Attaque:</strong> {{ currentPlayer?.attack }}</li>
+                <li><strong>Défense:</strong> {{ currentPlayer?.defense }}</li>
+            </ul>
+            <ul>
+                Bonus :
+                <li><strong>Bonus Vie:</strong> {{ currentPlayer?.bonus?.life }}</li>
+                <li><strong>Bonus Rapidité:</strong> {{ currentPlayer?.bonus?.speed }}</li>
+                <li><strong>Dé attaque:</strong> {{ currentPlayer?.bonus?.attack }}</li>
+                <li><strong>Dé défense:</strong> {{ currentPlayer?.bonus?.defense }}</li>
+            </ul>
+        </div>
+        <div class="component-box">
+            <app-inventory></app-inventory>
+        </div>
     </div>
 
     <div class="game-area">
         <div class="sidebar left-sidebar">
-            <app-inventory>
-            </app-inventory>
-            
+            <app-inventory> </app-inventory>
+
             <!-- Simple diagnostic panel (for development, can be removed in production) -->
             <div *ngIf="debug" class="diagnostic-panel">
                 <div class="player-info">
-                    <p><strong>Your Player:</strong> {{currentPlayer?.name || 'Not found'}}</p>
-                    <p><strong>Current Turn:</strong> {{gameState?.currentPlayer || 'Unknown'}}</p>
-                    <p><strong>Is Your Turn:</strong> {{isCurrentPlayerTurn() ? 'Yes' : 'No'}}</p>
+                    <p><strong>Your Player:</strong> {{ currentPlayer?.name || 'Not found' }}</p>
+                    <p><strong>Current Turn:</strong> {{ gameState?.currentPlayer || 'Unknown' }}</p>
+                    <p><strong>Is Your Turn:</strong> {{ isCurrentPlayerTurn() ? 'Yes' : 'No' }}</p>
                     <button (click)="debugLogGameState()" class="debug-button">Log Game State</button>
                 </div>
             </div>
@@ -27,33 +53,29 @@
 
         <div class="main-board">
             @if (gameState) {
-                <app-game-board
-                    [gameState]="gameState"
-                    [currentPlayerId]="currentPlayer?.id || ''"
-                    [lobbyId]="lobbyId"
-                    (moveRequest)="onMoveRequest($event)">
-                </app-game-board>
+            <app-game-board
+                [gameState]="gameState"
+                [currentPlayerId]="currentPlayer?.id || ''"
+                [lobbyId]="lobbyId"
+                (moveRequest)="onMoveRequest($event)"
+            >
+            </app-game-board>
             } @else {
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <div class="loading-text">Chargement du jeu...</div>
-                </div>
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Chargement du jeu...</div>
+            </div>
             }
 
             <div class="controls">
-                <button 
-                    class="end-turn-button"
-                    [disabled]="!isCurrentPlayerTurn()"
-                    (click)="onEndTurn()">
-                    Terminer le tour
-                </button>
+                <button class="end-turn-button" [disabled]="!isCurrentPlayerTurn()" (click)="onEndTurn()">Terminer le tour</button>
             </div>
         </div>
 
         <div class="sidebar right-sidebar">
             <app-messages></app-messages>
             @if (isCurrentPlayerTurn()) {
-                <app-countdown-timer></app-countdown-timer>
+            <app-countdown-timer></app-countdown-timer>
             }
         </div>
     </div>

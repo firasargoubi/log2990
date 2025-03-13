@@ -1,148 +1,152 @@
 .playing-page {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  width: 100vw;
-  background-color: #f0f7e6;
-  font-family: 'Courier New', monospace;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    background-color: #f0f7e6;
+    font-family: 'Courier New', monospace;
 }
 
 .header {
-  height: 80px;
-  padding: 10px;
-  background-color: #3f783f;
-  color: white;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    height: 80px;
+    padding: 10px;
+    background-color: #3f783f;
+    color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .game-area {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
+    display: flex;
+    flex: 1;
+    overflow: hidden;
 }
 
 .sidebar {
-  width: 250px;
-  padding: 15px;
-  background-color: #e0e0e0;
-  overflow-y: auto;
-  border: 1px solid #9eba63;
-  background-color: rgba(184, 213, 139, 0.3);
+    width: 250px;
+    padding: 15px;
+    background-color: #e0e0e0;
+    overflow-y: auto;
+    border: 1px solid #9eba63;
+    background-color: rgba(184, 213, 139, 0.3);
 }
 
 .left-sidebar {
-  border-right: 1px solid #9eba63;
+    border-right: 1px solid #9eba63;
 }
 
 .right-sidebar {
-  border-left: 1px solid #9eba63;
-  display: flex;
-  flex-direction: column;
+    border-left: 1px solid #9eba63;
+    display: flex;
+    flex-direction: column;
 }
 
 .main-board {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  background-color: rgba(184, 213, 139, 0.1);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background-color: rgba(184, 213, 139, 0.1);
 }
 
 .controls {
-  position: absolute;
-  bottom: 20px;
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  padding: 10px;
+    position: absolute;
+    bottom: 20px;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 10px;
 }
 
 .end-turn-button {
-  padding: 15px 30px;
-  font-size: 16px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  
-  &:hover:not(:disabled) {
-    background-color: #45a049;
-    transform: scale(1.05);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-  }
-  
-  &:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-    opacity: 0.7;
-    box-shadow: none;
-  }
+    padding: 15px 30px;
+    font-size: 16px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+    &:hover:not(:disabled) {
+        background-color: #45a049;
+        transform: scale(1.05);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    &:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+        opacity: 0.7;
+        box-shadow: none;
+    }
 }
 
 .loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
 }
 
 .loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #3f783f;
-  border-radius: 50%;
-  animation: spin 2s linear infinite;
-  margin-bottom: 20px;
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3f783f;
+    border-radius: 50%;
+    animation: spin 2s linear infinite;
+    margin-bottom: 20px;
 }
 
 .loading-text {
-  font-size: 20px;
-  color: #3f783f;
-  font-weight: bold;
+    font-size: 20px;
+    color: #3f783f;
+    font-weight: bold;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Add to playing-page.component.scss */
 
 .diagnostic-panel {
-  margin-top: 20px;
-  padding: 10px;
-  background-color: #f5f5f5;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 12px;
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 12px;
 }
 
 .player-info p {
-  margin: 5px 0;
+    margin: 5px 0;
 }
 
 .debug-button {
-  margin-top: 10px;
-  padding: 5px 10px;
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 12px;
+    margin-top: 10px;
+    padding: 5px 10px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
 }
 
 .debug-button:hover {
-  background-color: #5a6268;
+    background-color: #5a6268;
 }

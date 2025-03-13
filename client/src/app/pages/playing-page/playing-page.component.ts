@@ -240,4 +240,25 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
         console.log('================ END DEBUG ================');
     }
+
+    endTurn() {
+        // Logique pour terminer le tour
+    }
+
+    abandon() {
+        // Vérifier que le lobby et le joueur actuel existent
+        if (this.lobbyId && this.currentPlayer) {
+            // Appeler la méthode `leaveLobby` du service pour quitter le lobby
+            this.lobbyService.leaveLobby(this.lobbyId, this.currentPlayer.name);
+            this.router.navigate(['/home']);
+        }
+    }
+
+    attack() {
+        // Logique pour attaquer
+    }
+
+    defend() {
+        // Logique pour se défendre
+    }
 }
