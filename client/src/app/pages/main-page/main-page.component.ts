@@ -4,6 +4,7 @@ import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dial
 import { RouterLink } from '@angular/router';
 import { LobbyFormComponent } from '@app/components/lobby-form/lobby-form.component';
 import { BehaviorSubject } from 'rxjs';
+import { MAIN_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 
 @Component({
     selector: 'app-main-page',
@@ -25,7 +26,7 @@ export class MainPageComponent {
         dialogRef.afterClosed().subscribe({
             next: (result) => {
                 if (result) {
-                    console.log('ID saisi:', result);
+                    this.message.next(MAIN_PAGE_CONSTANTS.successJoinMessage);
                 }
             },
         });

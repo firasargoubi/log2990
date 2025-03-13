@@ -1,12 +1,12 @@
+import { GameState } from '@app/interface/game-state';
+import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
 import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
-import { GameState } from '@app/interface/game-state';
-import { Coordinates } from '@common/coordinates';
+import { Container, Service } from 'typedi';
 import { BoardService } from './board.service';
-import { Service, Container } from 'typedi';
 
 @Service()
 export class SocketService {
@@ -30,7 +30,7 @@ export class SocketService {
             console.log(`Client connected: ${socket.id}`);
 
             socket.on('createLobby', (game: Game) => {
-                const lobbyId = this.createLobby(game);
+                const lobbyId = this.createLobby(socket, game);
                 socket.emit('lobbyCreated', { lobbyId });
                 console.log(`Lobby created: ${lobbyId} for game: ${game.id}`);
             });
@@ -69,31 +69,41 @@ export class SocketService {
                 this.verifyUsername(socket, data.lobbyId, callback);
             });
 
-            // Game start and play events
-            socket.on('requestStart', (lobbyId: string) => {
-                this.handleRequestStart(socket, lobbyId);
-            });
-
-            socket.on('endTurn', (data: { lobbyId: string }) => {
-                this.handleEndTurn(socket, data.lobbyId);
-            });
-
-            socket.on('requestMovement', (data: { lobbyId: string; coordinate: Coordinates }) => {
-                this.handleRequestMovement(socket, data.lobbyId, data.coordinate);
-            });
-
-            socket.on('requestPath', (data: { lobbyId: string; destination: Coordinates }) => {
-                this.handlePathRequest(socket, data.lobbyId, data.destination);
-            });
-
             socket.on('disconnect', () => {
-                console.log(`Client disconnected: ${socket.id}`);
-                this.handleDisconnect(socket);
+                for (const [lobbyId, lobby] of this.lobbies) {
+                    const host = lobby.players.find((player) => player.isHost);
+                    if (host && host.id === socket.id) {
+                        this.lobbies.delete(lobbyId);
+                        this.io.to(lobbyId).emit('hostDisconnected');
+                    }
+                }
+
+                // Game start and play events
+                socket.on('requestStart', (lobbyId: string) => {
+                    this.handleRequestStart(socket, lobbyId);
+                });
+
+                socket.on('endTurn', (data: { lobbyId: string }) => {
+                    this.handleEndTurn(socket, data.lobbyId);
+                });
+
+                socket.on('requestMovement', (data: { lobbyId: string; coordinate: Coordinates }) => {
+                    this.handleRequestMovement(socket, data.lobbyId, data.coordinate);
+                });
+
+                socket.on('requestPath', (data: { lobbyId: string; destination: Coordinates }) => {
+                    this.handlePathRequest(socket, data.lobbyId, data.destination);
+                });
+
+                socket.on('disconnect', () => {
+                    console.log(`Client disconnected: ${socket.id}`);
+                    this.handleDisconnect(socket);
+                });
             });
         });
     }
 
-    private createLobby(game: Game): string {
+    private createLobby(socket: Socket, game: Game): string {
         const maxPlayers = this.getMaxPlayers(game.mapSize);
         const lobbyId = this.generateId();
 
@@ -106,6 +116,7 @@ export class SocketService {
         };
 
         this.lobbies.set(lobbyId, newLobby);
+        socket.join(lobbyId);
         this.updateLobby(lobbyId);
         return lobbyId;
     }
@@ -185,7 +196,6 @@ export class SocketService {
 
         console.log(`Player ${player.name} (${socket.id}) joined lobby ${lobbyId}`);
     }
-
     private leaveLobby(socket: Socket, lobbyId: string, playerName: string) {
         const lobby = this.lobbies.get(lobbyId);
         if (!lobby) {
@@ -203,7 +213,7 @@ export class SocketService {
 
         socket.leave(lobbyId);
         this.io.to(lobbyId).emit('playerLeft', { lobbyId, playerName });
-        this.updateLobby(lobbyId);
+        socket.emit('lobbyUpdated', { lobbyId, lobby: JSON.parse(JSON.stringify(lobby)) });
 
         console.log(`Player ${playerName} left lobby ${lobbyId}`);
     }
@@ -214,8 +224,12 @@ export class SocketService {
             socket.emit('error', 'Lobby not found.');
             return;
         }
+        if (lobby.players.length < 2) {
+            socket.emit('error', 'Nombre de joueurs insuffisants');
+            return;
+        }
 
-        lobby.isLocked = true;
+        lobby.isLocked = !lobby.isLocked;
         this.io.to(lobbyId).emit('lobbyLocked', { lobbyId });
         this.updateLobby(lobbyId);
         console.log(`Lobby ${lobbyId} locked`);
@@ -363,7 +377,7 @@ export class SocketService {
             console.log(`Available Moves: ${JSON.stringify(updatedGameState.availableMoves || [])}`);
             console.log(`Player Positions: ${JSON.stringify(Array.from(updatedGameState.playerPositions.entries()))}`);
             console.log(`Current Player Movement Points: ${updatedGameState.currentPlayerMovementPoints}`);
-            console.log(`------- END DEBUG INFO -------`);
+            console.log('------- END DEBUG INFO -------');
 
             // Store the updated game state
             this.gameStates.set(lobbyId, updatedGameState);
@@ -550,7 +564,7 @@ export class SocketService {
         }
     }
 
-    private serializeGameState(gameState: GameState): any {
+    private serializeGameState(gameState: GameState): unknown {
         // Ensure availableMoves exists before serialization
         if (!gameState.availableMoves) {
             gameState.availableMoves = [];

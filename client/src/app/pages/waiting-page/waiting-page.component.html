@@ -1,28 +1,26 @@
-<a routerLink="/main" class="logo-link">
+<a routerLink="/home" class="logo-link">
     <img class="logo" src="assets/images/logo.png" alt="Logo" />
 </a>
 <h2 mat-dialog-title>Salle d'attente</h2>
 <div class="lobby-container">
-    <!-- Show controls only if the current player is the host -->
     @if (currentPlayer.isHost && lobby) {
     <app-game-controls [lobby]="lobby"></app-game-controls>
     }
 
-
-    <!-- ✅ Display the correct lobby ID -->
     <p>
         Code d'accès : <strong>{{ lobby?.id }}</strong>
     </p>
 
-    <button (click)="startGame()" [disabled]="!lobby || !currentPlayer">Start Game</button>
+    @if ((lobby?.players?.length ?? 0) > 2 && currentPlayer.isHost) {
+    <button (click)="startGame()" [disabled]="!lobby || !currentPlayer || !lobby.isLocked">Start Game</button>
+    }
 
-    <!-- ✅ Display players in the lobby -->
     <app-player-list [currentPlayer]="currentPlayer" [players]="lobby?.players || []" [hostId]="hostId" (removePlayer)="removePlayer($event)">
     </app-player-list>
 
     @if (isHost()) {
-        <button mat-icon-button (click)="lockRoom()" class="action promote" matTooltip="Promouvoir" matTooltipPosition="below">
-            <i>🔒</i>
-        </button>
-        }
+    <button mat-icon-button (click)="lockRoom()" class="action promote" matTooltip="Promouvoir" matTooltipPosition="below">
+        <i>🔒</i>
+    </button>
+    }
 </div>
