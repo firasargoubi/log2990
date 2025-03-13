@@ -9,6 +9,7 @@ import { MessagesComponent } from '@app/components/messages/messages.component';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { Coordinates } from '@common/coordinates';
+import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
 import { Subscription } from 'rxjs';
@@ -25,6 +26,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     gameState: GameState | null = null;
     currentPlayer: Player | null = null;
     debug: boolean = true;
+    lobby: GameLobby;
 
     private lobbyService = inject(LobbyService);
     private router = inject(Router);
@@ -237,8 +239,19 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         // Vérifier que le lobby et le joueur actuel existent
         if (this.lobbyId && this.currentPlayer) {
             // Appeler la méthode `leaveLobby` du service pour quitter le lobby
-            this.lobbyService.leaveLobby(this.lobbyId, this.currentPlayer.name);
+            this.removePlayer(this.currentPlayer.id);
+
+            // Naviguer vers la page d'accueil après avoir quitté le lobby
             this.router.navigate(['/home']);
+        }
+    }
+
+    removePlayer(playerId: string): void {
+        if (this.lobby) {
+            const player = this.lobby.players.find((p) => p.id === playerId);
+            if (player) {
+                this.lobbyService.leaveLobby(this.lobby.id, player.name);
+            }
         }
     }
 
