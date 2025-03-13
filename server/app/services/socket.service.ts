@@ -69,7 +69,6 @@ export class SocketService {
                 this.verifyUsername(socket, data.lobbyId, callback);
             });
 
-            // Game start and play events
             socket.on('requestStart', (lobbyId: string) => {
                 this.handleRequestStart(socket, lobbyId);
             });
@@ -113,27 +112,23 @@ export class SocketService {
     private handlePathRequest(socket: Socket, lobbyId: string, destination: Coordinates): void {
         console.log(`Path requested for lobby ${lobbyId} by ${socket.id} to (${destination.x}, ${destination.y})`);
 
-        // Get the game state for this lobby
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) {
             socket.emit('error', 'Game not found.');
             return;
         }
 
-        // Verify it's the player's turn
         if (socket.id !== gameState.currentPlayer) {
             socket.emit('error', "It's not your turn.");
             return;
         }
 
-        // Get the player's current position
         const playerPosition = gameState.playerPositions.get(socket.id);
         if (!playerPosition) {
             socket.emit('error', 'Player position not found.');
             return;
         }
 
-        // Check if the destination is a valid move
         const isValidDestination = gameState.availableMoves.some((move) => move.x === destination.x && move.y === destination.y);
 
         if (!isValidDestination) {
@@ -146,10 +141,8 @@ export class SocketService {
         }
 
         try {
-            // Calculate the path using the pathfinding service
             const path = this.boardService.findShortestPath(gameState, playerPosition, destination);
 
-            // Send the calculated path back to the client
             socket.emit('pathCalculated', {
                 destination,
                 path,
@@ -250,7 +243,6 @@ export class SocketService {
     private updateLobby(lobbyId: string) {
         const lobby = this.lobbies.get(lobbyId);
         if (lobby) {
-            // Create a serializable copy of the lobby
             const lobbyCopy = JSON.parse(JSON.stringify(lobby));
             this.io.to(lobbyId).emit('lobbyUpdated', { lobbyId, lobby: lobbyCopy });
         }
@@ -335,7 +327,6 @@ export class SocketService {
             console.log(`Game started for lobby ${lobbyId}`);
             this.io.to(lobbyId).emit('gameStarted', { gameState: serializableGameState });
 
-            // Start the first turn
             this.startTurn(lobbyId);
         } catch (error) {
             console.error(`Error starting game for lobby ${lobbyId}:`, error);
@@ -353,10 +344,8 @@ export class SocketService {
         }
 
         try {
-            // Calculate available moves for the current player
             const updatedGameState = this.boardService.handleTurn(gameState);
 
-            // Debug logging for game state
             console.log(`------- TURN START DEBUG INFO: Lobby ${lobbyId} -------`);
             console.log(`Current Player: ${updatedGameState.currentPlayer}`);
             console.log(`Available Moves Count: ${updatedGameState.availableMoves?.length || 0}`);
@@ -365,24 +354,19 @@ export class SocketService {
             console.log(`Current Player Movement Points: ${updatedGameState.currentPlayerMovementPoints}`);
             console.log(`------- END DEBUG INFO -------`);
 
-            // Store the updated game state
             this.gameStates.set(lobbyId, updatedGameState);
 
-            // Ensure availableMoves exists
             if (!updatedGameState.availableMoves) {
                 updatedGameState.availableMoves = [];
                 console.warn('availableMoves was undefined in updatedGameState, set to empty array');
             }
 
-            // Serialize the state for transmission
             const serializableGameState = this.serializeGameState(updatedGameState);
 
-            // Notify all clients that a new turn has started
-            // Make sure we're sending availableMoves explicitly as well
             this.io.to(lobbyId).emit('turnStarted', {
                 gameState: serializableGameState,
                 currentPlayer: updatedGameState.currentPlayer,
-                availableMoves: [...updatedGameState.availableMoves], // Send as explicit array copy
+                availableMoves: [...updatedGameState.availableMoves],
             });
 
             console.log(`Turn started for player ${updatedGameState.currentPlayer} in lobby ${lobbyId}`);
@@ -402,26 +386,20 @@ export class SocketService {
             return;
         }
 
-        // Verify it's the current player's turn
         if (socket.id !== gameState.currentPlayer) {
             socket.emit('error', "It's not your turn.");
             return;
         }
 
         try {
-            // Get the current player before changing turns
             const currentPlayerId = gameState.currentPlayer;
 
-            // Process end turn and get updated state with next player ready
             const updatedGameState = this.boardService.handleEndTurn(gameState);
 
-            // Store the updated game state
             this.gameStates.set(lobbyId, updatedGameState);
 
-            // Serialize for transmission
             const serializableGameState = this.serializeGameState(updatedGameState);
 
-            // Notify all clients about the turn ending
             this.io.to(lobbyId).emit('turnEnded', {
                 gameState: serializableGameState,
                 previousPlayer: currentPlayerId,
@@ -430,7 +408,6 @@ export class SocketService {
 
             console.log(`Turn ended for player ${currentPlayerId}, next player: ${updatedGameState.currentPlayer}`);
 
-            // Start the next turn
             this.startTurn(lobbyId);
         } catch (error) {
             console.error(`Error ending turn for lobby ${lobbyId}:`, error);
@@ -447,29 +424,23 @@ export class SocketService {
             return;
         }
 
-        // Verify it's the current player's turn
         if (socket.id !== gameState.currentPlayer) {
             socket.emit('error', "It's not your turn.");
             return;
         }
 
-        // Check if the move is valid
         if (!this.isValidMove(gameState, coordinate)) {
             socket.emit('error', 'Invalid move.');
             return;
         }
 
         try {
-            // Process the movement and get updated state
             const updatedGameState = this.boardService.handleMovement(gameState, coordinate);
 
-            // Store the updated game state
             this.gameStates.set(lobbyId, updatedGameState);
 
-            // Serialize for transmission
             const serializableGameState = this.serializeGameState(updatedGameState);
 
-            // Send the updated state to all clients in the room
             this.io.to(lobbyId).emit('movementProcessed', {
                 gameState: serializableGameState,
                 playerMoved: gameState.currentPlayer,
@@ -478,10 +449,8 @@ export class SocketService {
 
             console.log(`Player ${gameState.currentPlayer} moved to (${coordinate.x}, ${coordinate.y})`);
 
-            // Check if the player has no more moves available
             if (updatedGameState.availableMoves.length === 0) {
                 console.log(`No more moves available for player ${gameState.currentPlayer}, ending turn`);
-                // End the turn if no more moves available
                 this.handleEndTurn(socket, lobbyId);
             }
         } catch (error) {
@@ -495,30 +464,24 @@ export class SocketService {
     }
 
     private handleDisconnect(socket: Socket) {
-        // Find all lobbies where this player is present and handle their departure
         for (const [lobbyId, lobby] of this.lobbies.entries()) {
             const playerIndex = lobby.players.findIndex((p) => p.id === socket.id);
             if (playerIndex !== -1) {
                 const player = lobby.players[playerIndex];
                 console.log(`Player ${player.name} (${socket.id}) disconnected from lobby ${lobbyId}`);
 
-                // Remove player from lobby
                 lobby.players.splice(playerIndex, 1);
                 socket.leave(lobbyId);
 
-                // Notify other players
                 this.io.to(lobbyId).emit('playerLeft', { lobbyId, playerName: player.name });
 
-                // Update lobby state
                 this.updateLobby(lobbyId);
 
-                // Clean up empty lobbies
                 if (lobby.players.length === 0) {
                     console.log(`Removing empty lobby ${lobbyId}`);
                     this.lobbies.delete(lobbyId);
                     this.gameStates.delete(lobbyId);
                 }
-                // If a game was in progress, handle player leaving the game
                 else if (this.gameStates.has(lobbyId)) {
                     this.handlePlayerLeaveGame(lobbyId, socket.id);
                 }
@@ -532,12 +495,10 @@ export class SocketService {
 
         console.log(`Handling player ${playerId} leaving game in lobby ${lobbyId}`);
 
-        // If it was the current player's turn, move to the next player
         if (gameState.currentPlayer === playerId) {
             const updatedGameState = this.boardService.handleEndTurn(gameState);
             this.gameStates.set(lobbyId, updatedGameState);
 
-            // Serialize and notify clients
             const serializableGameState = this.serializeGameState(updatedGameState);
             this.io.to(lobbyId).emit('turnEnded', {
                 gameState: serializableGameState,
@@ -545,28 +506,22 @@ export class SocketService {
                 currentPlayer: updatedGameState.currentPlayer,
             });
 
-            // Start the next turn
             this.startTurn(lobbyId);
         }
     }
 
     private serializeGameState(gameState: GameState): any {
-        // Ensure availableMoves exists before serialization
         if (!gameState.availableMoves) {
             gameState.availableMoves = [];
             console.warn('availableMoves was undefined in gameState, set to empty array before serialization');
         }
 
-        // Create a deep copy of the game state and convert the Map to a regular object
         const stateCopy = {
             ...gameState,
-            // Convert the Map to a regular object for serialization
             playerPositions: Object.fromEntries(gameState.playerPositions),
-            // Ensure availableMoves is defined and copied as an array
             availableMoves: [...gameState.availableMoves],
         };
 
-        // Log the serialized state for debugging
         console.log(`Serialized game state successfully. Available moves count: ${stateCopy.availableMoves.length}`);
         console.log(`Current player: ${stateCopy.currentPlayer}`);
         console.log(`Player positions: ${JSON.stringify(Object.keys(stateCopy.playerPositions))}`);

@@ -74,7 +74,6 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
                 }),
             );
 
-            // Subscribe to game started event
             this.subscriptions.push(
                 this.lobbyService.onGameStarted().subscribe(() => {
                     console.log('Game started event received in waiting page, navigating to play page');

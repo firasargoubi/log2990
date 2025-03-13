@@ -14,7 +14,7 @@ interface Node {
 
 @Service()
 export class PathfindingService {
-    // Movement costs for different tile types
+
     getMovementCost(gameState: GameState, position: Coordinates): number {
         const { x, y } = position;
 
@@ -33,7 +33,6 @@ export class PathfindingService {
         }
 
         try {
-            // Extract the tile type (ignoring objects, which are in tens place)
             const tileValue = gameState.gameBoard[x][y];
             const tileType = tileValue % 10;
             const cost = this.getTileCost(tileType);
@@ -49,35 +48,33 @@ export class PathfindingService {
         }
     }
 
-    // Get movement cost based on tile type
     private getTileCost(tileType: number): number {
         switch (tileType) {
             case TileTypes.Ice:
-                return 0; // Ice has no movement cost (slide)
+                return 0;
             case 0:
             case TileTypes.Grass:
             case TileTypes.DoorOpen:
-                return 1; // Normal cost
+                return 1;
             case TileTypes.Water:
-                return 2; // Water is harder to move through
+                return 2;
             case TileTypes.DoorClosed:
             case TileTypes.Wall:
-                return Infinity; // Can't move through walls or closed doors
+                return Infinity;
             default:
-                return Infinity; // Unknown tile types are impassable
+                return Infinity;
         }
     }
 
-    // Check if a position is within board boundaries
+
     isPositionInBounds(gameState: GameState, position: Coordinates): boolean {
         const boardSize = gameState.gameBoard.length;
         return position.x >= 0 && position.x < boardSize && position.y >= 0 && position.y < boardSize;
     }
 
-    // Check if a position is occupied by another player
+
     isPositionOccupied(gameState: GameState, position: Coordinates): boolean {
         for (const [playerId, playerPos] of gameState.playerPositions.entries()) {
-            // Skip the current player
             if (playerId !== gameState.currentPlayer && playerPos.x === position.x && playerPos.y === position.y) {
                 return true;
             }
@@ -85,7 +82,6 @@ export class PathfindingService {
         return false;
     }
 
-    // Check if a position is valid for movement
     isValidPosition(gameState: GameState, position: Coordinates): boolean {
         if (!this.isPositionInBounds(gameState, position)) {
             console.log(`Position (${position.x}, ${position.y}) is out of bounds`);
@@ -107,7 +103,6 @@ export class PathfindingService {
         return isValid;
     }
 
-    // A* algorithm to find the shortest path between two points
     findShortestPath(gameState: GameState, start: Coordinates, end: Coordinates, maxMovementPoints = Infinity): Coordinates[] | null {
         if (!this.isPositionInBounds(gameState, end) || !this.isValidPosition(gameState, end)) {
             return null;
@@ -129,7 +124,6 @@ export class PathfindingService {
         openSet.push(startNode);
 
         while (openSet.length > 0) {
-            // Find node with lowest f score
             let currentIndex = 0;
             for (let i = 1; i < openSet.length; i++) {
                 if (openSet[i].f < openSet[currentIndex].f) {
@@ -140,26 +134,23 @@ export class PathfindingService {
             const current = openSet.splice(currentIndex, 1)[0];
             const currentKey = `${current.x},${current.y}`;
 
-            // If we've reached the end position
             if (current.x === end.x && current.y === end.y) {
                 return this.reconstructPath(current);
             }
 
             closedSet.add(currentKey);
 
-            // Check neighbors
             const directions = [
-                { x: 0, y: -1 }, // Up
-                { x: 1, y: 0 }, // Right
-                { x: 0, y: 1 }, // Down
-                { x: -1, y: 0 }, // Left
+                { x: 0, y: -1 },
+                { x: 1, y: 0 },
+                { x: 0, y: 1 },
+                { x: -1, y: 0 },
             ];
 
             for (const dir of directions) {
                 const neighborPos = { x: current.x + dir.x, y: current.y + dir.y };
                 const neighborKey = `${neighborPos.x},${neighborPos.y}`;
 
-                // Skip if already processed or not valid
                 if (closedSet.has(neighborKey) || !this.isValidPosition(gameState, neighborPos)) {
                     continue;
                 }
@@ -167,12 +158,10 @@ export class PathfindingService {
                 const movementCost = this.getMovementCost(gameState, neighborPos);
                 const gScore = current.g + movementCost;
 
-                // Skip if exceeds max movement points
                 if (gScore > maxMovementPoints) {
                     continue;
                 }
 
-                // Check if this path is better or if neighbor is not in open set
                 let neighborNode = openSet.find((n) => n.x === neighborPos.x && n.y === neighborPos.y);
 
                 if (!neighborNode) {
@@ -187,7 +176,6 @@ export class PathfindingService {
                     neighborNode.f = neighborNode.g + neighborNode.h;
                     openSet.push(neighborNode);
                 } else if (gScore < neighborNode.g) {
-                    // Found a better path
                     neighborNode.g = gScore;
                     neighborNode.f = neighborNode.g + neighborNode.h;
                     neighborNode.parent = current;
@@ -195,16 +183,13 @@ export class PathfindingService {
             }
         }
 
-        // No path found
         return null;
     }
 
-    // Manhattan distance heuristic
     private heuristic(a: Coordinates, b: Coordinates): number {
         return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
     }
 
-    // Reconstruct path from end node to start node
     private reconstructPath(endNode: Node): Coordinates[] {
         const path: Coordinates[] = [];
         let current: Node | null = endNode;
@@ -217,11 +202,9 @@ export class PathfindingService {
         return path;
     }
 
-    // Find all reachable positions within movement points
     findReachablePositions(gameState: GameState, startPosition: Coordinates, movementPoints: number): Coordinates[] {
         console.log(`Finding reachable positions from (${startPosition.x}, ${startPosition.y}) with ${movementPoints} movement points`);
 
-        // Guard clause for invalid inputs
         if (!startPosition || movementPoints <= 0) {
             console.warn(`Invalid parameters: startPosition=${JSON.stringify(startPosition)}, movementPoints=${movementPoints}`);
             return [];
@@ -237,17 +220,15 @@ export class PathfindingService {
             const current = queue.shift()!;
             const { pos, cost } = current;
 
-            // If not the starting position, add to reachable
             if (pos.x !== startPosition.x || pos.y !== startPosition.y) {
                 reachable.push(pos);
             }
 
-            // Explore neighbors
             const directions = [
-                { x: 0, y: -1 }, // Up
-                { x: 1, y: 0 }, // Right
-                { x: 0, y: 1 }, // Down
-                { x: -1, y: 0 }, // Left
+                { x: 0, y: -1 },
+                { x: 1, y: 0 },
+                { x: 0, y: 1 },
+                { x: -1, y: 0 },
             ];
 
             for (const dir of directions) {
@@ -259,7 +240,6 @@ export class PathfindingService {
                 }
 
                 if (!this.isValidPosition(gameState, nextPos)) {
-                    // Log detailed information about invalid positions
                     console.log(`Position (${nextPos.x}, ${nextPos.y}) is not valid`);
                     continue;
                 }
