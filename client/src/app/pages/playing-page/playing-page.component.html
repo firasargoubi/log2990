@@ -1,17 +1,15 @@
-<div class="playing-page">
-    <div class="header">
-        <app-game-info
-            [gameName]="getGameName()"
-            [mapSize]="getMapSize()"
-            [playerCount]="getPlayerCount()"
-            [activePlayer]="getActivePlayer()"
-            [players]="getPlayers()"
-        >
-        </app-game-info>
-    </div>
-
+<div class="game-container">
+    <div class="header"></div>
     <div class="sidebar-left">
         <div class="component-box">
+            <app-game-info
+                [gameName]="getGameName()"
+                [mapSize]="getMapSize()"
+                [playerCount]="getPlayerCount()"
+                [activePlayer]="getActivePlayer()"
+                [players]="getPlayers()"
+            >
+            </app-game-info>
             <ul>
                 <li><strong>Name:</strong> {{ currentPlayer?.name }}</li>
                 <li><strong>Avatar:</strong> <img [src]="currentPlayer?.avatar" alt="Avatar" width="50" height="50" /></li>
@@ -28,38 +26,35 @@
                 <li><strong>Dé défense:</strong> {{ currentPlayer?.bonus?.defense }}</li>
             </ul>
         </div>
-        <div class="component-box">
-            <app-inventory></app-inventory>
-        </div>
     </div>
 
-    <div class="game-area">
-        <div class="main-board">
-            @if (gameState) {
-            <app-game-board
-                [gameState]="gameState"
-                [currentPlayerId]="currentPlayer?.id || ''"
-                [lobbyId]="lobbyId"
-                (moveRequest)="onMoveRequest($event)"
-            >
-            </app-game-board>
-            } @else {
-            <div class="loading">
-                <div class="loading-spinner"></div>
-                <div class="loading-text">Chargement du jeu...</div>
-            </div>
-            }
-
-            <div class="controls">
-                <button class="end-turn-button" [disabled]="!isCurrentPlayerTurn()" (click)="onEndTurn()">Terminer le tour</button>
-            </div>
+    <div class="board-container">
+        @if (gameState) {
+        <app-game-board [gameState]="gameState" [currentPlayerId]="currentPlayer?.id || ''" [lobbyId]="lobbyId" (moveRequest)="onMoveRequest($event)">
+        </app-game-board>
+        } @else {
+        <div class="loading">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Chargement du jeu...</div>
         </div>
+        }
+    </div>
 
-        <div class="sidebar right-sidebar">
-            <app-messages></app-messages>
-            @if (isCurrentPlayerTurn()) {
-            <app-countdown-timer></app-countdown-timer>
-            }
+    <div class="sidebar right-sidebar">
+        <app-messages></app-messages>
+        @if (isCurrentPlayerTurn()) {
+        <app-countdown-timer></app-countdown-timer>
+        }
+
+        <app-inventory></app-inventory>
+
+        <div class="action-buttons">
+            <button (click)="attack()">Attaquer</button>
+            <button (click)="defend()">Défendre</button>
+            <button (click)="endTurn()">Fin de tour</button>
+            <button (click)="abandon()" routerLink="/home">Abandonner</button>
+
+            <button class="end-turn-button" [disabled]="!isCurrentPlayerTurn()" (click)="onEndTurn()">Terminer le tour</button>
         </div>
     </div>
 </div>
