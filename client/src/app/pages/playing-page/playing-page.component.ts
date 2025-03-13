@@ -29,6 +29,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     lobbyId: string = '';
     gameState: GameState | null = null;
     currentPlayer: Player | null = null;
+    debug: boolean = true; // For debugging, set to false in production
 
     private subscriptions: Subscription[] = [];
 
@@ -39,6 +40,9 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             if (lobbyId) {
                 this.lobbyId = lobbyId;
                 this.setupGameListeners();
+
+                // Get the current player from LobbyService immediately
+                this.getCurrentPlayer();
             } else {
                 this.router.navigate(['/main']);
             }
@@ -55,12 +59,15 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.lobbyService.onGameStarted().subscribe((data) => {
                 console.log('Game started event received', data);
                 this.gameState = data.gameState;
+                // Ensure we have the current player
                 this.getCurrentPlayer();
             }),
 
             this.lobbyService.onTurnStarted().subscribe((data) => {
                 console.log('Turn started event received', data);
                 this.gameState = data.gameState;
+                // Update player if needed
+                this.syncCurrentPlayerWithGameState();
                 this.notifyPlayerTurn(data.currentPlayer);
             }),
 
@@ -82,17 +89,60 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     getCurrentPlayer() {
+        console.log('Getting current player...');
+
+        // First try to get the player from the LobbyService
+        this.currentPlayer = this.lobbyService.getCurrentPlayer();
+
+        if (this.currentPlayer) {
+            console.log('Current player from LobbyService:', this.currentPlayer);
+
+            // Ensure the player ID matches the current socket ID
+            const socketId = this.lobbyService.getSocketId();
+            if (this.currentPlayer.id !== socketId) {
+                console.log(`Updating player ID from ${this.currentPlayer.id} to ${socketId}`);
+                this.currentPlayer.id = socketId;
+            }
+
+            return;
+        }
+
+        // If not found in LobbyService, try to find in game state
         if (this.gameState) {
             const socketId = this.lobbyService.getSocketId();
+            console.log('Trying to find player in game state with socket ID:', socketId);
+
             this.currentPlayer = this.gameState.players.find((player) => player.id === socketId) || null;
 
             if (this.currentPlayer) {
-                console.log('Current player found', this.currentPlayer);
+                console.log('Found player in game state:', this.currentPlayer);
+                // Save to LobbyService for future reference
+                this.lobbyService.setCurrentPlayer(this.currentPlayer);
             } else {
                 console.error('Current player not found in game state', {
                     socketId,
                     players: this.gameState.players,
                 });
+            }
+        } else {
+            console.warn('Cannot get current player from game state: game state is not available');
+        }
+    }
+
+    // Keep current player in sync with game state
+    syncCurrentPlayerWithGameState() {
+        if (!this.gameState || !this.currentPlayer) return;
+
+        // Find the current player in the game state
+        const playerInGameState = this.gameState.players.find((p) => p.id === this.currentPlayer?.id);
+
+        if (playerInGameState) {
+            // Update current player with game state data if needed
+            if (JSON.stringify(playerInGameState) !== JSON.stringify(this.currentPlayer)) {
+                console.log('Updating current player with game state data');
+                this.currentPlayer = playerInGameState;
+                // Also update in LobbyService
+                this.lobbyService.setCurrentPlayer(this.currentPlayer);
             }
         }
     }
@@ -166,6 +216,43 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     isCurrentPlayerTurn(): boolean {
-        return this.gameState?.currentPlayer === this.currentPlayer?.id;
+        if (!this.gameState || !this.currentPlayer) {
+            return false;
+        }
+
+        const result = this.gameState.currentPlayer === this.currentPlayer.id;
+        console.log(`Is current player's turn? ${result} (Current: ${this.gameState.currentPlayer}, Player: ${this.currentPlayer.id})`);
+
+        return result;
+    }
+
+    // Debug methods
+    debugLogGameState() {
+        console.log('================ GAME STATE DEBUG ================');
+        if (!this.gameState) {
+            console.log('Game state is null or undefined');
+            return;
+        }
+
+        console.log('Game State ID:', this.gameState.id);
+        console.log('Current Player in Game:', this.gameState.currentPlayer);
+        console.log('Local Player ID:', this.currentPlayer);
+        console.log('Socket ID:', this.lobbyService.getSocketId());
+        console.log('Is Local Player Turn:', this.isCurrentPlayerTurn());
+        console.log('Available Moves:', this.gameState.availableMoves);
+
+        console.log('Player Positions:');
+        if (this.gameState.playerPositions instanceof Map) {
+            Array.from(this.gameState.playerPositions.entries()).forEach(([playerId, pos]) => {
+                console.log(`Player ${playerId} at (${pos.x}, ${pos.y})`);
+            });
+        }
+
+        console.log('Players:');
+        this.gameState.players.forEach((player) => {
+            console.log(`- ${player.name} (${player.id})`);
+        });
+
+        console.log('================ END DEBUG ================');
     }
 }

@@ -8,19 +8,15 @@
   }"
   (click)="onClick()">
   
-  <!-- Base tile image -->
   <img [src]="getTileImage()" class="tile-image" alt="Tile" />
   
-  <!-- Object on tile (if any) -->
   <img *ngIf="getObjectImage()" [src]="getObjectImage()" class="object-image" alt="Object" />
   
-  <!-- Player on tile (if any) -->
   <div *ngIf="player" class="player-marker"
     [ngClass]="{
       'current-player': player.isCurrentPlayer,
       'local-player': player.isLocalPlayer
     }">
     <img [src]="player.player.avatar" class="avatar-image" alt="Player" />
-    <span class="player-name">{{ player.player.name }}</span>
   </div>
 </div>

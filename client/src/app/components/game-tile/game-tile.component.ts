@@ -1,9 +1,9 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Tile } from '@app/interfaces/tile';
 import { Player } from '@common/player';
 import { GAME_IMAGES } from '@app/Consts/app.constants';
-import { TileTypes } from '@common/game.interface';
+import { TileTypes, ObjectsTypes } from '@common/game.interface';
 
 @Component({
     selector: 'app-game-tile',
@@ -12,16 +12,12 @@ import { TileTypes } from '@common/game.interface';
     templateUrl: './game-tile.component.html',
     styleUrls: ['./game-tile.component.scss'],
 })
-export class GameTileComponent implements OnChanges {
+export class GameTileComponent {
     @Input() tile!: Tile;
     @Input() isAvailableMove: boolean = false;
     @Input() player: { player: Player; isCurrentPlayer: boolean; isLocalPlayer: boolean } | null = null;
     @Input() isPathHighlighted: boolean = false;
     @Output() tileClick = new EventEmitter<Tile>();
-
-    ngOnChanges(changes: SimpleChanges): void {
-        // React to input changes if needed
-    }
 
     getTileImage(): string {
         if (!this.tile) return GAME_IMAGES.default;
@@ -50,21 +46,21 @@ export class GameTileComponent implements OnChanges {
         switch (this.tile.object) {
             case 0:
                 return null;
-            case 1:
+            case ObjectsTypes.BOOTS:
                 return GAME_IMAGES.boots;
-            case 2:
+            case ObjectsTypes.SWORD:
                 return GAME_IMAGES.sword;
-            case 3:
+            case ObjectsTypes.POTION:
                 return GAME_IMAGES.potion;
-            case 4:
+            case ObjectsTypes.WAND:
                 return GAME_IMAGES.wand;
-            case 5:
+            case ObjectsTypes.CRYSTAL:
                 return GAME_IMAGES.crystalBall;
-            case 6:
+            case ObjectsTypes.JUICE:
                 return GAME_IMAGES.berryJuice;
-            case 7:
+            case ObjectsTypes.SPAWN:
                 return GAME_IMAGES.vortex;
-            case 8:
+            case ObjectsTypes.RANDOM:
                 return GAME_IMAGES.gnome;
             default:
                 return GAME_IMAGES.undefined;

@@ -59,22 +59,35 @@ export class BoardService {
 
     handleTurn(gameState: GameState): GameState {
         const playerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
-        if (playerIndex === -1) return gameState;
+        if (playerIndex === -1) {
+            console.error(`Current player ${gameState.currentPlayer} not found in players list`);
+            return gameState;
+        }
 
         const playerPosition = gameState.playerPositions.get(gameState.currentPlayer);
-        if (!playerPosition) return gameState;
+        if (!playerPosition) {
+            console.error(`Position for current player ${gameState.currentPlayer} not found`);
+            return gameState;
+        }
+
+        console.log(`Handling turn for player ${gameState.currentPlayer} at position (${playerPosition.x}, ${playerPosition.y})`);
 
         // Reset movement points for the current player
         const currentPlayer = gameState.players[playerIndex];
         gameState.currentPlayerMovementPoints = this.getPlayerMovementPoints(currentPlayer);
 
+        console.log(`Player ${gameState.currentPlayer} has ${gameState.currentPlayerMovementPoints} movement points`);
+
         // Find all reachable positions
         gameState.availableMoves = this.findAllPaths(gameState, playerPosition);
+
+        console.log(`Calculated ${gameState.availableMoves.length} available moves for player ${gameState.currentPlayer}`);
+        console.log(`Available moves: ${JSON.stringify(gameState.availableMoves)}`);
 
         return gameState;
     }
 
-    public findShortestPath(gameState: GameState, start: Coordinates, end: Coordinates): Coordinates[] | null {
+    findShortestPath(gameState: GameState, start: Coordinates, end: Coordinates): Coordinates[] | null {
         return this.pathfindingService.findShortestPath(gameState, start, end, gameState.currentPlayerMovementPoints);
     }
 
@@ -141,9 +154,12 @@ export class BoardService {
 
     private getPlayerMovementPoints(player: Player): number {
         // Base movement points plus any bonuses from speed
-        const baseMovementPoints = 3; // Default value
         const speedBonus = (player.speed || 0) + (player.bonus?.speed || 0);
-        return baseMovementPoints + speedBonus;
+
+        console.log(`Player ${player.name} movement points: speedBonus(${speedBonus})`);
+
+        // Ensure they have at least 1 movement point
+        return Math.max(1, speedBonus);
     }
 
     private async assignSpawnPoints(gameState: GameState): Promise<void> {

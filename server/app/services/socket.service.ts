@@ -315,7 +315,6 @@ export class SocketService {
             return;
         }
 
-        // Check if the requester is the host
         const player = lobby.players.find((p) => p.id === socket.id);
         if (!player || !player.isHost) {
             socket.emit('error', 'Only the host can start the game.');
@@ -326,14 +325,11 @@ export class SocketService {
             console.log(`Initializing game state for lobby ${lobbyId}`);
             const gameState = await this.boardService.initializeGameState(lobby);
 
-            // Store game state and serialize it for transmission
             this.gameStates.set(lobbyId, gameState);
 
-            // Lock the lobby
             lobby.isLocked = true;
             this.updateLobby(lobbyId);
 
-            // Convert the Map to a regular object for serialization
             const serializableGameState = this.serializeGameState(gameState);
 
             console.log(`Game started for lobby ${lobbyId}`);
@@ -359,6 +355,15 @@ export class SocketService {
         try {
             // Calculate available moves for the current player
             const updatedGameState = this.boardService.handleTurn(gameState);
+
+            // Debug logging for game state
+            console.log(`------- TURN START DEBUG INFO: Lobby ${lobbyId} -------`);
+            console.log(`Current Player: ${updatedGameState.currentPlayer}`);
+            console.log(`Available Moves Count: ${updatedGameState.availableMoves.length}`);
+            console.log(`Available Moves: ${JSON.stringify(updatedGameState.availableMoves)}`);
+            console.log(`Player Positions: ${JSON.stringify(Array.from(updatedGameState.playerPositions.entries()))}`);
+            console.log(`Current Player Movement Points: ${updatedGameState.currentPlayerMovementPoints}`);
+            console.log(`------- END DEBUG INFO -------`);
 
             // Store the updated game state
             this.gameStates.set(lobbyId, updatedGameState);
@@ -550,6 +555,9 @@ export class SocketService {
                 }, {}),
             }),
         );
+
+        // Ensure availableMoves are preserved in the serialization
+        console.log(`Serialized game state availableMoves: ${JSON.stringify(stateCopy.availableMoves)}`);
 
         return stateCopy;
     }

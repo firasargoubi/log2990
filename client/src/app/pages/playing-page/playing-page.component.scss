@@ -116,3 +116,33 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* Add to playing-page.component.scss */
+
+.diagnostic-panel {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 12px;
+}
+
+.player-info p {
+  margin: 5px 0;
+}
+
+.debug-button {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.debug-button:hover {
+  background-color: #5a6268;
+}

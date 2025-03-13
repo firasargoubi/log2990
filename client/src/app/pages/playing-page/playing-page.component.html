@@ -13,6 +13,16 @@
         <div class="sidebar left-sidebar">
             <app-inventory>
             </app-inventory>
+            
+            <!-- Simple diagnostic panel (for development, can be removed in production) -->
+            <div *ngIf="debug" class="diagnostic-panel">
+                <div class="player-info">
+                    <p><strong>Your Player:</strong> {{currentPlayer?.name || 'Not found'}}</p>
+                    <p><strong>Current Turn:</strong> {{gameState?.currentPlayer || 'Unknown'}}</p>
+                    <p><strong>Is Your Turn:</strong> {{isCurrentPlayerTurn() ? 'Yes' : 'No'}}</p>
+                    <button (click)="debugLogGameState()" class="debug-button">Log Game State</button>
+                </div>
+            </div>
         </div>
 
         <div class="main-board">
