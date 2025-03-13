@@ -43,7 +43,7 @@
     <div class="sidebar right-sidebar">
         <app-messages></app-messages>
         @if (isCurrentPlayerTurn()) {
-        <app-countdown-timer></app-countdown-timer>
+        <app-countdown-timer [countdown]="60" [isPlayerTurn]="true" [isInCombat]="false" [isTransitioning]="false"> </app-countdown-timer>
         }
 
         <app-inventory></app-inventory>

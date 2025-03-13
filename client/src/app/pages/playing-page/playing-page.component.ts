@@ -21,16 +21,15 @@ import { Subscription } from 'rxjs';
     styleUrls: ['./playing-page.component.scss'],
 })
 export class PlayingPageComponent implements OnInit, OnDestroy {
-    private lobbyService = inject(LobbyService);
-    private router = inject(Router);
-    private route = inject(ActivatedRoute);
-    private notificationService = inject(NotificationService);
-
     lobbyId: string = '';
     gameState: GameState | null = null;
     currentPlayer: Player | null = null;
     debug: boolean = true;
 
+    private lobbyService = inject(LobbyService);
+    private router = inject(Router);
+    private route = inject(ActivatedRoute);
+    private notificationService = inject(NotificationService);
     private subscriptions: Subscription[] = [];
 
     ngOnInit() {
@@ -54,25 +53,21 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     setupGameListeners() {
         this.subscriptions.push(
             this.lobbyService.onGameStarted().subscribe((data) => {
-                console.log('Game started event received', data);
                 this.gameState = data.gameState;
                 this.getCurrentPlayer();
             }),
 
             this.lobbyService.onTurnStarted().subscribe((data) => {
-                console.log('Turn started event received', data);
                 this.gameState = data.gameState;
                 this.syncCurrentPlayerWithGameState();
                 this.notifyPlayerTurn(data.currentPlayer);
             }),
 
             this.lobbyService.onTurnEnded().subscribe((data) => {
-                console.log('Turn ended event received', data);
                 this.gameState = data.gameState;
             }),
 
             this.lobbyService.onMovementProcessed().subscribe((data) => {
-                console.log('Movement processed event received', data);
                 this.gameState = data.gameState;
             }),
 
@@ -84,16 +79,11 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     getCurrentPlayer() {
-        console.log('Getting current player...');
-
         this.currentPlayer = this.lobbyService.getCurrentPlayer();
 
         if (this.currentPlayer) {
-            console.log('Current player from LobbyService:', this.currentPlayer);
-
             const socketId = this.lobbyService.getSocketId();
             if (this.currentPlayer.id !== socketId) {
-                console.log(`Updating player ID from ${this.currentPlayer.id} to ${socketId}`);
                 this.currentPlayer.id = socketId;
             }
 
@@ -102,12 +92,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
         if (this.gameState) {
             const socketId = this.lobbyService.getSocketId();
-            console.log('Trying to find player in game state with socket ID:', socketId);
 
             this.currentPlayer = this.gameState.players.find((player) => player.id === socketId) || null;
 
             if (this.currentPlayer) {
-                console.log('Found player in game state:', this.currentPlayer);
                 this.lobbyService.setCurrentPlayer(this.currentPlayer);
             } else {
                 console.error('Current player not found in game state', {
