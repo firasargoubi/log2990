@@ -1,17 +1,17 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NotificationService } from '@app/services/notification.service';
-import { Player } from '@common/player';
-import { Subscription } from 'rxjs';
-import { CommonModule } from '@angular/common';
 import { CountdownComponent } from '@app/components/countdown-timer/countdown-timer.component';
+import { GameBoardComponent } from '@app/components/game-board/game-board.component';
 import { GameInfoComponent } from '@app/components/game-info/game-info.component';
 import { InventoryComponent } from '@app/components/inventory/inventory.component';
 import { MessagesComponent } from '@app/components/messages/messages.component';
-import { GameBoardComponent } from '@app/components/game-board/game-board.component';
-import { GameState } from '@common/game-state';
-import { Coordinates } from '@common/coordinates';
 import { LobbyService } from '@app/services/lobby.service';
+import { NotificationService } from '@app/services/notification.service';
+import { Coordinates } from '@common/coordinates';
+import { GameState } from '@common/game-state';
+import { Player } from '@common/player';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-playing-page',
@@ -239,5 +239,26 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         });
 
         console.log('================ END DEBUG ================');
+    }
+
+    endTurn() {
+        // Logique pour terminer le tour
+    }
+
+    abandon() {
+        // Vérifier que le lobby et le joueur actuel existent
+        if (this.lobbyId && this.currentPlayer) {
+            // Appeler la méthode `leaveLobby` du service pour quitter le lobby
+            this.lobbyService.leaveLobby(this.lobbyId, this.currentPlayer.name);
+            this.router.navigate(['/home']);
+        }
+    }
+
+    attack() {
+        // Logique pour attaquer
+    }
+
+    defend() {
+        // Logique pour se défendre
     }
 }

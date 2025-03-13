@@ -31,7 +31,6 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
         defense: 0,
     };
     hostId: string = '0000';
-    randomNumber: number = 1000;
     private subscriptions: Subscription[] = [];
 
     private route = inject(ActivatedRoute);

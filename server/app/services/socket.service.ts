@@ -193,12 +193,9 @@ export class SocketService {
         }
 
         lobby.players.splice(playerIndex, 1);
-
         socket.leave(lobbyId);
         this.io.to(lobbyId).emit('playerLeft', { lobbyId, playerName });
-        this.updateLobby(lobbyId);
-
-        console.log(`Player ${playerName} left lobby ${lobbyId}`);
+        socket.emit('lobbyUpdated', { lobbyId, lobby: JSON.parse(JSON.stringify(lobby)) });
     }
 
     private lockLobby(socket: Socket, lobbyId: string) {
