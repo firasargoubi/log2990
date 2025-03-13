@@ -48,8 +48,8 @@ export class EditionPageComponent implements OnInit {
     constructor() {
         this.gameLoaded = false;
         this.game.id = this.route.snapshot.params['id'];
-        this.game.mode = this.route.snapshot.queryParams['mode'] ? GameType.classic : GameType.capture;
-        this.game.mapSize = this.route.snapshot.queryParams['size'] ? GameSize.large : GameSize.small;
+        this.game.mode = this.route.snapshot.queryParams['mode'];
+        this.game.mapSize = this.route.snapshot.queryParams['size'];
         this.gameNames = this.saveService.getGameNames(this.game.id);
         this.loadGame();
     }

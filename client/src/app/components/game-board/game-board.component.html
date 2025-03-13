@@ -1,0 +1,16 @@
+<div class="board-container">
+  <div class="game-board" [style.--size]="tiles.length">
+    <div *ngFor="let row of tiles; let i = index" class="board-row">
+      <app-game-tile
+        *ngFor="let tile of row; let j = index"
+        [tile]="tile"
+        [isAvailableMove]="isAvailableMove(i, j)"
+        [isPathHighlighted]="isOnHighlightedPath(i, j)"
+        [player]="getPlayerAtPosition(i, j)"
+        (tileClick)="onTileClick(tile)"
+        (mouseenter)="onTileHover(tile)"
+        (mouseleave)="onTileLeave()"
+      ></app-game-tile>
+    </div>
+  </div>
+</div>
