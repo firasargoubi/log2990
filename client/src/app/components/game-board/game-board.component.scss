@@ -4,22 +4,22 @@
   align-items: center;
   width: 100%;
   height: 100%;
-  padding: 20px;
-  overflow: hidden;
 }
 
 .game-board {
   display: grid;
-  grid-template-columns: repeat(var(--size), 1fr);
+  background-color: #ccc;
+  grid-template-columns: repeat(var(--size), 1fr); /* Uses CSS variable for grid sizing */
   grid-template-rows: repeat(var(--size), 1fr);
-  width: 700px;
-  height: 700px;
-  gap: 1px;
-  background-color: #333;
-  border: 3px solid #333;
-  border-radius: 4px;
+  width: 650px;  /* Fixed width like in BoardComponent */
+  height: 650px; /* Fixed height like in BoardComponent */
+  gap: 1px;      /* Small gap between tiles */
 }
 
-.board-row {
-  display: contents;
+/* Support for responsive scaling */
+@media (max-width: 700px) {
+  .game-board {
+      width: 90vw;
+      height: 90vw;
+  }
 }

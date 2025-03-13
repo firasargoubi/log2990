@@ -359,8 +359,8 @@ export class SocketService {
             // Debug logging for game state
             console.log(`------- TURN START DEBUG INFO: Lobby ${lobbyId} -------`);
             console.log(`Current Player: ${updatedGameState.currentPlayer}`);
-            console.log(`Available Moves Count: ${updatedGameState.availableMoves.length}`);
-            console.log(`Available Moves: ${JSON.stringify(updatedGameState.availableMoves)}`);
+            console.log(`Available Moves Count: ${updatedGameState.availableMoves?.length || 0}`);
+            console.log(`Available Moves: ${JSON.stringify(updatedGameState.availableMoves || [])}`);
             console.log(`Player Positions: ${JSON.stringify(Array.from(updatedGameState.playerPositions.entries()))}`);
             console.log(`Current Player Movement Points: ${updatedGameState.currentPlayerMovementPoints}`);
             console.log(`------- END DEBUG INFO -------`);
@@ -368,14 +368,21 @@ export class SocketService {
             // Store the updated game state
             this.gameStates.set(lobbyId, updatedGameState);
 
+            // Ensure availableMoves exists
+            if (!updatedGameState.availableMoves) {
+                updatedGameState.availableMoves = [];
+                console.warn('availableMoves was undefined in updatedGameState, set to empty array');
+            }
+
             // Serialize the state for transmission
             const serializableGameState = this.serializeGameState(updatedGameState);
 
             // Notify all clients that a new turn has started
+            // Make sure we're sending availableMoves explicitly as well
             this.io.to(lobbyId).emit('turnStarted', {
                 gameState: serializableGameState,
                 currentPlayer: updatedGameState.currentPlayer,
-                availableMoves: updatedGameState.availableMoves,
+                availableMoves: [...updatedGameState.availableMoves], // Send as explicit array copy
             });
 
             console.log(`Turn started for player ${updatedGameState.currentPlayer} in lobby ${lobbyId}`);
@@ -544,20 +551,25 @@ export class SocketService {
     }
 
     private serializeGameState(gameState: GameState): any {
-        // Create a deep copy of the game state
-        const stateCopy = JSON.parse(
-            JSON.stringify({
-                ...gameState,
-                // Convert the Map to a regular object for serialization
-                playerPositions: Array.from(gameState.playerPositions.entries()).reduce((obj: Record<string, Coordinates>, [key, value]) => {
-                    obj[key] = value;
-                    return obj;
-                }, {}),
-            }),
-        );
+        // Ensure availableMoves exists before serialization
+        if (!gameState.availableMoves) {
+            gameState.availableMoves = [];
+            console.warn('availableMoves was undefined in gameState, set to empty array before serialization');
+        }
 
-        // Ensure availableMoves are preserved in the serialization
-        console.log(`Serialized game state availableMoves: ${JSON.stringify(stateCopy.availableMoves)}`);
+        // Create a deep copy of the game state and convert the Map to a regular object
+        const stateCopy = {
+            ...gameState,
+            // Convert the Map to a regular object for serialization
+            playerPositions: Object.fromEntries(gameState.playerPositions),
+            // Ensure availableMoves is defined and copied as an array
+            availableMoves: [...gameState.availableMoves],
+        };
+
+        // Log the serialized state for debugging
+        console.log(`Serialized game state successfully. Available moves count: ${stateCopy.availableMoves.length}`);
+        console.log(`Current player: ${stateCopy.currentPlayer}`);
+        console.log(`Player positions: ${JSON.stringify(Object.keys(stateCopy.playerPositions))}`);
 
         return stateCopy;
     }

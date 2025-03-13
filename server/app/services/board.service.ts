@@ -58,19 +58,25 @@ export class BoardService {
     }
 
     handleTurn(gameState: GameState): GameState {
+        console.log(`Handling turn for player ${gameState.currentPlayer}`);
+
         const playerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
         if (playerIndex === -1) {
             console.error(`Current player ${gameState.currentPlayer} not found in players list`);
+            // Ensure availableMoves is set to an empty array
+            gameState.availableMoves = [];
             return gameState;
         }
 
         const playerPosition = gameState.playerPositions.get(gameState.currentPlayer);
         if (!playerPosition) {
             console.error(`Position for current player ${gameState.currentPlayer} not found`);
+            // Ensure availableMoves is set to an empty array
+            gameState.availableMoves = [];
             return gameState;
         }
 
-        console.log(`Handling turn for player ${gameState.currentPlayer} at position (${playerPosition.x}, ${playerPosition.y})`);
+        console.log(`Player ${gameState.currentPlayer} is at position (${playerPosition.x}, ${playerPosition.y})`);
 
         // Reset movement points for the current player
         const currentPlayer = gameState.players[playerIndex];
@@ -79,7 +85,10 @@ export class BoardService {
         console.log(`Player ${gameState.currentPlayer} has ${gameState.currentPlayerMovementPoints} movement points`);
 
         // Find all reachable positions
-        gameState.availableMoves = this.findAllPaths(gameState, playerPosition);
+        const availableMoves = this.findAllPaths(gameState, playerPosition);
+
+        // Explicitly assign to the gameState
+        gameState.availableMoves = availableMoves;
 
         console.log(`Calculated ${gameState.availableMoves.length} available moves for player ${gameState.currentPlayer}`);
         console.log(`Available moves: ${JSON.stringify(gameState.availableMoves)}`);
@@ -92,34 +101,59 @@ export class BoardService {
     }
 
     handleMovement(gameState: GameState, targetCoordinate: Coordinates): GameState {
+        console.log(`Handling movement to (${targetCoordinate.x}, ${targetCoordinate.y})`);
+
         const playerPosition = gameState.playerPositions.get(gameState.currentPlayer);
-        if (!playerPosition) return gameState;
+        if (!playerPosition) {
+            console.error(`Player position not found for ${gameState.currentPlayer}`);
+            return gameState;
+        }
+
+        console.log(`Player ${gameState.currentPlayer} current position: (${playerPosition.x}, ${playerPosition.y})`);
+
+        // Verify the move is in the available moves list
+        const isValidMove =
+            gameState.availableMoves && gameState.availableMoves.some((move) => move.x === targetCoordinate.x && move.y === targetCoordinate.y);
+
+        if (!isValidMove) {
+            console.error(`Invalid move to (${targetCoordinate.x}, ${targetCoordinate.y}). Not in available moves.`);
+            return gameState;
+        }
 
         // Calculate the path and movement cost
         const path = this.pathfindingService.findShortestPath(gameState, playerPosition, targetCoordinate, gameState.currentPlayerMovementPoints);
 
         if (!path) {
-            return gameState; // Invalid move
+            console.error(`No valid path found to (${targetCoordinate.x}, ${targetCoordinate.y})`);
+            return gameState;
         }
+
+        console.log(`Path found with ${path.length} steps`);
 
         // Calculate total movement cost
         let movementCost = 0;
         for (let i = 1; i < path.length; i++) {
             // Skip the start position
-            movementCost += this.pathfindingService.getMovementCost(gameState, path[i]);
+            const tileCost = this.pathfindingService.getMovementCost(gameState, path[i]);
+            movementCost += tileCost;
+            console.log(`Step ${i} to (${path[i].x}, ${path[i].y}) costs ${tileCost}, total cost: ${movementCost}`);
         }
 
         // Update the player's position
         gameState.playerPositions.set(gameState.currentPlayer, targetCoordinate);
+        console.log(`Updated player ${gameState.currentPlayer} position to (${targetCoordinate.x}, ${targetCoordinate.y})`);
 
         // Reduce remaining movement points
         gameState.currentPlayerMovementPoints -= movementCost;
+        console.log(`Player has ${gameState.currentPlayerMovementPoints} movement points remaining`);
 
         // Find new available moves with remaining points
         if (gameState.currentPlayerMovementPoints > 0) {
             gameState.availableMoves = this.findAllPaths(gameState, targetCoordinate);
+            console.log(`Player can still move. Found ${gameState.availableMoves.length} new available moves`);
         } else {
             gameState.availableMoves = [];
+            console.log(`Player has no movement points left. No more moves available.`);
         }
 
         return gameState;
@@ -148,8 +182,32 @@ export class BoardService {
     }
 
     private findAllPaths(gameState: GameState, startPosition: Coordinates): Coordinates[] {
-        // Use the pathfinding service to find all reachable positions within movement points
-        return this.pathfindingService.findReachablePositions(gameState, startPosition, gameState.currentPlayerMovementPoints);
+        console.log(`Finding all paths from position (${startPosition.x}, ${startPosition.y})`);
+
+        if (!gameState || !startPosition) {
+            console.error('Invalid gameState or startPosition in findAllPaths');
+            return [];
+        }
+
+        if (!gameState.currentPlayerMovementPoints || gameState.currentPlayerMovementPoints <= 0) {
+            console.warn(`Player has no movement points (${gameState.currentPlayerMovementPoints}), returning empty array`);
+            return [];
+        }
+
+        try {
+            // Use the pathfinding service to find all reachable positions within movement points
+            const reachablePositions = this.pathfindingService.findReachablePositions(
+                gameState,
+                startPosition,
+                gameState.currentPlayerMovementPoints,
+            );
+
+            console.log(`Found ${reachablePositions.length} reachable positions`);
+            return reachablePositions || [];
+        } catch (error) {
+            console.error('Error in findAllPaths:', error);
+            return [];
+        }
     }
 
     private getPlayerMovementPoints(player: Player): number {

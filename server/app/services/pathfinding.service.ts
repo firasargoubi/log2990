@@ -17,13 +17,36 @@ export class PathfindingService {
     // Movement costs for different tile types
     getMovementCost(gameState: GameState, position: Coordinates): number {
         const { x, y } = position;
+
+        if (!gameState) {
+            console.error('Game state is undefined in getMovementCost');
+            return Infinity;
+        }
+
+        if (!gameState.gameBoard) {
+            console.error('Game board is undefined in getMovementCost');
+            return Infinity;
+        }
+
         if (!this.isPositionInBounds(gameState, position)) {
             return Infinity;
         }
 
-        // Extract the tile type (ignoring objects, which are in tens place)
-        const tileType = gameState.gameBoard[x][y] % 10;
-        return this.getTileCost(tileType);
+        try {
+            // Extract the tile type (ignoring objects, which are in tens place)
+            const tileValue = gameState.gameBoard[x][y];
+            const tileType = tileValue % 10;
+            const cost = this.getTileCost(tileType);
+
+            if (cost === Infinity) {
+                console.log(`Position (${x}, ${y}) with tile type ${tileType} has infinite cost (blocked)`);
+            }
+
+            return cost;
+        } catch (error) {
+            console.error(`Error getting movement cost for position (${x}, ${y}):`, error);
+            return Infinity;
+        }
     }
 
     // Get movement cost based on tile type
@@ -31,6 +54,7 @@ export class PathfindingService {
         switch (tileType) {
             case TileTypes.Ice:
                 return 0; // Ice has no movement cost (slide)
+            case 0:
             case TileTypes.Grass:
             case TileTypes.DoorOpen:
                 return 1; // Normal cost
@@ -64,15 +88,23 @@ export class PathfindingService {
     // Check if a position is valid for movement
     isValidPosition(gameState: GameState, position: Coordinates): boolean {
         if (!this.isPositionInBounds(gameState, position)) {
+            console.log(`Position (${position.x}, ${position.y}) is out of bounds`);
             return false;
         }
 
         if (this.isPositionOccupied(gameState, position)) {
+            console.log(`Position (${position.x}, ${position.y}) is occupied by another player`);
             return false;
         }
 
         const movementCost = this.getMovementCost(gameState, position);
-        return movementCost !== Infinity;
+        const isValid = movementCost !== Infinity;
+
+        if (!isValid) {
+            console.log(`Position (${position.x}, ${position.y}) has infinite movement cost (blocked)`);
+        }
+
+        return isValid;
     }
 
     // A* algorithm to find the shortest path between two points
@@ -187,6 +219,14 @@ export class PathfindingService {
 
     // Find all reachable positions within movement points
     findReachablePositions(gameState: GameState, startPosition: Coordinates, movementPoints: number): Coordinates[] {
+        console.log(`Finding reachable positions from (${startPosition.x}, ${startPosition.y}) with ${movementPoints} movement points`);
+
+        // Guard clause for invalid inputs
+        if (!startPosition || movementPoints <= 0) {
+            console.warn(`Invalid parameters: startPosition=${JSON.stringify(startPosition)}, movementPoints=${movementPoints}`);
+            return [];
+        }
+
         const reachable: Coordinates[] = [];
         const visited = new Set<string>();
         const queue: { pos: Coordinates; cost: number }[] = [{ pos: startPosition, cost: 0 }];
@@ -214,7 +254,13 @@ export class PathfindingService {
                 const nextPos = { x: pos.x + dir.x, y: pos.y + dir.y };
                 const posKey = `${nextPos.x},${nextPos.y}`;
 
-                if (visited.has(posKey) || !this.isValidPosition(gameState, nextPos)) {
+                if (visited.has(posKey)) {
+                    continue;
+                }
+
+                if (!this.isValidPosition(gameState, nextPos)) {
+                    // Log detailed information about invalid positions
+                    console.log(`Position (${nextPos.x}, ${nextPos.y}) is not valid`);
                     continue;
                 }
 
@@ -224,10 +270,14 @@ export class PathfindingService {
                 if (newCost <= movementPoints) {
                     queue.push({ pos: nextPos, cost: newCost });
                     visited.add(posKey);
+                    console.log(`Added (${nextPos.x}, ${nextPos.y}) to reachable positions with cost ${newCost}`);
+                } else {
+                    console.log(`Position (${nextPos.x}, ${nextPos.y}) exceeds movement points: cost=${newCost} > limit=${movementPoints}`);
                 }
             }
         }
 
+        console.log(`Found ${reachable.length} reachable positions`);
         return reachable;
     }
 }
