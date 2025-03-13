@@ -5,7 +5,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
 import { PageUrl } from '@app/Consts/route-constants';
 import { Game } from '@common/game.interface';
-import { CREATE_PAGE_CONSTANTS, GAME_IMAGES } from '@app/Consts/app.constants';
+import { CREATE_PAGE_CONSTANTS, GAME_IMAGES, MAIN_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 import { GameService } from '@app/services/game.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
@@ -93,10 +93,6 @@ export class BoxFormDialogComponent implements OnDestroy {
         );
     }
 
-    get gameExists(): boolean {
-        return this.gameList.some((game) => game.id === this.data.game.id);
-    }
-
     get isFormComplete(): boolean {
         return this.form.valid && !!this.increasedAttribute && !!this.diceAttribute;
     }
@@ -162,9 +158,7 @@ export class BoxFormDialogComponent implements OnDestroy {
         if (this.isFormComplete) {
             this.save();
         } else {
-            this.notificationService.showError(
-                'Veuillez attribuer le bonus de +2 pour la vie ou la vitesse et le bonus de dé (6 faces) pour l’attaque ou la défense.',
-            );
+            this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorMissingBonuses);
         }
     }
 
@@ -179,65 +173,35 @@ export class BoxFormDialogComponent implements OnDestroy {
     saveJoin(): void {
         this.form.updateValueAndValidity();
         if (!this.increasedAttribute || !this.diceAttribute) {
-            this.notificationService.showError('Veuillez remplir toutes les conditions de bonus.');
+            this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorEmptyBonuses);
             return;
         }
         if (this.form.valid) {
-            const formData = this.form.value;
-            const bonus: { life?: number; speed?: number; attack?: 'D4' | 'D6'; defense?: 'D4' | 'D6' } = {};
-            if (this.increasedAttribute === 'life') {
-                bonus.life = 2;
-            } else if (this.increasedAttribute === 'speed') {
-                bonus.speed = 2;
-            }
-            if (!this.diceAttribute) {
-                if (this.increasedAttribute === 'attack') {
-                    bonus.attack = 'D4';
-                } else if (this.increasedAttribute === 'defense') {
-                    bonus.defense = 'D4';
-                }
-            }
-            if (this.diceAttribute === 'attack') {
-                bonus.attack = 'D6';
-                bonus.defense = 'D4';
-            } else if (this.diceAttribute === 'defense') {
-                bonus.defense = 'D6';
-                bonus.attack = 'D4';
-            }
-
             this.lobbyService.verifyUsername(this.data.lobbyId).subscribe((response: { usernames: string[] }) => {
-                const baseName = formData.name.trim();
+                const basePlayerData = this.getPlayerData();
+                const baseName = basePlayerData.name;
                 let uniqueName = baseName;
                 let counter = 2;
                 while (response.usernames.includes(uniqueName)) {
                     uniqueName = `${baseName}-${counter}`;
                     counter++;
                 }
+                basePlayerData.name = uniqueName;
 
-                const playerData: Player = {
-                    id: '',
-                    name: uniqueName,
-                    avatar: formData.avatar,
-                    isHost: false,
-                    life: formData.life,
-                    speed: formData.speed,
-                    attack: formData.attack,
-                    defense: formData.defense,
-                    bonus,
-                };
                 if (this.isRoomLocked()) {
-                    this.notificationService.showError('The room is complete');
+                    this.notificationService.showError(MAIN_PAGE_CONSTANTS.errorLockedLobbyMessage);
                     return;
                 } else {
-                    this.lobbyService.joinLobby(this.data.lobbyId, playerData);
+                    this.lobbyService.joinLobby(this.data.lobbyId, basePlayerData);
                 }
             });
         }
     }
+
     saveCreate(): void {
         this.form.updateValueAndValidity();
         if (!this.increasedAttribute || !this.diceAttribute) {
-            this.notificationService.showError('Veuillez remplir toutes les conditions de bonus.');
+            this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorEmptyBonuses);
             return;
         }
         const gameExists = this.gameList.some((game) => game.id === this.data.game.id);
@@ -246,41 +210,49 @@ export class BoxFormDialogComponent implements OnDestroy {
             return;
         }
         if (this.form.valid) {
-            const formData = this.form.value;
-            const bonus: { life?: number; speed?: number; attack?: 'D4' | 'D6'; defense?: 'D4' | 'D6' } = {};
-            if (this.increasedAttribute === 'life') {
-                bonus.life = 2;
-            } else if (this.increasedAttribute === 'speed') {
-                bonus.speed = 2;
-            }
-            if (!this.diceAttribute) {
-                if (this.increasedAttribute === 'attack') {
-                    bonus.attack = 'D4';
-                } else if (this.increasedAttribute === 'defense') {
-                    bonus.defense = 'D4';
-                }
-            }
-            if (this.diceAttribute === 'attack') {
-                bonus.attack = 'D6';
-                bonus.defense = 'D4';
-            } else if (this.diceAttribute === 'defense') {
-                bonus.defense = 'D6';
-                bonus.attack = 'D4';
-            }
-            const playerData: Player = {
-                id: '',
-                name: formData.name.trim(),
-                avatar: formData.avatar,
-                isHost: false,
-                life: formData.life,
-                speed: formData.speed,
-                attack: formData.attack,
-                defense: formData.defense,
-                bonus,
-            };
-
+            const playerData = this.getPlayerData();
             this.lobbyService.joinLobby(this.data.lobbyId, playerData);
         }
+    }
+
+    private buildBonus(): { life?: number; speed?: number; attack?: 'D4' | 'D6'; defense?: 'D4' | 'D6' } {
+        const bonus: { life?: number; speed?: number; attack?: 'D4' | 'D6'; defense?: 'D4' | 'D6' } = {};
+        if (this.increasedAttribute === 'life') {
+            bonus.life = 2;
+        } else if (this.increasedAttribute === 'speed') {
+            bonus.speed = 2;
+        }
+        if (!this.diceAttribute) {
+            if (this.increasedAttribute === 'attack') {
+                bonus.attack = 'D4';
+            } else if (this.increasedAttribute === 'defense') {
+                bonus.defense = 'D4';
+            }
+        }
+        if (this.diceAttribute === 'attack') {
+            bonus.attack = 'D6';
+            bonus.defense = 'D4';
+        } else if (this.diceAttribute === 'defense') {
+            bonus.defense = 'D6';
+            bonus.attack = 'D4';
+        }
+        return bonus;
+    }
+
+    private getPlayerData(): Player {
+        const formData = this.form.value;
+        const bonus = this.buildBonus();
+        return {
+            id: '',
+            name: formData.name.trim(),
+            avatar: formData.avatar,
+            isHost: false,
+            life: formData.life,
+            speed: formData.speed,
+            attack: formData.attack,
+            defense: formData.defense,
+            bonus,
+        };
     }
 
     private loadGames(): void {

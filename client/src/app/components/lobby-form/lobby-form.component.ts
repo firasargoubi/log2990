@@ -1,10 +1,10 @@
-// lobby-form.component.ts
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { LobbyService } from '@app/services/lobby.service';
 import { BoxFormDialogComponent } from '@app/components/box-form-dialog/box-form-dialog.component';
+import { MAIN_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 
 @Component({
     selector: 'app-lobby-form',
@@ -28,7 +28,7 @@ export class LobbyFormComponent {
         this.lobbyService.getLobby(this.lobbyId).subscribe((lobby) => {
             if (lobby.maxPlayers === lobby.players.length) {
                 this.lobbyService.lockLobby(lobby.id);
-                this.errorMessage = 'La partie est pleine.';
+                this.errorMessage = MAIN_PAGE_CONSTANTS.errorFullLobbyMessage;
                 return;
             } else {
                 this.errorMessage = '';
@@ -44,9 +44,9 @@ export class LobbyFormComponent {
             } else {
                 this.isLoading = false;
                 if (response.isLocked) {
-                    this.errorMessage = 'Cette partie est verrouillée. Vous ne pouvez pas la rejoindre.';
+                    this.errorMessage = MAIN_PAGE_CONSTANTS.errorLockedLobbyMessage;
                 } else {
-                    this.errorMessage = "Cette partie n'existe pas. Veuillez vérifier l'identifiant.";
+                    this.errorMessage = MAIN_PAGE_CONSTANTS.errorJoinMessage;
                 }
             }
         });

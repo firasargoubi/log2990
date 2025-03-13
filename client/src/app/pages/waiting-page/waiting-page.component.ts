@@ -1,14 +1,15 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { GameControlsComponent } from '@app/components/game-controls/game-controls.component';
 import { PlayerListComponent } from '@app/components/player-list/player-list.component';
-import { GAME_IMAGES } from '@app/Consts/app.constants';
+import { GAME_IMAGES, WAITING_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { GameLobby } from '@common/game-lobby';
 import { Player } from '@common/player';
 import { Subscription } from 'rxjs';
-import { CommonModule } from '@angular/common';
+import { PageUrl } from '@app/Consts/route-constants';
 
 @Component({
     selector: 'app-waiting-page',
@@ -39,25 +40,21 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
     private notificationService = inject(NotificationService);
 
     ngOnInit(): void {
-        this.generateRandomNumber();
-
         const lobbyId = this.route.snapshot.paramMap.get('id');
-        const playerId = this.route.snapshot.paramMap.get('playerId');
+        const player = this.route.snapshot.paramMap.get('playerId');
 
-        if (lobbyId && playerId) {
-            this.subscriptions.push(
-                this.lobbyService.getLobby(lobbyId).subscribe((lobby) => {
-                    this.lobby = lobby;
-                    this.currentPlayer = lobby.players.find((p) => p.id === playerId) || this.currentPlayer;
-                    this.hostId = lobby.players.find((p) => p.isHost)?.id || '';
-                }),
-            );
+        if (lobbyId && player) {
+            this.lobbyService.getLobby(lobbyId).subscribe((lobby) => {
+                this.lobby = { ...lobby, players: [...lobby.players] };
+                this.currentPlayer = lobby.players.find((p) => p.id === player) || this.currentPlayer;
+                this.hostId = lobby.players.find((p) => p.isHost)?.id || '';
+            });
 
             this.subscriptions.push(
                 this.lobbyService.onLobbyUpdated().subscribe((data) => {
                     if (data.lobbyId === lobbyId) {
-                        this.lobby = data.lobby;
-                        this.currentPlayer = data.lobby.players.find((p) => p.id === playerId) || this.currentPlayer;
+                        this.lobby = { ...data.lobby, players: [...data.lobby.players] };
+                        this.currentPlayer = data.lobby.players.find((p) => p.id === player) || this.currentPlayer;
                         this.hostId = data.lobby.players.find((p) => p.isHost)?.id || '';
                     }
                 }),
@@ -67,18 +64,25 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
                 this.lobbyService.onPlayerLeft().subscribe((data) => {
                     if (this.lobby) {
                         if (data.playerName === this.currentPlayer.name) {
-                            this.notificationService.showError("Vous avez été expulsé par l'administrateur");
-                            this.router.navigate(['/main'], { replaceUrl: true });
+                            this.notificationService.showError(WAITING_PAGE_CONSTANTS.errorPlayerKicked);
+                            this.router.navigate([PageUrl.Home], { replaceUrl: true });
                         }
                     }
                 }),
             );
 
             this.subscriptions.push(
-                this.lobbyService.onGameStarted().subscribe(() => {
-                    console.log('Game started event received in waiting page, navigating to play page');
-                    this.lobbyService.setCurrentPlayer(this.currentPlayer);
-                    this.router.navigate(['/play', lobbyId]);
+                this.lobbyService.onHostDisconnected().subscribe(() => {
+                    this.notificationService.showError(WAITING_PAGE_CONSTANTS.lobbyCancelled);
+                    this.router.navigate([PageUrl.Home], { replaceUrl: true });
+                }),
+            );
+
+            this.subscriptions.push(
+                this.lobbyService.onError().subscribe({
+                    next: (error) => {
+                        this.notificationService.showError(error);
+                    },
                 }),
             );
         }
@@ -104,21 +108,15 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
     lockRoom(): void {
         if (this.lobby?.id) {
             this.lobbyService.lockLobby(this.lobby.id);
-            this.notificationService.showSuccess('Cette partie est verrouillée');
+            this.notificationService.showSuccess(WAITING_PAGE_CONSTANTS.gameLocked);
         }
     }
 
-    startGame() {
-        if (!this.isHost() || !this.lobby.id) {
-            this.notificationService.showError('Only the host can start the game');
-            return;
+    startGame(): void {
+        if (this.lobby && this.currentPlayer) {
+            this.router.navigate([`${PageUrl.Play}/${this.lobby.id}/${this.currentPlayer.id}`]);
+        } else {
+            this.notificationService.showError(WAITING_PAGE_CONSTANTS.errorStartGame);
         }
-
-        console.log(`Requesting game start for lobby ${this.lobby.id}`);
-        this.lobbyService.requestStartGame(this.lobby.id);
-    }
-
-    generateRandomNumber(): void {
-        this.randomNumber = Math.floor(Math.random() * 9000) + 1000;
     }
 }
