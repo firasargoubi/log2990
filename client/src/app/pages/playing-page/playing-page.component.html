@@ -1,0 +1,60 @@
+<div class="playing-page">
+    <div class="header">
+        <app-game-info
+            [gameName]="getGameName()"
+            [mapSize]="getMapSize()"
+            [playerCount]="getPlayerCount()"
+            [activePlayer]="getActivePlayer()"
+            [players]="getPlayers()">
+        </app-game-info>
+    </div>
+
+    <div class="game-area">
+        <div class="sidebar left-sidebar">
+            <app-inventory>
+            </app-inventory>
+            
+            <!-- Simple diagnostic panel (for development, can be removed in production) -->
+            <div *ngIf="debug" class="diagnostic-panel">
+                <div class="player-info">
+                    <p><strong>Your Player:</strong> {{currentPlayer?.name || 'Not found'}}</p>
+                    <p><strong>Current Turn:</strong> {{gameState?.currentPlayer || 'Unknown'}}</p>
+                    <p><strong>Is Your Turn:</strong> {{isCurrentPlayerTurn() ? 'Yes' : 'No'}}</p>
+                    <button (click)="debugLogGameState()" class="debug-button">Log Game State</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-board">
+            @if (gameState) {
+                <app-game-board
+                    [gameState]="gameState"
+                    [currentPlayerId]="currentPlayer?.id || ''"
+                    [lobbyId]="lobbyId"
+                    (moveRequest)="onMoveRequest($event)">
+                </app-game-board>
+            } @else {
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Chargement du jeu...</div>
+                </div>
+            }
+
+            <div class="controls">
+                <button 
+                    class="end-turn-button"
+                    [disabled]="!isCurrentPlayerTurn()"
+                    (click)="onEndTurn()">
+                    Terminer le tour
+                </button>
+            </div>
+        </div>
+
+        <div class="sidebar right-sidebar">
+            <app-messages></app-messages>
+            @if (isCurrentPlayerTurn()) {
+                <app-countdown-timer></app-countdown-timer>
+            }
+        </div>
+    </div>
+</div>

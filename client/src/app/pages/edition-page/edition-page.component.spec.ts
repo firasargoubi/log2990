@@ -17,7 +17,6 @@ describe('EditionPageComponent', () => {
     let fixture: ComponentFixture<EditionPageComponent>;
 
     beforeEach(waitForAsync(() => {
-        // Création des spy objects pour les services
         const saveServiceSpy = jasmine.createSpyObj('SaveService', ['alertBoardForVerification', 'saveGame', 'getGameNames'], {
             isSave$: new Subject<boolean>(),
             isReset$: of(false),
@@ -54,10 +53,6 @@ describe('EditionPageComponent', () => {
                 provideRouter(routes),
             ],
         }).compileComponents();
-
-        // Problème : les Components enfants sont des vraies instances et peuvent causer des problèmes
-        // Voir la console pour les messages potentiels d'erreur
-        // Solution : voir le fichier edition-page.component.standalone.spec.ts
 
         fixture = TestBed.createComponent(EditionPageComponent);
         component = fixture.componentInstance;

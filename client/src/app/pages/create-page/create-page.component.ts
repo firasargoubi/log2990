@@ -6,11 +6,13 @@ import { MatDialog } from '@angular/material/dialog';
 import { RouterLink } from '@angular/router';
 import { BoxFormDialogComponent } from '@app/components/box-form-dialog/box-form-dialog.component';
 import { GameCreationCardComponent } from '@app/components/game-creation-card/game-creation-card.component';
-import { Game } from '@app/interfaces/game.model';
+import { CREATE_PAGE_CONSTANTS, GameSize, GameType } from '@app/Consts/app.constants';
+import { Game } from '@common/game.interface';
 import { GameService } from '@app/services/game.service';
+import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
-import { Observable } from 'rxjs';
-import { CREATE_PAGE_CONSTANTS, GAME_MODES, GAME_SIZE } from '@app/Consts/app.constants';
+import { Observable, Subscription } from 'rxjs';
+
 @Component({
     selector: 'app-create-page',
     standalone: true,
@@ -21,32 +23,38 @@ import { CREATE_PAGE_CONSTANTS, GAME_MODES, GAME_SIZE } from '@app/Consts/app.co
 export class CreatePageComponent implements OnInit {
     @Input() games$: Observable<Game[]> = new Observable<Game[]>();
     games: Game[] = [];
-    notificationService = inject(NotificationService);
-    private modeTranslation: Record<string, string> = GAME_MODES;
-    private sizeTranslation: Record<string, string> = GAME_SIZE;
 
-    constructor(
-        private dialog: MatDialog,
-        private gameService: GameService,
-    ) {}
+    lobbyId: string = '';
+    private notificationService = inject(NotificationService);
+    private dialog = inject(MatDialog);
+    private gameService = inject(GameService);
+    private subscriptions: Subscription[] = [];
+    private lobbyService = inject(LobbyService);
 
     ngOnInit(): void {
         this.loadGames();
-    }
-
-    translateMode(mode: string): string {
-        return this.modeTranslation[mode] || mode;
-    }
-
-    translateSize(size: string): string {
-        return this.sizeTranslation[size] || size;
     }
 
     onBoxClick(game: Game): void {
         this.gameService.verifyGameAccessible(game.id).subscribe({
             next: (isAccessible) => {
                 if (isAccessible) {
-                    this.openBoxFormDialog(game);
+                    if (!this.lobbyId) {
+                        this.lobbyService.createLobby(game);
+                        this.subscriptions.push(
+                            this.lobbyService.onLobbyCreated().subscribe({
+                                next: (data) => {
+                                    this.lobbyId = data.lobbyId;
+                                    this.openBoxFormDialog(game);
+                                },
+                                error: (err) => {
+                                    this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorLobbyCreation + ' ' + err);
+                                },
+                            }),
+                        );
+                    } else {
+                        this.openBoxFormDialog(game);
+                    }
                 } else {
                     this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorGameDeleted);
                     this.loadGames();
@@ -59,15 +67,17 @@ export class CreatePageComponent implements OnInit {
         });
     }
 
-    openBoxFormDialog(game: Game): void {
-        const translatedGame = {
-            ...game,
-            mode: this.translateMode(game.mode),
-            mapSize: this.translateSize(game.mapSize),
-        };
+    private translateMode(mode: string): GameType {
+        return mode as GameType;
+    }
 
+    private translateSize(size: string): GameSize {
+        return size as GameSize;
+    }
+
+    private openBoxFormDialog(game: Game): void {
         const dialogRef = this.dialog.open(BoxFormDialogComponent, {
-            data: { boxId: game.id, game: translatedGame, gameList: this.games },
+            data: { boxId: game.id, game, gameList: this.games, lobbyId: this.lobbyId, isJoining: false },
         });
 
         dialogRef.afterClosed().subscribe({

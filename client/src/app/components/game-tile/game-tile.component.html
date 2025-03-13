@@ -1,0 +1,22 @@
+<div 
+  class="board-tile" 
+  [ngClass]="{
+    'available-move': isAvailableMove,
+    'path-highlighted': isPathHighlighted,
+    'current-player-position': player?.isCurrentPlayer,
+    'local-player-position': player?.isLocalPlayer
+  }"
+  (click)="onClick()">
+  
+  <img [src]="getTileImage()" class="tile-image" alt="Tile" />
+  
+  <img *ngIf="getObjectImage()" [src]="getObjectImage()" class="object-image" alt="Object" />
+  
+  <div *ngIf="player" class="player-marker"
+    [ngClass]="{
+      'current-player': player.isCurrentPlayer,
+      'local-player': player.isLocalPlayer
+    }">
+    <img [src]="player.player.avatar" class="avatar-image" alt="Player" />
+  </div>
+</div>

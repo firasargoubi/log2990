@@ -1,5 +1,6 @@
-import { GameService } from '@app/services/game.service';
 import { game } from '@app/classes/game.model';
+import { GameService } from '@app/services/game.service';
+import { Game, GameSize, GameType } from '@common/game.interface';
 import { expect } from 'chai';
 import { SinonSandbox, createSandbox } from 'sinon';
 import { v4 as uuidv4 } from 'uuid';
@@ -21,15 +22,15 @@ describe('GameService', () => {
         const gameData = {
             name: 'Test Game',
             description: 'A test game',
-            mode: 'Classic',
+            mode: GameType.classic,
             previewImage: '',
-            mapSize: 'Medium',
+            mapSize: GameSize.medium,
             isVisible: true,
             board: [
                 [0, 0],
                 [0, 0],
             ],
-        };
+        } as Game;
 
         const savedGame = { ...gameData, id: uuidv4(), save: sandbox.stub().resolves(gameData) };
         sandbox.stub(game.prototype, 'save').resolves(savedGame);

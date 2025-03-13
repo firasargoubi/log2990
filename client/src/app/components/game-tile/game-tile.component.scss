@@ -1,0 +1,69 @@
+.board-tile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  font-size: 1rem;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.board-tile.available-move {
+  border: 2px solid #4CAF50; /* Green border for available moves */
+  background-color: rgba(76, 175, 80, 0.2); /* Light green background */
+}
+
+.board-tile.path-highlighted {
+  border: 2px solid #F44336; /* Red border for shortest path */
+  background-color: rgba(244, 67, 54, 0.2); /* Light red background */
+}
+
+.tile-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+.object-image {
+  position: absolute;
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+  z-index: 1;
+}
+
+.player-marker {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+.player-marker.current-player .avatar-image {
+  border: 3px solid #ffd700; /* Gold border for current player */
+}
+
+.player-marker.local-player .avatar-image {
+  border: 3px solid #4fc3f7; /* Blue border for local player */
+}
+
+.avatar-image {
+  width: 80%;
+  height: 80%;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  object-fit: cover;
+  background-color: rgba(255, 255, 255, 0.5);
+}

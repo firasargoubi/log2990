@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Game } from '@app/interfaces/game.model';
+import { Game } from '@common/game.interface';
+import { ApiEndpoint, ApiRoutes } from '@common/api.endpoints';
 import { Observable, EMPTY } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
@@ -12,7 +13,7 @@ import { GAME_SERVICE_CONSTANTS } from '@app/Consts/app.constants';
 })
 export class GameService {
     private notificationService = inject(NotificationService);
-    private readonly baseUrl: string = environment.serverUrl;
+    private readonly baseUrl: string = `${environment.serverUrl}${ApiRoutes.Game}`;
 
     constructor(private http: HttpClient) {}
 
@@ -39,7 +40,7 @@ export class GameService {
     }
 
     fetchGames(): Observable<Game[]> {
-        return this.http.get<Game[]>(`${this.baseUrl}/all`).pipe(
+        return this.http.get<Game[]>(`${this.baseUrl}${ApiEndpoint.AllGames}`).pipe(
             catchError(() => {
                 this.notificationService.showError(GAME_SERVICE_CONSTANTS.errorFetchGames);
                 return EMPTY;
@@ -48,7 +49,7 @@ export class GameService {
     }
 
     fetchVisibleGames(): Observable<Game[]> {
-        return this.http.get<Game[]>(`${this.baseUrl}/visible`).pipe(
+        return this.http.get<Game[]>(`${this.baseUrl}${ApiEndpoint.VisibleGames}`).pipe(
             catchError(() => {
                 this.notificationService.showError(GAME_SERVICE_CONSTANTS.errorFetchVisibleGames);
                 return EMPTY;
@@ -74,7 +75,7 @@ export class GameService {
     }
 
     verifyGameAccessible(gameId: string): Observable<boolean> {
-        return this.http.get<boolean>(`${this.baseUrl}/validate/${gameId}`).pipe(
+        return this.http.get<boolean>(`${this.baseUrl}${ApiEndpoint.Validate}/${gameId}`).pipe(
             catchError(() => {
                 return EMPTY;
             }),
@@ -82,7 +83,7 @@ export class GameService {
     }
 
     createGame(game: Game): Observable<Game> {
-        return this.http.post<Game>(`${this.baseUrl}/create`, game).pipe(
+        return this.http.post<Game>(`${this.baseUrl}${ApiEndpoint.Create}`, game).pipe(
             catchError(() => {
                 this.notificationService.showError(GAME_SERVICE_CONSTANTS.errorCreateGame);
                 return EMPTY;
