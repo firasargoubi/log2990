@@ -30,7 +30,7 @@
 
     <div class="board-container">
         @if (gameState) {
-        <app-game-board [gameState]="gameState" [currentPlayerId]="currentPlayer?.id || ''" [lobbyId]="lobbyId" (moveRequest)="onMoveRequest($event)">
+        <app-game-board [gameState]="gameState" [currentPlayerId]="currentPlayer?.id || ''" [lobbyId]="lobbyId" [action] ="action" (tileClicked)="onMoveRequest($event)" (actionClicked)="onActionRequest($event)">
         </app-game-board>
         } @else {
         <div class="loading">
@@ -49,8 +49,7 @@
         <app-inventory></app-inventory>
 
         <div class="action-buttons">
-            <button (click)="attack()">Attaquer</button>
-            <button (click)="defend()">Défendre</button>
+            <button (click)="handleAction()">Action</button>
             <button (click)="endTurn()">Fin de tour</button>
             <button (click)="abandon()" routerLink="/home">Abandonner</button>
 
