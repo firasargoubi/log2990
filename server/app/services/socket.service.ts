@@ -259,14 +259,13 @@ export class SocketService {
 
     private verifyRoom(socket: Socket, lobbyId: string, callback: (response: { exists: boolean; isLocked?: boolean }) => void) {
         const lobby = this.lobbies.get(lobbyId);
-        const isLocked = lobby.maxPlayers === lobby.players.length || lobby.isLocked;
 
         if (!lobby) {
             callback({ exists: false });
             socket.emit('error', "Cette partie n'existe pas.");
             return;
         }
-
+        const isLocked = lobby.maxPlayers === lobby.players.length || lobby.isLocked;
         if (isLocked) {
             callback({ exists: false, isLocked: true });
             socket.emit('error', 'Cette partie est verrouillée.');
@@ -551,7 +550,6 @@ export class SocketService {
             board: newGameBoard,
         };
         this.gameStates.set(lobbyId, updatedGameState);
-        console.log(`📡 Envoi d'une mise à jour au lobby ${lobbyId}`);
         this.io.to(lobbyId).emit('tileUpdated', { newGameBoard });
     }
 
