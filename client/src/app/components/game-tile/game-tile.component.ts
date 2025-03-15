@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Tile } from '@app/interfaces/tile';
+import { Tile } from '@common/tile';
 import { Player } from '@common/player';
 import { GAME_IMAGES } from '@app/Consts/app.constants';
 import { TileTypes, ObjectsTypes } from '@common/game.interface';

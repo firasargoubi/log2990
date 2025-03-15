@@ -3,7 +3,7 @@
 import { TestBed } from '@angular/core/testing';
 import { BoardService } from './board.service';
 import { Game, GameType, GameSize } from '@common/game.interface';
-import { Tile } from '@app/interfaces/tile';
+import { Tile } from '@common/tile';
 import { MapSize } from '@app/Consts/app.constants';
 
 describe('BoardService', () => {

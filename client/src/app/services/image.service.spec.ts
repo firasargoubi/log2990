@@ -3,7 +3,7 @@
 /* eslint-disable no-unused-vars */
 import { TestBed } from '@angular/core/testing';
 import { ImageService } from './image.service';
-import { Tile } from '@app/interfaces/tile';
+import { Tile } from '@common/tile';
 import { TileTypes } from '@app/interfaces/tile-types';
 import { ObjectsTypes } from '@app/Consts/app.constants';
 

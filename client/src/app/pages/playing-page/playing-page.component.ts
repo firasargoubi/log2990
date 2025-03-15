@@ -6,13 +6,13 @@ import { GameBoardComponent } from '@app/components/game-board/game-board.compon
 import { GameInfoComponent } from '@app/components/game-info/game-info.component';
 import { InventoryComponent } from '@app/components/inventory/inventory.component';
 import { MessagesComponent } from '@app/components/messages/messages.component';
-import { Tile } from '@app/interfaces/tile';
-import { ActionService } from '@app/services/action-service';
+import { ActionService } from '@app/services/action.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { Coordinates } from '@common/coordinates';
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
+import { Tile } from '@common/tile';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -51,6 +51,19 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             } else {
                 this.router.navigate(['/main']);
             }
+        });
+        this.lobbyService.onTileUpdate().subscribe({
+            next: (data) => {
+                console.log('Mise à jour reçue pour une tuile:', data.newGameBoard);
+
+                if (this.gameState) {
+                    this.gameState = {
+                        ...this.gameState,
+                        board: data.newGameBoard.map((row) => [...row]),
+                    };
+                }
+            },
+            error: (err) => console.error('Erreur réception mise à jour tuile:', err),
         });
     }
 
@@ -163,8 +176,26 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             console.error('Cannot perform action: not your turn');
             return;
         }
-        console.log('Requesting action');
-        this.actionService.getActionType(tile, this.gameState);
+
+        const action = this.actionService.getActionType(tile, this.gameState);
+        if (!action) {
+            return;
+        }
+
+        this.lobbyService.executeAction(action, tile, this.lobbyId).subscribe({
+            next: (data) => {
+                if (this.gameState?.gameBoard) {
+                    console.log('Mise à jour du gameBoard reçue:', data.newGameBoard);
+
+                    this.gameState = {
+                        ...this.gameState,
+                        board: data.newGameBoard.map((row) => [...row]),
+                    };
+                }
+            },
+            error: (err) => console.error('Error processing tile update:', err),
+        });
+        this.action = false;
     }
 
     onEndTurn() {

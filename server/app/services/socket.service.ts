@@ -1,8 +1,10 @@
+/* eslint-disable max-lines */
 import { GameState } from '@app/interface/game-state';
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
-import { Game } from '@common/game.interface';
+import { Game, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
+import { Tile } from '@common/tile';
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { Container, Service } from 'typedi';
@@ -92,6 +94,16 @@ export class SocketService {
 
             socket.on('startCombat', (data: { playerId: string; lobbyId: string }) => {
                 this.startCombat(socket, data.lobbyId, data.playerId); // Call startCombat method
+            });
+
+            socket.on('closeDoor', (data: { tile: Tile; lobbyId: string }) => {
+                console.log('closeDoor received on server');
+                this.closeDoor(socket, data.tile, data.lobbyId);
+            });
+
+            socket.on('openDoor', (data: { tile: Tile; lobbyId: string }) => {
+                console.log('openDoor received on server');
+                this.openDoor(socket, data.tile, data.lobbyId);
             });
         });
     }
@@ -251,14 +263,13 @@ export class SocketService {
 
     private verifyRoom(socket: Socket, lobbyId: string, callback: (response: { exists: boolean; isLocked?: boolean }) => void) {
         const lobby = this.lobbies.get(lobbyId);
-        const isLocked = lobby.maxPlayers === lobby.players.length || lobby.isLocked;
 
         if (!lobby) {
             callback({ exists: false });
             socket.emit('error', "Cette partie n'existe pas.");
             return;
         }
-
+        const isLocked = lobby.maxPlayers === lobby.players.length || lobby.isLocked;
         if (isLocked) {
             callback({ exists: false, isLocked: true });
             socket.emit('error', 'Cette partie est verrouillée.');
@@ -528,6 +539,38 @@ export class SocketService {
         console.log(`Player positions: ${JSON.stringify(Object.keys(stateCopy.playerPositions))}`);
 
         return stateCopy;
+    }
+
+    private closeDoor(socket: Socket, tile: Tile, lobbyId: string) {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) {
+            socket.emit('error', 'Game not found.');
+            return;
+        }
+        const newGameBoard = gameState.board.map((row) => [...row]);
+        newGameBoard[tile.x][tile.y] = TileTypes.DoorClosed;
+        const updatedGameState: GameState = {
+            ...gameState,
+            board: newGameBoard,
+        };
+        this.gameStates.set(lobbyId, updatedGameState);
+        this.io.to(lobbyId).emit('tileUpdated', { newGameBoard });
+    }
+
+    private openDoor(socket: Socket, tile: Tile, lobbyId: string) {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) {
+            socket.emit('error', 'Game not found.');
+            return;
+        }
+        const newGameBoard = gameState.board.map((row) => [...row]);
+        newGameBoard[tile.x][tile.y] = TileTypes.DoorOpen;
+        const updatedGameState = {
+            ...gameState,
+            board: newGameBoard,
+        };
+        this.gameStates.set(lobbyId, updatedGameState);
+        this.io.to(lobbyId).emit('tileUpdated', { newGameBoard });
     }
 
     // Start a combat for a specific player (emit to all players)

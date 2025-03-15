@@ -180,7 +180,7 @@ export class BoxFormDialogComponent implements OnDestroy {
             this.lobbyService.verifyUsername(this.data.lobbyId).subscribe((response: { usernames: string[] }) => {
                 const basePlayerData = this.getPlayerData();
                 const baseName = basePlayerData.name;
-                let uniqueName = baseName;
+                let uniqueName = baseName.trim();
                 let counter = 2;
                 while (response.usernames.includes(uniqueName)) {
                     uniqueName = `${baseName}-${counter}`;
@@ -211,6 +211,7 @@ export class BoxFormDialogComponent implements OnDestroy {
         }
         if (this.form.valid) {
             const playerData = this.getPlayerData();
+            playerData.name = this.form.value.name.trim();
             this.lobbyService.joinLobby(this.data.lobbyId, playerData);
         }
     }
