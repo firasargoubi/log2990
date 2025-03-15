@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CountdownComponent } from '@app/components/countdown-timer/countdown-timer.component';
 import { GameBoardComponent } from '@app/components/game-board/game-board.component';
@@ -23,11 +23,15 @@ import { Subscription } from 'rxjs';
     styleUrls: ['./playing-page.component.scss'],
 })
 export class PlayingPageComponent implements OnInit, OnDestroy {
+    @ViewChild(CountdownComponent) countdownComponent!: CountdownComponent;
+
     @Output() action: boolean = false;
     lobbyId: string = '';
     gameState: GameState | null = null;
     currentPlayer: Player | null = null;
     debug: boolean = true;
+    isInCombat: boolean = false; // Pour savoir si le joueur est en combat
+    remainingTime: number = 0;
 
     private lobbyService = inject(LobbyService);
     private actionService = inject(ActionService);
@@ -251,5 +255,14 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     handleAction() {
         console.log('Bouton action cliqué');
         this.action = !this.action;
+    }
+
+    onAttackClick(playerId: string, lobbyId: string): void {
+        // Demander au serveur de démarrer le combat
+        this.lobbyService.startCombat(playerId, lobbyId); // Envoi au serveur
+
+        // Mettre en place la logique pour activer le timer de combat
+        this.isInCombat = true;
+        this.countdownComponent.startCombatCountdown();
     }
 }

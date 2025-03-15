@@ -360,4 +360,8 @@ export class LobbyService {
             });
         });
     }
+
+    startCombat(playerId: string, lobbyId: string): void {
+        this.socket.emit('startCombat', { playerId, lobbyId });
+    }
 }

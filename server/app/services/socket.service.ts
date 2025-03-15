@@ -89,6 +89,10 @@ export class SocketService {
                 console.log(`Client disconnected: ${socket.id}`);
                 this.handleDisconnect(socket);
             });
+
+            socket.on('startCombat', (data: { playerId: string; lobbyId: string }) => {
+                this.startCombat(socket, data.lobbyId, data.playerId); // Call startCombat method
+            });
         });
     }
 
@@ -581,21 +585,6 @@ export class SocketService {
 
     // Emit a combat update when the countdown changes
     // socketService.ts
-
-    private updateCombatCountdown(lobbyId: string): void {
-        const gameState = this.gameStates.get(lobbyId);
-        if (!gameState || !gameState.combat || !gameState.combat.isActive) {
-            return;
-        }
-
-        const timeLeft = gameState.combat.endTime - Date.now();
-        if (timeLeft <= 0) {
-            this.endCombat(null, lobbyId); // End the combat if time is up
-        } else {
-            // Emit the remaining time to all connected clients
-            this.io.to(lobbyId).emit('combatUpdate', { timeLeft });
-        }
-    }
 
     private startCombatCountdown(lobbyId: string): void {
         setInterval(() => {
