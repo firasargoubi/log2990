@@ -19,7 +19,7 @@ import { PageUrl } from '@app/Consts/route-constants';
     imports: [CommonModule, RouterLink, GameControlsComponent, PlayerListComponent],
 })
 export class WaitingPageComponent implements OnInit, OnDestroy {
-    lobby: GameLobby;
+    lobby: GameLobby | null;
     currentPlayer: Player = {
         id: '0000',
         name: 'Unknown',
