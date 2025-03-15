@@ -51,9 +51,9 @@
         <div class="action-buttons">
             <button (click)="attack()">Attaquer</button>
             <button (click)="defend()">Défendre</button>
-            <button (click)="onEndTurn()">Fin de tour</button>
-            <button (click)="abandon()" routerLink="/home">Abandonner</button>
-
+            <button *ngIf="currentPlayer" (click)="onAbandon(currentPlayer.id)">Abandonner</button>
+            <app-player-list *ngIf="currentPlayer" [currentPlayer]="currentPlayer" [players]="lobby.players || []" (removePlayer)="onAbandon($event)">
+            </app-player-list>
             <button class="end-turn-button" [disabled]="!isCurrentPlayerTurn()" (click)="onEndTurn()">Terminer le tour</button>
         </div>
     </div>

@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CountdownComponent } from '@app/components/countdown-timer/countdown-timer.component';
 import { GameBoardComponent } from '@app/components/game-board/game-board.component';
 import { GameInfoComponent } from '@app/components/game-info/game-info.component';
 import { InventoryComponent } from '@app/components/inventory/inventory.component';
 import { MessagesComponent } from '@app/components/messages/messages.component';
+import { PlayerListComponent } from '@app/components/player-list/player-list.component';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { Coordinates } from '@common/coordinates';
@@ -16,15 +17,18 @@ import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-playing-page',
-    imports: [CommonModule, CountdownComponent, InventoryComponent, GameInfoComponent, MessagesComponent, GameBoardComponent],
+    imports: [CommonModule, CountdownComponent, InventoryComponent, GameInfoComponent, MessagesComponent, GameBoardComponent, PlayerListComponent],
     standalone: true,
     templateUrl: './playing-page.component.html',
     styleUrls: ['./playing-page.component.scss'],
 })
 export class PlayingPageComponent implements OnInit, OnDestroy {
+    @Output() remove = new EventEmitter<string>();
+    @Input() player!: Player;
     lobbyId: string = '';
     gameState: GameState | null = null;
     currentPlayer: Player | null = null;
+
     debug: boolean = true;
     lobby: GameLobby;
 
@@ -202,46 +206,11 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         return result;
     }
 
-    debugLogGameState() {
-        console.log('================ GAME STATE DEBUG ================');
-        if (!this.gameState) {
-            console.log('Game state is null or undefined');
-            return;
-        }
-
-        console.log('Game State ID:', this.gameState.id);
-        console.log('Current Player in Game:', this.gameState.currentPlayer);
-        console.log('Local Player ID:', this.currentPlayer);
-        console.log('Socket ID:', this.lobbyService.getSocketId());
-        console.log('Is Local Player Turn:', this.isCurrentPlayerTurn());
-        console.log('Available Moves:', this.gameState.availableMoves);
-
-        console.log('Player Positions:');
-        if (this.gameState.playerPositions instanceof Map) {
-            Array.from(this.gameState.playerPositions.entries()).forEach(([playerId, pos]) => {
-                console.log(`Player ${playerId} at (${pos.x}, ${pos.y})`);
-            });
-        }
-
-        console.log('Players:');
-        this.gameState.players.forEach((player) => {
-            console.log(`- ${player.name} (${player.id})`);
-        });
-
-        console.log('================ END DEBUG ================');
-    }
-    abandon() {
-        // Vérifier que le lobby et le joueur actuel existent
-        if (this.lobbyId && this.currentPlayer) {
-            // Appeler la méthode `leaveLobby` du service pour quitter le lobby
-            this.removePlayer(this.currentPlayer.id);
-
-            // Naviguer vers la page d'accueil après avoir quitté le lobby
-            this.router.navigate(['/home']);
-        }
+    onRemovePlayer(): void {
+        this.remove.emit(this.player.id);
     }
 
-    removePlayer(playerId: string): void {
+    onAbandon(playerId: string): void {
         if (this.lobby) {
             const player = this.lobby.players.find((p) => p.id === playerId);
             if (player) {
@@ -249,7 +218,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             }
         }
     }
-
     attack() {
         // Logique pour attaquer
     }
