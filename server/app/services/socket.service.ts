@@ -525,4 +525,81 @@ export class SocketService {
 
         return stateCopy;
     }
+
+    // Start a combat for a specific player (emit to all players)
+    private startCombat(socket: Socket, lobbyId: string, playerId: string): void {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) {
+            socket.emit('error', 'Game state not found.');
+            return;
+        }
+
+        const combatEndTime = Date.now() + 30000; // 30 seconds from now
+        gameState.combat = {
+            playerId,
+            endTime: combatEndTime,
+            isActive: true,
+        };
+
+        this.gameStates.set(lobbyId, gameState);
+
+        this.io.to(lobbyId).emit('combatStarted', { playerId, combatEndTime });
+
+        // Start the countdown for the combat
+        this.startCombatCountdown(lobbyId); // Ensure countdown starts when combat begins
+    }
+
+    // Handle when combat ends (either manually or by timer)
+    private endCombat(socket: Socket, lobbyId: string): void {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState || !gameState.combat || !gameState.combat.isActive) {
+            return; // No active combat
+        }
+
+        // Deactivate combat
+        gameState.combat.isActive = false;
+        this.gameStates.set(lobbyId, gameState);
+
+        // Notify all clients that combat has ended
+        this.io.to(lobbyId).emit('combatEnded');
+    }
+
+    // Handle combat countdown updates
+    private handleCombatCountdown(lobbyId: string): void {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState || !gameState.combat || !gameState.combat.isActive) {
+            return; // If no active combat, do nothing
+        }
+
+        const timeLeft = gameState.combat.endTime - Date.now();
+        if (timeLeft <= 0) {
+            this.endCombat(null, lobbyId); // End the combat if time is up
+        } else {
+            this.io.to(lobbyId).emit('combatUpdate', { timeLeft }); // Emit the remaining time to all clients
+        }
+    }
+
+    // Emit a combat update when the countdown changes
+    // socketService.ts
+
+    private updateCombatCountdown(lobbyId: string): void {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState || !gameState.combat || !gameState.combat.isActive) {
+            return;
+        }
+
+        const timeLeft = gameState.combat.endTime - Date.now();
+        if (timeLeft <= 0) {
+            this.endCombat(null, lobbyId); // End the combat if time is up
+        } else {
+            // Emit the remaining time to all connected clients
+            this.io.to(lobbyId).emit('combatUpdate', { timeLeft });
+        }
+    }
+
+    private startCombatCountdown(lobbyId: string): void {
+        setInterval(() => {
+            this.handleCombatCountdown(lobbyId); // This updates the combat time every second
+        }, 1000); // Update every second
+    }
 }

@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Player } from '@common/player';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { Player } from '@common/player';
 @Component({
     selector: 'app-player-card',
     templateUrl: './player-card.component.html',

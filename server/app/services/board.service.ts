@@ -1,10 +1,10 @@
-import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@app/interface/game-state';
-import { Player } from '@common/player';
 import { Coordinates } from '@common/coordinates';
-import { GameService } from './game.service';
-import { Service, Inject } from 'typedi';
+import { GameLobby } from '@common/game-lobby';
 import { Game, ObjectsTypes } from '@common/game.interface';
+import { Player } from '@common/player';
+import { Inject, Service } from 'typedi';
+import { GameService } from './game.service';
 import { PathfindingService } from './pathfinding.service';
 
 @Service()
@@ -39,6 +39,11 @@ export class BoardService {
             board: gameData.board,
             gameBoard: gameData.board,
             currentPlayerMovementPoints: 0,
+            combat: {
+                playerId: '',
+                endTime: 0,
+                isActive: false,
+            },
         };
 
         await this.assignSpawnPoints(gameState);
@@ -137,7 +142,7 @@ export class BoardService {
             console.log(`Player can still move. Found ${gameState.availableMoves.length} new available moves`);
         } else {
             gameState.availableMoves = [];
-            console.log(`Player has no movement points left. No more moves available.`);
+            console.log('Player has no movement points left. No more moves available.');
         }
 
         return gameState;

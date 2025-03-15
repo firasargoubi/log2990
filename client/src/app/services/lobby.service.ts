@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Game } from '@common/game.interface';
+import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
+import { GameState } from '@common/game-state';
+import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { environment } from 'src/environments/environment';
-import { Coordinates } from '@common/coordinates';
-import { GameState } from '@common/game-state';
 
 @Injectable({
     providedIn: 'root',
@@ -252,7 +252,6 @@ export class LobbyService {
             });
         });
     }
-
     onError(): Observable<string> {
         return new Observable((observer) => {
             this.socket.on('error', (error: string) => {
@@ -262,7 +261,7 @@ export class LobbyService {
         });
     }
 
-    private convertPlayerPositionsToMap(playerPositions: any): Map<string, Coordinates> {
+    private convertPlayerPositionsToMap(playerPositions: unknown): Map<string, Coordinates> {
         const positionsMap = new Map<string, Coordinates>();
 
         try {
@@ -350,6 +349,14 @@ export class LobbyService {
         return new Observable((observer) => {
             this.socket.on('hostDisconnected', () => {
                 observer.next();
+            });
+        });
+    }
+
+    onCombatUpdate(): Observable<{ timeLeft: number }> {
+        return new Observable((observer) => {
+            this.socket.on('combatUpdate', (data) => {
+                observer.next(data);
             });
         });
     }
