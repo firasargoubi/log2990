@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
-import { Game } from '@common/game.interface';
+import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
+import { GameState } from '@common/game-state';
+import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
+import { Tile } from '@common/tile';
 import { Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { environment } from 'src/environments/environment';
-import { Coordinates } from '@common/coordinates';
-import { GameState } from '@common/game-state';
 
 @Injectable({
     providedIn: 'root',
@@ -24,8 +25,8 @@ export class LobbyService {
             console.log('Socket connected with ID:', this.socket.id);
         });
 
-        this.socket.on('disconnect', () => {
-            console.log('Socket disconnected');
+        this.socket.on('disconnect', (reason) => {
+            console.log('Socket disconnected: ', reason);
         });
 
         this.socket.on('connect_error', (error) => {
@@ -262,33 +263,6 @@ export class LobbyService {
         });
     }
 
-    private convertPlayerPositionsToMap(playerPositions: any): Map<string, Coordinates> {
-        const positionsMap = new Map<string, Coordinates>();
-
-        try {
-            if (playerPositions) {
-                if (playerPositions instanceof Map) {
-                    return playerPositions;
-                }
-
-                if (typeof playerPositions === 'object' && !Array.isArray(playerPositions)) {
-                    Object.entries(playerPositions).forEach(([playerId, position]) => {
-                        positionsMap.set(playerId, position as Coordinates);
-                    });
-                    console.log('Converted player positions to Map:', Array.from(positionsMap.entries()));
-                } else {
-                    console.warn('playerPositions is not an object:', playerPositions);
-                }
-            } else {
-                console.warn('playerPositions is undefined or null');
-            }
-        } catch (error) {
-            console.error('Error converting playerPositions to Map:', error);
-        }
-
-        return positionsMap;
-    }
-
     getLobby(lobbyId: string): Observable<GameLobby> {
         return new Observable((observer) => {
             this.socket.emit('getLobby', lobbyId, (lobby: GameLobby) => {
@@ -352,5 +326,54 @@ export class LobbyService {
                 observer.next();
             });
         });
+    }
+
+    executeAction(action: string, tile: Tile, lobbyId: string): Observable<{ newGameBoard: number[][] }> {
+        return new Observable<{ newGameBoard: number[][] }>((observer) => {
+            // Attente de la mise à jour de la tuile
+            this.socket.once('tileUpdated', (data: { newGameBoard: number[][] }) => {
+                observer.next(data);
+                observer.complete();
+            });
+
+            // Émission de l'action au serveur
+            this.socket.emit(action, { tile, lobbyId });
+        });
+    }
+
+    // Écoute les mises à jour envoyées à TOUS les joueurs
+    onTileUpdate(): Observable<{ newGameBoard: number[][] }> {
+        return new Observable<{ newGameBoard: number[][] }>((observer) => {
+            this.socket.on('tileUpdated', (data: { newGameBoard: number[][] }) => {
+                observer.next(data);
+            });
+        });
+    }
+
+    private convertPlayerPositionsToMap(playerPositions: unknown): Map<string, Coordinates> {
+        const positionsMap = new Map<string, Coordinates>();
+
+        try {
+            if (playerPositions) {
+                if (playerPositions instanceof Map) {
+                    return playerPositions;
+                }
+
+                if (typeof playerPositions === 'object' && !Array.isArray(playerPositions)) {
+                    Object.entries(playerPositions).forEach(([playerId, position]) => {
+                        positionsMap.set(playerId, position as Coordinates);
+                    });
+                    console.log('Converted player positions to Map:', Array.from(positionsMap.entries()));
+                } else {
+                    console.warn('playerPositions is not an object:', playerPositions);
+                }
+            } else {
+                console.warn('playerPositions is undefined or null');
+            }
+        } catch (error) {
+            console.error('Error converting playerPositions to Map:', error);
+        }
+
+        return positionsMap;
     }
 }

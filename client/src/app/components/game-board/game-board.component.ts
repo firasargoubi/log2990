@@ -2,12 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { GameTileComponent } from '@app/components/game-tile/game-tile.component';
 import { OBJECT_MULTIPLIER } from '@app/Consts/app.constants';
-import { Tile } from '@app/interfaces/tile';
-import { ActionService } from '@app/services/action-service';
+import { ActionService } from '@app/services/action.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { Coordinates } from '@common/coordinates';
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
+import { Tile } from '@common/tile';
 
 @Component({
     selector: 'app-game-board',

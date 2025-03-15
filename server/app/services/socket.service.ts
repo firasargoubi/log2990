@@ -1,8 +1,10 @@
+/* eslint-disable max-lines */
 import { GameState } from '@app/interface/game-state';
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
-import { Game } from '@common/game.interface';
+import { Game, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
+import { Tile } from '@common/tile';
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { Container, Service } from 'typedi';
@@ -88,6 +90,16 @@ export class SocketService {
             socket.on('disconnect', () => {
                 console.log(`Client disconnected: ${socket.id}`);
                 this.handleDisconnect(socket);
+            });
+
+            socket.on('closeDoor', (data: { tile: Tile; lobbyId: string }) => {
+                console.log('closeDoor received on server');
+                this.closeDoor(socket, data.tile, data.lobbyId);
+            });
+
+            socket.on('openDoor', (data: { tile: Tile; lobbyId: string }) => {
+                console.log('openDoor received on server');
+                this.openDoor(socket, data.tile, data.lobbyId);
             });
         });
     }
@@ -524,5 +536,38 @@ export class SocketService {
         console.log(`Player positions: ${JSON.stringify(Object.keys(stateCopy.playerPositions))}`);
 
         return stateCopy;
+    }
+
+    private closeDoor(socket: Socket, tile: Tile, lobbyId: string) {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) {
+            socket.emit('error', 'Game not found.');
+            return;
+        }
+        const newGameBoard = gameState.board.map((row) => [...row]);
+        newGameBoard[tile.x][tile.y] = TileTypes.DoorClosed;
+        const updatedGameState: GameState = {
+            ...gameState,
+            board: newGameBoard,
+        };
+        this.gameStates.set(lobbyId, updatedGameState);
+        console.log(`📡 Envoi d'une mise à jour au lobby ${lobbyId}`);
+        this.io.to(lobbyId).emit('tileUpdated', { newGameBoard });
+    }
+
+    private openDoor(socket: Socket, tile: Tile, lobbyId: string) {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) {
+            socket.emit('error', 'Game not found.');
+            return;
+        }
+        const newGameBoard = gameState.board.map((row) => [...row]);
+        newGameBoard[tile.x][tile.y] = TileTypes.DoorOpen;
+        const updatedGameState = {
+            ...gameState,
+            board: newGameBoard,
+        };
+        this.gameStates.set(lobbyId, updatedGameState);
+        this.io.to(lobbyId).emit('tileUpdated', { newGameBoard });
     }
 }

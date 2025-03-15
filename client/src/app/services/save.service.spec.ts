@@ -7,7 +7,7 @@ import { SaveService } from './save.service';
 import { GameService } from './game.service';
 import { Game, GameSize, GameType } from '@common/game.interface';
 import { MapSize, TileTypes } from '@app/Consts/app.constants';
-import { Tile } from '@app/interfaces/tile';
+import { Tile } from '@common/tile';
 import { of, throwError } from 'rxjs';
 
 describe('SaveService', () => {
