@@ -180,22 +180,35 @@ export class SocketService {
     }
 
     private leaveLobby(socket: Socket, lobbyId: string, playerName: string) {
+        console.log(`Player ${playerName} (${socket.id}) leaving lobby ${lobbyId}`);
         const lobby = this.lobbies.get(lobbyId);
-        if (!lobby) {
-            socket.emit('error', 'Lobby not found.');
-            return;
-        }
+        if (!lobby) return;
 
         const playerIndex = lobby.players.findIndex((p) => p.name === playerName);
-        if (playerIndex === -1) {
-            socket.emit('error', 'Player not found in lobby.');
+        if (playerIndex === -1) return;
+
+        // Get the player before removal
+        const player = lobby.players[playerIndex];
+        if (player.isHost) {
+            // If the host leaves, kick all players
+            this.lobbies.delete(lobbyId);
+            this.gameStates.delete(lobbyId);
+            this.io.to(lobbyId).emit('hostDisconnected');
             return;
         }
 
         lobby.players.splice(playerIndex, 1);
         socket.leave(lobbyId);
+
         this.io.to(lobbyId).emit('playerLeft', { lobbyId, playerName });
-        socket.emit('lobbyUpdated', { lobbyId, lobby: JSON.parse(JSON.stringify(lobby)) });
+
+        socket.emit('playerLeft', { lobbyId, playerName });
+
+        this.updateLobby(lobbyId);
+
+        if (this.gameStates.has(lobbyId)) {
+            this.handlePlayerLeaveGame(lobbyId, player.id);
+        }
     }
 
     private lockLobby(socket: Socket, lobbyId: string) {
@@ -205,7 +218,7 @@ export class SocketService {
             return;
         }
 
-        lobby.isLocked = true;
+        lobby.isLocked = !lobby.isLocked;
         this.io.to(lobbyId).emit('lobbyLocked', { lobbyId });
         this.updateLobby(lobbyId);
         console.log(`Lobby ${lobbyId} locked`);
@@ -463,28 +476,38 @@ export class SocketService {
     private handleDisconnect(socket: Socket) {
         for (const [lobbyId, lobby] of this.lobbies.entries()) {
             const playerIndex = lobby.players.findIndex((p) => p.id === socket.id);
+
             if (playerIndex !== -1) {
                 const player = lobby.players[playerIndex];
                 console.log(`Player ${player.name} (${socket.id}) disconnected from lobby ${lobbyId}`);
+
+                const isHost = player.isHost;
 
                 lobby.players.splice(playerIndex, 1);
                 socket.leave(lobbyId);
 
                 this.io.to(lobbyId).emit('playerLeft', { lobbyId, playerName: player.name });
 
-                this.updateLobby(lobbyId);
-
-                if (lobby.players.length === 0) {
-                    console.log(`Removing empty lobby ${lobbyId}`);
+                if (isHost) {
+                    // If the host disconnects, remove the lobby
+                    console.log(`Host disconnected, removing lobby ${lobbyId}`);
                     this.lobbies.delete(lobbyId);
                     this.gameStates.delete(lobbyId);
-                } else if (this.gameStates.has(lobbyId)) {
-                    this.handlePlayerLeaveGame(lobbyId, socket.id);
+                    this.io.to(lobbyId).emit('hostDisconnected');
+                } else {
+                    this.updateLobby(lobbyId);
+
+                    if (lobby.players.length === 0) {
+                        console.log(`Removing empty lobby ${lobbyId}`);
+                        this.lobbies.delete(lobbyId);
+                        this.gameStates.delete(lobbyId);
+                    } else if (this.gameStates.has(lobbyId)) {
+                        this.handlePlayerLeaveGame(lobbyId, socket.id);
+                    }
                 }
             }
         }
     }
-
     private handlePlayerLeaveGame(lobbyId: string, playerId: string) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;

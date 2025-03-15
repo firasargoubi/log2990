@@ -7,6 +7,8 @@ import { GameInfoComponent } from '@app/components/game-info/game-info.component
 import { InventoryComponent } from '@app/components/inventory/inventory.component';
 import { MessagesComponent } from '@app/components/messages/messages.component';
 import { PlayerListComponent } from '@app/components/player-list/player-list.component';
+import { WAITING_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { PageUrl } from '@app/Consts/route-constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { Coordinates } from '@common/coordinates';
@@ -80,6 +82,17 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.lobbyService.onError().subscribe((error) => {
                 console.error('Socket error received', error);
                 this.notificationService.showError(error);
+            }),
+
+            this.lobbyService.onPlayerLeft().subscribe((data) => {
+                if (data.playerName === this.currentPlayer?.name) {
+                    this.notificationService.showError('vous avez quitté la partie');
+                    this.router.navigate([PageUrl.Home], { replaceUrl: true });
+                }
+            }),
+            this.lobbyService.onHostDisconnected().subscribe(() => {
+                this.notificationService.showError(WAITING_PAGE_CONSTANTS.lobbyCancelled);
+                this.router.navigate([PageUrl.Home], { replaceUrl: true });
             }),
         );
     }
@@ -209,13 +222,9 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     onRemovePlayer(): void {
         this.remove.emit(this.player.id);
     }
-
-    onAbandon(playerId: string): void {
-        if (this.lobby) {
-            const player = this.lobby.players.find((p) => p.id === playerId);
-            if (player) {
-                this.lobbyService.leaveLobby(this.lobby.id, player.name);
-            }
+    onAbandon(playerName: string): void {
+        if (this.lobbyId && this.currentPlayer) {
+            this.lobbyService.leaveLobby(this.lobbyId, playerName);
         }
     }
     attack() {
