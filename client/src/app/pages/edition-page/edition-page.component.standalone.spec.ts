@@ -169,6 +169,11 @@ describe('EditionPageComponent Standalone', () => {
         expect(component.mapSize).toBe(20);
     });
 
+    it('should return small map size when mapSize is invalid', () => {
+        component.game.mapSize = 'invalid' as GameSize;
+        expect(component.mapSize).toBe(10);
+    });
+
     it('should return correct objectNumber based on mapSize', () => {
         component.game.mapSize = GameSize.small;
         expect(component.objectNumber).toBe(2);
@@ -327,5 +332,30 @@ describe('EditionPageComponent Standalone', () => {
         expect(imageServiceSpy.captureBoardFromTiles).toHaveBeenCalled();
         expect(saveServiceSpy.saveGame).toHaveBeenCalled();
         expect(component.saveState).toBeTrue();
+    });
+
+    it('should show error notification when saving fails', async () => {
+        validationServiceSpy.validateGame.and.returnValue(true);
+        component.showErrorPopup = false;
+        component.game = mockGame;
+
+        const error = new Error('Test Error');
+        imageServiceSpy.captureBoardFromTiles.and.returnValue(Promise.reject(error));
+
+        await component.saveBoard();
+
+        expect(notificationServiceSpy.showError).toHaveBeenCalledWith('Error saving game: ' + error.message);
+    });
+    it('should reset the game to reference and alert board reset', () => {
+        const initialGame = { ...component.game };
+        component.game.name = 'Modified Name';
+        component.gameReference = initialGame;
+
+        component.resetBoard();
+
+        expect(component.game).toEqual(initialGame);
+        // Assuming boardService.initializeBoard is a spy, check if it's called
+        expect(component['boardService'].initializeBoard).toHaveBeenCalledWith(initialGame, component.mapSize);
+        expect(saveServiceSpy.alertBoardForReset).toHaveBeenCalledWith(true);
     });
 });
