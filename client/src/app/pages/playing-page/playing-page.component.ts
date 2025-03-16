@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CountdownComponent } from '@app/components/countdown-timer/countdown-timer.component';
 import { GameBoardComponent } from '@app/components/game-board/game-board.component';
@@ -23,8 +23,6 @@ import { Subscription } from 'rxjs';
     styleUrls: ['./playing-page.component.scss'],
 })
 export class PlayingPageComponent implements OnInit, OnDestroy {
-    @ViewChild(CountdownComponent) countdownComponent!: CountdownComponent;
-
     @Output() action: boolean = false;
     lobbyId: string = '';
     gameState: GameState | null = null;
@@ -32,6 +30,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     debug: boolean = true;
     isInCombat: boolean = false; // Pour savoir si le joueur est en combat
     remainingTime: number = 0;
+    isPlayerTurn: boolean = false; // Indique si c'est le tour du joueur
+    combatSubscription: Subscription | null = null;
+    turnSubscription: Subscription | null = null;
+    private interval: number | null = null;
 
     private lobbyService = inject(LobbyService);
     private actionService = inject(ActionService);
@@ -64,6 +66,18 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 }
             },
             error: (err) => console.error('Erreur réception mise à jour tuile:', err),
+        });
+        this.combatSubscription = this.lobbyService.onCombatUpdate().subscribe((data) => {
+            if (data && data.timeLeft !== undefined) {
+                this.remainingTime = data.timeLeft; // Mettez à jour le temps restant
+            }
+        });
+
+        this.turnSubscription = this.lobbyService.onTurnStarted().subscribe((data) => {
+            this.isPlayerTurn = data.currentPlayer === this.currentPlayer?.id;
+            this.remainingTime = 30; // Réinitialiser à 30 secondes pour chaque tour
+            // this.currentPlayer = data.currentPlayer;
+            this.startTurnCountdown(); // Démarrer le compte à rebours du tour
         });
     }
 
@@ -246,34 +260,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         return result;
     }
 
-    // debugLogGameState() {
-    //     console.log('================ GAME STATE DEBUG ================');
-    //     if (!this.gameState) {
-    //         console.log('Game state is null or undefined');
-    //         return;
-    //     }
-
-    //     console.log('Game State ID:', this.gameState.id);
-    //     console.log('Current Player in Game:', this.gameState.currentPlayer);
-    //     console.log('Local Player ID:', this.currentPlayer);
-    //     console.log('Socket ID:', this.lobbyService.getSocketId());
-    //     console.log('Is Local Player Turn:', this.isCurrentPlayerTurn());
-    //     console.log('Available Moves:', this.gameState.availableMoves);
-
-    //     console.log('Player Positions:');
-    //     if (this.gameState.playerPositions instanceof Map) {
-    //         Array.from(this.gameState.playerPositions.entries()).forEach(([playerId, pos]) => {
-    //             console.log(`Player ${playerId} at (${pos.x}, ${pos.y})`);
-    //         });
-    //     }
-
-    //     console.log('Players:');
-    //     this.gameState.players.forEach((player) => {
-    //         console.log(`- ${player.name} (${player.id})`);
-    //     });
-
-    //     console.log('================ END DEBUG ================');
-    // }
     abandon() {
         // Vérifier que le lobby et le joueur actuel existent
         if (this.lobbyId && this.currentPlayer) {
@@ -288,12 +274,36 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.action = !this.action;
     }
 
+    // Gestion du combat pour réinitialiser à 30 secondes
     onAttackClick(playerId: string, lobbyId: string): void {
-        // Demander au serveur de démarrer le combat
-        this.lobbyService.startCombat(playerId, lobbyId); // Envoi au serveur
+        this.lobbyService.startCombat(playerId, lobbyId); // Démarre le combat
+        this.isInCombat = true; // Le joueur est en combat
+        this.remainingTime = 30; // Réinitialiser à 30 secondes pour le combat
+    }
 
-        // Mettre en place la logique pour activer le timer de combat
-        this.isInCombat = true;
-        this.countdownComponent.startCombatCountdown();
+    // Vérifier si le joueur courant est impliqué dans le combat
+    isCurrentPlayerInCombat(): boolean {
+        return this.gameState?.combat?.playerId === this.currentPlayer?.id;
+    }
+
+    startTurnCountdown(): void {
+        if (this.remainingTime > 0) {
+            this.interval = window.setInterval(() => {
+                if (this.remainingTime > 0) {
+                    this.remainingTime--;
+                    this.updateTimerForAllPlayers(); // Envoyer la mise à jour à tous les joueurs
+                } else {
+                    if (this.interval !== null) {
+                        clearInterval(this.interval); // Arrêter le compte à rebours quand il atteint zéro
+                    }
+                }
+            }, 1000); // 1 seconde
+        }
+    }
+
+    updateTimerForAllPlayers(): void {
+        if (this.currentPlayer) {
+            this.lobbyService.updateCombatTime(this.remainingTime);
+        }
     }
 }
