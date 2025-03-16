@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { CountdownCombatComponent } from '@app/components/countdown-combat/countdown-combat.component';
 import { CountdownPlayerComponent } from '@app/components/countdown-player/countdown-player.component';
 import { GameBoardComponent } from '@app/components/game-board/game-board.component';
 import { GameInfoComponent } from '@app/components/game-info/game-info.component';
@@ -17,7 +18,15 @@ import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-playing-page',
-    imports: [CommonModule, CountdownPlayerComponent, InventoryComponent, GameInfoComponent, MessagesComponent, GameBoardComponent],
+    imports: [
+        CommonModule,
+        CountdownPlayerComponent,
+        InventoryComponent,
+        GameInfoComponent,
+        MessagesComponent,
+        GameBoardComponent,
+        CountdownCombatComponent,
+    ],
     standalone: true,
     templateUrl: './playing-page.component.html',
     styleUrls: ['./playing-page.component.scss'],
@@ -29,7 +38,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     currentPlayer: Player | null = null;
     debug: boolean = true;
     isInCombat: boolean = false; // Pour savoir si le joueur est en combat
-    remainingTime: number = 0;
+    remainingTime: number = 30;
     isPlayerTurn: boolean = false; // Indique si c'est le tour du joueur
     combatSubscription: Subscription | null = null;
     turnSubscription: Subscription | null = null;

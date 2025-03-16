@@ -51,17 +51,13 @@
         <app-messages></app-messages>
 
         <!-- Countdown for the active player or others -->
-        <app-countdown-player
-            *ngIf="isInCombat || isPlayerTurn"
-            [countdown]="remainingTime"
-            [isInCombat]="isInCombat"
-            [isPlayerTurn]="isCurrentPlayerTurn()"
-            [lobbyId]="lobbyId"
-        ></app-countdown-player>
+        <div *ngIf="getActivePlayer()">
+            <app-countdown-player [timeLeft]="remainingTime" [isPlayerTurn]="isPlayerTurn" [lobbyId]="lobbyId"> </app-countdown-player>
+        </div>
 
-        <!-- Show for non-active players -->
-        <div *ngIf="!isCurrentPlayerTurn && !isInCombat">
-            <p>Il reste au joueur actif {{ remainingTime }} secondes</p>
+        <!-- Affichage du compte à rebours du combat -->
+        <div *ngIf="isInCombat">
+            <app-countdown-combat [timeLeft]="remainingTime"> </app-countdown-combat>
         </div>
 
         <app-inventory></app-inventory>

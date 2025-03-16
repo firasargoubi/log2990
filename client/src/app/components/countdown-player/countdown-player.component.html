@@ -1,4 +1,16 @@
 <div class="countdown-player">
-    <h3>Temps restant:</h3>
-    <p>{{ countdown }} secondes</p>
+    <!-- Affichage du compte à rebours pour le joueur actif -->
+    <p *ngIf="isActivePlayer">
+        <strong>Time remaining for your turn: {{ remainingTime }} seconds</strong>
+    </p>
+
+    <!-- Affichage du compte à rebours pour les autres joueurs -->
+    <p *ngIf="!isActivePlayer && isPlayerTurn">
+        <strong>Il vous reste: {{ remainingTime }} seconds</strong>
+    </p>
+
+    <!-- Message indiquant qu'il n'est pas encore au tour du joueur -->
+    <p *ngIf="!isActivePlayer && !isPlayerTurn">
+        <strong>Il reste au joueur Actif : {{ remainingTime }} seconds</strong>
+    </p>
 </div>
