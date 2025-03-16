@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CountdownCombatComponent } from '@app/components/countdown-combat/countdown-combat.component';
+import { CombatComponent } from '@app/components/combat/combat.component';
 import { CountdownPlayerComponent } from '@app/components/countdown-player/countdown-player.component';
 import { GameBoardComponent } from '@app/components/game-board/game-board.component';
 import { GameInfoComponent } from '@app/components/game-info/game-info.component';
@@ -18,32 +18,24 @@ import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-playing-page',
-    imports: [
-        CommonModule,
-        CountdownPlayerComponent,
-        InventoryComponent,
-        GameInfoComponent,
-        MessagesComponent,
-        GameBoardComponent,
-        CountdownCombatComponent,
-    ],
+    imports: [CommonModule, CountdownPlayerComponent, InventoryComponent, GameInfoComponent, MessagesComponent, GameBoardComponent, CombatComponent],
     standalone: true,
     templateUrl: './playing-page.component.html',
     styleUrls: ['./playing-page.component.scss'],
 })
 export class PlayingPageComponent implements OnInit, OnDestroy {
     @Output() action: boolean = false;
-    lobbyId: string = '';
-    gameState: GameState | null = null;
-    currentPlayer: Player | null = null;
+    @Output() currentPlayer: Player | null = null;
+    @Output() lobbyId: string = '';
+    @Output() opponent: Player | null = null;
+    @Output() gameState: GameState | null = null;
     debug: boolean = true;
-    isInCombat: boolean = false; // Pour savoir si le joueur est en combat
-    remainingTime: number = 30;
+    isInCombat: boolean = false;
+    remainingTime: number = 0;
     isPlayerTurn: boolean = false; // Indique si c'est le tour du joueur
     combatSubscription: Subscription | null = null;
     turnSubscription: Subscription | null = null;
     private interval: number | null = null;
-
     private lobbyService = inject(LobbyService);
     private actionService = inject(ActionService);
     private router = inject(Router);
@@ -87,6 +79,11 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.remainingTime = 30; // Réinitialiser à 30 secondes pour chaque tour
             // this.currentPlayer = data.currentPlayer;
             this.startTurnCountdown(); // Démarrer le compte à rebours du tour
+        });
+        this.lobbyService.onInteraction().subscribe((data) => {
+            console.log(data);
+            this.isInCombat = data.isInCombat;
+            console.log(this.isInCombat);
         });
     }
 
@@ -203,6 +200,19 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         const action = this.actionService.getActionType(tile, this.gameState);
         if (!action) {
             return;
+        }
+
+        if (action === 'battle') {
+            this.opponent = this.actionService.findOpponent(tile) || null;
+            console.log(this.opponent);
+            if (this.opponent) {
+                this.lobbyService.initializeBattle(this.currentPlayer, this.opponent, this.lobbyId);
+                this.lobbyService.onInteraction().subscribe((data) => {
+                    this.isInCombat = data.isInCombat;
+                });
+            } else {
+                console.error('Opponent not found for battle initialization');
+            }
         }
 
         this.lobbyService.executeAction(action, tile, this.lobbyId).subscribe({

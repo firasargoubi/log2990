@@ -8,6 +8,7 @@ import { Tile } from '@common/tile';
 import { Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { environment } from 'src/environments/environment';
+import { shareReplay as rxjsShareReplay } from 'rxjs/operators';
 
 @Injectable({
     providedIn: 'root',
@@ -345,6 +346,34 @@ export class LobbyService {
         });
     }
 
+    initializeBattle(currentPlayer: Player, opponent: Player, lobbyId: string) {
+        this.socket.emit('initializeBattle', { currentPlayer, opponent, lobbyId });
+    }
+
+    onInteraction(): Observable<{ isInCombat: boolean }> {
+        return new Observable<{ isInCombat: boolean }>((observer) => {
+            this.socket.on('playersBattling', (data: { isInCombat: boolean }) => {
+                observer.next(data);
+                observer.complete();
+            });
+        }).pipe(shareReplay(1));
+    }
+
+    getPlayerTurn(): Observable<{ playerTurn: string }> {
+        return new Observable<{ playerTurn: string }>((observer) => {
+            this.socket.on('PlayerTurn', (data: { playerTurn: string }) => {
+                console.log('PLAYER ID: ', data);
+                observer.next(data);
+                observer.complete();
+            });
+        });
+    }
+
+    handleAttack(currentPlayer: Player, opponent: Player, lobbyId: string, gameState: GameState) {
+        console.log('START BATTLE IN CURRENT PLAYER');
+        this.socket.emit('startBattle', { currentPlayer, opponent, lobbyId, gameState });
+    }
+
     // Écoute les mises à jour envoyées à TOUS les joueurs
     onTileUpdate(): Observable<{ newGameBoard: number[][] }> {
         return new Observable<{ newGameBoard: number[][] }>((observer) => {
@@ -408,4 +437,7 @@ export class LobbyService {
     updateCountdown(time: number): void {
         this.socket.emit('updateCountdown(time)', { time }); // Calls the updateCountdown method in SocketService
     }
+}
+function shareReplay<T>(bufferSize: number): import('rxjs').OperatorFunction<T, T> {
+    return rxjsShareReplay(bufferSize);
 }

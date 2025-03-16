@@ -65,12 +65,22 @@
         </div>
 
         <app-inventory></app-inventory>
-
-        <div class="action-buttons">
-            <button (click)="handleAction()">Action</button>
-            <button (click)="abandon()" routerLink="/home">Abandonner</button>
-            <button class="end-turn-button" [disabled]="!isCurrentPlayerTurn()" (click)="onEndTurn()">Terminer le tour</button>
-            <button (click)="onAttackClick(currentPlayer?.id ?? '', lobbyId)">Attaquer</button>
-        </div>
+        @if (isInCombat) {
+            <div class="action-buttons">
+                <app-combat 
+                [gameState]="gameState"
+                [currentPlayer]="currentPlayer!"
+                [opponent]="opponent!"
+                ></app-combat>
+            </div>
+        }
+        @else {
+            <div class="action-buttons">
+                <button (click)="handleAction()">Action</button>
+                <button (click)="abandon()" routerLink="/home">Abandonner</button>
+                <button class="end-turn-button" [disabled]="!isCurrentPlayerTurn()" (click)="onEndTurn()">Terminer le tour</button>
+                <!-- <button (click)="onAttackClick(currentPlayer?.id ?? '', lobbyId)">Attaquer</button> -->
+            </div>
+        }
     </div>
 </div>
