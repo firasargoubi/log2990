@@ -54,8 +54,7 @@ export class SocketService {
         );
         socket.on('requestStart', (lobbyId: string) => this.handleRequestStart(socket, lobbyId));
         socket.on('endTurn', (data: { lobbyId: string }) => this.handleEndTurn(socket, data));
-        socket.on('requestMovement', (data: { lobbyId: string; coordinate: Coordinates }) => this.handleRequestMovement(socket, data));
-        socket.on('requestPath', (data: { lobbyId: string; destination: Coordinates }) => this.handleRequestPath(socket, data));
+        socket.on('requestMovement', (data: { lobbyId: string; coordinates: Coordinates[] }) => this.handleRequestMovement(socket, data));
         socket.on('disconnect', () => this.handleDisconnect(socket));
     }
 
@@ -106,12 +105,8 @@ export class SocketService {
         this.gameSocketHandlerService.handleEndTurn(socket, data.lobbyId);
     }
 
-    private handleRequestMovement(socket: Socket, data: { lobbyId: string; coordinate: Coordinates }): void {
-        this.gameSocketHandlerService.handleRequestMovement(socket, data.lobbyId, data.coordinate);
-    }
-
-    private handleRequestPath(socket: Socket, data: { lobbyId: string; destination: Coordinates }): void {
-        this.gameSocketHandlerService.handlePathRequest(socket, data.lobbyId, data.destination);
+    private handleRequestMovement(socket: Socket, data: { lobbyId: string; coordinates: Coordinates[] }): void {
+        this.gameSocketHandlerService.handleRequestMovement(socket, data.lobbyId, data.coordinates);
     }
 
     private handleDisconnect(socket: Socket): void {

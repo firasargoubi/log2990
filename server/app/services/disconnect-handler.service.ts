@@ -1,4 +1,4 @@
-import { GameState } from '@app/interface/game-state';
+import { GameState } from '@common/game-state';
 import { GameLobby } from '@common/game-lobby';
 import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
@@ -13,7 +13,7 @@ export class DisconnectHandlerService {
         private lobbies: Map<string, GameLobby>,
         private gameStates: Map<string, GameState>,
         private gameSocketHandler: GameSocketHandlerService,
-        private boardService: BoardService, // Add this line
+        private boardService: BoardService,
     ) {}
     setServer(server: Server) {
         this.io = server;
@@ -55,39 +55,14 @@ export class DisconnectHandlerService {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
 
-        console.log(`Handling player ${playerId} leaving game in lobby ${lobbyId}`);
-
         if (gameState.currentPlayer === playerId) {
             const updatedGameState = this.boardService.handleEndTurn(gameState);
             this.gameStates.set(lobbyId, updatedGameState);
 
-            const serializableGameState = this.serializeGameState(updatedGameState);
-            this.io.to(lobbyId).emit('turnEnded', {
-                gameState: serializableGameState,
-                previousPlayer: playerId,
-                currentPlayer: updatedGameState.currentPlayer,
-            });
+            this.io.to(lobbyId).emit('turnEnded', gameState);
 
             this.gameSocketHandler.startTurn(lobbyId);
         }
-    }
-    private serializeGameState(gameState: GameState): unknown {
-        if (!gameState.availableMoves) {
-            gameState.availableMoves = [];
-            console.warn('availableMoves was undefined in gameState, set to empty array before serialization');
-        }
-
-        const stateCopy = {
-            ...gameState,
-            playerPositions: Object.fromEntries(gameState.playerPositions),
-            availableMoves: [...gameState.availableMoves],
-        };
-
-        console.log(`Serialized game state successfully. Available moves count: ${stateCopy.availableMoves.length}`);
-        console.log(`Current player: ${stateCopy.currentPlayer}`);
-        console.log(`Player positions: ${JSON.stringify(Object.keys(stateCopy.playerPositions))}`);
-
-        return stateCopy;
     }
     private updateLobby(lobbyId: string): void {
         const lobby = this.lobbies.get(lobbyId);
