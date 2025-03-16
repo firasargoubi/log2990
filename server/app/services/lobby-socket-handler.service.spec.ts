@@ -17,12 +17,12 @@ describe('LobbySocketHandlerService', () => {
     beforeEach(() => {
         sandbox = createSandbox();
         lobbies = new Map<string, GameLobby>();
-        ioMock = { to: sandbox.stub().returns({ emit: sandbox.spy() }) } as any;
+        ioMock = { to: sandbox.stub().returns({ emit: sandbox.stub() }) } as any;
         socketMock = {
             id: 'socket123',
-            join: sandbox.spy(),
-            leave: sandbox.spy(),
-            emit: sandbox.spy(),
+            join: sandbox.stub(),
+            leave: sandbox.stub(),
+            emit: sandbox.stub(),
         };
         service = new LobbySocketHandlerService(lobbies);
         service.setServer(ioMock as unknown as Server);

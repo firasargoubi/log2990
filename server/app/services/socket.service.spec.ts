@@ -4,7 +4,6 @@ import { GameSocketHandlerService } from '@app/services/game-socket-handler.serv
 import { LobbySocketHandlerService } from '@app/services/lobby-socket-handler.service';
 import { SocketService } from '@app/services/socket.service';
 import { ValidationSocketHandlerService } from '@app/services/validation-socket-handler.service';
-import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
 import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
@@ -149,18 +148,6 @@ describe('SocketService', () => {
     it('should handle endTurn event', () => {
         service['handleEndTurn'](mockSocket, { lobbyId: '123' });
         expect(mockGameHandler.handleEndTurn.calledWith(mockSocket, '123')).to.be.equal(true);
-    });
-
-    it('should handle requestMovement event', () => {
-        const coordinate = { x: 1, y: 1 } as Coordinates;
-        service['handleRequestMovement'](mockSocket, { lobbyId: '123', coordinate });
-        expect(mockGameHandler.handleRequestMovement.calledWith(mockSocket, '123', coordinate)).to.be.equal(true);
-    });
-
-    it('should handle requestPath event', () => {
-        const destination = { x: 2, y: 2 } as Coordinates;
-        service['handleRequestPath'](mockSocket, { lobbyId: '123', destination });
-        expect(mockGameHandler.handlePathRequest.calledWith(mockSocket, '123', destination)).to.be.equal(true);
     });
 
     it('should call handleDisconnect on handleDisconnect event', () => {

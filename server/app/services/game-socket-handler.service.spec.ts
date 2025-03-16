@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { GameState } from '@app/interface/game-state';
 import { BoardService } from '@app/services/board.service';
 import { GameSocketHandlerService } from '@app/services/game-socket-handler.service';
 import { LobbySocketHandlerService } from '@app/services/lobby-socket-handler.service';
 import { GameLobby } from '@common/game-lobby';
+import { GameState } from '@common/game-state';
 import { expect } from 'chai';
 import { createSandbox, SinonSandbox, SinonSpy, SinonStub } from 'sinon';
 
@@ -112,21 +112,21 @@ describe('GameSocketHandlerService', () => {
     });
 
     it('should emit error if gameState not found in handleRequestMovement', () => {
-        service.handleRequestMovement(socket, 'lobbyX', { x: 0, y: 0 });
+        service.handleRequestMovement(socket, 'lobbyX', [{ x: 0, y: 0 }]);
         expect(emitSpy.calledWith('error', 'Game not found.')).to.equal(true);
     });
 
     it('should emit error if not currentPlayer in handleRequestMovement', () => {
         const gs = { currentPlayer: 'other' } as GameState;
         gameStates.set('lobby1', gs);
-        service.handleRequestMovement(socket, 'lobby1', { x: 0, y: 0 });
+        service.handleRequestMovement(socket, 'lobby1', [{ x: 0, y: 0 }]);
         expect(emitSpy.calledWith('error', "It's not your turn.")).to.equal(true);
     });
 
     it('should emit error if invalid move in handleRequestMovement', () => {
         const gs = { currentPlayer: 'socket1', availableMoves: [] } as GameState;
         gameStates.set('lobby1', gs);
-        service.handleRequestMovement(socket, 'lobby1', { x: 1, y: 1 });
+        service.handleRequestMovement(socket, 'lobby1', [{ x: 1, y: 1 }]);
         expect(emitSpy.calledWith('error', 'Invalid move.')).to.equal(true);
     });
 
@@ -135,68 +135,13 @@ describe('GameSocketHandlerService', () => {
             currentPlayer: 'socket1',
             availableMoves: [{ x: 1, y: 1 }],
             playerPositions: new Map(),
-        } as GameState;
+        } as unknown as GameState;
         const updated = { currentPlayer: 'socket2', availableMoves: [], playerPositions: new Map() } as any;
         (boardService.handleMovement as any).returns(updated);
         (boardService.handleTurn as any).returns(updated);
         gameStates.set('lobby1', gs);
-        service.handleRequestMovement(socket, 'lobby1', { x: 1, y: 1 });
+        service.handleRequestMovement(socket, 'lobby1', [{ x: 1, y: 1 }]);
         expect(ioToStub.calledWith('lobby1')).to.equal(true);
-    });
-
-    it('should emit error if gameState not found in handlePathRequest', () => {
-        service.handlePathRequest(socket, 'lobbyX', { x: 1, y: 1 });
-        expect(emitSpy.calledWith('error', 'Game not found.')).to.equal(true);
-    });
-
-    it('should emit error if not currentPlayer in handlePathRequest', () => {
-        const gs = { currentPlayer: 'other' } as GameState;
-        gameStates.set('lobby1', gs);
-        service.handlePathRequest(socket, 'lobby1', { x: 1, y: 1 });
-        expect(emitSpy.calledWith('error', "It's not your turn.")).to.equal(true);
-    });
-
-    it('should emit error if player position not found in handlePathRequest', () => {
-        const gs = { currentPlayer: 'socket1', playerPositions: new Map() } as GameState;
-        gameStates.set('lobby1', gs);
-        service.handlePathRequest(socket, 'lobby1', { x: 1, y: 1 });
-        expect(emitSpy.calledWith('error', 'Player position not found.')).to.equal(true);
-    });
-
-    it('should return invalid path if destination invalid', () => {
-        const gs = {
-            currentPlayer: 'socket1',
-            availableMoves: [],
-            playerPositions: new Map([['socket1', { x: 0, y: 0 }]]),
-        } as GameState;
-        gameStates.set('lobby1', gs);
-        service.handlePathRequest(socket, 'lobby1', { x: 5, y: 5 });
-        expect(socket.emit.calledWithMatch('pathCalculated', { path: null, valid: false })).to.equal(true);
-    });
-
-    it('should return path if valid', () => {
-        const gs = {
-            currentPlayer: 'socket1',
-            availableMoves: [{ x: 5, y: 5 }],
-            playerPositions: new Map([['socket1', { x: 0, y: 0 }]]),
-        } as GameState;
-        gameStates.set('lobby1', gs);
-        (boardService.findShortestPath as any).returns([
-            { x: 0, y: 0 },
-            { x: 5, y: 5 },
-        ]);
-        service.handlePathRequest(socket, 'lobby1', { x: 5, y: 5 });
-        expect(socket.emit.calledWithMatch('pathCalculated', { valid: true })).to.equal(true);
-    });
-
-    it('should serialize gameState correctly', () => {
-        const gs: GameState = {
-            playerPositions: new Map([['id', { x: 1, y: 1 }]]),
-            availableMoves: [{ x: 1, y: 1 }],
-        } as GameState;
-        const result = service.serializeGameState(gs);
-        expect(result).to.have.property('playerPositions');
-        expect(result).to.have.property('availableMoves');
     });
 
     it('should call handleEndTurnInternally correctly', () => {
@@ -204,16 +149,6 @@ describe('GameSocketHandlerService', () => {
         (boardService.handleEndTurn as any).returns(gs);
         const result = service.handleEndTurnInternally(gs);
         expect(result).to.equal(gs);
-    });
-
-    it('should validate valid move in isValidMove', () => {
-        const result = service.isValidMove({ availableMoves: [{ x: 1, y: 1 }] } as GameState, { x: 1, y: 1 });
-        expect(result).to.equal(true);
-    });
-
-    it('should return false on invalid move in isValidMove', () => {
-        const result = service.isValidMove({ availableMoves: [{ x: 1, y: 1 }] } as GameState, { x: 2, y: 2 });
-        expect(result).to.equal(false);
     });
     it('should set server correctly', () => {
         const fakeServer = {} as any;
@@ -250,7 +185,7 @@ describe('GameSocketHandlerService', () => {
             playerPositions: new Map(),
             availableMoves: [],
             currentPlayerMovementPoints: 3,
-        } as GameState;
+        } as unknown as GameState;
 
         (boardService.initializeGameState as any).resolves(gs);
         (boardService.handleTurn as any).returns(gs);
@@ -258,27 +193,5 @@ describe('GameSocketHandlerService', () => {
         await service.handleRequestStart(socket, 'lobby1');
 
         expect(spy.calledWith('lobby1')).to.equal(true);
-    });
-    it('should emit invalid path if path is null', () => {
-        const gs = {
-            currentPlayer: 'socket1',
-            availableMoves: [{ x: 1, y: 1 }],
-            playerPositions: new Map([['socket1', { x: 0, y: 0 }]]),
-        } as GameState;
-
-        gameStates.set('lobby1', gs);
-        (boardService.findShortestPath as any).returns(null);
-
-        service.handlePathRequest(socket, 'lobby1', { x: 1, y: 1 });
-
-        expect(socket.emit.calledWithMatch('pathCalculated', { valid: false, path: null })).to.equal(true);
-    });
-    it('should fallback to empty array in serializeGameState if availableMoves is missing', () => {
-        const gs: GameState = {
-            playerPositions: new Map([['id', { x: 1, y: 1 }]]),
-        } as any;
-
-        const serialized = service.serializeGameState(gs);
-        expect(serialized).to.have.property('availableMoves').that.deep.equals([]);
     });
 });
