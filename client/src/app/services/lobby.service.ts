@@ -127,12 +127,6 @@ export class LobbyService {
                 console.log('Game started event received:', data);
 
                 try {
-                    data.gameState.playerPositions = this.convertPlayerPositionsToMap(data.gameState.playerPositions);
-
-                    if (!data.gameState.availableMoves) {
-                        data.gameState.availableMoves = [];
-                        console.warn('availableMoves was undefined in gameState, set to empty array');
-                    }
 
                     console.log('Processed game state:', {
                         currentPlayer: data.gameState.currentPlayer,
@@ -154,18 +148,10 @@ export class LobbyService {
                 console.log('Turn started event received in service:', data);
 
                 try {
-                    data.gameState.playerPositions = this.convertPlayerPositionsToMap(data.gameState.playerPositions);
-
-                    if (!data.availableMoves) {
-                        data.availableMoves = [];
-                        console.warn('availableMoves was undefined in turn data, set to empty array');
-                    }
-
-                    data.gameState.availableMoves = [...data.availableMoves];
 
                     console.log('Processed turn data:', {
-                        currentPlayer: data.currentPlayer,
-                        availableMoves: data.availableMoves,
+                        currentPlayer: data.gameState.currentPlayer,
+                        availableMoves: data.gameState.availableMoves,
                         gameStateAvailableMoves: data.gameState.availableMoves,
                     });
 
@@ -188,8 +174,6 @@ export class LobbyService {
                 console.log('Movement processed event received:', data);
 
                 try {
-                    data.gameState.playerPositions = this.convertPlayerPositionsToMap(data.gameState.playerPositions);
-
                     if (!data.gameState.availableMoves) {
                         data.gameState.availableMoves = [];
                         console.warn('availableMoves was undefined in movement data, set to empty array');
@@ -220,8 +204,6 @@ export class LobbyService {
                 console.log('Turn ended event received:', data);
 
                 try {
-                    data.gameState.playerPositions = this.convertPlayerPositionsToMap(data.gameState.playerPositions);
-
                     if (!data.gameState.availableMoves) {
                         data.gameState.availableMoves = [];
                         console.warn('availableMoves was undefined in turn ended data, set to empty array');
@@ -239,11 +221,6 @@ export class LobbyService {
                 }
             });
         });
-    }
-
-    requestPath(lobbyId: string, destination: Coordinates): void {
-        console.log('Requesting path calculation in lobby:', lobbyId, 'to destination:', destination);
-        this.socket.emit('requestPath', { lobbyId, destination });
     }
 
     onPathCalculated(): Observable<{ destination: Coordinates; path: Coordinates[]; valid: boolean }> {
@@ -363,33 +340,6 @@ export class LobbyService {
                 observer.next(data);
             });
         });
-    }
-
-    private convertPlayerPositionsToMap(playerPositions: unknown): Map<string, Coordinates> {
-        const positionsMap = new Map<string, Coordinates>();
-
-        try {
-            if (playerPositions) {
-                if (playerPositions instanceof Map) {
-                    return playerPositions;
-                }
-
-                if (typeof playerPositions === 'object' && !Array.isArray(playerPositions)) {
-                    Object.entries(playerPositions).forEach(([playerId, position]) => {
-                        positionsMap.set(playerId, position as Coordinates);
-                    });
-                    console.log('Converted player positions to Map:', Array.from(positionsMap.entries()));
-                } else {
-                    console.warn('playerPositions is not an object:', playerPositions);
-                }
-            } else {
-                console.warn('playerPositions is undefined or null');
-            }
-        } catch (error) {
-            console.error('Error converting playerPositions to Map:', error);
-        }
-
-        return positionsMap;
     }
 
     onCombatUpdate(): Observable<{ timeLeft: number }> {

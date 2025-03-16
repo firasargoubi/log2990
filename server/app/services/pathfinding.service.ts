@@ -11,7 +11,13 @@ interface Node {
     parent: Node | null;
 }
 
-type PositionPair = [Coordinates, Coordinates | null];
+interface PathContext {
+    gameState: GameState;
+    current: Node;
+    visitedMap: Map<string, { cost: number; distance: number }>;
+    openSet: Node[];
+    maxMovementPoints: number;
+}
 
 @Service()
 export class PathfindingService {
@@ -70,7 +76,7 @@ export class PathfindingService {
         return isValid;
     }
 
-    findShortestPath(gameState: GameState, start: Coordinates, end: Coordinates, maxMovementPoints = Infinity): PositionPair[] {
+    findShortestPath(gameState: GameState, start: Coordinates, end: Coordinates, maxMovementPoints = Infinity): Coordinates[] {
         if (!this.isPositionInBounds(gameState, end) || !this.isValidPosition(gameState, end)) {
             return [];
         }
@@ -97,7 +103,7 @@ export class PathfindingService {
             }
 
             if (current.x === end.x && current.y === end.y) {
-                return this.reconstructPathPairs(current);
+                return this.reconstructPath(current);
             }
 
             const currentKey = this.getNodeKey(current);
@@ -112,8 +118,16 @@ export class PathfindingService {
                 distance: current.distance,
             });
 
+            const context = {
+                gameState,
+                current,
+                visitedMap,
+                openSet,
+                maxMovementPoints,
+            };
+
             for (const dir of directions) {
-                this.processPotentialNode(gameState, current, dir, visitedMap, openSet, maxMovementPoints);
+                this.processPotentialNode(context, dir);
             }
         }
 
@@ -140,7 +154,7 @@ export class PathfindingService {
                 return a.distance - b.distance;
             });
 
-            const current = queue.shift()!;
+            const current = queue.shift();
             const { pos, cost, distance } = current;
 
             if (pos.x !== startPosition.x || pos.y !== startPosition.y) {
@@ -202,33 +216,20 @@ export class PathfindingService {
         }
     }
 
-    private reconstructPathPairs(endNode: Node): PositionPair[] {
-        const pathPairs: PositionPair[] = [];
+    private reconstructPath(endNode: Node): Coordinates[] {
+        const path: Coordinates[] = [];
         let current: Node | null = endNode;
 
         while (current) {
-            const currentPos: Coordinates = { x: current.x, y: current.y };
-            let parentPos: Coordinates | null = null;
-
-            if (current.parent) {
-                parentPos = { x: current.parent.x, y: current.parent.y };
-            }
-
-            pathPairs.unshift([currentPos, parentPos]);
+            path.unshift({ x: current.x, y: current.y });
             current = current.parent;
         }
 
-        return pathPairs;
+        return path;
     }
 
-    private processPotentialNode(
-        gameState: GameState,
-        current: Node,
-        dir: { x: number; y: number },
-        visitedMap: Map<string, { cost: number; distance: number }>,
-        openSet: Node[],
-        maxMovementPoints: number,
-    ): void {
+    private processPotentialNode(context: PathContext, dir: { x: number; y: number }): void {
+        const { gameState, current, visitedMap, openSet, maxMovementPoints } = context;
         const neighborPos = { x: current.x + dir.x, y: current.y + dir.y };
 
         if (!this.isValidPosition(gameState, neighborPos)) {
@@ -251,7 +252,6 @@ export class PathfindingService {
         }
 
         const neighborNode = this.createNode(neighborPos.x, neighborPos.y, newCost, newDistance, current);
-
         openSet.push(neighborNode);
     }
 

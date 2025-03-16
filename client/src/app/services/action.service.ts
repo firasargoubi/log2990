@@ -11,7 +11,11 @@ export class ActionService {
     gameState: GameState | null = null;
 
     getCurrentPlayerCoordinates(player: Player): { x: number; y: number } | undefined {
-        return this.gameState?.playerPositions.get(player.id);
+        const playerIndex = this.gameState?.players.findIndex((p) => p.id === player.id) || -1;
+        if (playerIndex === -1) {
+            return;
+        }
+        return this.gameState?.playerPositions[playerIndex];
     }
 
     isPlayerOnTile(tile: Tile): boolean {

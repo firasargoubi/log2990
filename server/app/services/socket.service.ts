@@ -1,5 +1,5 @@
 /* eslint-disable max-lines */
-import { GameState } from '@app/interface/game-state';
+import { GameState } from '@common/game-state';
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
 import { Game, TileTypes } from '@common/game.interface';
@@ -84,20 +84,12 @@ export class SocketService {
                 this.handleDisconnect(socket);
             });
 
-            socket.on('startCombat', (data: { playerId: string; lobbyId: string }) => {
-                this.startCombat(socket, data.lobbyId, data.playerId);
-            });
-
             socket.on('closeDoor', (data: { tile: Tile; lobbyId: string }) => {
                 this.closeDoor(socket, data.tile, data.lobbyId);
             });
 
             socket.on('openDoor', (data: { tile: Tile; lobbyId: string }) => {
                 this.openDoor(socket, data.tile, data.lobbyId);
-            });
-
-            socket.on('initializeBattle', (data: { currentPlayer: Player; opponent: Player; lobbyId: string }) => {
-                this.initializeBattle(socket, data.currentPlayer, data.opponent);
             });
         });
     }
@@ -269,6 +261,7 @@ export class SocketService {
         }
 
         try {
+            console.log('Starting game...');
             const gameState = await this.boardService.initializeGameState(lobby);
 
             this.gameStates.set(lobbyId, gameState);
@@ -276,9 +269,8 @@ export class SocketService {
             lobby.isLocked = true;
             this.updateLobby(lobbyId);
 
-
-            this.io.to(lobbyId).emit('gameStarted', gameState);
-
+            this.io.to(lobbyId).emit('gameStarted', { gameState });
+            console.log('Game started.');
             this.startTurn(lobbyId);
         } catch (error) {
             socket.emit('error', `Failed to start game: ${error.message}`);
@@ -296,12 +288,8 @@ export class SocketService {
 
             this.gameStates.set(lobbyId, updatedGameState);
 
-            if (!updatedGameState.availableMoves) {
-                updatedGameState.availableMoves = [];
-            }
-
-
-            this.io.to(lobbyId).emit('turnStarted', gameState);
+            this.io.to(lobbyId).emit('turnStarted', { gameState });
+            console.log('Turn started.');
         } catch (error) {
             this.io.to(lobbyId).emit('error', `Turn error: ${error.message}`);
         }
@@ -324,7 +312,7 @@ export class SocketService {
 
             this.gameStates.set(lobbyId, updatedGameState);
 
-            this.io.to(lobbyId).emit('turnEnded', gameState);
+            this.io.to(lobbyId).emit('turnEnded', { gameState });
 
             this.startTurn(lobbyId);
         } catch (error) {
@@ -354,7 +342,7 @@ export class SocketService {
 
             this.gameStates.set(lobbyId, updatedGameState);
 
-            this.io.to(lobbyId).emit('movementProcessed', gameState);
+            this.io.to(lobbyId).emit('movementProcessed', { gameState });
 
             if (updatedGameState.availableMoves.length === 0) {
                 this.handleEndTurn(socket, lobbyId);
@@ -418,7 +406,8 @@ export class SocketService {
             board: newGameBoard,
         };
         this.gameStates.set(lobbyId, updatedGameState);
-        this.io.to(lobbyId).emit('tileUpdated', { newGameBoard });
+        const playerIndex = gameState.players.findIndex((player) => player.id === gameState.currentPlayer);
+        this.handleRequestMovement(socket, lobbyId, { x: gameState.playerPositions[playerIndex].x, y: gameState.playerPositions[playerIndex].y });
     }
 
     private openDoor(socket: Socket, tile: Tile, lobbyId: string) {
@@ -434,70 +423,7 @@ export class SocketService {
             board: newGameBoard,
         };
         this.gameStates.set(lobbyId, updatedGameState);
-        this.io.to(lobbyId).emit('tileUpdated', { newGameBoard });
-    }
-
-    private initializeBattle(socket: Socket, currentPlayer: Player, opponent: Player) {
-        this.io.to(currentPlayer.id).to(opponent.id).emit('playersBattling', { isInCombat: true });
-    }
-    private startCombat(socket: Socket, lobbyId: string, playerId: string): void {
-        const gameState = this.gameStates.get(lobbyId);
-        if (!gameState) {
-            socket.emit('error', 'Game state not found.');
-            return;
-        }
-
-        const combatEndTime = Date.now() + 30000; // 30 seconds from now
-        gameState.combat = {
-            playerId,
-            endTime: combatEndTime,
-            isActive: true,
-        };
-
-        this.gameStates.set(lobbyId, gameState);
-
-        this.io.to(lobbyId).emit('combatStarted', { playerId, combatEndTime });
-
-        // Start the countdown for the combat
-        this.startCombatCountdown(lobbyId); // Ensure countdown starts when combat begins
-    }
-
-    // Handle when combat ends (either manually or by timer)
-    private endCombat(socket: Socket, lobbyId: string): void {
-        const gameState = this.gameStates.get(lobbyId);
-        if (!gameState || !gameState.combat || !gameState.combat.isActive) {
-            return; // No active combat
-        }
-
-        // Deactivate combat
-        gameState.combat.isActive = false;
-        this.gameStates.set(lobbyId, gameState);
-
-        // Notify all clients that combat has ended
-        this.io.to(lobbyId).emit('combatEnded');
-    }
-
-    // Handle combat countdown updates
-    private handleCombatCountdown(lobbyId: string): void {
-        const gameState = this.gameStates.get(lobbyId);
-        if (!gameState || !gameState.combat || !gameState.combat.isActive) {
-            return; // If no active combat, do nothing
-        }
-
-        const timeLeft = gameState.combat.endTime - Date.now();
-        if (timeLeft <= 0) {
-            this.endCombat(null, lobbyId); // End the combat if time is up
-        } else {
-            this.io.to(lobbyId).emit('combatUpdate', { timeLeft }); // Emit the remaining time to all clients
-        }
-    }
-
-    // Emit a combat update when the countdown changes
-    // socketService.ts
-
-    private startCombatCountdown(lobbyId: string): void {
-        setInterval(() => {
-            this.handleCombatCountdown(lobbyId); // This updates the combat time every second
-        }, 1000); // Update every second
+        const playerIndex = gameState.players.findIndex((player) => player.id === gameState.currentPlayer);
+        this.handleRequestMovement(socket, lobbyId, { x: gameState.playerPositions[playerIndex].x, y: gameState.playerPositions[playerIndex].y });
     }
 }

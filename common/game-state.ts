@@ -14,5 +14,7 @@ export interface GameState {
     currentPlayerMovementPoints: number;
     combat?: {
         playerId: string;
+        isActive: boolean;
+        endTime: Date;
     };
 }

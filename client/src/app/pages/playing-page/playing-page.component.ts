@@ -74,12 +74,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             }
         });
 
-        this.turnSubscription = this.lobbyService.onTurnStarted().subscribe((data) => {
-            this.isPlayerTurn = data.currentPlayer === this.currentPlayer?.id;
-            this.remainingTime = 30; // Réinitialiser à 30 secondes pour chaque tour
-            // this.currentPlayer = data.currentPlayer;
-            this.startTurnCountdown(); // Démarrer le compte à rebours du tour
-        });
         this.lobbyService.onInteraction().subscribe((data) => {
             console.log(data);
             this.isInCombat = data.isInCombat;
@@ -102,6 +96,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 this.gameState = data.gameState;
                 this.syncCurrentPlayerWithGameState();
                 this.notifyPlayerTurn(data.currentPlayer);
+                this.isPlayerTurn = data.currentPlayer === this.currentPlayer?.id;
+                this.remainingTime = 30; // Réinitialiser à 30 secondes pour chaque tour
+                // this.currentPlayer = data.currentPlayer;
+                this.startTurnCountdown(); // Démarrer le compte à rebours du tour
             }),
 
             this.lobbyService.onTurnEnded().subscribe((data) => {
@@ -217,7 +215,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
         this.lobbyService.executeAction(action, tile, this.lobbyId).subscribe({
             next: (data) => {
-                if (this.gameState?.gameBoard) {
+                if (this.gameState?.board) {
                     console.log('Mise à jour du gameBoard reçue:', data.newGameBoard);
 
                     this.gameState = {
