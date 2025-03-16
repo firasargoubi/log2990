@@ -32,6 +32,11 @@ export class LobbyService {
         this.socket.on('connect_error', (error) => {
             console.error('Socket connection error:', error);
         });
+
+        this.socket.on('combatUpdate', (data: { timeLeft: number }) => {
+            console.log('Combat time left: ', data.timeLeft);
+            // Update your UI with the remaining time
+        });
     }
 
     setCurrentPlayer(player: Player): void {
@@ -399,4 +404,8 @@ export class LobbyService {
     //         });
     //     });
     // }
+
+    updateCountdown(time: number): void {
+        this.socket.emit('updateCountdown(time)', { time }); // Calls the updateCountdown method in SocketService
+    }
 }

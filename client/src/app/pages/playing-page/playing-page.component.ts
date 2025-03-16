@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CountdownComponent } from '@app/components/countdown-timer/countdown-timer.component';
+import { CountdownPlayerComponent } from '@app/components/countdown-player/countdown-player.component';
 import { GameBoardComponent } from '@app/components/game-board/game-board.component';
 import { GameInfoComponent } from '@app/components/game-info/game-info.component';
 import { InventoryComponent } from '@app/components/inventory/inventory.component';
@@ -17,7 +17,7 @@ import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-playing-page',
-    imports: [CommonModule, CountdownComponent, InventoryComponent, GameInfoComponent, MessagesComponent, GameBoardComponent],
+    imports: [CommonModule, CountdownPlayerComponent, InventoryComponent, GameInfoComponent, MessagesComponent, GameBoardComponent],
     standalone: true,
     templateUrl: './playing-page.component.html',
     styleUrls: ['./playing-page.component.scss'],
