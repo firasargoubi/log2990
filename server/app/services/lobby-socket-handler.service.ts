@@ -12,7 +12,7 @@ export class LobbySocketHandlerService {
         this.io = server;
     }
 
-    createLobby(socket: Socket, game: Game): string {
+    createLobby(game: Game): string {
         const maxPlayers = this.getMaxPlayers(game.mapSize);
         const lobbyId = this.generateId();
 
@@ -25,7 +25,6 @@ export class LobbySocketHandlerService {
         };
 
         this.lobbies.set(lobbyId, newLobby);
-        socket.join(lobbyId);
         this.updateLobby(lobbyId);
         return lobbyId;
     }
@@ -51,7 +50,7 @@ export class LobbySocketHandlerService {
         this.updateLobby(lobbyId);
     }
 
-    leaveLobby(socket: Socket, lobbyId: string, playerName: string): void {
+    leaveLobby(socket: Socket, lobbyId: string, playerName: string) {
         const lobby = this.lobbies.get(lobbyId);
         if (!lobby) {
             socket.emit('error', 'Lobby not found.');
@@ -66,23 +65,18 @@ export class LobbySocketHandlerService {
 
         lobby.players.splice(playerIndex, 1);
         socket.leave(lobbyId);
-
         this.io.to(lobbyId).emit('playerLeft', { lobbyId, playerName });
         socket.emit('lobbyUpdated', { lobbyId, lobby: JSON.parse(JSON.stringify(lobby)) });
     }
 
-    lockLobby(socket: Socket, lobbyId: string): void {
+    lockLobby(socket: Socket, lobbyId: string) {
         const lobby = this.lobbies.get(lobbyId);
         if (!lobby) {
             socket.emit('error', 'Lobby not found.');
             return;
         }
-        if (lobby.players.length < 2) {
-            socket.emit('error', 'Nombre de joueurs insuffisants');
-            return;
-        }
 
-        lobby.isLocked = !lobby.isLocked;
+        lobby.isLocked = true;
         this.io.to(lobbyId).emit('lobbyLocked', { lobbyId });
         this.updateLobby(lobbyId);
     }

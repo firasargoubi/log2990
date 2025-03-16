@@ -1,36 +1,43 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CountdownComponent } from '@app/components/countdown-timer/countdown-timer.component';
 import { GameBoardComponent } from '@app/components/game-board/game-board.component';
 import { GameInfoComponent } from '@app/components/game-info/game-info.component';
 import { InventoryComponent } from '@app/components/inventory/inventory.component';
 import { MessagesComponent } from '@app/components/messages/messages.component';
+import { PlayerListComponent } from '@app/components/player-list/player-list.component';
+import { WAITING_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { PageUrl } from '@app/Consts/route-constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { Coordinates } from '@common/coordinates';
+import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
 import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-playing-page',
-    imports: [CommonModule, CountdownComponent, InventoryComponent, GameInfoComponent, MessagesComponent, GameBoardComponent],
+    imports: [CommonModule, CountdownComponent, InventoryComponent, GameInfoComponent, MessagesComponent, GameBoardComponent, PlayerListComponent],
     standalone: true,
     templateUrl: './playing-page.component.html',
     styleUrls: ['./playing-page.component.scss'],
 })
 export class PlayingPageComponent implements OnInit, OnDestroy {
+    @Output() remove = new EventEmitter<string>();
+    @Input() player!: Player;
+    lobbyId: string = '';
+    gameState: GameState | null = null;
+    currentPlayer: Player | null = null;
+
+    debug: boolean = true;
+    lobby: GameLobby;
+
     private lobbyService = inject(LobbyService);
     private router = inject(Router);
     private route = inject(ActivatedRoute);
     private notificationService = inject(NotificationService);
-
-    lobbyId: string = '';
-    gameState: GameState | null = null;
-    currentPlayer: Player | null = null;
-    debug: boolean = true;
-
     private subscriptions: Subscription[] = [];
 
     ngOnInit() {
@@ -54,25 +61,21 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     setupGameListeners() {
         this.subscriptions.push(
             this.lobbyService.onGameStarted().subscribe((data) => {
-                console.log('Game started event received', data);
                 this.gameState = data.gameState;
                 this.getCurrentPlayer();
             }),
 
             this.lobbyService.onTurnStarted().subscribe((data) => {
-                console.log('Turn started event received', data);
                 this.gameState = data.gameState;
                 this.syncCurrentPlayerWithGameState();
                 this.notifyPlayerTurn(data.currentPlayer);
             }),
 
             this.lobbyService.onTurnEnded().subscribe((data) => {
-                console.log('Turn ended event received', data);
                 this.gameState = data.gameState;
             }),
 
             this.lobbyService.onMovementProcessed().subscribe((data) => {
-                console.log('Movement processed event received', data);
                 this.gameState = data.gameState;
             }),
 
@@ -80,20 +83,26 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 console.error('Socket error received', error);
                 this.notificationService.showError(error);
             }),
+
+            this.lobbyService.onPlayerLeft().subscribe((data) => {
+                if (data.playerName === this.currentPlayer?.name) {
+                    this.notificationService.showError('vous avez quitté la partie');
+                    this.router.navigate([PageUrl.Home], { replaceUrl: true });
+                }
+            }),
+            this.lobbyService.onHostDisconnected().subscribe(() => {
+                this.notificationService.showError(WAITING_PAGE_CONSTANTS.lobbyCancelled);
+                this.router.navigate([PageUrl.Home], { replaceUrl: true });
+            }),
         );
     }
 
     getCurrentPlayer() {
-        console.log('Getting current player...');
-
         this.currentPlayer = this.lobbyService.getCurrentPlayer();
 
         if (this.currentPlayer) {
-            console.log('Current player from LobbyService:', this.currentPlayer);
-
             const socketId = this.lobbyService.getSocketId();
             if (this.currentPlayer.id !== socketId) {
-                console.log(`Updating player ID from ${this.currentPlayer.id} to ${socketId}`);
                 this.currentPlayer.id = socketId;
             }
 
@@ -102,12 +111,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
         if (this.gameState) {
             const socketId = this.lobbyService.getSocketId();
-            console.log('Trying to find player in game state with socket ID:', socketId);
 
             this.currentPlayer = this.gameState.players.find((player) => player.id === socketId) || null;
 
             if (this.currentPlayer) {
-                console.log('Found player in game state:', this.currentPlayer);
                 this.lobbyService.setCurrentPlayer(this.currentPlayer);
             } else {
                 console.error('Current player not found in game state', {
@@ -212,48 +219,14 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         return result;
     }
 
-    debugLogGameState() {
-        console.log('================ GAME STATE DEBUG ================');
-        if (!this.gameState) {
-            console.log('Game state is null or undefined');
-            return;
-        }
-
-        console.log('Game State ID:', this.gameState.id);
-        console.log('Current Player in Game:', this.gameState.currentPlayer);
-        console.log('Local Player ID:', this.currentPlayer);
-        console.log('Socket ID:', this.lobbyService.getSocketId());
-        console.log('Is Local Player Turn:', this.isCurrentPlayerTurn());
-        console.log('Available Moves:', this.gameState.availableMoves);
-
-        console.log('Player Positions:');
-        if (this.gameState.playerPositions instanceof Map) {
-            Array.from(this.gameState.playerPositions.entries()).forEach(([playerId, pos]) => {
-                console.log(`Player ${playerId} at (${pos.x}, ${pos.y})`);
-            });
-        }
-
-        console.log('Players:');
-        this.gameState.players.forEach((player) => {
-            console.log(`- ${player.name} (${player.id})`);
-        });
-
-        console.log('================ END DEBUG ================');
+    onRemovePlayer(): void {
+        this.remove.emit(this.player.id);
     }
-
-    endTurn() {
-        // Logique pour terminer le tour
-    }
-
-    abandon() {
-        // Vérifier que le lobby et le joueur actuel existent
+    onAbandon(playerName: string): void {
         if (this.lobbyId && this.currentPlayer) {
-            // Appeler la méthode `leaveLobby` du service pour quitter le lobby
-            this.lobbyService.leaveLobby(this.lobbyId, this.currentPlayer.name);
-            this.router.navigate(['/home']);
+            this.lobbyService.leaveLobby(this.lobbyId, playerName);
         }
     }
-
     attack() {
         // Logique pour attaquer
     }

@@ -35,7 +35,7 @@ export class SocketService {
     init(): void {
         this.io.on('connection', (socket: Socket) => {
             socket.on('createLobby', (game: Game) => {
-                const lobbyId = this.lobbyHandler.createLobby(socket, game);
+                const lobbyId = this.lobbyHandler.createLobby(game);
                 socket.emit('lobbyCreated', { lobbyId });
             });
 
