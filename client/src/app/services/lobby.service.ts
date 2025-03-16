@@ -100,8 +100,6 @@ export class LobbyService {
     onGameStarted(): Observable<{ gameState: GameState }> {
         return new Observable((observer) => {
             this.socket.on('gameStarted', (data: { gameState: GameState }) => {
-                data.gameState.playerPositions = this.convertPlayerPositionsToMap(data.gameState.playerPositions);
-
                 if (!data.gameState.availableMoves) {
                     data.gameState.availableMoves = [];
                 }
@@ -114,8 +112,6 @@ export class LobbyService {
     onTurnStarted(): Observable<{ gameState: GameState; currentPlayer: string; availableMoves: Coordinates[] }> {
         return new Observable((observer) => {
             this.socket.on('turnStarted', (data: { gameState: GameState; currentPlayer: string; availableMoves: Coordinates[] }) => {
-                data.gameState.playerPositions = this.convertPlayerPositionsToMap(data.gameState.playerPositions);
-
                 if (!data.availableMoves) {
                     data.availableMoves = [];
                 }
@@ -134,8 +130,6 @@ export class LobbyService {
     onMovementProcessed(): Observable<{ gameState: GameState; playerMoved: string; newPosition: Coordinates }> {
         return new Observable((observer) => {
             this.socket.on('movementProcessed', (data: { gameState: GameState; playerMoved: string; newPosition: Coordinates }) => {
-                data.gameState.playerPositions = this.convertPlayerPositionsToMap(data.gameState.playerPositions);
-
                 if (!data.gameState.availableMoves) {
                     data.gameState.availableMoves = [];
                 }
@@ -152,8 +146,6 @@ export class LobbyService {
     onTurnEnded(): Observable<{ gameState: GameState; previousPlayer: string; currentPlayer: string }> {
         return new Observable((observer) => {
             this.socket.on('turnEnded', (data: { gameState: GameState; previousPlayer: string; currentPlayer: string }) => {
-                data.gameState.playerPositions = this.convertPlayerPositionsToMap(data.gameState.playerPositions);
-
                 if (!data.gameState.availableMoves) {
                     data.gameState.availableMoves = [];
                 }
@@ -240,23 +232,5 @@ export class LobbyService {
                 observer.next();
             });
         });
-    }
-
-    private convertPlayerPositionsToMap(playerPositions: unknown): Map<string, Coordinates> {
-        const positionsMap = new Map<string, Coordinates>();
-
-        if (playerPositions) {
-            if (playerPositions instanceof Map) {
-                return playerPositions;
-            }
-
-            if (typeof playerPositions === 'object' && !Array.isArray(playerPositions)) {
-                Object.entries(playerPositions).forEach(([playerId, position]) => {
-                    positionsMap.set(playerId, position as Coordinates);
-                });
-            }
-        }
-
-        return positionsMap;
     }
 }

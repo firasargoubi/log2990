@@ -28,8 +28,8 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     @Output() remove = new EventEmitter<string>();
     @Input() player!: Player;
     lobbyId: string = '';
-    gameState: GameState | null = null;
-    currentPlayer: Player | null = null;
+    gameState: GameState;
+    currentPlayer: Player;
 
     debug: boolean = true;
     lobby: GameLobby;
@@ -80,7 +80,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             }),
 
             this.lobbyService.onError().subscribe((error) => {
-                console.error('Socket error received', error);
                 this.notificationService.showError(error);
             }),
 
@@ -98,7 +97,12 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     getCurrentPlayer() {
-        this.currentPlayer = this.lobbyService.getCurrentPlayer();
+        const currentPlayer = this.lobbyService.getCurrentPlayer();
+
+        if (!currentPlayer) {
+            return;
+        }
+        this.currentPlayer = currentPlayer;
 
         if (this.currentPlayer) {
             const socketId = this.lobbyService.getSocketId();
@@ -112,7 +116,13 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         if (this.gameState) {
             const socketId = this.lobbyService.getSocketId();
 
-            this.currentPlayer = this.gameState.players.find((player) => player.id === socketId) || null;
+            const currentPlayerinGameState = this.gameState.players.find((player) => player.id === socketId);
+
+            if (!currentPlayerinGameState) {
+                return;
+            }
+
+            this.currentPlayer = currentPlayerinGameState;
 
             if (this.currentPlayer) {
                 this.lobbyService.setCurrentPlayer(this.currentPlayer);
