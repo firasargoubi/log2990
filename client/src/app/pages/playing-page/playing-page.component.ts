@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { CombatComponent } from '@app/components/combat/combat.component';
 import { CountdownComponent } from '@app/components/countdown-timer/countdown-timer.component';
 import { GameBoardComponent } from '@app/components/game-board/game-board.component';
 import { GameInfoComponent } from '@app/components/game-info/game-info.component';
@@ -17,7 +18,7 @@ import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-playing-page',
-    imports: [CommonModule, CountdownComponent, InventoryComponent, GameInfoComponent, MessagesComponent, GameBoardComponent],
+    imports: [CommonModule, CountdownComponent, InventoryComponent, GameInfoComponent, MessagesComponent, GameBoardComponent, CombatComponent],
     standalone: true,
     templateUrl: './playing-page.component.html',
     styleUrls: ['./playing-page.component.scss'],
@@ -30,7 +31,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     gameState: GameState | null = null;
     currentPlayer: Player | null = null;
     debug: boolean = true;
-    isInCombat: boolean = false; // Pour savoir si le joueur est en combat
+    isInCombat: boolean = false;
     remainingTime: number = 0;
 
     private lobbyService = inject(LobbyService);
@@ -64,6 +65,11 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 }
             },
             error: (err) => console.error('Erreur réception mise à jour tuile:', err),
+        });
+        this.lobbyService.onInteraction().subscribe((data) => {
+            console.log(data);
+            this.isInCombat = data.isInCombat;
+            console.log(this.isInCombat);
         });
     }
 
@@ -180,6 +186,19 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         const action = this.actionService.getActionType(tile, this.gameState);
         if (!action) {
             return;
+        }
+
+        if (action === 'battle') {
+            const opponent = this.actionService.findOpponent(tile);
+            console.log(opponent);
+            if (opponent) {
+                this.lobbyService.initializeBattle(this.currentPlayer, opponent, this.lobbyId);
+                this.lobbyService.onInteraction().subscribe((data) => {
+                    this.isInCombat = data.isInCombat;
+                });
+            } else {
+                console.error('Opponent not found for battle initialization');
+            }
         }
 
         this.lobbyService.executeAction(action, tile, this.lobbyId).subscribe({

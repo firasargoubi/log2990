@@ -22,6 +22,12 @@ export class ActionService {
         return isPlayerOnTile || false;
     }
 
+    findOpponent(tile: Tile): Player | undefined {
+        return this.gameState?.players.find((player) => {
+            const coordinates = this.getCurrentPlayerCoordinates(player);
+            return coordinates?.x === tile.x && coordinates?.y === tile.y;
+        });
+    }
     isTileNextToPlayer(tile: Tile): boolean {
         if (!this.gameState) {
             return false;

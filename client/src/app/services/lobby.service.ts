@@ -8,6 +8,7 @@ import { Tile } from '@common/tile';
 import { Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { environment } from 'src/environments/environment';
+import { shareReplay as rxjsShareReplay } from 'rxjs/operators';
 
 @Injectable({
     providedIn: 'root',
@@ -340,6 +341,21 @@ export class LobbyService {
         });
     }
 
+    initializeBattle(currentPlayer: Player, opponent: Player, lobbyId: string) {
+        console.log('lobbyService');
+        this.socket.emit('initializeBattle', { currentPlayer, opponent, lobbyId });
+    }
+
+    onInteraction(): Observable<{ isInCombat: boolean }> {
+        return new Observable<{ isInCombat: boolean }>((observer) => {
+            this.socket.on('playersBattling', (data: { isInCombat: boolean }) => {
+                console.log('Received playersBattling event:', data);
+                observer.next(data);
+                observer.complete();
+            });
+        }).pipe(shareReplay(1));
+    }
+
     // Écoute les mises à jour envoyées à TOUS les joueurs
     onTileUpdate(): Observable<{ newGameBoard: number[][] }> {
         return new Observable<{ newGameBoard: number[][] }>((observer) => {
@@ -387,4 +403,7 @@ export class LobbyService {
     startCombat(playerId: string, lobbyId: string): void {
         this.socket.emit('startCombat', { playerId, lobbyId });
     }
+}
+function shareReplay<T>(bufferSize: number): import('rxjs').OperatorFunction<T, T> {
+    return rxjsShareReplay(bufferSize);
 }

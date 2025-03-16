@@ -105,6 +105,10 @@ export class SocketService {
                 console.log('openDoor received on server');
                 this.openDoor(socket, data.tile, data.lobbyId);
             });
+
+            socket.on('initializeBattle', (data: { currentPlayer: Player; opponent: Player; lobbyId: string }) => {
+                this.initializeBattle(socket, data.currentPlayer, data.opponent);
+            });
         });
     }
 
@@ -481,7 +485,7 @@ export class SocketService {
             const playerIndex = lobby.players.findIndex((p) => p.id === socket.id);
             if (playerIndex !== -1) {
                 const player = lobby.players[playerIndex];
-                console.log(`Player ${player.name} (${socket.id}) disconnected from lobby ${lobbyId}`);
+                console.log(`Player ${player.id} (${socket.id}) disconnected from lobby ${lobbyId}`);
 
                 lobby.players.splice(playerIndex, 1);
                 socket.leave(lobbyId);
@@ -573,6 +577,10 @@ export class SocketService {
         this.io.to(lobbyId).emit('tileUpdated', { newGameBoard });
     }
 
+    private initializeBattle(socket: Socket, currentPlayer: Player, opponent: Player) {
+        this.io.to(currentPlayer.id).to(opponent.id).emit('playersBattling', { isInCombat: true });
+        console.log(`Sent to ${currentPlayer.id}, ${opponent.id}`);
+    }
     // Start a combat for a specific player (emit to all players)
     private startCombat(socket: Socket, lobbyId: string, playerId: string): void {
         const gameState = this.gameStates.get(lobbyId);
