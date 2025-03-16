@@ -21,7 +21,7 @@ export class GameBoardComponent implements OnInit, OnChanges {
     @Input() currentPlayerId: string = '';
     @Input() lobbyId: string = '';
     @Input() action: boolean = false;
-    @Output() tileClicked = new EventEmitter<Coordinates>();
+    @Output() tileClicked = new EventEmitter<Coordinates[]>();
     @Output() actionClicked = new EventEmitter<Tile>();
     @Inject(ActionService) actionService: ActionService;
 
@@ -45,10 +45,6 @@ export class GameBoardComponent implements OnInit, OnChanges {
 
                 this.clearPathHighlights();
             }
-        });
-
-        this.lobbyService.onMovementProcessed().subscribe(() => {
-            this.clearPathHighlights();
         });
     }
 
@@ -88,15 +84,21 @@ export class GameBoardComponent implements OnInit, OnChanges {
 
     onTileClick(tile: Tile) {
         if (this.action) {
+            console.log('action clicked');
             this.actionClicked.emit(tile);
             return;
         }
         if (this.isMyTurn() && this.isAvailableMove(tile.x, tile.y)) {
-            this.tileClicked.emit({ x: tile.x, y: tile.y });
+            console.log(this.shortestMovesMap);
+            this.tileClicked.emit(this.highlightedPath);
         }
     }
 
     onTileHover(tile: Tile) {
+        if (this.action) {
+            this.highlightedPath = [];
+            return;
+        }
         if (this.isMyTurn() && this.isAvailableMove(tile.x, tile.y)) {
             this.highlightedPath = this.showPathToTile({ x: tile.x, y: tile.y });
         }
@@ -132,6 +134,7 @@ export class GameBoardComponent implements OnInit, OnChanges {
         let current = destination;
 
         while (current) {
+            console.log(current);
             if (this.isAdjacent(current, playerPosition)) {
                 path.unshift(playerPosition);
                 break;

@@ -81,6 +81,30 @@ export class BoardService {
         return gameState;
     }
 
+    handleBoardChange(gameState: GameState): GameState {
+        const playerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
+        if (playerIndex === -1) {
+            gameState.availableMoves = [];
+            gameState.shortestMoves = [];
+            return gameState;
+        }
+
+        const playerPosition = gameState.playerPositions[playerIndex];
+        if (!playerPosition) {
+            gameState.availableMoves = [];
+            gameState.shortestMoves = [];
+            return gameState;
+        }
+
+        const availableMoves = this.findAllPaths(gameState, playerPosition);
+
+        gameState.availableMoves = availableMoves;
+
+        gameState.shortestMoves = this.calculateShortestMoves(gameState, playerPosition, availableMoves);
+
+        return gameState;
+    }
+
     findShortestPath(gameState: GameState, start: Coordinates, end: Coordinates): Coordinates[] | null {
         return this.pathfindingService.findShortestPath(gameState, start, end, gameState.currentPlayerMovementPoints);
     }

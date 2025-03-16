@@ -25,9 +25,10 @@ import { Subscription } from 'rxjs';
 })
 export class PlayingPageComponent implements OnInit, OnDestroy {
     @Output() action: boolean = false;
-    lobbyId: string = '';
-    gameState: GameState | null = null;
-    currentPlayer: Player | null = null;
+    @Output() currentPlayer: Player | null = null;
+    @Output() lobbyId: string = '';
+    @Output() opponent: Player | null = null;
+    @Output() gameState: GameState | null = null;
     debug: boolean = true;
     isInCombat: boolean = false;
     remainingTime: number = 0;
@@ -35,7 +36,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     combatSubscription: Subscription | null = null;
     turnSubscription: Subscription | null = null;
     private interval: number | null = null;
-
     private lobbyService = inject(LobbyService);
     private actionService = inject(ActionService);
     private router = inject(Router);
@@ -114,6 +114,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 console.error('Socket error received', error);
                 this.notificationService.showError(error);
             }),
+
+            this.lobbyService.onBoardChanged().subscribe((data) => {
+                this.gameState = data.gameState;
+            }),
         );
     }
 
@@ -171,7 +175,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         }
     }
 
-    onMoveRequest(coordinate: Coordinates) {
+    onMoveRequest(coordinates: Coordinates[]) {
         if (!this.gameState || !this.currentPlayer) {
             console.error('Cannot move: game state or current player is missing');
             return;
@@ -182,10 +186,12 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.lobbyService.requestMovement(this.lobbyId, coordinate);
+        this.lobbyService.requestMovement(this.lobbyId, coordinates);
     }
 
     onActionRequest(tile: Tile) {
+
+        console.log('Action request:', tile);
         if (!this.gameState || !this.currentPlayer) {
             console.error('Cannot perform action: game state or current player is missing');
             return;
@@ -199,12 +205,13 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         if (!action) {
             return;
         }
+        console.log("Action effectuée:", action);
 
         if (action === 'battle') {
-            const opponent = this.actionService.findOpponent(tile);
-            console.log(opponent);
-            if (opponent) {
-                this.lobbyService.initializeBattle(this.currentPlayer, opponent, this.lobbyId);
+            this.opponent = this.actionService.findOpponent(tile) || null;
+            console.log(this.opponent);
+            if (this.opponent) {
+                this.lobbyService.initializeBattle(this.currentPlayer, this.opponent, this.lobbyId);
                 this.lobbyService.onInteraction().subscribe((data) => {
                     this.isInCombat = data.isInCombat;
                 });
@@ -212,7 +219,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 console.error('Opponent not found for battle initialization');
             }
         }
-
+        console.log("Action effectuée:", action);
         this.lobbyService.executeAction(action, tile, this.lobbyId).subscribe({
             next: (data) => {
                 if (this.gameState?.board) {

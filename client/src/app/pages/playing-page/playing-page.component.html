@@ -63,7 +63,11 @@
         <app-inventory></app-inventory>
         @if (isInCombat) {
             <div class="action-buttons">
-                <app-combat></app-combat>
+                <app-combat 
+                [gameState]="gameState"
+                [currentPlayer]="currentPlayer!"
+                [opponent]="opponent!"
+                ></app-combat>
             </div>
         }
         @else {

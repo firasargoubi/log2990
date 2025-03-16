@@ -76,8 +76,8 @@ export class SocketService {
                 this.handleEndTurn(socket, data.lobbyId);
             });
 
-            socket.on('requestMovement', (data: { lobbyId: string; coordinate: Coordinates }) => {
-                this.handleRequestMovement(socket, data.lobbyId, data.coordinate);
+            socket.on('requestMovement', (data: { lobbyId: string; coordinates: Coordinates[] }) => {
+                this.handleRequestMovement(socket, data.lobbyId, data.coordinates);
             });
 
             socket.on('disconnect', () => {
@@ -320,25 +320,21 @@ export class SocketService {
         }
     }
 
-    private handleRequestMovement(socket: Socket, lobbyId: string, coordinate: Coordinates) {
+    private handleRequestMovement(socket: Socket, lobbyId: string, coordinates: Coordinates[]) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) {
             socket.emit('error', 'Game not found.');
             return;
         }
 
-        if (socket.id !== gameState.currentPlayer) {
-            socket.emit('error', "It's not your turn.");
-            return;
-        }
-
-        if (!this.isValidMove(gameState, coordinate)) {
-            socket.emit('error', 'Invalid move.');
-            return;
-        }
-
         try {
-            const updatedGameState = this.boardService.handleMovement(gameState, coordinate);
+            let updatedGameState = gameState;
+            console.log(coordinates);
+            for (const coordinate of coordinates) {
+                updatedGameState = this.boardService.handleMovement(gameState, coordinate);
+                this.io.to(lobbyId).emit('movementProcessed', { gameState });
+                setTimeout(() => {}, 5000);
+            }
 
             this.gameStates.set(lobbyId, updatedGameState);
 
@@ -350,10 +346,6 @@ export class SocketService {
         } catch (error) {
             socket.emit('error', `Movement error: ${error.message}`);
         }
-    }
-
-    private isValidMove(gameState: GameState, coordinate: Coordinates): boolean {
-        return gameState.availableMoves.some((move) => move.x === coordinate.x && move.y === coordinate.y);
     }
 
     private handleDisconnect(socket: Socket) {
@@ -405,9 +397,9 @@ export class SocketService {
             ...gameState,
             board: newGameBoard,
         };
-        this.gameStates.set(lobbyId, updatedGameState);
-        const playerIndex = gameState.players.findIndex((player) => player.id === gameState.currentPlayer);
-        this.handleRequestMovement(socket, lobbyId, { x: gameState.playerPositions[playerIndex].x, y: gameState.playerPositions[playerIndex].y });
+        const newGameState = this.boardService.handleBoardChange(updatedGameState);
+        this.gameStates.set(lobbyId, newGameState);
+        this.io.to(lobbyId).emit('boardModified', { gameState: newGameState });
     }
 
     private openDoor(socket: Socket, tile: Tile, lobbyId: string) {
@@ -422,8 +414,9 @@ export class SocketService {
             ...gameState,
             board: newGameBoard,
         };
-        this.gameStates.set(lobbyId, updatedGameState);
-        const playerIndex = gameState.players.findIndex((player) => player.id === gameState.currentPlayer);
-        this.handleRequestMovement(socket, lobbyId, { x: gameState.playerPositions[playerIndex].x, y: gameState.playerPositions[playerIndex].y });
+
+        const newGameState = this.boardService.handleBoardChange(updatedGameState);
+        this.gameStates.set(lobbyId, newGameState);
+        this.io.to(lobbyId).emit('boardModified', { gameState: newGameState });
     }
 }

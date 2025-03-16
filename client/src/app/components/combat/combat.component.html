@@ -1,5 +1,5 @@
 <div>
-    <button (click)="attack()" [disabled]="!isPlayerTurn">Attaquer</button>
-    <button>FUIRE</button>
+    <button [disabled]="!getPlayerTurn()">Attaquer</button>
+    <button [disabled]="!getPlayerTurn()">Fuire</button>
 </div>
 

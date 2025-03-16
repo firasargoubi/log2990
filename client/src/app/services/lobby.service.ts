@@ -127,7 +127,6 @@ export class LobbyService {
                 console.log('Game started event received:', data);
 
                 try {
-
                     console.log('Processed game state:', {
                         currentPlayer: data.gameState.currentPlayer,
                         availableMoves: data.gameState.availableMoves,
@@ -148,7 +147,6 @@ export class LobbyService {
                 console.log('Turn started event received in service:', data);
 
                 try {
-
                     console.log('Processed turn data:', {
                         currentPlayer: data.gameState.currentPlayer,
                         availableMoves: data.gameState.availableMoves,
@@ -163,9 +161,9 @@ export class LobbyService {
         });
     }
 
-    requestMovement(lobbyId: string, coordinate: Coordinates): void {
-        console.log('Requesting movement in lobby:', lobbyId, 'to coordinate:', coordinate);
-        this.socket.emit('requestMovement', { lobbyId, coordinate });
+    requestMovement(lobbyId: string, coordinates: Coordinates[]): void {
+        console.log('Requesting movement in lobby:', lobbyId, 'to coordinate:', coordinates);
+        this.socket.emit('requestMovement', { lobbyId, coordinates });
     }
 
     onMovementProcessed(): Observable<{ gameState: GameState; playerMoved: string; newPosition: Coordinates }> {
@@ -223,11 +221,21 @@ export class LobbyService {
         });
     }
 
-    onPathCalculated(): Observable<{ destination: Coordinates; path: Coordinates[]; valid: boolean }> {
+    onBoardChanged(): Observable<{ gameState: GameState }> {
         return new Observable((observer) => {
-            this.socket.on('pathCalculated', (data: { destination: Coordinates; path: Coordinates[]; valid: boolean }) => {
-                console.log('Path calculation received:', data);
-                observer.next(data);
+            this.socket.on('boardModified', (data: { gameState: GameState }) => {
+                console.log('Board changed event received:', data);
+
+                try {
+                    console.log('Processed board changed data:', {
+                        currentPlayer: data.gameState.currentPlayer,
+                        availableMoves: data.gameState.availableMoves,
+                    });
+
+                    observer.next(data);
+                } catch (error) {
+                    console.error('Error processing board changed event:', error);
+                }
             });
         });
     }
@@ -319,18 +327,31 @@ export class LobbyService {
     }
 
     initializeBattle(currentPlayer: Player, opponent: Player, lobbyId: string) {
-        console.log('lobbyService');
         this.socket.emit('initializeBattle', { currentPlayer, opponent, lobbyId });
     }
 
     onInteraction(): Observable<{ isInCombat: boolean }> {
         return new Observable<{ isInCombat: boolean }>((observer) => {
             this.socket.on('playersBattling', (data: { isInCombat: boolean }) => {
-                console.log('Received playersBattling event:', data);
                 observer.next(data);
                 observer.complete();
             });
         }).pipe(shareReplay(1));
+    }
+
+    getPlayerTurn(): Observable<{ playerTurn: string }> {
+        return new Observable<{ playerTurn: string }>((observer) => {
+            this.socket.on('PlayerTurn', (data: { playerTurn: string }) => {
+                console.log('PLAYER ID: ', data);
+                observer.next(data);
+                observer.complete();
+            });
+        });
+    }
+
+    handleAttack(currentPlayer: Player, opponent: Player, lobbyId: string, gameState: GameState) {
+        console.log('START BATTLE IN CURRENT PLAYER');
+        this.socket.emit('startBattle', { currentPlayer, opponent, lobbyId, gameState });
     }
 
     // Écoute les mises à jour envoyées à TOUS les joueurs

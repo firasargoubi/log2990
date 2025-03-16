@@ -1,26 +1,29 @@
 import { Injectable } from '@angular/core';
-import { TileTypes } from '@app/interfaces/tile-types';
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
+import { TileTypes } from '@common/game.interface';
 
 @Injectable({
     providedIn: 'root',
 })
 export class ActionService {
-    gameState: GameState | null = null;
+    gameState: GameState;
 
-    getCurrentPlayerCoordinates(player: Player): { x: number; y: number } | undefined {
-        const playerIndex = this.gameState?.players.findIndex((p) => p.id === player.id) || -1;
+    getCurrentPlayerCoordinates(player: string): { x: number; y: number } | undefined {
+        const playerIndex = this.gameState.players.findIndex((p) => p.id === player);
+        console.log(playerIndex);
+        console.log(this.gameState.playerPositions);
+        console.log(this.gameState.players);
         if (playerIndex === -1) {
             return;
         }
-        return this.gameState?.playerPositions[playerIndex];
+        return this.gameState.playerPositions[playerIndex];
     }
 
     isPlayerOnTile(tile: Tile): boolean {
         const isPlayerOnTile = this.gameState?.players.some((player) => {
-            const coordinates = this.getCurrentPlayerCoordinates(player);
+            const coordinates = this.getCurrentPlayerCoordinates(player.id);
             return coordinates?.x === tile.x && coordinates?.y === tile.y;
         });
         return isPlayerOnTile || false;
@@ -28,7 +31,7 @@ export class ActionService {
 
     findOpponent(tile: Tile): Player | undefined {
         return this.gameState?.players.find((player) => {
-            const coordinates = this.getCurrentPlayerCoordinates(player);
+            const coordinates = this.getCurrentPlayerCoordinates(player.id);
             return coordinates?.x === tile.x && coordinates?.y === tile.y;
         });
     }
@@ -36,11 +39,9 @@ export class ActionService {
         if (!this.gameState) {
             return false;
         }
-        const currentPlayer = this.gameState.players.find((player) => player.id === this.gameState?.currentPlayer);
-        if (!currentPlayer) {
-            return false;
-        }
-        const currentPlayerCoordinates = this.getCurrentPlayerCoordinates(currentPlayer);
+        const currentPlayerCoordinates = this.getCurrentPlayerCoordinates(this.gameState.currentPlayer);
+        console.log(currentPlayerCoordinates);
+        console.log(tile);
         if (!currentPlayerCoordinates) {
             return false;
         }
@@ -51,17 +52,14 @@ export class ActionService {
     getActionType(tile: Tile, gameState: GameState): string | undefined {
         this.gameState = gameState;
         if (this.isTileNextToPlayer(tile)) {
+            if (this.isPlayerOnTile(tile)) {
+                return 'battle';
+            }
             if (tile.type === TileTypes.DoorClosed) {
                 return 'openDoor';
             }
             if (tile.type === TileTypes.DoorOpen) {
                 return 'closeDoor';
-            } else {
-                if (this.isPlayerOnTile(tile)) {
-                    return 'battle';
-                } else {
-                    return;
-                }
             }
         }
         return;

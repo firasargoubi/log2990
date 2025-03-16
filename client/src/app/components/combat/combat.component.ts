@@ -1,30 +1,38 @@
-import { Component, Input } from '@angular/core';
-// import { LobbyService } from '@app/services/lobby.service';
+import { Component, inject, Input, OnInit } from '@angular/core';
+import { LobbyService } from '@app/services/lobby.service';
 import { Player } from '@common/player';
+import { GameState } from '@common/game-state';
 
 @Component({
     selector: 'app-combat',
     templateUrl: './combat.component.html',
     styleUrls: ['./combat.component.scss'],
 })
-export class CombatComponent {
+export class CombatComponent implements OnInit {
     @Input() currentPlayer!: Player;
     @Input() opponent!: Player;
     @Input() lobbyId!: string;
+    @Input() gameState: GameState | null = null;
     isPlayerTurn: boolean = false;
+    playerTurn: string = '';
+    private lobbyService = inject(LobbyService);
 
-    // constructor(private lobbyService: LobbyService) {}
+    ngOnInit() {
+        if (this.gameState) {
+            console.log('game state exists and handleAttack is called');
+            this.lobbyService.handleAttack(this.currentPlayer, this.opponent, this.lobbyId, this.gameState);
+        } else {
+            console.log('gameState is null or undefined');
+        }
+        this.lobbyService.getPlayerTurn().subscribe((data) => {
+            console.log('PLAYER TURN TO DATA PLAYER TURN ');
+            this.playerTurn = data.playerTurn;
+            console.log(this.playerTurn);
+        });
+    }
 
-    // ngOnInit(): void {
-    //     // this.lobbyService.onCombatUpdate().subscribe((data) => {
-    //     //     this.currentPlayer = data.currentPlayer;
-    //     //     this.opponent = data.opponent;
-    //     //     this.isPlayerTurn = data.turn === this.currentPlayer.id;
-    //     // });
-    // }
-
-    attack() {
-        // if (!this.isPlayerTurn) return;
-        // this.lobbyService.sendCombatAction(this.lobbyId, 'attack', this.currentPlayer.id, this.opponent.id);
+    getPlayerTurn(): boolean {
+        console.log(this.playerTurn);
+        return this.currentPlayer.id === this.playerTurn;
     }
 }
