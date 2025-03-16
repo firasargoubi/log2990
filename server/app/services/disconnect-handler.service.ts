@@ -22,23 +22,30 @@ export class DisconnectHandlerService {
     handleDisconnect(socket: Socket) {
         for (const [lobbyId, lobby] of this.lobbies.entries()) {
             const playerIndex = lobby.players.findIndex((p) => p.id === socket.id);
+
             if (playerIndex !== -1) {
                 const player = lobby.players[playerIndex];
-                console.log(`Player ${player.name} (${socket.id}) disconnected from lobby ${lobbyId}`);
+
+                const isHost = player.isHost;
 
                 lobby.players.splice(playerIndex, 1);
                 socket.leave(lobbyId);
 
                 this.io.to(lobbyId).emit('playerLeft', { lobbyId, playerName: player.name });
 
-                this.updateLobby(lobbyId);
-
-                if (lobby.players.length === 0) {
-                    console.log(`Removing empty lobby ${lobbyId}`);
+                if (isHost) {
                     this.lobbies.delete(lobbyId);
                     this.gameStates.delete(lobbyId);
-                } else if (this.gameStates.has(lobbyId)) {
-                    this.handlePlayerLeaveGame(lobbyId, socket.id);
+                    this.io.to(lobbyId).emit('hostDisconnected');
+                } else {
+                    this.updateLobby(lobbyId);
+
+                    if (lobby.players.length === 0) {
+                        this.lobbies.delete(lobbyId);
+                        this.gameStates.delete(lobbyId);
+                    } else if (this.gameStates.has(lobbyId)) {
+                        this.handlePlayerLeaveGame(lobbyId, socket.id);
+                    }
                 }
             }
         }

@@ -52,21 +52,26 @@ export class LobbySocketHandlerService {
 
     leaveLobby(socket: Socket, lobbyId: string, playerName: string) {
         const lobby = this.lobbies.get(lobbyId);
-        if (!lobby) {
-            socket.emit('error', 'Lobby not found.');
-            return;
-        }
+        if (!lobby) return;
 
         const playerIndex = lobby.players.findIndex((p) => p.name === playerName);
-        if (playerIndex === -1) {
-            socket.emit('error', 'Player not found in lobby.');
+        if (playerIndex === -1) return;
+
+        const player = lobby.players[playerIndex];
+        if (player.isHost) {
+            this.lobbies.delete(lobbyId);
+            this.io.to(lobbyId).emit('hostDisconnected');
             return;
         }
 
         lobby.players.splice(playerIndex, 1);
         socket.leave(lobbyId);
+
         this.io.to(lobbyId).emit('playerLeft', { lobbyId, playerName });
-        socket.emit('lobbyUpdated', { lobbyId, lobby: JSON.parse(JSON.stringify(lobby)) });
+
+        socket.emit('playerLeft', { lobbyId, playerName });
+
+        this.updateLobby(lobbyId);
     }
 
     lockLobby(socket: Socket, lobbyId: string) {
@@ -76,7 +81,7 @@ export class LobbySocketHandlerService {
             return;
         }
 
-        lobby.isLocked = true;
+        lobby.isLocked = !lobby.isLocked;
         this.io.to(lobbyId).emit('lobbyLocked', { lobbyId });
         this.updateLobby(lobbyId);
     }

@@ -10,13 +10,14 @@ import { GameLobby } from '@common/game-lobby';
 import { Player } from '@common/player';
 import { Subscription } from 'rxjs';
 import { PageUrl } from '@app/Consts/route-constants';
+import { MessagesComponent } from '@app/components/messages/messages.component';
 
 @Component({
     selector: 'app-waiting-page',
     templateUrl: './waiting-page.component.html',
     styleUrls: ['./waiting-page.component.scss'],
     standalone: true,
-    imports: [CommonModule, RouterLink, GameControlsComponent, PlayerListComponent],
+    imports: [CommonModule, RouterLink, GameControlsComponent, PlayerListComponent, MessagesComponent],
 })
 export class WaitingPageComponent implements OnInit, OnDestroy {
     lobby: GameLobby | null;
@@ -52,7 +53,7 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
             this.subscriptions.push(
                 this.lobbyService.onLobbyUpdated().subscribe((data) => {
                     if (data.lobbyId === lobbyId) {
-                        this.lobby = { ...data.lobby, players: [...data.lobby.players] };
+                        this.lobby = { ...data.lobby, players: [...data.lobby.players], isLocked: data.lobby.isLocked, gameId: data.lobby.gameId };
                         this.currentPlayer = data.lobby.players.find((p) => p.id === player) || this.currentPlayer;
                         this.hostId = data.lobby.players.find((p) => p.isHost)?.id || '';
                     }
@@ -89,6 +90,13 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
                 this.lobbyService.onGameStarted().subscribe(() => {
                     this.lobbyService.setCurrentPlayer(this.currentPlayer);
                     this.router.navigate([`${PageUrl.Play}/${lobbyId}`]);
+                }),
+            );
+            this.subscriptions.push(
+                this.lobbyService.onPlayerJoined().subscribe(() => {
+                    if (this.lobby && this.lobby.players.length === this.lobby.maxPlayers) {
+                        this.lobbyService.lockLobby(lobbyId);
+                    }
                 }),
             );
         }

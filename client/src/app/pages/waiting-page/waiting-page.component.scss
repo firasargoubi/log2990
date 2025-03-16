@@ -1,167 +1,187 @@
-/* Main Lobby Page Styling */
+.header-container {
+    position: relative;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .logo {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  width: 145px;
-  height: 145px;
-  object-fit: cover;
-  border-radius: 50%;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 145px;
+    height: 145px;
+    object-fit: cover;
+    border-radius: 50%;
 }
 
-.logo-link {
-  display: inline-block;
-  cursor: pointer; 
+.container-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 1820px;
+    margin: 80px auto 40px;
+    padding: 0 20px;
+    position: relative;
+    min-height: calc(100vh - 200px);
 }
 
-.logo:hover {
-  transform: scale(1.1);
+.logo {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    transition: transform 0.2s;
 }
 
 .lobby-container {
-  background-color: #f0f7e6; /* Light leafy background */
-  border-radius: 15px;
-  border: 2px solid #9eba63; /* Mossy border */
-  box-shadow: 0 6px 12px rgba(73, 115, 66, 0.2);
-  padding: 40px; /* Increased padding */
-  max-width: 1400px; /* Significantly increased from 1000px to 1400px */
-  width: 90%; /* Added width percentage for better responsiveness */
-  margin: 100px auto 60px; /* Added top margin to push container down */
-  position: relative;
-  min-height: 600px; /* Added minimum height to ensure enough space */
-  overflow: auto; /* Added overflow to handle extreme content cases */
+    flex: 3;
+    background-color: #f0f7e6;
+    border-radius: 15px;
+    border: 2px solid #9eba63;
+    box-shadow: 0 6px 12px rgba(73, 115, 66, 0.2);
+    padding: 30px;
+    min-height: 700px;
+    max-width: 1200px;
+
+    .main-content {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        height: 100%;
+    }
 }
 
-/* Leaf decorations */
-.lobby-container:before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 30px;
-  height: 30px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%239eba63' d='M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z'/%3E%3C/svg%3E");
-  background-size: contain;
-  transform: translate(-50%, -50%);
-}
-
-.lobby-container:after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 40px;
-  height: 40px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%239eba63' d='M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z'/%3E%3C/svg%3E");
-  background-size: contain;
-  transform: translate(25%, 25%);
+.chat-container {
+    flex: 1;
+    min-width: 380px;
+    max-width: 450px;
+    background: rgba(222, 235, 196, 0.3);
+    border-radius: 15px;
+    padding: 20px;
+    border: 2px solid #9eba63;
+    height: 700px;
+    position: sticky;
+    top: 100px;
+    display: flex;
+    flex-direction: column;
 }
 
 h2[mat-dialog-title] {
-  color: #3f783f;
-  font-family: 'Press Start 2P', cursive;
-  text-align: center;
-  margin-bottom: 30px;
-}
+    margin: 40px 0 25px;
+    font-size: 1.8rem;
 
-/* Fox and racoon emojis beside title */
-h2:before {
-  content: "🦊";
-  position: absolute;
-  left: 15%; /* Adjusted position */
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 2rem; /* Increased from 1.8rem */
-}
+    &:before,
+    &:after {
+        font-size: 1.8rem;
+        top: 55%;
+    }
 
-h2:after {
-  content: "🦝";
-  position: absolute;
-  right: 15%; /* Adjusted position */
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 2rem; /* Increased from 1.8rem */
+    &:before {
+        left: 18%;
+    }
+    &:after {
+        right: 18%;
+    }
 }
 
 p {
-  text-align: center;
-  font-family: 'Courier New', monospace;
-  color: #125d0c; /* Deep forest green */
-  font-size: 1.3rem; /* Increased from 1.1rem */
-  margin: 0 auto 35px; /* Increased bottom margin */
-  background-color: rgba(158, 186, 99, 0.3);
-  padding: 16px 32px; /* Increased padding */
-  border-radius: 50px;
-  display: inline-block;
-  width: auto;
-  min-width: 500px; /* Increased from 300px */
-  max-width: 80%; /* Added max-width for better responsiveness */
-  font-weight: bold; /* Added to make text thicker */
-  border: 3px solid rgba(158, 186, 99, 0.5); /* Added border for more thickness */
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); /* Added subtle shadow */
+    font-size: 1.2rem;
+    padding: 14px 28px;
+    margin: 0 auto 25px;
 }
 
-strong {
-  color: #3f783f;
-  font-weight: 800; /* Increased from bold to 800 */
-  background-color: #ddebc4;
-  padding: 6px 20px; /* Increased padding */
-  border-radius: 50px;
-  margin-left: 12px; /* Increased from 8px */
-  letter-spacing: 3px; /* Increased from 2px */
-  border: 3px dashed #9eba63; /* Increased from 2px */
-  display: inline-block; /* Added to ensure proper spacing */
-}
-
-/* Added player container styles for better organization */
 .players-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-  padding: 20px;
-  width: 100%;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 15px;
+    padding: 15px;
 }
 
-/* Responsive adjustments */
+@media (max-width: 1400px) {
+    .container-wrapper {
+        max-width: 95%;
+        margin-top: 120px;
+    }
+
+    .chat-container {
+        height: 600px;
+        top: 80px;
+    }
+}
+
+@media (max-width: 1280px) {
+    .container-wrapper {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .lobby-container {
+        width: 100%;
+        max-width: 100%;
+        min-height: auto;
+    }
+
+    .chat-container {
+        width: 100%;
+        max-width: 100%;
+        height: 500px;
+        position: static;
+    }
+}
+
 @media (max-width: 768px) {
-  .lobby-container {
-    padding: 30px;
-    max-width: 95%;
-    margin-top: 80px; /* Reduced top margin for mobile */
-  }
-  
-  p {
-    min-width: 300px;
-    font-size: 1.1rem;
-    padding: 12px 20px;
-  }
-  
-  h2:before, h2:after {
-    font-size: 1.5rem;
-  }
-}
+    .container-wrapper {
+        margin-top: 100px;
+        padding: 0 10px;
+    }
 
+    .logo {
+        width: 90px;
+        height: 90px;
+        top: 10px;
+        left: 10px;
+    }
+
+    h2[mat-dialog-title] {
+        font-size: 1.4rem;
+        margin: 30px 0 20px;
+
+        &:before,
+        &:after {
+            font-size: 1.4rem;
+        }
+    }
+
+    p {
+        font-size: 1rem;
+        padding: 12px 20px;
+    }
+}
 button.action.promote {
-  width: 80px;
-  height: 80px;
-  display: block;
-  margin: 20px auto;
-  border-radius: 50%;
-  background-color: #f0f7e6;
-  border: 3px solid #9eba63;
-  box-shadow: 0 4px 8px rgba(73, 115, 66, 0.3);
-  
-  /* Centrer l'icône dans le bouton */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  
-  i {
-    font-size: 40px; /* Icône de verrouillage agrandie */
-  }
-  
-  &:hover {
-    transform: scale(1.05);
-    background-color: #e8f5d8;
-  }
+    width: 80px;
+    height: 80px;
+    display: block;
+    margin: 20px auto;
+    border-radius: 50%;
+    background-color: #f0f7e6;
+    border: 3px solid #9eba63;
+    box-shadow: 0 4px 8px rgba(73, 115, 66, 0.3);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    i {
+        font-size: 40px;
+    }
+
+    &:hover {
+        transform: scale(1.05);
+        background-color: #e8f5d8;
+    }
 }

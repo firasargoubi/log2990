@@ -8,6 +8,7 @@ import { of, Subject, Subscription } from 'rxjs';
 import { GameLobby } from '@common/game-lobby';
 import { WAITING_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 import { PageUrl } from '@app/Consts/route-constants';
+import { Player } from '@common/player';
 
 describe('WaitingPageComponent', () => {
     let component: WaitingPageComponent;
@@ -53,6 +54,7 @@ describe('WaitingPageComponent', () => {
     let hostDisconnectedSubject: Subject<void>;
     let errorSubject: Subject<string>;
     let gameStartedSubject: Subject<{ gameState: any }>;
+    let playerJoinedSubject: Subject<{ lobbyId: string; player: Player }>;
 
     beforeEach(async () => {
         lobbyUpdatedSubject = new Subject();
@@ -60,6 +62,7 @@ describe('WaitingPageComponent', () => {
         hostDisconnectedSubject = new Subject();
         errorSubject = new Subject();
         gameStartedSubject = new Subject<{ gameState: any }>();
+        playerJoinedSubject = new Subject();
 
         mockLobbyService = jasmine.createSpyObj<LobbyService>('LobbyService', {
             getLobby: of(mockLobby),
@@ -68,6 +71,7 @@ describe('WaitingPageComponent', () => {
             onHostDisconnected: hostDisconnectedSubject.asObservable(),
             onError: errorSubject.asObservable(),
             onGameStarted: gameStartedSubject.asObservable(),
+            onPlayerJoined: playerJoinedSubject.asObservable(),
             leaveLobby: undefined,
             lockLobby: undefined,
             requestStartGame: undefined,
@@ -239,4 +243,29 @@ describe('WaitingPageComponent', () => {
         component.ngOnDestroy();
         expect(subscription.unsubscribe).toHaveBeenCalled();
     });
+    it('should lock lobby when player count reaches maximum capacity', fakeAsync(() => {
+        const maxPlayers = 2;
+        const testLobby: GameLobby = {
+            ...mockLobby,
+            players: [mockLobby.players[0]],
+            maxPlayers,
+        };
+
+        component.lobby = testLobby;
+
+        const updatedLobby = {
+            ...testLobby,
+            players: [...testLobby.players, mockLobby.players[1]],
+        };
+        lobbyUpdatedSubject.next({ lobbyId: mockLobbyId, lobby: updatedLobby });
+
+        playerJoinedSubject.next({
+            lobbyId: mockLobbyId,
+            player: mockLobby.players[1],
+        });
+
+        tick();
+
+        expect(mockLobbyService.lockLobby).toHaveBeenCalledWith(mockLobbyId);
+    }));
 });

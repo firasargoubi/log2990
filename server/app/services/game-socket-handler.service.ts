@@ -4,7 +4,6 @@ import { GameLobby } from '@common/game-lobby';
 import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
 import { BoardService } from './board.service';
-import { Player } from '@common/player';
 import { LobbySocketHandlerService } from './lobby-socket-handler.service';
 
 @Service()
@@ -178,27 +177,6 @@ export class GameSocketHandlerService {
         } catch (error) {
             socket.emit('error', `Path calculation error: ${error.message}`);
         }
-    }
-
-    handleJoinLobbyRequest(socket: Socket, lobbyId: string, player: Player) {
-        const lobby = this.lobbies.get(lobbyId);
-        if (!lobby) {
-            socket.emit('error', 'Lobby not found.');
-            return;
-        }
-
-        if (lobby.isLocked || lobby.players.length >= lobby.maxPlayers) {
-            socket.emit('error', 'Lobby is locked or full.');
-            return;
-        }
-
-        player.id = socket.id;
-        player.isHost = lobby.players.length === 0;
-        lobby.players.push(player);
-
-        socket.join(lobbyId);
-        this.io.to(lobbyId).emit('playerJoined', { lobbyId, player });
-        this.lobbySocketHandlerService.updateLobby(lobbyId);
     }
 
     startTurn(lobbyId: string) {
