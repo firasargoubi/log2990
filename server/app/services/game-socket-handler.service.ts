@@ -7,12 +7,15 @@ import { BoardService } from './board.service';
 
 @Service()
 export class GameSocketHandlerService {
+    private io: Server;
     constructor(
-        private io: Server,
         private lobbies: Map<string, GameLobby>,
         private gameStates: Map<string, GameState>,
         private boardService: BoardService,
     ) {}
+    setServer(server: Server) {
+        this.io = server;
+    }
 
     async handleRequestStart(socket: Socket, lobbyId: string) {
         const lobby = this.lobbies.get(lobbyId);

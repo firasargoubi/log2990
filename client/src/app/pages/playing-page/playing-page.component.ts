@@ -1,17 +1,17 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NotificationService } from '@app/services/notification.service';
-import { Player } from '@common/player';
-import { Subscription } from 'rxjs';
-import { CommonModule } from '@angular/common';
 import { CountdownComponent } from '@app/components/countdown-timer/countdown-timer.component';
+import { GameBoardComponent } from '@app/components/game-board/game-board.component';
 import { GameInfoComponent } from '@app/components/game-info/game-info.component';
 import { InventoryComponent } from '@app/components/inventory/inventory.component';
 import { MessagesComponent } from '@app/components/messages/messages.component';
-import { GameBoardComponent } from '@app/components/game-board/game-board.component';
-import { GameState } from '@common/game-state';
-import { Coordinates } from '@common/coordinates';
 import { LobbyService } from '@app/services/lobby.service';
+import { NotificationService } from '@app/services/notification.service';
+import { Coordinates } from '@common/coordinates';
+import { GameState } from '@common/game-state';
+import { Player } from '@common/player';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-playing-page',
@@ -29,19 +29,17 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     lobbyId: string = '';
     gameState: GameState | null = null;
     currentPlayer: Player | null = null;
-    debug: boolean = true; // For debugging, set to false in production
+    debug: boolean = true;
 
     private subscriptions: Subscription[] = [];
 
     ngOnInit() {
-        // Get lobby ID from route params
         this.route.params.subscribe((params) => {
             const lobbyId = params['id'];
             if (lobbyId) {
                 this.lobbyId = lobbyId;
                 this.setupGameListeners();
 
-                // Get the current player from LobbyService immediately
                 this.getCurrentPlayer();
             } else {
                 this.router.navigate(['/main']);
@@ -54,19 +52,16 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     setupGameListeners() {
-        // Listen for game state updates
         this.subscriptions.push(
             this.lobbyService.onGameStarted().subscribe((data) => {
                 console.log('Game started event received', data);
                 this.gameState = data.gameState;
-                // Ensure we have the current player
                 this.getCurrentPlayer();
             }),
 
             this.lobbyService.onTurnStarted().subscribe((data) => {
                 console.log('Turn started event received', data);
                 this.gameState = data.gameState;
-                // Update player if needed
                 this.syncCurrentPlayerWithGameState();
                 this.notifyPlayerTurn(data.currentPlayer);
             }),
@@ -91,13 +86,11 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     getCurrentPlayer() {
         console.log('Getting current player...');
 
-        // First try to get the player from the LobbyService
         this.currentPlayer = this.lobbyService.getCurrentPlayer();
 
         if (this.currentPlayer) {
             console.log('Current player from LobbyService:', this.currentPlayer);
 
-            // Ensure the player ID matches the current socket ID
             const socketId = this.lobbyService.getSocketId();
             if (this.currentPlayer.id !== socketId) {
                 console.log(`Updating player ID from ${this.currentPlayer.id} to ${socketId}`);
@@ -107,7 +100,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             return;
         }
 
-        // If not found in LobbyService, try to find in game state
         if (this.gameState) {
             const socketId = this.lobbyService.getSocketId();
             console.log('Trying to find player in game state with socket ID:', socketId);
@@ -116,7 +108,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
             if (this.currentPlayer) {
                 console.log('Found player in game state:', this.currentPlayer);
-                // Save to LobbyService for future reference
                 this.lobbyService.setCurrentPlayer(this.currentPlayer);
             } else {
                 console.error('Current player not found in game state', {
@@ -129,19 +120,15 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         }
     }
 
-    // Keep current player in sync with game state
     syncCurrentPlayerWithGameState() {
         if (!this.gameState || !this.currentPlayer) return;
 
-        // Find the current player in the game state
         const playerInGameState = this.gameState.players.find((p) => p.id === this.currentPlayer?.id);
 
         if (playerInGameState) {
-            // Update current player with game state data if needed
             if (JSON.stringify(playerInGameState) !== JSON.stringify(this.currentPlayer)) {
                 console.log('Updating current player with game state data');
                 this.currentPlayer = playerInGameState;
-                // Also update in LobbyService
                 this.lobbyService.setCurrentPlayer(this.currentPlayer);
             }
         }
@@ -188,9 +175,8 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.lobbyService.requestEndTurn(this.lobbyId);
     }
 
-    // Game info helper methods for the template
     getGameName(): string {
-        return 'Forest Adventure'; // Replace with actual game name from game state
+        return 'Forest Adventure';
     }
 
     getMapSize(): string {
@@ -226,7 +212,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         return result;
     }
 
-    // Debug methods
     debugLogGameState() {
         console.log('================ GAME STATE DEBUG ================');
         if (!this.gameState) {
@@ -254,5 +239,26 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         });
 
         console.log('================ END DEBUG ================');
+    }
+
+    endTurn() {
+        // Logique pour terminer le tour
+    }
+
+    abandon() {
+        // Vérifier que le lobby et le joueur actuel existent
+        if (this.lobbyId && this.currentPlayer) {
+            // Appeler la méthode `leaveLobby` du service pour quitter le lobby
+            this.lobbyService.leaveLobby(this.lobbyId, this.currentPlayer.name);
+            this.router.navigate(['/home']);
+        }
+    }
+
+    attack() {
+        // Logique pour attaquer
+    }
+
+    defend() {
+        // Logique pour se défendre
     }
 }

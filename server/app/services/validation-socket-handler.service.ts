@@ -1,11 +1,8 @@
 import { GameLobby } from '@common/game-lobby';
 import { Socket } from 'socket.io';
-import { Service } from 'typedi';
 
-@Service()
 export class ValidationSocketHandlerService {
     constructor(private lobbies: Map<string, GameLobby>) {}
-
     verifyRoom(socket: Socket, lobbyId: string, callback: (response: { exists: boolean; isLocked?: boolean }) => void): void {
         const lobby = this.lobbies.get(lobbyId);
 

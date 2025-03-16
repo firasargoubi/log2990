@@ -6,12 +6,15 @@ import { GameSocketHandlerService } from './game-socket-handler.service';
 
 @Service()
 export class DisconnectHandlerService {
+    private io: Server;
     constructor(
-        private io: Server,
         private lobbies: Map<string, GameLobby>,
         private gameStates: Map<string, GameState>,
         private gameSocketHandler: GameSocketHandlerService,
     ) {}
+    setServer(server: Server) {
+        this.io = server;
+    }
 
     handleDisconnect(socket: Socket): void {
         for (const [lobbyId, lobby] of this.lobbies.entries()) {

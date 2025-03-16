@@ -34,7 +34,6 @@ export class GameBoardComponent implements OnInit, OnChanges {
             this.updateAvailableMoves();
         }
 
-        // Listen for path calculation results
         this.lobbyService.onPathCalculated().subscribe((data) => {
             if (data.valid && data.path) {
                 const cacheKey = `${data.destination.x},${data.destination.y}`;
@@ -43,18 +42,14 @@ export class GameBoardComponent implements OnInit, OnChanges {
             }
         });
 
-        // Listen for turn started events to update available moves
         this.lobbyService.onTurnStarted().subscribe((data) => {
             if (data.gameState) {
-                // Update available moves
                 this.availableMoves = data.availableMoves || [];
 
-                // Clear path highlighting when turn changes
                 this.clearPathHighlights();
             }
         });
 
-        // Listen for movement processed events to clear path highlights
         this.lobbyService.onMovementProcessed().subscribe(() => {
             this.clearPathHighlights();
         });
@@ -131,21 +126,18 @@ export class GameBoardComponent implements OnInit, OnChanges {
     }
 
     onTileClick(tile: Tile) {
-        // Only allow clicks on available move tiles
         if (this.isMyTurn() && this.isAvailableMove(tile.x, tile.y)) {
             this.moveRequest.emit({ x: tile.x, y: tile.y });
         }
     }
 
     onTileHover(tile: Tile) {
-        // Only show path if it's an available move and it's the player's turn
         if (this.isMyTurn() && this.isAvailableMove(tile.x, tile.y)) {
             this.showPathToTile(tile);
         }
     }
 
     onTileLeave() {
-        // Clear highlighted path when mouse leaves a tile
         this.highlightedPath = [];
     }
 
@@ -153,12 +145,10 @@ export class GameBoardComponent implements OnInit, OnChanges {
         const cacheKey = `${tile.x},${tile.y}`;
 
         if (this.pathCache.has(cacheKey)) {
-            // Use cached path
             this.highlightedPath = this.pathCache.get(cacheKey)!;
             return;
         }
 
-        // Request path from server
         this.lobbyService.requestPath(this.lobbyId, { x: tile.x, y: tile.y });
     }
 

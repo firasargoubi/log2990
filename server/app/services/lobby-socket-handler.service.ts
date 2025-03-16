@@ -6,10 +6,11 @@ import { Service } from 'typedi';
 
 @Service()
 export class LobbySocketHandlerService {
-    constructor(
-        private io: Server,
-        private lobbies: Map<string, GameLobby>,
-    ) {}
+    private io: Server;
+    constructor(private lobbies: Map<string, GameLobby>) {}
+    setServer(server: Server) {
+        this.io = server;
+    }
 
     createLobby(socket: Socket, game: Game): string {
         const maxPlayers = this.getMaxPlayers(game.mapSize);

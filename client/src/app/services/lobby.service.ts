@@ -20,7 +20,6 @@ export class LobbyService {
             transports: ['websocket', 'polling'],
         });
 
-        // Log socket connection status changes
         this.socket.on('connect', () => {
             console.log('Socket connected with ID:', this.socket.id);
         });
@@ -43,12 +42,10 @@ export class LobbyService {
         return this.currentPlayer;
     }
 
-    // Get socket ID
     getSocketId(): string {
         return this.socket.id || '';
     }
 
-    // Socket connection management
     disconnect(): void {
         if (this.socket) {
             this.socket.disconnect();
@@ -61,7 +58,6 @@ export class LobbyService {
         }
     }
 
-    // Lobby management
     createLobby(game: Game): void {
         console.log('Creating lobby for game:', game);
         this.socket.emit('createLobby', game);
@@ -118,7 +114,6 @@ export class LobbyService {
         });
     }
 
-    // Game play methods
     requestStartGame(lobbyId: string): void {
         console.log('Requesting game start for lobby:', lobbyId);
         this.socket.emit('requestStart', lobbyId);
@@ -130,10 +125,8 @@ export class LobbyService {
                 console.log('Game started event received:', data);
 
                 try {
-                    // Convert the playerPositions from object to Map
                     data.gameState.playerPositions = this.convertPlayerPositionsToMap(data.gameState.playerPositions);
 
-                    // Ensure availableMoves is present
                     if (!data.gameState.availableMoves) {
                         data.gameState.availableMoves = [];
                         console.warn('availableMoves was undefined in gameState, set to empty array');
@@ -159,10 +152,8 @@ export class LobbyService {
                 console.log('Turn started event received in service:', data);
 
                 try {
-                    // Convert the playerPositions from object to Map
                     data.gameState.playerPositions = this.convertPlayerPositionsToMap(data.gameState.playerPositions);
 
-                    // Always ensure availableMoves is properly set in both places
                     if (!data.availableMoves) {
                         data.availableMoves = [];
                         console.warn('availableMoves was undefined in turn data, set to empty array');
@@ -195,10 +186,8 @@ export class LobbyService {
                 console.log('Movement processed event received:', data);
 
                 try {
-                    // Convert the playerPositions from object to Map
                     data.gameState.playerPositions = this.convertPlayerPositionsToMap(data.gameState.playerPositions);
 
-                    // Ensure availableMoves is present
                     if (!data.gameState.availableMoves) {
                         data.gameState.availableMoves = [];
                         console.warn('availableMoves was undefined in movement data, set to empty array');
@@ -229,10 +218,8 @@ export class LobbyService {
                 console.log('Turn ended event received:', data);
 
                 try {
-                    // Convert the playerPositions from object to Map
                     data.gameState.playerPositions = this.convertPlayerPositionsToMap(data.gameState.playerPositions);
 
-                    // Ensure availableMoves is present
                     if (!data.gameState.availableMoves) {
                         data.gameState.availableMoves = [];
                         console.warn('availableMoves was undefined in turn ended data, set to empty array');
@@ -252,7 +239,6 @@ export class LobbyService {
         });
     }
 
-    // Request a specific path calculation
     requestPath(lobbyId: string, destination: Coordinates): void {
         console.log('Requesting path calculation in lobby:', lobbyId, 'to destination:', destination);
         this.socket.emit('requestPath', { lobbyId, destination });
@@ -267,7 +253,6 @@ export class LobbyService {
         });
     }
 
-    // Generic error handling
     onError(): Observable<string> {
         return new Observable((observer) => {
             this.socket.on('error', (error: string) => {
@@ -277,18 +262,15 @@ export class LobbyService {
         });
     }
 
-    // Helper function to convert playerPositions from object to Map
     private convertPlayerPositionsToMap(playerPositions: any): Map<string, Coordinates> {
         const positionsMap = new Map<string, Coordinates>();
 
         try {
             if (playerPositions) {
-                // If it's already a Map, return it
                 if (playerPositions instanceof Map) {
                     return playerPositions;
                 }
 
-                // If it's an object, convert it to a Map
                 if (typeof playerPositions === 'object' && !Array.isArray(playerPositions)) {
                     Object.entries(playerPositions).forEach(([playerId, position]) => {
                         positionsMap.set(playerId, position as Coordinates);
@@ -307,7 +289,6 @@ export class LobbyService {
         return positionsMap;
     }
 
-    // Helper method to get lobby and game data for a lobby ID
     getLobby(lobbyId: string): Observable<GameLobby> {
         return new Observable((observer) => {
             this.socket.emit('getLobby', lobbyId, (lobby: GameLobby) => {

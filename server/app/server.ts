@@ -1,12 +1,19 @@
 import { Application } from '@app/app';
+import { SocketService } from '@app/services/socket.service';
+import { GameLobby } from '@common/game-lobby';
 import * as http from 'http';
+import mongoose from 'mongoose';
 import { AddressInfo } from 'net';
 import { Service } from 'typedi';
-import { SocketService } from '@app/services/socket.service';
-import mongoose from 'mongoose';
-
+import { GameState } from './interface/game-state';
+import { BoardService } from './services/board.service';
+import { DisconnectHandlerService } from './services/disconnect-handler.service';
+import { GameSocketHandlerService } from './services/game-socket-handler.service';
+import { GameService } from './services/game.service';
+import { LobbySocketHandlerService } from './services/lobby-socket-handler.service';
+import { PathfindingService } from './services/pathfinding.service';
+import { ValidationSocketHandlerService } from './services/validation-socket-handler.service';
 const uri = 'mongodb+srv://admin:admin@log2990-perso.mf3fg.mongodb.net/?retryWrites=true&w=majority&appName=LOG2990-perso';
-
 @Service()
 export class Server {
     private static readonly appPort: string | number | boolean = Server.normalizePort(process.env.PORT || '3000');
@@ -26,8 +33,16 @@ export class Server {
         this.application.app.set('port', Server.appPort);
 
         this.server = http.createServer(this.application.app);
-
-        this.socketManager = new SocketService(this.server);
+        const gameService = new GameService();
+        const pathfindingService = new PathfindingService();
+        const boardService = new BoardService(gameService, pathfindingService);
+        const lobbyMap = new Map<string, GameLobby>();
+        const gameStateMap = new Map<string, GameState>();
+        const lobbyHandler = new LobbySocketHandlerService(lobbyMap);
+        const gameHandler = new GameSocketHandlerService(lobbyMap, gameStateMap, boardService);
+        const validationHandler = new ValidationSocketHandlerService(lobbyMap);
+        const disconnectHandler = new DisconnectHandlerService(lobbyMap, gameStateMap, gameHandler);
+        this.socketManager = new SocketService(this.server, lobbyHandler, gameHandler, validationHandler, disconnectHandler);
         this.socketManager.init();
 
         this.server.on('error', (error: NodeJS.ErrnoException) => this.onError(error));

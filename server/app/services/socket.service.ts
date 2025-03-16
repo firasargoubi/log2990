@@ -4,7 +4,7 @@ import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
-import { Container, Service } from 'typedi';
+import { Service } from 'typedi';
 import { DisconnectHandlerService } from './disconnect-handler.service';
 import { GameSocketHandlerService } from './game-socket-handler.service';
 import { LobbySocketHandlerService } from './lobby-socket-handler.service';
@@ -13,22 +13,23 @@ import { ValidationSocketHandlerService } from './validation-socket-handler.serv
 @Service()
 export class SocketService {
     private io: Server;
-    private lobbyHandler: LobbySocketHandlerService;
-    private gameSocketHandlerService: GameSocketHandlerService;
-    private validationSocketHandlerService: ValidationSocketHandlerService;
-    private disconnectHandlerService: DisconnectHandlerService;
 
-    constructor(server: HttpServer) {
+    constructor(
+        server: HttpServer,
+        private lobbyHandler: LobbySocketHandlerService,
+        private gameSocketHandlerService: GameSocketHandlerService,
+        private validationSocketHandlerService: ValidationSocketHandlerService,
+        private disconnectHandlerService: DisconnectHandlerService,
+    ) {
         this.io = new Server(server, {
             cors: {
                 origin: '*',
                 methods: ['GET', 'POST'],
             },
         });
-        this.lobbyHandler = Container.get(LobbySocketHandlerService);
-        this.gameSocketHandlerService = Container.get(GameSocketHandlerService);
-        this.validationSocketHandlerService = Container.get(ValidationSocketHandlerService);
-        this.disconnectHandlerService = Container.get(DisconnectHandlerService);
+        this.lobbyHandler.setServer(this.io);
+        this.gameSocketHandlerService.setServer(this.io);
+        this.disconnectHandlerService.setServer(this.io);
     }
 
     init(): void {
@@ -75,7 +76,6 @@ export class SocketService {
             socket.on('requestStart', (lobbyId: string) => {
                 this.gameSocketHandlerService.handleRequestStart(socket, lobbyId);
             });
-
             socket.on('endTurn', (data: { lobbyId: string }) => {
                 this.gameSocketHandlerService.handleEndTurn(socket, data.lobbyId);
             });
