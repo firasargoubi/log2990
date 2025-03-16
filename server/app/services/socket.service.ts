@@ -109,6 +109,10 @@ export class SocketService {
             socket.on('initializeBattle', (data: { currentPlayer: Player; opponent: Player; lobbyId: string }) => {
                 this.initializeBattle(socket, data.currentPlayer, data.opponent);
             });
+
+            socket.on('startBattle', (data: { currentPlayer: Player; opponent: Player, gameState: GameState }) => {
+                this.startBattle(socket, data.currentPlayer, data.opponent, data.gameState );
+            });
         });
     }
 
@@ -579,7 +583,6 @@ export class SocketService {
 
     private initializeBattle(socket: Socket, currentPlayer: Player, opponent: Player) {
         this.io.to(currentPlayer.id).to(opponent.id).emit('playersBattling', { isInCombat: true });
-        console.log(`Sent to ${currentPlayer.id}, ${opponent.id}`);
     }
     // Start a combat for a specific player (emit to all players)
     private startCombat(socket: Socket, lobbyId: string, playerId: string): void {
@@ -641,5 +644,12 @@ export class SocketService {
         setInterval(() => {
             this.handleCombatCountdown(lobbyId); // This updates the combat time every second
         }, 1000); // Update every second
+    }
+
+    private startBattle(socket: Socket, currentPlayer: Player, opponent: Player, gameState: GameState) {
+        const currentIndex = gameState.players.findIndex((player) => player.id === currentPlayer.id);
+        const opponentIndex = gameState.players.findIndex((player) => player.id === opponent.id);
+        const playerTurn = currentIndex < opponentIndex ? currentPlayer.id : opponent.id;
+        this.io.to(currentPlayer.id).to(opponent.id).emit('PlayerTurn', { playerTurn });
     }
 }

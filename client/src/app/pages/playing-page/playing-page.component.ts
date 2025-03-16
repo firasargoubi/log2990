@@ -25,9 +25,10 @@ import { Subscription } from 'rxjs';
 })
 export class PlayingPageComponent implements OnInit, OnDestroy {
     @Output() action: boolean = false;
-    lobbyId: string = '';
-    gameState: GameState | null = null;
-    currentPlayer: Player | null = null;
+    @Output() currentPlayer: Player | null = null;
+    @Output() lobbyId: string = '';
+    @Output() opponent: Player | null = null;
+    @Output() gameState: GameState | null = null;
     debug: boolean = true;
     isInCombat: boolean = false;
     remainingTime: number = 0;
@@ -35,7 +36,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     combatSubscription: Subscription | null = null;
     turnSubscription: Subscription | null = null;
     private interval: number | null = null;
-
     private lobbyService = inject(LobbyService);
     private actionService = inject(ActionService);
     private router = inject(Router);
@@ -203,10 +203,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         }
 
         if (action === 'battle') {
-            const opponent = this.actionService.findOpponent(tile);
-            console.log(opponent);
-            if (opponent) {
-                this.lobbyService.initializeBattle(this.currentPlayer, opponent, this.lobbyId);
+            this.opponent = this.actionService.findOpponent(tile) || null;
+            console.log(this.opponent);
+            if (this.opponent) {
+                this.lobbyService.initializeBattle(this.currentPlayer, this.opponent, this.lobbyId);
                 this.lobbyService.onInteraction().subscribe((data) => {
                     this.isInCombat = data.isInCombat;
                 });
