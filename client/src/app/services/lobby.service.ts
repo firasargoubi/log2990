@@ -19,6 +19,18 @@ export class LobbyService {
         this.socket = io(environment.serverUrl, {
             transports: ['websocket', 'polling'],
         });
+
+        this.socket.on('connect', () => {
+            console.log('Socket connected with ID:', this.socket.id);
+        });
+
+        this.socket.on('disconnect', (reason) => {
+            console.log('Socket disconnected: ', reason);
+        });
+
+        this.socket.on('connect_error', (error) => {
+            console.error('Socket connection error:', error);
+        });
     }
 
     setCurrentPlayer(player: Player): void {
@@ -100,10 +112,6 @@ export class LobbyService {
     onGameStarted(): Observable<{ gameState: GameState }> {
         return new Observable((observer) => {
             this.socket.on('gameStarted', (data: { gameState: GameState }) => {
-                if (!data.gameState.availableMoves) {
-                    data.gameState.availableMoves = [];
-                }
-
                 observer.next(data);
             });
         });
@@ -112,19 +120,13 @@ export class LobbyService {
     onTurnStarted(): Observable<{ gameState: GameState; currentPlayer: string; availableMoves: Coordinates[] }> {
         return new Observable((observer) => {
             this.socket.on('turnStarted', (data: { gameState: GameState; currentPlayer: string; availableMoves: Coordinates[] }) => {
-                if (!data.availableMoves) {
-                    data.availableMoves = [];
-                }
-
-                data.gameState.availableMoves = [...data.availableMoves];
-
                 observer.next(data);
             });
         });
     }
 
-    requestMovement(lobbyId: string, coordinate: Coordinates): void {
-        this.socket.emit('requestMovement', { lobbyId, coordinate });
+    requestMovement(lobbyId: string, coordinates: Coordinates[]): void {
+        this.socket.emit('requestMovement', { lobbyId, coordinates });
     }
 
     onMovementProcessed(): Observable<{ gameState: GameState; playerMoved: string; newPosition: Coordinates }> {
@@ -155,18 +157,13 @@ export class LobbyService {
         });
     }
 
-    requestPath(lobbyId: string, destination: Coordinates): void {
-        this.socket.emit('requestPath', { lobbyId, destination });
-    }
-
-    onPathCalculated(): Observable<{ destination: Coordinates; path: Coordinates[]; valid: boolean }> {
+    onBoardChanged(): Observable<{ gameState: GameState }> {
         return new Observable((observer) => {
-            this.socket.on('pathCalculated', (data: { destination: Coordinates; path: Coordinates[]; valid: boolean }) => {
+            this.socket.on('boardModified', (data: { gameState: GameState }) => {
                 observer.next(data);
             });
         });
     }
-
     onError(): Observable<string> {
         return new Observable((observer) => {
             this.socket.on('error', (error: string) => {

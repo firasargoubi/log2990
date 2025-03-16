@@ -126,7 +126,6 @@ export class GameBoardComponent implements OnInit, OnChanges {
         let current = destination;
 
         while (current) {
-            console.log(current);
             if (this.isAdjacent(current, playerPosition)) {
                 path.unshift(playerPosition);
                 break;

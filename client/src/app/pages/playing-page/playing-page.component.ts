@@ -103,38 +103,12 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             return;
         }
         this.currentPlayer = currentPlayer;
-
-        if (this.currentPlayer) {
-            const socketId = this.lobbyService.getSocketId();
-            if (this.currentPlayer.id !== socketId) {
-                this.currentPlayer.id = socketId;
-            }
-
-            return;
+        const socketId = this.lobbyService.getSocketId();
+        if (this.currentPlayer.id !== socketId) {
+            this.currentPlayer.id = socketId;
         }
 
-        if (this.gameState) {
-            const socketId = this.lobbyService.getSocketId();
-
-            const currentPlayerinGameState = this.gameState.players.find((player) => player.id === socketId);
-
-            if (!currentPlayerinGameState) {
-                return;
-            }
-
-            this.currentPlayer = currentPlayerinGameState;
-
-            if (this.currentPlayer) {
-                this.lobbyService.setCurrentPlayer(this.currentPlayer);
-            } else {
-                console.error('Current player not found in game state', {
-                    socketId,
-                    players: this.gameState.players,
-                });
-            }
-        } else {
-            console.warn('Cannot get current player from game state: game state is not available');
-        }
+        return;
     }
 
     syncCurrentPlayerWithGameState() {
@@ -144,7 +118,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
         if (playerInGameState) {
             if (JSON.stringify(playerInGameState) !== JSON.stringify(this.currentPlayer)) {
-                console.log('Updating current player with game state data');
                 this.currentPlayer = playerInGameState;
                 this.lobbyService.setCurrentPlayer(this.currentPlayer);
             }
@@ -162,33 +135,28 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         }
     }
 
-    onMoveRequest(coordinate: Coordinates) {
+    onMoveRequest(coordinates: Coordinates[]) {
         if (!this.gameState || !this.currentPlayer) {
-            console.error('Cannot move: game state or current player is missing');
             return;
         }
 
         if (this.gameState.currentPlayer !== this.currentPlayer.id) {
-            console.error('Cannot move: not your turn');
             return;
         }
 
-        console.log(`Requesting movement to (${coordinate.x}, ${coordinate.y})`);
-        this.lobbyService.requestMovement(this.lobbyId, coordinate);
+        this.lobbyService.requestMovement(this.lobbyId, coordinates);
     }
+
 
     onEndTurn() {
         if (!this.gameState || !this.currentPlayer) {
-            console.error('Cannot end turn: game state or current player is missing');
             return;
         }
 
         if (this.gameState.currentPlayer !== this.currentPlayer.id) {
-            console.error('Cannot end turn: not your turn');
             return;
         }
 
-        console.log('Requesting end of turn');
         this.lobbyService.requestEndTurn(this.lobbyId);
     }
 

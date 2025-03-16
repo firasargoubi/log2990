@@ -84,10 +84,7 @@ export class GameSocketHandlerService {
         try {
             let updatedGameState = gameState;
             for (const coordinate of coordinates) {
-                setTimeout(() => {
-                    updatedGameState = this.boardService.handleMovement(gameState, coordinate);
-                    this.io.to(lobbyId).emit('movementProcessed', { gameState });
-                }, 5000);
+                updatedGameState = this.boardService.handleMovement(gameState, coordinate);
             }
 
             this.gameStates.set(lobbyId, updatedGameState);

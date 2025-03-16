@@ -30,7 +30,12 @@
 
     <div class="board-container">
         @if (gameState) {
-        <app-game-board [gameState]="gameState" [currentPlayerId]="currentPlayer.id" [lobbyId]="lobbyId">
+        <app-game-board
+            [gameState]="gameState"
+            [currentPlayerId]="currentPlayer.id"
+            [lobbyId]="lobbyId"
+            (tileClicked)="onMoveRequest($event)"
+        >
         </app-game-board>
         } @else {
         <div class="loading">
@@ -39,6 +44,7 @@
         </div>
         }
     </div>
+
 
     <div class="sidebar right-sidebar">
         <app-messages></app-messages>
