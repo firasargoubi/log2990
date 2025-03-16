@@ -15,7 +15,8 @@ export class CountdownPlayerComponent implements OnInit, OnDestroy {
     @Input() lobbyId: string = '';
     @Input() timeLeft: number = 0;
     attackCountdown: number = 0; // New timer for attack action
-    remainingTime: number;
+    message: string = ''; // Message to display
+    remainingTime: number = 30;
     private interval: number | null = null; // Typage avec number pour le setInterval
     // constructor(private lobbyService: LobbyService) {} // Inject LobbyService
 
@@ -42,5 +43,26 @@ export class CountdownPlayerComponent implements OnInit, OnDestroy {
                 }
             }, 1000);
         }
+    }
+
+    getDisplayTime(): string {
+        // Si le joueur n'est pas impliqué dans un combat, afficher un message spécial
+        if (!this.isPlayerTurn) {
+            if (this.isInCombat) {
+                this.message = 'Combat en cours';
+            }
+            return this.message;
+        }
+        // Sinon, on affiche le compte à rebours
+        return this.remainingTime > 0 ? `${this.remainingTime}s` : 'Temps écoulé';
+    }
+
+    // Réinitialiser le compte à rebours lors de la transition de tour ou de la fin de combat
+    resetCountdown() {
+        this.remainingTime = this.countdown;
+        if (this.interval !== null) {
+            clearInterval(this.interval); // Arrêter l'intervalle en cours
+        }
+        this.startCountdown();
     }
 }
