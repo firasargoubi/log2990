@@ -6,6 +6,7 @@ import { Game, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
 import { Server as HttpServer } from 'http';
+import { Subject } from 'rxjs';
 import { Server, Socket } from 'socket.io';
 import { Container, Service } from 'typedi';
 import { BoardService } from './board.service';
@@ -16,6 +17,8 @@ export class SocketService {
     private lobbies = new Map<string, GameLobby>();
     private gameStates = new Map<string, GameState>();
     private boardService: BoardService;
+    private countdownSubject = new Subject<number>();
+    countdown$ = this.countdownSubject.asObservable();
 
     constructor(server: HttpServer) {
         this.io = new Server(server, {

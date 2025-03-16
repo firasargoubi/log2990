@@ -1,0 +1,11 @@
+<div class="countdown-player">
+    <!-- Affichage du compte à rebours pour les autres joueurs -->
+    <p *ngIf="isPlayerTurn">
+        <strong>Il vous reste: {{ getDisplayTime() }} seconds</strong>
+    </p>
+
+    <!-- Message indiquant qu'il n'est pas encore au tour du joueur -->
+    <p *ngIf="!isPlayerTurn">
+        <strong>Il reste au joueur Actif : {{ getDisplayTime() }} seconds</strong>
+    </p>
+</div>

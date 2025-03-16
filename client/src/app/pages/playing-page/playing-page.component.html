@@ -49,34 +49,28 @@
 
     <div class="sidebar right-sidebar">
         <app-messages></app-messages>
-        @if (isCurrentPlayerTurn()) {
-        <app-countdown-timer
-            *ngIf="isInCombat || isPlayerTurn"
-            [countdown]="remainingTime"
-            [isInCombat]="isInCombat"
-            [isPlayerTurn]="isCurrentPlayerTurn()"
-            [lobbyId]="lobbyId"
-        ></app-countdown-timer>
 
+        <!-- Countdown for the active player or others -->
+
+        @if (isCurrentPlayerTurn()) {
+        <app-countdown-player [countdown]="60" [isPlayerTurn]="true" [isInCombat]="false" [lobbyId]="lobbyId" [isTransitioning]="false">
+        </app-countdown-player>
+        } @else {
+        <app-countdown-player [countdown]="60" [isPlayerTurn]="false" [isInCombat]="false" [isTransitioning]="false"> </app-countdown-player>
         }
 
         <app-inventory></app-inventory>
         @if (isInCombat) {
-            <div class="action-buttons">
-                <app-combat 
-                [gameState]="gameState"
-                [currentPlayer]="currentPlayer!"
-                [opponent]="opponent!"
-                ></app-combat>
-            </div>
-        }
-        @else {
-            <div class="action-buttons">
-                <button (click)="handleAction()">Action</button>
-                <button (click)="abandon()" routerLink="/home">Abandonner</button>
-                <button class="end-turn-button" [disabled]="!isCurrentPlayerTurn()" (click)="onEndTurn()">Terminer le tour</button>
-                <!-- <button (click)="onAttackClick(currentPlayer?.id ?? '', lobbyId)">Attaquer</button> -->
-            </div>
+        <div class="action-buttons">
+            <app-combat [gameState]="gameState" [currentPlayer]="currentPlayer!" [opponent]="opponent!"></app-combat>
+        </div>
+        } @else {
+        <div class="action-buttons">
+            <button (click)="handleAction()">Action</button>
+            <button (click)="abandon()" routerLink="/home">Abandonner</button>
+            <button class="end-turn-button" [disabled]="!isCurrentPlayerTurn()" (click)="onEndTurn()">Terminer le tour</button>
+            <!-- <button (click)="onAttackClick(currentPlayer?.id ?? '', lobbyId)">Attaquer</button> -->
+        </div>
         }
     </div>
 </div>
