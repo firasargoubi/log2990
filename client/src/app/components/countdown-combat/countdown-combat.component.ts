@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { LobbyService } from '@app/services/lobby.service';
 
@@ -5,6 +6,7 @@ import { LobbyService } from '@app/services/lobby.service';
     selector: 'app-countdown-combat',
     templateUrl: './countdown-combat.component.html',
     styleUrls: ['./countdown-combat.component.scss'],
+    imports: [CommonModule],
 })
 export class CountdownCombatComponent implements OnInit, OnDestroy {
     @Input() countdown: number = 0; // Temps restant pour le compte à rebours

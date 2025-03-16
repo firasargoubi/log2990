@@ -2,6 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { LobbyService } from '@app/services/lobby.service';
 
+const delay = 1000; // 1 seconde
+
 @Component({
     selector: 'app-countdown-player',
     templateUrl: './countdown-player.component.html',
@@ -9,54 +11,47 @@ import { LobbyService } from '@app/services/lobby.service';
     imports: [CommonModule],
 })
 export class CountdownPlayerComponent implements OnInit, OnDestroy {
-    @Input() countdown: number = 30; // Temps initial du compte à rebours
-    @Input() isInCombat: boolean = false; // Si le joueur est dans un combat
-    @Input() isPlayerTurn: boolean = false; // Si c'est le tour du joueur
-    @Input() isActivePlayer: boolean = false; // Si le joueur est actif
+    @Input() countdown: number = 60; // Durée initiale du compte à rebours
+    @Input() isPlayerTurn: boolean = false; // Détermine si c'est le tour du joueur courant
+    @Input() isInCombat: boolean = false; // Détermine si le joueur est dans un combat
+    @Input() isTransitioning: boolean = false; // Détermine si le jeu est en transition de tours
     @Input() lobbyId: string = ''; // ID de la salle
-    @Input() timeLeft: number = 0; // Temps restant pour l'action
-    attackCountdown: number = 0; // Nouveau timer pour l'attaque
-    message: string = ''; // Message à afficher si le compte à rebours est en pause
-    remainingTime: number = 0; // Temps restant actuel
-    private interval: number | null = null; // Intervalle pour le compte à rebours
-    constructor(private lobbyService: LobbyService) {} // Inject the LobbyService
+    constructor(private lobbyService: LobbyService) {}
+
+    remainingTime: number;
+    message: string = '--'; // Message à afficher lorsque le joueur n'est pas impliqué
+    private interval: number | null = null; // Typage avec number pour le setInterval
 
     ngOnInit(): void {
-        this.remainingTime = this.countdown; // Initialiser remainingTime
-        this.resetCountdown(); // Réinitialiser le compte à rebours
-
-        this.startCountdown(); // Lancer le compte à rebours
+        this.remainingTime = this.countdown;
+        this.startCountdown();
     }
 
     ngOnDestroy(): void {
-        // Arrêter l'intervalle quand le composant est détruit
         if (this.interval !== null) {
-            clearInterval(this.interval);
+            clearInterval(this.interval); // Arrêter le compte à rebours quand le composant est détruit
         }
     }
 
-    startCountdown() {
-        // Si c'est le tour du joueur, démarrer le compte à rebours
+    startCountdown(): void {
+        // Si c'est le tour du joueur ou s'il est dans un combat, on met à jour le temps
         this.interval = window.setInterval(() => {
             if (this.remainingTime > 0) {
-                this.remainingTime--; // Décrémenter le temps restant
-                console.log(`Remaining Time: ${this.remainingTime}`);
+                this.remainingTime--;
             } else {
                 if (this.interval !== null) {
                     clearInterval(this.interval); // Arrêter l'intervalle quand le temps est écoulé
-                    console.log('Countdown finished');
+                    this.lobbyService.requestEndTurn(this.lobbyId); // Appeler la méthode onTurnEnded du service
                 }
-
-                this.lobbyService.onTurnEnded();
             }
-        }, 1000); // Mise à jour chaque seconde
+        }, delay);
     }
 
     getDisplayTime(): string {
         // Si le joueur n'est pas impliqué dans un combat, afficher un message spécial
 
-        // Sinon, afficher le temps restant
-        return this.remainingTime > 0 ? `${this.remainingTime}` : '0';
+        // Sinon, on affiche le compte à rebours
+        return this.remainingTime > 0 ? `${this.remainingTime}s` : 'Temps écoulé';
     }
 
     // Réinitialiser le compte à rebours lors de la transition de tour ou de la fin de combat
@@ -65,6 +60,6 @@ export class CountdownPlayerComponent implements OnInit, OnDestroy {
         if (this.interval !== null) {
             clearInterval(this.interval); // Arrêter l'intervalle en cours
         }
-        this.startCountdown(); // Redémarrer le compte à rebours
+        this.startCountdown();
     }
 }
