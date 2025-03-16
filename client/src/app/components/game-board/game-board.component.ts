@@ -21,14 +21,15 @@ export class GameBoardComponent implements OnInit, OnChanges {
     @Input() currentPlayerId: string = '';
     @Input() lobbyId: string = '';
     @Input() action: boolean = false;
-    @Output() tileClicked = new EventEmitter<Coordinates>();
+    @Output() tileClicked = new EventEmitter<Coordinates[]>();
     @Output() actionClicked = new EventEmitter<Tile>();
     @Inject(ActionService) actionService: ActionService;
 
     tiles: Tile[][] = [];
     availableMoves: Coordinates[] = [];
     highlightedPath: Coordinates[] = [];
-    private pathCache = new Map<string, Coordinates[]>();
+
+    private shortestMovesMap: Map<string, Coordinates> = new Map();
 
     constructor(private lobbyService: LobbyService) {}
 
@@ -38,24 +39,12 @@ export class GameBoardComponent implements OnInit, OnChanges {
             this.updateAvailableMoves();
         }
 
-        this.lobbyService.onPathCalculated().subscribe((data) => {
-            if (data.valid && data.path) {
-                const cacheKey = `${data.destination.x},${data.destination.y}`;
-                this.pathCache.set(cacheKey, data.path);
-                this.highlightedPath = data.path;
-            }
-        });
-
         this.lobbyService.onTurnStarted().subscribe((data) => {
             if (data.gameState) {
-                this.availableMoves = data.availableMoves || [];
+                this.availableMoves = data.gameState.availableMoves || [];
 
                 this.clearPathHighlights();
             }
-        });
-
-        this.lobbyService.onMovementProcessed().subscribe(() => {
-            this.clearPathHighlights();
         });
     }
 
@@ -78,14 +67,14 @@ export class GameBoardComponent implements OnInit, OnChanges {
     getPlayerAtPosition(x: number, y: number): { player: Player; isCurrentPlayer: boolean; isLocalPlayer: boolean } | null {
         if (!this.gameState || !this.gameState.playerPositions) return null;
 
-        for (const [playerId, position] of this.gameState.playerPositions.entries()) {
+        for (const [playerIndex, position] of this.gameState.playerPositions.entries()) {
             if (position.x === x && position.y === y) {
-                const player = this.gameState.players.find((p) => p.id === playerId);
+                const player = this.gameState.players[playerIndex];
                 if (player) {
                     return {
                         player,
-                        isCurrentPlayer: playerId === this.gameState.currentPlayer,
-                        isLocalPlayer: playerId === this.currentPlayerId,
+                        isCurrentPlayer: player.id === this.gameState.currentPlayer,
+                        isLocalPlayer: player.id === this.currentPlayerId,
                     };
                 }
             }
@@ -95,17 +84,23 @@ export class GameBoardComponent implements OnInit, OnChanges {
 
     onTileClick(tile: Tile) {
         if (this.action) {
+            console.log('action clicked');
             this.actionClicked.emit(tile);
             return;
         }
         if (this.isMyTurn() && this.isAvailableMove(tile.x, tile.y)) {
-            this.tileClicked.emit({ x: tile.x, y: tile.y });
+            console.log(this.shortestMovesMap);
+            this.tileClicked.emit(this.highlightedPath);
         }
     }
 
     onTileHover(tile: Tile) {
+        if (this.action) {
+            this.highlightedPath = [];
+            return;
+        }
         if (this.isMyTurn() && this.isAvailableMove(tile.x, tile.y)) {
-            this.showPathToTile(tile);
+            this.highlightedPath = this.showPathToTile({ x: tile.x, y: tile.y });
         }
     }
 
@@ -113,15 +108,74 @@ export class GameBoardComponent implements OnInit, OnChanges {
         this.highlightedPath = [];
     }
 
-    private showPathToTile(tile: Tile): void {
-        const cacheKey = `${tile.x},${tile.y}`;
-
-        if (this.pathCache.has(cacheKey)) {
-            this.highlightedPath = this.pathCache.get(cacheKey)!;
-            return;
+    private showPathToTile(destination: Coordinates): Coordinates[] {
+        if (!this.gameState) {
+            return [];
         }
 
-        this.lobbyService.requestPath(this.lobbyId, { x: tile.x, y: tile.y });
+        const playerIndex = this.gameState.players.findIndex((p) => p.id === this.gameState.currentPlayer);
+        if (playerIndex === -1) {
+            return [];
+        }
+
+        const playerPosition = this.gameState.playerPositions[playerIndex];
+        if (!playerPosition) {
+            return [];
+        }
+        const isValidDestination = this.gameState.availableMoves.some((move) => move.x === destination.x && move.y === destination.y);
+
+        if (!isValidDestination) {
+            return [];
+        }
+        const path: Coordinates[] = [destination];
+
+        this.transformShortestMovesToMap(this.gameState);
+
+        let current = destination;
+
+        while (current) {
+            console.log(current);
+            if (this.isAdjacent(current, playerPosition)) {
+                path.unshift(playerPosition);
+                break;
+            }
+
+            const nextStepKey = `${current.x},${current.y}`;
+            const nextStep = this.shortestMovesMap.get(nextStepKey);
+
+            if (!nextStep) {
+                break;
+            }
+
+            path.unshift(nextStep);
+            current = nextStep;
+        }
+
+        return path;
+    }
+
+    private isAdjacent(pos1: Coordinates, pos2: Coordinates): boolean {
+        const xDiff = Math.abs(pos1.x - pos2.x);
+        const yDiff = Math.abs(pos1.y - pos2.y);
+
+        return (xDiff === 1 && yDiff === 0) || (xDiff === 0 && yDiff === 1);
+    }
+
+    private transformShortestMovesToMap(gameState: GameState): void {
+        this.shortestMovesMap = new Map<string, Coordinates>();
+
+        if (!gameState || !gameState.shortestMoves) {
+            return;
+        }
+        gameState.shortestMoves.forEach((pair) => {
+            if (pair && pair.length >= 2) {
+                const destination = pair[0];
+                const nextStep = pair[1];
+                const key = `${destination.x},${destination.y}`;
+                this.shortestMovesMap.set(key, nextStep);
+            }
+        });
+        return;
     }
 
     private isMyTurn(): boolean {
@@ -142,7 +196,6 @@ export class GameBoardComponent implements OnInit, OnChanges {
 
     private clearPathHighlights() {
         this.highlightedPath = [];
-        this.pathCache.clear();
     }
 
     private initializeBoard() {
