@@ -403,6 +403,18 @@ export class LobbyService {
     startCombat(playerId: string, lobbyId: string): void {
         this.socket.emit('startCombat', { playerId, lobbyId });
     }
+
+    updateCombatTime(timeLeft: number): void {
+        this.socket.emit('combatUpdate', { timeLeft }); // Émettre le temps restant à tous les joueurs
+    }
+
+    // onTurnStarted(): Observable<any> {
+    //     return new Observable((observer) => {
+    //         this.socket.on('turnStarted', (data: any) => {
+    //             observer.next(data);
+    //         });
+    //     });
+    // }
 }
 function shareReplay<T>(bufferSize: number): import('rxjs').OperatorFunction<T, T> {
     return rxjsShareReplay(bufferSize);

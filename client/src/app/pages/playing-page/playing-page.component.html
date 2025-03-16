@@ -51,12 +51,13 @@
         <app-messages></app-messages>
         @if (isCurrentPlayerTurn()) {
         <app-countdown-timer
-            *ngIf="isInCombat || isCurrentPlayerTurn()"
+            *ngIf="isInCombat || isPlayerTurn"
             [countdown]="remainingTime"
             [isInCombat]="isInCombat"
             [isPlayerTurn]="isCurrentPlayerTurn()"
-        >
-        </app-countdown-timer>
+            [lobbyId]="lobbyId"
+        ></app-countdown-timer>
+
         }
 
         <app-inventory></app-inventory>

@@ -8,29 +8,28 @@ import { Subscription } from 'rxjs';
     styleUrls: ['./countdown-timer.component.scss'],
 })
 export class CountdownComponent implements OnInit, OnDestroy {
-    @Input() countdown: number = 60; // Default countdown for combat
-    @Input() isPlayerTurn: boolean = false; // If it's the player's turn
-    @Input() isInCombat: boolean = false; // If the player is in combat
-    remainingTime: number = 0; // Remaining time for both normal and combat timers
-    private interval: number | null = null; // Store the interval ID for clearing it
-    private combatSubscription: Subscription | null = null;
+    @Input() countdown: number = 30; // Par défaut 30 secondes
+    @Input() isPlayerTurn: boolean = false;
+    @Input() isInCombat: boolean = false;
+    @Input() lobbyId: string = ''; // Input for lobbyId from parent
+
+    remainingTime: number = 0;
+    interval: number | null = null;
+    combatSubscription: Subscription | null = null;
 
     constructor(private lobbyService: LobbyService) {}
 
     ngOnInit(): void {
-        // Start the combat countdown when in combat
         if (this.isInCombat) {
             this.remainingTime = this.countdown;
-            this.startCombatCountdown(); // Combat timer starts
+            this.startCombatCountdown();
         }
 
-        // Start the normal countdown if it's the player's turn
         if (this.isPlayerTurn && !this.isInCombat) {
-            this.remainingTime = this.countdown; // Reset time for normal countdown
-            this.startNormalCountdown(); // Normal timer starts
+            this.remainingTime = this.countdown;
+            this.startNormalCountdown();
         }
 
-        // Listen to combat time updates
         this.combatSubscription = this.lobbyService.onCombatUpdate().subscribe((data) => {
             if (data && data.timeLeft !== undefined) {
                 this.remainingTime = data.timeLeft;
@@ -42,55 +41,55 @@ export class CountdownComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
-        this.stopCountdown(); // Ensure the countdown stops when the component is destroyed
+        this.stopCountdown();
         if (this.combatSubscription) {
             this.combatSubscription.unsubscribe();
         }
     }
 
+    // Démarrer le compte à rebours normal pour le tour
     startNormalCountdown(): void {
+        console.log('startNormalCountdown');
         if (this.remainingTime > 0 && this.interval === null) {
             this.interval = window.setInterval(() => {
                 if (this.remainingTime > 0) {
                     this.remainingTime--;
+                    console.log('Time remaining:', this.remainingTime); // Affiche le décompte
                 } else {
-                    this.stopCountdown(); // Stop the countdown once the time is up
+                    this.stopCountdown(); // Arrête le compte à rebours lorsque le temps est écoulé
+                    this.lobbyService.requestEndTurn(this.lobbyId);
+                    console.log('finiiiii');
                 }
-            }, 1000); // 1 second interval
+            }, 1000); // 1 seconde
         }
     }
 
+    // Démarrer le compte à rebours du combat
     startCombatCountdown(): void {
         if (this.remainingTime > 0 && this.interval === null) {
             this.interval = window.setInterval(() => {
                 if (this.remainingTime > 0) {
                     this.remainingTime--;
                 } else {
-                    this.stopCountdown(); // Stop combat timer once the time is up
+                    this.stopCountdown();
                 }
-            }, 1000); // 1 second interval
+            }, 1000); // 1 seconde
         }
     }
 
     stopCountdown(): void {
         if (this.interval !== null) {
-            clearInterval(this.interval); // Clear the interval when stopping the countdown
-            this.interval = null; // Reset the interval ID to null
+            clearInterval(this.interval);
+            this.interval = null;
         }
     }
 
     getDisplayTime(): string {
-        // Show the countdown time based on the timer state
+        // Affichage du compte à rebours en fonction du type de compte
         if (this.isInCombat) {
-            if (this.remainingTime <= 0) {
-                return 'Combat Ended';
-            }
-            return `${this.remainingTime}s`; // Combat time remaining
+            return this.remainingTime <= 0 ? 'Combat Ended' : `${this.remainingTime}s`;
         } else {
-            if (this.remainingTime <= 0) {
-                return 'Time is up!';
-            }
-            return `${this.remainingTime}s`; // Normal countdown time
+            return this.remainingTime <= 0 ? 'Time is up!' : `${this.remainingTime}s`;
         }
     }
 }
