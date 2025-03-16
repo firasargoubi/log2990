@@ -15,15 +15,9 @@
                 <li><strong>Avatar:</strong> <img [src]="currentPlayer?.avatar" alt="Avatar" width="50" height="50" /></li>
                 <li><strong>Vie:</strong> {{ currentPlayer?.life }}</li>
                 <li><strong>Rapidité:</strong> {{ currentPlayer?.speed }}</li>
-                <li><strong>Attaque:</strong> {{ currentPlayer?.attack }}</li>
-                <li><strong>Défense:</strong> {{ currentPlayer?.defense }}</li>
-            </ul>
-            <ul>
-                Bonus :
-                <li><strong>Bonus Vie:</strong> {{ currentPlayer?.bonus?.life }}</li>
-                <li><strong>Bonus Rapidité:</strong> {{ currentPlayer?.bonus?.speed }}</li>
-                <li><strong>Dé attaque:</strong> {{ currentPlayer?.bonus?.attack }}</li>
-                <li><strong>Dé défense:</strong> {{ currentPlayer?.bonus?.defense }}</li>
+                <li><strong>Attaque:</strong> D{{ currentPlayer?.attack }}</li>
+                <li><strong>Défense:</strong> D{{ currentPlayer?.defense }}</li>
+                <li><strong>Points de mouvement restants:</strong> {{ gameState?.currentPlayerMovementPoints }}</li>
             </ul>
         </div>
     </div>

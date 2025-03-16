@@ -301,9 +301,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     // Vérifier si le joueur courant est impliqué dans le combat
-    isCurrentPlayerInCombat(): boolean {
-        return this.gameState?.combat?.playerId === this.currentPlayer?.id;
-    }
 
     startTurnCountdown(): void {
         if (this.remainingTime > 0) {

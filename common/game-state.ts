@@ -11,7 +11,4 @@ export interface GameState {
     availableMoves: Coordinates[];
     playerPositions: Map<string, Coordinates>;
     currentPlayerMovementPoints: number;
-    combat?: {
-        playerId: string;
-    };
 }
