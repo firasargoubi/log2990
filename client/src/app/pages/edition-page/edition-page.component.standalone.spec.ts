@@ -19,6 +19,7 @@ import { BoardComponent } from '@app/components/board/board.component';
 import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
 import { EDITION_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { BoardService } from '@app/services/board.service';
 
 const routes: Routes = [];
 
@@ -57,6 +58,7 @@ describe('EditionPageComponent Standalone', () => {
     let notificationServiceSpy: jasmine.SpyObj<NotificationService>;
     let objectCounterServiceSpy: jasmine.SpyObj<ObjectCounterService>;
     let validationServiceSpy: jasmine.SpyObj<ValidationService>;
+    let boardServiceSpy: jasmine.SpyObj<BoardService>;
 
     const mockGame: Game = {
         id: '123',
@@ -72,7 +74,8 @@ describe('EditionPageComponent Standalone', () => {
     };
 
     beforeEach(async () => {
-        saveServiceSpy = jasmine.createSpyObj('SaveService', ['alertBoardForVerification', 'saveGame', 'getGameNames'], {
+        boardServiceSpy = jasmine.createSpyObj('BoardService', ['initializeBoard']);
+        saveServiceSpy = jasmine.createSpyObj('SaveService', ['alertBoardForReset', 'alertBoardForVerification', 'saveGame', 'getGameNames'], {
             isSave$: new Subject<boolean>(),
             isReset$: of(false),
             currentStatus: {},
@@ -112,6 +115,7 @@ describe('EditionPageComponent Standalone', () => {
                 { provide: NotificationService, useValue: notificationServiceSpy },
                 { provide: ObjectCounterService, useValue: objectCounterServiceSpy },
                 { provide: ValidationService, useValue: validationServiceSpy },
+                { provide: BoardService, useValue: boardServiceSpy },
                 provideRouter(routes),
             ],
         }).compileComponents();
@@ -354,7 +358,6 @@ describe('EditionPageComponent Standalone', () => {
         component.resetBoard();
 
         expect(component.game).toEqual(initialGame);
-        // Assuming boardService.initializeBoard is a spy, check if it's called
         expect(component['boardService'].initializeBoard).toHaveBeenCalledWith(initialGame, component.mapSize);
         expect(saveServiceSpy.alertBoardForReset).toHaveBeenCalledWith(true);
     });
