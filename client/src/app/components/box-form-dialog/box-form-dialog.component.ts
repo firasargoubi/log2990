@@ -116,9 +116,20 @@ export class BoxFormDialogComponent implements OnDestroy {
     }
 
     inputName(event: Event): void {
-        const inputName = (event.target as HTMLInputElement).value;
+        const inputName = (event.target as HTMLInputElement).value.trim(); // Trim pour supprimer les espaces autour du nom
+
+        if (inputName.length === 0) {
+            // Si le nom est vide ou composé uniquement d'espaces
+            this.form.get('name')?.setErrors({ whitespace: true }); // Définir une erreur de validation personnalisée
+        } else {
+            // Sinon, réinitialiser les erreurs si le nom est valide
+            this.form.get('name')?.setErrors(null); // Effacer les erreurs
+        }
+
+        // Mettre à jour la valeur du champ 'name' dans le formulaire
         this.form.get('name')?.setValue(inputName);
     }
+
     increase(attribute: string): void {
         if (!this.attributeClicked$) {
             this.attributeClicked$ = true;
