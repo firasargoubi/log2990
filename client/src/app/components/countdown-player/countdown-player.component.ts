@@ -20,7 +20,7 @@ export class CountdownPlayerComponent implements OnInit, OnDestroy {
 
     remainingTime: number;
     message: string = '--'; // Message à afficher lorsque le joueur n'est pas impliqué
-    private interval: number | null = null; // Typage avec number pour le setInterval
+    interval: number | null = null; // Typage avec number pour le setInterval
 
     ngOnInit(): void {
         this.remainingTime = this.countdown;
@@ -30,6 +30,7 @@ export class CountdownPlayerComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         if (this.interval !== null) {
             clearInterval(this.interval); // Arrêter le compte à rebours quand le composant est détruit
+            this.interval = null; // Nettoyer la référence de l'intervalle
         }
     }
 
@@ -41,6 +42,7 @@ export class CountdownPlayerComponent implements OnInit, OnDestroy {
             } else {
                 if (this.interval !== null) {
                     clearInterval(this.interval); // Arrêter l'intervalle quand le temps est écoulé
+                    this.interval = null;
                     this.lobbyService.requestEndTurn(this.lobbyId); // Appeler la méthode onTurnEnded du service
                 }
             }
@@ -59,6 +61,7 @@ export class CountdownPlayerComponent implements OnInit, OnDestroy {
         this.remainingTime = this.countdown;
         if (this.interval !== null) {
             clearInterval(this.interval); // Arrêter l'intervalle en cours
+            this.interval = null;
         }
         this.startCountdown();
     }

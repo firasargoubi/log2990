@@ -1,220 +1,109 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { LobbyService } from '@app/services/lobby.service';
-import { of } from 'rxjs';
-import { CountdownComponent } from './countdown-player.component';
+import { CountdownPlayerComponent } from './countdown-player.component';
 
-describe('CountdownComponent', () => {
-    let component: CountdownComponent;
-    let fixture: ComponentFixture<CountdownComponent>;
-    let lobbyService: LobbyService;
+describe('CountdownPlayerComponent', () => {
+    let component: CountdownPlayerComponent;
+    let fixture: ComponentFixture<CountdownPlayerComponent>;
+    let lobbyServiceMock: jasmine.SpyObj<LobbyService>;
 
     beforeEach(async () => {
-        lobbyService = jasmine.createSpyObj('LobbyService', ['onCombatUpdate', 'requestEndTurn']);
-        (lobbyService.onCombatUpdate as jasmine.Spy).and.returnValue(of({ timeLeft: 10 }));
+        lobbyServiceMock = jasmine.createSpyObj('LobbyService', ['requestEndTurn']);
 
         await TestBed.configureTestingModule({
-            imports: [CountdownComponent], // Import the CountdownComponent
-            providers: [{ provide: LobbyService, useValue: lobbyService }],
+            imports: [CountdownPlayerComponent],
+            providers: [{ provide: LobbyService, useValue: lobbyServiceMock }],
         }).compileComponents();
 
-        fixture = TestBed.createComponent(CountdownComponent);
+        fixture = TestBed.createComponent(CountdownPlayerComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
+    });
+
+    afterEach(() => {
+        if (component.interval !== null) {
+            clearInterval(component.interval);
+        }
     });
 
     it('should create', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should initialize with default values', () => {
-        expect(component.countdown).toBe(30);
-        expect(component.isPlayerTurn).toBeFalse();
-        expect(component.isInCombat).toBeFalse();
-        expect(component.lobbyId).toBe('');
-        expect(component.remainingTime).toBe(10);
-        expect(component.interval).toBeNull();
-    });
-
-    it('should start normal countdown on player turn', () => {
-        component.isPlayerTurn = true;
+    it('should initialize remainingTime and start countdown on ngOnInit', () => {
+        component.countdown = 60;
         component.ngOnInit();
-        expect(component.remainingTime).toBe(10); // Default countdown value
+        expect(component.remainingTime).toBe(60);
         expect(component.interval).not.toBeNull();
     });
 
-    it('should start combat countdown when in combat', () => {
-        component.isInCombat = true;
-        component.ngOnInit();
-        expect(component.remainingTime).toBe(10); // Default countdown value
-        expect(component.interval).not.toBeNull();
-    });
-
-    it('should update remaining time on combat update', () => {
-        component.ngOnInit();
-        expect(component.remainingTime).toBe(10); // Updated from combat subscription
-    });
-
-    it('should stop countdown on destroy', () => {
-        component.ngOnInit();
+    it('should clear interval on ngOnDestroy', () => {
+        component.interval = window.setInterval(() => {}, 1000);
         component.ngOnDestroy();
         expect(component.interval).toBeNull();
-        expect(component.combatSubscription?.closed).toBeTrue();
     });
 
-    it('should stop countdown when remaining time is zero', (done) => {
-        component.remainingTime = 1;
-        component.startNormalCountdown();
+    it('should decrement remainingTime every second', (done) => {
+        component.countdown = 3;
+        component.startCountdown();
+
         setTimeout(() => {
-            expect(component.remainingTime).toBe(0);
-            expect(component.interval).toBeNull();
+            expect(component.remainingTime).toBe(58);
             done();
-        }, 2000);
+        }, 1000);
     });
 
-    it('should return correct display time', () => {
-        component.remainingTime = 10;
-        expect(component.getDisplayTime()).toBe('10s');
-        component.remainingTime = 0;
-        expect(component.getDisplayTime()).toBe('Time is up!');
-        component.isInCombat = true;
-        component.remainingTime = 10;
-        expect(component.getDisplayTime()).toBe('10s');
-        component.remainingTime = 0;
-        expect(component.getDisplayTime()).toBe('Combat Ended');
+    it('should call requestEndTurn when countdown reaches zero', (done) => {
+        component.countdown = 1;
+        component.lobbyId = 'test-lobby';
+        component.startCountdown();
+
+        setTimeout(() => {
+            expect(component.remainingTime).toBe(58);
+            expect(lobbyServiceMock.requestEndTurn).toHaveBeenCalledWith('test-lobby');
+            done();
+        }, 1000);
     });
 
-    it('should reset the countdown when the turn ends and pass to next player', () => {
+    it('should reset the countdown and restart the interval', () => {
+        component.countdown = 60;
         component.remainingTime = 30;
-        component.startNormalCountdown();
-        lobbyService.requestEndTurn(component.lobbyId); // Simulate turn end
-        expect(component.remainingTime).toBe(30); // Time should reset for the next player
+        component.interval = window.setInterval(() => {}, 1000);
+
+        spyOn(component, 'startCountdown');
+        component.resetCountdown();
+
+        expect(component.remainingTime).toBe(60);
+        expect(component.interval).toBeNull();
+        expect(component.startCountdown).toHaveBeenCalled();
     });
 
-    it('should handle time remaining properly when player is not in combat', () => {
-        component.isInCombat = false;
+    it('should return the remaining time in seconds', () => {
+        component.remainingTime = 30;
+        expect(component.getDisplayTime()).toBe('30s');
+    });
+
+    it('should return "Temps écoulé" when remaining time is zero', () => {
+        component.remainingTime = 0;
+        expect(component.getDisplayTime()).toBe('Temps écoulé');
+    });
+
+    it('should not start countdown if countdown is 0', () => {
+        component.countdown = 0;
+        component.startCountdown();
+        expect(component.interval).toBeNull();
+    });
+    it('should initialize input properties correctly', () => {
+        component.countdown = 30;
         component.isPlayerTurn = true;
-        component.ngOnInit();
-        expect(component.remainingTime).toBe(10); // Default countdown value
-    });
-
-    it('should handle time remaining properly when player is in combat', () => {
         component.isInCombat = true;
-        component.isPlayerTurn = false;
-        component.ngOnInit();
-        expect(component.remainingTime).toBe(10); // Default countdown value
-    });
+        component.isTransitioning = true;
+        component.lobbyId = 'test-lobby';
 
-    it('should call `requestEndTurn` when countdown ends', (done) => {
-        component.remainingTime = 1;
-        component.startNormalCountdown();
-        setTimeout(() => {
-            expect(lobbyService.requestEndTurn).toHaveBeenCalledWith(component.lobbyId);
-            done();
-        }, 2000);
-    });
-
-    it('should not start countdown if remaining time is zero', () => {
-        component.remainingTime = 0;
-        component.startNormalCountdown();
-        expect(component.interval).toBeNull();
-    });
-
-    it('should not start combat countdown if remaining time is zero', () => {
-        component.remainingTime = 0;
-        component.startCombatCountdown();
-        expect(component.interval).toBeNull();
-    });
-
-    it('should handle combat subscription with undefined timeLeft', () => {
-        (lobbyService.onCombatUpdate as jasmine.Spy).and.returnValue(of({})); // No timeLeft
-        component.ngOnInit();
-        expect(component.remainingTime).toBe(10); // Should not update remainingTime
-    });
-
-    it('should handle combat subscription with timeLeft <= 0', () => {
-        (lobbyService.onCombatUpdate as jasmine.Spy).and.returnValue(of({ timeLeft: 0 }));
-        component.ngOnInit();
-        expect(component.remainingTime).toBe(0);
-        expect(component.interval).toBeNull();
-    });
-
-    it('should not start normal countdown if interval is already set', () => {
-        component.interval = 123; // Simulate an existing interval
-        component.startNormalCountdown();
-        expect(component.interval).toBe(123); // Interval should not change
-    });
-
-    it('should not start combat countdown if interval is already set', () => {
-        component.interval = 123; // Simulate an existing interval
-        component.startCombatCountdown();
-        expect(component.interval).toBe(123); // Interval should not change
-    });
-
-    it('should decrement remainingTime when remainingTime > 0 in normal countdown', (done) => {
-        component.remainingTime = 2; // Set initial time
-        component.startNormalCountdown();
-        setTimeout(() => {
-            expect(component.remainingTime).toBe(1); // Should decrement by 1
-            done();
-        }, 1100); // Wait for 1 second
-    });
-
-    it('should stop countdown when remainingTime reaches 0 in combat countdown', (done) => {
-        component.remainingTime = 1;
-        component.startCombatCountdown();
-        setTimeout(() => {
-            expect(component.remainingTime).toBe(0);
-            done();
-        }, 1100);
-    });
-
-    it('should decrement remainingTime when remainingTime > 0 in combat countdown', (done) => {
-        component.remainingTime = 2; // Set initial time
-        component.startCombatCountdown();
-        setTimeout(() => {
-            expect(component.remainingTime).toBe(1); // Should decrement by 1
-            done();
-        }, 1100); // Wait for 1 second
-    });
-
-    it('should stop countdown when remainingTime reaches 0 in normal countdown', (done) => {
-        component.remainingTime = 1;
-        component.startNormalCountdown();
-        setTimeout(() => {
-            expect(component.remainingTime).toBe(0);
-            done();
-        }, 1100);
-    });
-
-    it('should set combatSubscription during ngOnInit', () => {
-        component.ngOnInit();
-        expect(component.combatSubscription).not.toBeNull();
-    });
-
-    const ONE_SECOND = 1100;
-
-    it('should call stopCountdown when remainingTime reaches 0 in combat countdown', (done) => {
-        // Set initial time for the combat countdown
-        component.remainingTime = 1;
-
-        // Spy on the stopCountdown method to check if it's called
-        spyOn(component, 'stopCountdown');
-
-        // Start the combat countdown
-        component.startCombatCountdown();
-
-        // Simulate the passage of time and check after 1 second (setInterval should decrement remainingTime)
-        setTimeout(() => {
-            // Check that stopCountdown has been called
-            expect(component.stopCountdown).toHaveBeenCalled();
-
-            // Check that the remaining time is 0
-            expect(component.remainingTime).toBe(0);
-
-            // Verify that the interval has been cleared and no further countdowns are happening
-            expect(component.interval).toBeNull(); // Ensure that the interval is cleared
-
-            done(); // Call done to ensure that the test completes properly
-        }, ONE_SECOND); // Wait for 1 second
+        expect(component.countdown).toBe(30);
+        expect(component.isPlayerTurn).toBeTrue();
+        expect(component.isInCombat).toBeTrue();
+        expect(component.isTransitioning).toBeTrue();
+        expect(component.lobbyId).toBe('test-lobby');
     });
 });
