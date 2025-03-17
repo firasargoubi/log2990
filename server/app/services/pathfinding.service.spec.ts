@@ -317,5 +317,19 @@ describe('PathfindingService', () => {
             // Should not include the position occupied by the other player
             expect(positions).to.not.deep.include({ x: 0, y: 1 });
         });
+
+        it('should return infinite cost for invalid tile type', () => {
+            // Create a game state with an invalid tile type
+            const invalidTileGameState = {
+                ...mockGameState,
+                board: [
+                    [TileTypes.Grass, TileTypes.Grass],
+                    [TileTypes.Grass, 99], // Invalid tile type
+                ],
+            };
+
+            const tileCost = service.getMovementCost(invalidTileGameState, { x: 1, y: 1 });
+            expect(tileCost).to.equal(Infinity);
+        });
     });
 });
