@@ -5,7 +5,7 @@ import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
 
 // const TO_SECONDS = 1000;
-const FLEE_RATE = 0;
+const FLEE_RATE = 30;
 @Component({
     selector: 'app-combat',
     templateUrl: './combat.component.html',
@@ -177,7 +177,6 @@ export class CombatComponent implements OnInit, OnChanges {
                 opponent.life = data.remainingHealth;
             }
         });
-
     }
 
     private subscribeToFleeFailure() {

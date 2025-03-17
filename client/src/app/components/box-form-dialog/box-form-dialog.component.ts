@@ -275,6 +275,7 @@ export class BoxFormDialogComponent implements OnDestroy {
             avatar: formData.avatar,
             isHost: false,
             life: formData.life,
+            maxLife: formData.life,
             speed: formData.speed,
             attack: formData.attack,
             defense: formData.defense,

@@ -142,7 +142,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.remainingTime = 30;
     }
 
-
     startTurnCountdown(): void {
         if (this.remainingTime > 0) {
             this.interval = window.setInterval(() => {
@@ -212,6 +211,11 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
             this.lobbyService.onFleeSuccess().subscribe((data) => {
                 this.isInCombat = false;
+                this.currentPlayer.life = this.currentPlayer.maxLife;
+                if (this.currentPlayer.name === data.fleeingPlayer.name) {
+                    this.notificationService.showInfo('Vous avez fuit le combat.');
+                    return;
+                }
                 this.notificationService.showInfo(`${data.fleeingPlayer.name} a fui le combat.`);
             }),
         );

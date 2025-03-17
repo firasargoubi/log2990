@@ -27,6 +27,7 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
         avatar: GAME_IMAGES.fawn,
         isHost: false,
         life: 0,
+        maxLife: 0,
         speed: 0,
         attack: 0,
         defense: 0,

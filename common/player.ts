@@ -4,6 +4,7 @@ export interface Player {
     avatar: string;
     isHost: boolean;
     life: number;
+    maxLife: number;
     speed: number;
     attack: number;
     defense: number;
