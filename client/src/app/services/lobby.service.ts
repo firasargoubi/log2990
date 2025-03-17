@@ -6,9 +6,9 @@ import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
 import { Observable } from 'rxjs';
+import { shareReplay as rxjsShareReplay } from 'rxjs/operators';
 import { io, Socket } from 'socket.io-client';
 import { environment } from 'src/environments/environment';
-import { shareReplay as rxjsShareReplay } from 'rxjs/operators';
 
 @Injectable({
     providedIn: 'root',
@@ -61,70 +61,60 @@ export class LobbyService {
     }
 
     createLobby(game: Game): void {
-        console.log('Creating lobby for game:', game);
         this.socket.emit('createLobby', game);
     }
 
     onLobbyCreated(): Observable<{ lobbyId: string }> {
         return new Observable((observer) => {
             this.socket.on('lobbyCreated', (data: { lobbyId: string }) => {
-                console.log('Lobby created:', data);
                 observer.next(data);
             });
         });
     }
 
     joinLobby(lobbyId: string, player: Player): void {
-        console.log('Joining lobby:', lobbyId, 'as player:', player);
         this.socket.emit('joinLobby', { lobbyId, player });
     }
 
     onPlayerJoined(): Observable<{ lobbyId: string; player: Player }> {
         return new Observable((observer) => {
             this.socket.on('playerJoined', (data: { lobbyId: string; player: Player }) => {
-                console.log('Player joined:', data);
                 observer.next(data);
             });
         });
     }
 
     leaveLobby(lobbyId: string, playerName: string): void {
-        console.log('Leaving lobby:', lobbyId, 'player:', playerName);
         this.socket.emit('leaveLobby', { lobbyId, playerName });
     }
 
     onPlayerLeft(): Observable<{ lobbyId: string; playerName: string }> {
         return new Observable((observer) => {
             this.socket.on('playerLeft', (data: { lobbyId: string; playerName: string }) => {
-                console.log('Player left:', data);
                 observer.next(data);
             });
         });
     }
 
     lockLobby(lobbyId: string): void {
-        console.log('Locking lobby:', lobbyId);
         this.socket.emit('lockLobby', lobbyId);
     }
 
     onLobbyLocked(): Observable<{ lobbyId: string }> {
         return new Observable((observer) => {
             this.socket.on('lobbyLocked', (data: { lobbyId: string }) => {
-                console.log('Lobby locked:', data);
                 observer.next(data);
             });
         });
     }
 
     requestStartGame(lobbyId: string): void {
-        console.log('Requesting game start for lobby:', lobbyId);
         this.socket.emit('requestStart', lobbyId);
     }
 
     onGameStarted(): Observable<{ gameState: GameState }> {
         return new Observable((observer) => {
             this.socket.on('gameStarted', (data: { gameState: GameState }) => {
-                console.log('Game started event received:', data);
 
                 try {
                     data.gameState.playerPositions = this.convertPlayerPositionsToMap(data.gameState.playerPositions);
@@ -133,12 +123,6 @@ export class LobbyService {
                         data.gameState.availableMoves = [];
                         console.warn('availableMoves was undefined in gameState, set to empty array');
                     }
-
-                    console.log('Processed game state:', {
-                        currentPlayer: data.gameState.currentPlayer,
-                        availableMoves: data.gameState.availableMoves,
-                        playerPositions: Array.from(data.gameState.playerPositions.entries()),
-                    });
 
                     observer.next(data);
                 } catch (error) {
@@ -151,7 +135,6 @@ export class LobbyService {
     onTurnStarted(): Observable<{ gameState: GameState; currentPlayer: string; availableMoves: Coordinates[] }> {
         return new Observable((observer) => {
             this.socket.on('turnStarted', (data: { gameState: GameState; currentPlayer: string; availableMoves: Coordinates[] }) => {
-                console.log('Turn started event received in service:', data);
 
                 try {
                     data.gameState.playerPositions = this.convertPlayerPositionsToMap(data.gameState.playerPositions);
@@ -163,12 +146,6 @@ export class LobbyService {
 
                     data.gameState.availableMoves = [...data.availableMoves];
 
-                    console.log('Processed turn data:', {
-                        currentPlayer: data.currentPlayer,
-                        availableMoves: data.availableMoves,
-                        gameStateAvailableMoves: data.gameState.availableMoves,
-                    });
-
                     observer.next(data);
                 } catch (error) {
                     console.error('Error processing turn started event:', error);
@@ -178,14 +155,12 @@ export class LobbyService {
     }
 
     requestMovement(lobbyId: string, coordinate: Coordinates): void {
-        console.log('Requesting movement in lobby:', lobbyId, 'to coordinate:', coordinate);
         this.socket.emit('requestMovement', { lobbyId, coordinate });
     }
 
     onMovementProcessed(): Observable<{ gameState: GameState; playerMoved: string; newPosition: Coordinates }> {
         return new Observable((observer) => {
             this.socket.on('movementProcessed', (data: { gameState: GameState; playerMoved: string; newPosition: Coordinates }) => {
-                console.log('Movement processed event received:', data);
 
                 try {
                     data.gameState.playerPositions = this.convertPlayerPositionsToMap(data.gameState.playerPositions);
@@ -194,12 +169,6 @@ export class LobbyService {
                         data.gameState.availableMoves = [];
                         console.warn('availableMoves was undefined in movement data, set to empty array');
                     }
-
-                    console.log('Processed movement data:', {
-                        playerMoved: data.playerMoved,
-                        newPosition: data.newPosition,
-                        availableMoves: data.gameState.availableMoves,
-                    });
 
                     observer.next(data);
                 } catch (error) {
@@ -210,14 +179,12 @@ export class LobbyService {
     }
 
     requestEndTurn(lobbyId: string): void {
-        console.log('Requesting end turn for lobby:', lobbyId);
         this.socket.emit('endTurn', { lobbyId });
     }
 
     onTurnEnded(): Observable<{ gameState: GameState; previousPlayer: string; currentPlayer: string }> {
         return new Observable((observer) => {
             this.socket.on('turnEnded', (data: { gameState: GameState; previousPlayer: string; currentPlayer: string }) => {
-                console.log('Turn ended event received:', data);
 
                 try {
                     data.gameState.playerPositions = this.convertPlayerPositionsToMap(data.gameState.playerPositions);
@@ -227,11 +194,6 @@ export class LobbyService {
                         console.warn('availableMoves was undefined in turn ended data, set to empty array');
                     }
 
-                    console.log('Processed turn ended data:', {
-                        previousPlayer: data.previousPlayer,
-                        currentPlayer: data.currentPlayer,
-                        availableMoves: data.gameState.availableMoves,
-                    });
 
                     observer.next(data);
                 } catch (error) {
@@ -242,14 +204,12 @@ export class LobbyService {
     }
 
     requestPath(lobbyId: string, destination: Coordinates): void {
-        console.log('Requesting path calculation in lobby:', lobbyId, 'to destination:', destination);
         this.socket.emit('requestPath', { lobbyId, destination });
     }
 
     onPathCalculated(): Observable<{ destination: Coordinates; path: Coordinates[]; valid: boolean }> {
         return new Observable((observer) => {
             this.socket.on('pathCalculated', (data: { destination: Coordinates; path: Coordinates[]; valid: boolean }) => {
-                console.log('Path calculation received:', data);
                 observer.next(data);
             });
         });
@@ -266,7 +226,6 @@ export class LobbyService {
     getLobby(lobbyId: string): Observable<GameLobby> {
         return new Observable((observer) => {
             this.socket.emit('getLobby', lobbyId, (lobby: GameLobby) => {
-                console.log('Got lobby data:', lobby);
                 observer.next(lobby);
             });
         });
@@ -275,7 +234,6 @@ export class LobbyService {
     getGameId(lobbyId: string): Observable<string> {
         return new Observable((observer) => {
             this.socket.emit('getGameId', lobbyId, (gameId: string) => {
-                console.log('Got game ID:', gameId);
                 observer.next(gameId);
             });
         });
@@ -284,7 +242,6 @@ export class LobbyService {
     onLobbyUpdated(): Observable<{ lobbyId: string; lobby: GameLobby }> {
         return new Observable((observer) => {
             this.socket.on('lobbyUpdated', (data: { lobbyId: string; lobby: GameLobby }) => {
-                console.log('Lobby updated:', data);
                 observer.next(data);
             });
         });
@@ -293,7 +250,6 @@ export class LobbyService {
     verifyRoom(gameId: string): Observable<{ exists: boolean; isLocked?: boolean }> {
         return new Observable((observer) => {
             this.socket.emit('verifyRoom', { gameId }, (response: { exists: boolean; isLocked?: boolean }) => {
-                console.log('Room verification result:', response);
                 observer.next(response);
                 observer.complete();
             });
@@ -303,7 +259,6 @@ export class LobbyService {
     verifyAvatars(lobbyId: string): Observable<{ avatars: string[] }> {
         return new Observable((observer) => {
             this.socket.emit('verifyAvatars', { lobbyId }, (response: { avatars: string[] }) => {
-                console.log('Avatars verification result:', response);
                 observer.next(response);
                 observer.complete();
             });
@@ -313,7 +268,6 @@ export class LobbyService {
     verifyUsername(lobbyId: string): Observable<{ usernames: string[] }> {
         return new Observable((observer) => {
             this.socket.emit('verifyUsername', { lobbyId }, (response: { usernames: string[] }) => {
-                console.log('Username verification result:', response);
                 observer.next(response);
                 observer.complete();
             });
@@ -354,22 +308,32 @@ export class LobbyService {
         }).pipe(shareReplay(1));
     }
 
-    getPlayerTurn(): Observable<{ playerTurn: string }> {
-        return new Observable<{ playerTurn: string }>((observer) => {
-            this.socket.on('PlayerTurn', (data: { playerTurn: string }) => {
-                console.log('PLAYER ID: ', data);
+    getPlayerTurn(): Observable<{ playerTurn: string; countDown: number }> {
+        return new Observable<{ playerTurn: string; countDown: number }>((observer) => {
+            this.socket.on('PlayerTurn', (data: { playerTurn: string; countDown: number }) => {
                 observer.next(data);
                 observer.complete();
             });
         });
     }
 
+    getPlayerSwitch(): Observable<{ newPlayerTurn: string; countDown: number }> {
+        return new Observable<{ newPlayerTurn: string; countDown: number }>((observer) => {
+            this.socket.on('PlayerSwitch', (data: { newPlayerTurn: string; countDown: number }) => {
+                observer.next(data);
+                observer.complete();
+            });
+        });
+    }
+
+    changeTurnEnd(currentPlayer: Player, opponent: Player, playerTurn: string, gameState: GameState) {
+        this.socket.emit('changeTurnEndTimer', { currentPlayer, opponent, playerTurn, gameState });
+    }
+
     handleAttack(currentPlayer: Player, opponent: Player, lobbyId: string, gameState: GameState) {
-        console.log('START BATTLE IN CURRENT PLAYER');
         this.socket.emit('startBattle', { currentPlayer, opponent, lobbyId, gameState });
     }
 
-    // Écoute les mises à jour envoyées à TOUS les joueurs
     onTileUpdate(): Observable<{ newGameBoard: number[][] }> {
         return new Observable<{ newGameBoard: number[][] }>((observer) => {
             this.socket.on('tileUpdated', (data: { newGameBoard: number[][] }) => {
@@ -391,7 +355,6 @@ export class LobbyService {
                     Object.entries(playerPositions).forEach(([playerId, position]) => {
                         positionsMap.set(playerId, position as Coordinates);
                     });
-                    console.log('Converted player positions to Map:', Array.from(positionsMap.entries()));
                 } else {
                     console.warn('playerPositions is not an object:', playerPositions);
                 }

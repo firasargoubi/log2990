@@ -7,6 +7,7 @@ export interface Player {
     speed: number;
     attack: number;
     defense: number;
+    amountEscape?: number;
     bonus?: {
         life?: number;
         speed?: number;

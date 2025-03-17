@@ -93,7 +93,7 @@ export class SocketService {
             });
 
             socket.on('startCombat', (data: { playerId: string; lobbyId: string }) => {
-                this.startCombat(socket, data.lobbyId, data.playerId); // Call startCombat method
+                this.startCombat(socket, data.lobbyId, data.playerId);
             });
 
             socket.on('closeDoor', (data: { tile: Tile; lobbyId: string }) => {
@@ -110,8 +110,12 @@ export class SocketService {
                 this.initializeBattle(socket, data.currentPlayer, data.opponent);
             });
 
-            socket.on('startBattle', (data: { currentPlayer: Player; opponent: Player, gameState: GameState }) => {
-                this.startBattle(socket, data.currentPlayer, data.opponent, data.gameState );
+            socket.on('startBattle', (data: { currentPlayer: Player; opponent: Player; gameState: GameState }) => {
+                this.startBattle(socket, data.currentPlayer, data.opponent, data.gameState);
+            });
+
+            socket.on('changeTurnEndTimer', (data: { currentPlayer: Player; opponent: Player; playerTurn: string; gameState: GameState }) => {
+                this.changeTurnEnd(data.currentPlayer, data.opponent, data.playerTurn, data.gameState);
             });
         });
     }
@@ -637,19 +641,29 @@ export class SocketService {
         }
     }
 
-    // Emit a combat update when the countdown changes
-    // socketService.ts
-
     private startCombatCountdown(lobbyId: string): void {
         setInterval(() => {
-            this.handleCombatCountdown(lobbyId); // This updates the combat time every second
-        }, 1000); // Update every second
+            this.handleCombatCountdown(lobbyId);
+        }, 1000);
     }
 
     private startBattle(socket: Socket, currentPlayer: Player, opponent: Player, gameState: GameState) {
         const currentIndex = gameState.players.findIndex((player) => player.id === currentPlayer.id);
         const opponentIndex = gameState.players.findIndex((player) => player.id === opponent.id);
         const playerTurn = currentIndex < opponentIndex ? currentPlayer.id : opponent.id;
-        this.io.to(currentPlayer.id).to(opponent.id).emit('PlayerTurn', { playerTurn });
+        const player = gameState.players.find((p) => p.id === playerTurn);
+        const countDown = player.amountEscape === 2 ? 3 : 5;
+        this.io.to(currentPlayer.id).to(opponent.id).emit('PlayerTurn', { playerTurn, countDown });
+    }
+
+    private changeTurnEnd(currentPlayer: Player, opponent: Player, playerTurn: string, gameState: GameState) {
+        console.log(gameState);
+        const player = gameState.players.find((p) => p.id === playerTurn);
+        const newPlayerTurn = player.id === currentPlayer.id ? opponent.id : currentPlayer.id;
+        const newPlayer = gameState.players.find((p) => p.id === newPlayerTurn);
+        const countDown = newPlayer.amountEscape === 2 ? 3 : 5;
+        this.io.to(currentPlayer.id).to(opponent.id).emit('PlayerSwitch', { newPlayerTurn, countDown });
+        console.log('old player turn', playerTurn);
+        console.log('new Player', newPlayerTurn);
     }
 }

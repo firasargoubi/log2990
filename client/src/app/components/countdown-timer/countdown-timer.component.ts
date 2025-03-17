@@ -49,16 +49,13 @@ export class CountdownComponent implements OnInit, OnDestroy {
 
     // Démarrer le compte à rebours normal pour le tour
     startNormalCountdown(): void {
-        console.log('startNormalCountdown');
         if (this.remainingTime > 0 && this.interval === null) {
             this.interval = window.setInterval(() => {
                 if (this.remainingTime > 0) {
                     this.remainingTime--;
-                    console.log('Time remaining:', this.remainingTime); // Affiche le décompte
                 } else {
                     this.stopCountdown(); // Arrête le compte à rebours lorsque le temps est écoulé
                     this.lobbyService.requestEndTurn(this.lobbyId);
-                    console.log('finiiiii');
                 }
             }, 1000); // 1 seconde
         }
