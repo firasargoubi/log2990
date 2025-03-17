@@ -168,6 +168,7 @@ export class CombatComponent implements OnInit, OnChanges {
             if (this.gameState && this.gameState.playerPositions) {
                 this.gameState.playerPositions[playerIndex] = data.newSpawn;
                 this.combatEnded = data.combatEnded;
+                this.currentPlayer.life = this.currentPlayer.maxLife;
             }
         });
     }
