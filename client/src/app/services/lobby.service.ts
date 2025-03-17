@@ -314,23 +314,21 @@ export class LobbyService {
         this.socket.emit('playerDefeated', { player, lobbyId });
     }
 
-    newSpawnPoints(): Observable<{ player: Player; newSpawn: Coordinates }> {
-        return new Observable<{ player: Player; newSpawn: Coordinates }>((observer) => {
-            this.socket.on('changedSpawnPoint', (data: { player: Player; newSpawn: Coordinates }) => {
+    newSpawnPoints(): Observable<{ player: Player; newSpawn: Coordinates; combatEnded: boolean }> {
+        return new Observable<{ player: Player; newSpawn: Coordinates; combatEnded: boolean }>((observer) => {
+            this.socket.on('changedSpawnPoint', (data: { player: Player; newSpawn: Coordinates; combatEnded: boolean }) => {
                 observer.next(data);
             });
         });
     }
 
     attackAction(lobbyId: string, opponent: Player, damage: number, opponentLife: number) {
-        console.log('Dans attack action on a fini la première action');
         this.socket.emit('attackAction', { lobbyId, opponent, damage, opponentLife });
     }
 
     updateHealth(): Observable<{ player: Player; remainingHealth: number }> {
         return new Observable<{ player: Player; remainingHealth: number }>((observer) => {
             this.socket.on('update-health', (data: { player: Player; remainingHealth: number }) => {
-                console.log('Player in lobby Service: ', data.player);
                 observer.next(data);
                 observer.complete();
             });

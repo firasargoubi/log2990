@@ -21,6 +21,7 @@ export class CombatComponent implements OnInit, OnChanges {
     countDown: number = 0;
     canAct: boolean = false;
     isFleeSuccess: boolean = false;
+    combatEnded: boolean = false;
     private lobbyService = inject(LobbyService);
     private countDownInterval: ReturnType<typeof setInterval> | null = null;
     private notificationService = inject(NotificationService);
@@ -166,6 +167,7 @@ export class CombatComponent implements OnInit, OnChanges {
             if (playerIndex === -1) return;
             if (this.gameState && this.gameState.playerPositions) {
                 this.gameState.playerPositions[playerIndex] = data.newSpawn;
+                this.combatEnded = data.combatEnded;
             }
         });
     }
@@ -177,7 +179,6 @@ export class CombatComponent implements OnInit, OnChanges {
                 opponent.life = data.remainingHealth;
             }
         });
-
     }
 
     private subscribeToFleeFailure() {
@@ -185,7 +186,6 @@ export class CombatComponent implements OnInit, OnChanges {
             if (this.currentPlayer.id === data.fleeingPlayer.id) {
                 this.currentPlayer.amountEscape = data.fleeingPlayer.amountEscape;
             }
-
             this.notificationService.showInfo(`${data.fleeingPlayer.name} n'a pas réussi à fuir le combat.`);
         });
     }

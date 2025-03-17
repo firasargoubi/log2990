@@ -208,12 +208,13 @@ export class GameSocketHandlerService {
     }
 
     handleDefeat(player: Player, lobbyId: string) {
+        const combatEnded = true;
         const gameState = this.gameStates.get(lobbyId);
         const playerIndex = gameState.players.findIndex((p) => p.id === player.id);
         if (playerIndex === -1) return;
         const newSpawn = gameState.spawnPoints[playerIndex];
         gameState.playerPositions[playerIndex] = newSpawn;
-        this.io.to(lobbyId).emit('changedSpawnPoint', { player, newSpawn });
+        this.io.to(lobbyId).emit('changedSpawnPoint', { player, newSpawn, combatEnded });
     }
 
     handleAttackAction(lobbyId: string, opponent: Player, damage: number) {
