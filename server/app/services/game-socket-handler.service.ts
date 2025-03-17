@@ -203,7 +203,6 @@ export class GameSocketHandlerService {
             gameState.deletedPlayers.push(deletedPlayer);
         }
         const newGameState = this.boardService.handleBoardChange(gameState);
-        console.log('New Game State', newGameState);
         this.gameStates.set(lobbyId, gameState);
         this.io.to(lobbyId).emit('boardModified', { gameState: newGameState });
     }
@@ -218,8 +217,8 @@ export class GameSocketHandlerService {
     }
 
     handleAttackAction(lobbyId: string, opponent: Player, damage: number) {
-        console.log('Est rentré un première fois dans handleAction');
         const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) return;
         const opponentGame = gameState.players.find((p) => p.id === opponent.id);
         if (!opponentGame) return;
         opponentGame.life -= damage;
@@ -231,6 +230,19 @@ export class GameSocketHandlerService {
         if (nextPlayer) {
             gameState.currentPlayer = nextPlayer.id;
             this.io.to(lobbyId).emit('turn-changed', { nextPlayer });
+        }
+    }
+
+    handleFlee(lobbyId: string, fleeingPlayer: Player, success: boolean) {
+        if (success) {
+            this.io.to(lobbyId).emit('fleeSuccess', { fleeingPlayer });
+        } else {
+            const player = this.gameStates.get(lobbyId).players.find((p) => p.id === fleeingPlayer.id);
+            if (isNaN(player.amountEscape)) {
+                player.amountEscape = 0;
+            }
+            player.amountEscape++;
+            this.io.to(lobbyId).emit('fleeFailure', { fleeingPlayer: player });
         }
     }
 }

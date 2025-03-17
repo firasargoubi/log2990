@@ -1,9 +1,11 @@
 import { Component, inject, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { LobbyService } from '@app/services/lobby.service';
+import { NotificationService } from '@app/services/notification.service';
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
 
-const TO_SECONDS = 1000;
+// const TO_SECONDS = 1000;
+const FLEE_RATE = 0;
 @Component({
     selector: 'app-combat',
     templateUrl: './combat.component.html',
@@ -18,14 +20,18 @@ export class CombatComponent implements OnInit, OnChanges {
     playerTurn: string = '';
     countDown: number = 0;
     canAct: boolean = false;
+    isFleeSuccess: boolean = false;
     private lobbyService = inject(LobbyService);
     private countDownInterval: ReturnType<typeof setInterval> | null = null;
+    private notificationService = inject(NotificationService);
 
     ngOnInit() {
         if (this.gameState) {
             this.lobbyService.handleAttack(this.currentPlayer, this.opponent, this.lobbyId, this.gameState);
         }
         this.subscribeToPlayerTurn();
+        this.subscribeToPlayerSwitch();
+        this.subscribeToFleeFailure();
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -39,17 +45,17 @@ export class CombatComponent implements OnInit, OnChanges {
         if (!this.opponent) {
             this.opponent = this.gameState?.players.find((p) => p.id !== this.currentPlayer.id) ?? this.opponent;
         }
-        this.startCountdown();
+        // this.startCountdown();
     }
 
     startCountdown() {
-        this.countDownInterval = setInterval(() => {
-            if (this.countDown > 0) {
-                this.countDown--;
-            } else {
-                this.endTimer();
-            }
-        }, TO_SECONDS);
+        // this.countDownInterval = setInterval(() => {
+        //     if (this.countDown > 0) {
+        //         this.countDown--;
+        //     } else {
+        //         this.endTimer();
+        //     }
+        // }, TO_SECONDS);
     }
 
     endTimer() {
@@ -89,6 +95,30 @@ export class CombatComponent implements OnInit, OnChanges {
 
         this.lobbyService.attackAction(this.lobbyId, this.opponent, damage, this.opponent.life);
         this.subscribeChangeAttributes();
+    }
+
+    onFlee() {
+        if (!this.gameState) return;
+
+        if (this.currentPlayer.amountEscape === undefined) {
+            this.currentPlayer.amountEscape = 0;
+        }
+
+        if (this.currentPlayer.amountEscape >= 2) {
+            this.notificationService.showInfo('Vous avez déjà tenté de fuir 2 fois, vous ne pouvez plus fuir.');
+            return;
+        }
+
+        const fleeingChance = Math.random();
+
+        if (fleeingChance <= FLEE_RATE) {
+            this.isFleeSuccess = true;
+            this.lobbyService.fleeCombat(this.gameState.id, this.currentPlayer, this.isFleeSuccess);
+        } else {
+            this.isFleeSuccess = false;
+            this.lobbyService.fleeCombat(this.gameState.id, this.currentPlayer, this.isFleeSuccess);
+            this.lobbyService.changeTurnEnd(this.currentPlayer, this.opponent, this.playerTurn, this.gameState);
+        }
     }
 
     private rollDice(player: Player, type: 'attack' | 'defense'): number {
@@ -145,22 +175,26 @@ export class CombatComponent implements OnInit, OnChanges {
     }
 
     private subscribeChangeAttributes() {
-        console.log('coucou on a changé les attributs dans subscribe');
         this.lobbyService.updateHealth().subscribe((data) => {
-            console.log('Ça rentre ici ? ');
             const opponent = this.gameState?.players.find((p) => p.id === data.player.id);
             if (opponent) {
                 opponent.life = data.remainingHealth;
-                console.log('data.remainingHealth ', data.remainingHealth);
-                console.log('opponent.life: ', opponent.life);
             }
         });
 
         this.lobbyService.updatePlayerTurn().subscribe((data) => {
             this.playerTurn = data.nextPlayer.id;
             this.canAct = this.currentPlayer.id === this.playerTurn;
-            console.log('new player turn: ', this.playerTurn);
-            console.log('canAct: ', this.canAct);
+        });
+    }
+
+    private subscribeToFleeFailure() {
+        this.lobbyService.onFleeFailure().subscribe((data) => {
+            if (this.currentPlayer.id === data.fleeingPlayer.id) {
+                this.currentPlayer.amountEscape = data.fleeingPlayer.amountEscape;
+            }
+
+            this.notificationService.showInfo(`${data.fleeingPlayer.name} n'a pas réussi à fuir le combat.`);
         });
     }
 }

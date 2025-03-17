@@ -1,6 +1,6 @@
 <div>
     <p>Temps Restant: {{ countDown }} secondes</p>
     <button (click)="onAttack()" [disabled]="!canAct">Attaquer</button>
-    <button [disabled]="!canAct">Fuire</button>
+    <button [disabled]="!canAct" (click)="onFlee()">Fuire</button>
 </div>
 
