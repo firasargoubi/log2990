@@ -11,7 +11,6 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
 import { of, Subject, throwError } from 'rxjs';
 import { FormsModule } from '@angular/forms';
-import { PageUrl } from '@app/Consts/route-constants';
 import { CREATE_PAGE_CONSTANTS, GAME_IMAGES, MAIN_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 import { Game, GameSize, GameType } from '@common/game.interface';
 import { GameLobby } from '@common/game-lobby';
@@ -24,7 +23,6 @@ describe('BoxFormDialogComponent', () => {
     let mockGameService: jasmine.SpyObj<GameService>;
     let mockDialogRef: jasmine.SpyObj<MatDialogRef<BoxFormDialogComponent>>;
     let mockRouter: jasmine.SpyObj<Router>;
-    let onPlayerJoinedSubject: Subject<any>;
     let onErrorSubject: Subject<any>;
     const dialogData = {
         boxId: 'box1',
@@ -37,21 +35,32 @@ describe('BoxFormDialogComponent', () => {
     beforeEach(async () => {
         mockLobbyService = jasmine.createSpyObj('LobbyService', [
             'verifyAvatars',
-            'onPlayerJoined',
             'onError',
             'getLobby',
             'verifyUsername',
             'joinLobby',
             'lockLobby',
+            'onLobbyUpdated',
+            'getSocketId',
         ]);
+        mockLobbyService.onLobbyUpdated.and.returnValue(
+            of({
+                lobby: {
+                    id: 'lobby-123',
+                    players: [],
+                    isLocked: false,
+                    maxPlayers: 4,
+                    gameId: 'game-123',
+                },
+            }),
+        );
+        mockLobbyService.getSocketId.and.returnValue('testPlayerId');
         mockNotificationService = jasmine.createSpyObj('NotificationService', ['showError']);
         mockGameService = jasmine.createSpyObj('GameService', ['fetchVisibleGames']);
         mockDialogRef = jasmine.createSpyObj('MatDialogRef', ['close']);
         mockRouter = jasmine.createSpyObj('Router', ['navigate']);
-        onPlayerJoinedSubject = new Subject<any>();
         onErrorSubject = new Subject<any>();
         mockLobbyService.verifyAvatars.and.returnValue(of({ avatars: [] }));
-        mockLobbyService.onPlayerJoined.and.returnValue(onPlayerJoinedSubject.asObservable());
         mockLobbyService.onError.and.returnValue(onErrorSubject.asObservable());
         mockGameService.fetchVisibleGames.and.returnValue(of([]));
         await TestBed.configureTestingModule({
@@ -323,15 +332,6 @@ describe('BoxFormDialogComponent', () => {
     });
 
     describe('subscriptions', () => {
-        it('should navigate when a player joins', () => {
-            const socketData = { lobbyId: dialogData.lobbyId, player: { id: 'player1' } };
-            onPlayerJoinedSubject.next(socketData);
-            expect(mockDialogRef.close).toHaveBeenCalled();
-            expect(mockRouter.navigate).toHaveBeenCalledWith([`${PageUrl.Waiting}/${dialogData.lobbyId}/${socketData.player.id}`], {
-                replaceUrl: true,
-            });
-        });
-
         it('should show error when an error is emitted', () => {
             const errorMsg = 'Test error';
             onErrorSubject.next(errorMsg);

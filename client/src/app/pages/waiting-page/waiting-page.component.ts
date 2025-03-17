@@ -56,6 +56,7 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
                         this.lobby = data.lobby;
                         const currentPlayer = data.lobby.players.find((p) => p.id === player);
                         if (!currentPlayer) {
+                            this.notificationService.showError(WAITING_PAGE_CONSTANTS.errorPlayerKicked);
                             this.lobbyService.disconnectFromRoom(lobbyId);
                             this.router.navigate([PageUrl.Home], { replaceUrl: true });
                             return;
