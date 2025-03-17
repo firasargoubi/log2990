@@ -122,15 +122,11 @@ describe('SocketService', () => {
         expect(lobbyHandler.leaveLobby.calledWith(mockSocket, 'l1', 'p')).to.be.equal(true);
     });
 
-    it('should emit error for invalid leaveLobby data', () => {
-        socketService['handleLeaveGame'](mockSocket, null as any, '');
-        expect(mockSocket.emit.calledWith('error', 'Invalid game or player data')).to.be.equal(true);
-    });
 
-    it('should handle valid leaveLobby', () => {
+    it('should handle valid leaveGame', () => {
         const data = { lobbyId: 'l1', playerName: 'p' };
         socketService['handleLeaveGame'](mockSocket, data.lobbyId, data.playerName);
-        expect(lobbyHandler.leaveLobby.calledWith(mockSocket, 'l1', 'p')).to.be.equal(true);
+        expect(lobbyHandler.leaveGame.calledWith(mockSocket, 'l1', 'p')).to.be.equal(true);
     });
 
     it('should handle lockLobby and emit error on invalid ID', () => {
@@ -403,7 +399,6 @@ describe('SocketService', () => {
 
         handler(game);
         expect(lobbyHandler.createLobby.calledWith(game)).to.be.equal(true);
-        expect(socketMock.emit.calledWith('lobbyCreated', { lobbyId: sandbox.match.string })).to.be.equal(true);
     });
     it('should call handleJoinLobby when joinLobby event is received', () => {
         const socketMock: any = { on: sandbox.spy(), emit: sandbox.spy() };

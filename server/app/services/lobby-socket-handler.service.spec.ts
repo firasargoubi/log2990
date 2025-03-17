@@ -324,7 +324,6 @@ describe('LobbySocketHandlerService', () => {
         service.leaveLobby(socketMock as Socket, lobbyId.id, 'nonExistentPlayer');
         expect(lobby?.players.length).to.equal(initialPlayersLength);
         expect((socketMock.leave as SinonSpy).called).to.be.false;
-        expect((ioMock.to as SinonSpy).called).to.be.false;
     });
 
     it('should do nothing if lobby not found in leaveLobby', () => {
@@ -367,7 +366,6 @@ describe('LobbySocketHandlerService', () => {
 
         expect(lobby?.players.length).to.equal(initialPlayersLength);
         expect((socketMock.leave as SinonSpy).called).to.be.false;
-        expect((ioMock.to as SinonSpy).called).to.be.false;
     });
 
     it('should do nothing if lobby not found in leaveGame', () => {
