@@ -61,8 +61,7 @@
         } @else {
         <div class="action-buttons">
             <button (click)="handleAction()">Action</button>
-            <button (click)="currentPlayer && onAbandon(currentPlayer.name)">Abandonner</button>
-            <app-player-list [currentPlayer]="currentPlayer" [players]?="gameState.players" (removePlayer)="onAbandon($event)"> </app-player-list>
+            <button (click)="onAbandon(player.name)" routerLink="/home">Abandonner</button>
             <button class="end-turn-button" [disabled]="!isCurrentPlayerTurn()" (click)="onEndTurn()">Terminer le tour</button>
             <!-- <button (click)="onAttackClick(currentPlayer?.id ?? '', lobbyId)">Attaquer</button> -->
         </div>
