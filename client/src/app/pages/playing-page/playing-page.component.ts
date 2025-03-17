@@ -73,8 +73,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         });
         this.lobbyService.onTileUpdate().subscribe({
             next: (data) => {
-                console.log('Mise à jour reçue pour une tuile:', data.newGameBoard);
-
                 if (this.gameState) {
                     this.gameState = {
                         ...this.gameState,
@@ -91,13 +89,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         });
 
         this.lobbyService.onInteraction().subscribe((data) => {
-            console.log(data);
             this.isInCombat = data.isInCombat;
-            console.log(this.isInCombat);
         });
     }
     onActionRequest(tile: Tile) {
-        console.log('Action request:', tile);
         if (!this.gameState || !this.currentPlayer) {
             console.error('Cannot perform action: game state or current player is missing');
             return;
@@ -111,11 +106,9 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         if (!action) {
             return;
         }
-        console.log('Action effectuée:', action);
 
         if (action === 'battle') {
             this.opponent = this.actionService.findOpponent(tile) || null;
-            console.log(this.opponent);
             if (this.opponent) {
                 this.lobbyService.initializeBattle(this.currentPlayer, this.opponent, this.lobbyId);
                 this.lobbyService.onInteraction().subscribe((data) => {
@@ -125,12 +118,9 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 console.error('Opponent not found for battle initialization');
             }
         }
-        console.log('Action effectuée:', action);
         this.lobbyService.executeAction(action, tile, this.lobbyId).subscribe({
             next: (data) => {
                 if (this.gameState?.board) {
-                    console.log('Mise à jour du gameBoard reçue:', data.newGameBoard);
-
                     this.gameState = {
                         ...this.gameState,
                         board: data.newGameBoard.map((row) => [...row]),
@@ -143,31 +133,27 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     handleAction() {
-        console.log('Bouton action cliqué');
         this.action = !this.action;
     }
 
-    // Gestion du combat pour réinitialiser à 30 secondes
     onAttackClick(playerId: string, lobbyId: string): void {
-        this.lobbyService.startCombat(playerId, lobbyId); // Démarre le combat
-        this.isInCombat = true; // Le joueur est en combat
-        this.remainingTime = 30; // Réinitialiser à 30 secondes pour le combat
+        this.lobbyService.startCombat(playerId, lobbyId);
+        this.isInCombat = true;
+        this.remainingTime = 30;
     }
-
-    // Vérifier si le joueur courant est impliqué dans le combat
 
     startTurnCountdown(): void {
         if (this.remainingTime > 0) {
             this.interval = window.setInterval(() => {
                 if (this.remainingTime > 0) {
                     this.remainingTime--;
-                    this.updateTimerForAllPlayers(); // Envoyer la mise à jour à tous les joueurs
+                    this.updateTimerForAllPlayers();
                 } else {
                     if (this.interval !== null) {
-                        clearInterval(this.interval); // Arrêter le compte à rebours quand il atteint zéro
+                        clearInterval(this.interval);
                     }
                 }
-            }, 1000); // 1 seconde
+            }, 1000);
         }
     }
 
@@ -185,13 +171,11 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.subscriptions.push(
             this.lobbyService.onGameStarted().subscribe((data) => {
                 this.gameState = data.gameState;
-                console.log('Game started:', this.gameState);
                 this.getCurrentPlayer();
             }),
 
             this.lobbyService.onTurnStarted().subscribe((data) => {
                 this.gameState = data.gameState;
-                console.log('Turn started:', this.gameState);
                 this.syncCurrentPlayerWithGameState();
                 this.notifyPlayerTurn(data.currentPlayer);
             }),
@@ -217,18 +201,22 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                         this.router.navigate([PageUrl.Home], { replaceUrl: true });
                         return;
                     }
-                    const host = this.lobby.players.find((p) => p.isHost);
-                    if (!host) {
-                        console.log('Placeholder for resetting debug');
-                    }
-                    console.log('Lobby updated:', this.lobby);
                     this.lobbyService.updatePlayers(this.lobby.id, this.lobby.players);
                 }
             }),
 
             this.lobbyService.onBoardChanged().subscribe((data) => {
                 this.gameState = data.gameState;
-                console.log('Game state changed:', this.gameState);
+            }),
+
+            this.lobbyService.onFleeSuccess().subscribe((data) => {
+                this.isInCombat = false;
+                this.currentPlayer.life = this.currentPlayer.maxLife;
+                if (this.currentPlayer.name === data.fleeingPlayer.name) {
+                    this.notificationService.showInfo('Vous avez fuit le combat.');
+                    return;
+                }
+                this.notificationService.showInfo(`${data.fleeingPlayer.name} a fui le combat.`);
             }),
         );
     }
@@ -336,9 +324,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.remove.emit(this.player.id);
     }
     abandon() {
-        // Vérifier que le lobby et le joueur actuel existent
         if (this.lobbyId && this.currentPlayer) {
-            // Appeler la méthode `leaveLobby` du service pour quitter le lobby
             this.lobbyService.leaveLobby(this.lobbyId, this.currentPlayer.name);
             this.router.navigate(['/home']);
         }

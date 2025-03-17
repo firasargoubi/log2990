@@ -78,6 +78,10 @@ export class SocketService {
         socket.on('changeTurnEndTimer', (data: { currentPlayer: Player; opponent: Player; playerTurn: string; gameState: GameState }) =>
             this.handleChangeTurnEnd(data.currentPlayer, data.opponent, data.playerTurn, data.gameState),
         );
+
+        socket.on('fleeCombat', (data: { lobbyId: string; player: Player; success: boolean }) => {
+            this.handleFlee(data.lobbyId, data.player, data.success);
+        });
     }
 
     private handleCreateLobby(socket: Socket, game: Game): void {
@@ -250,5 +254,9 @@ export class SocketService {
 
     private handleAttackAction(lobbyId: string, opponent: Player, damage: number) {
         this.gameSocketHandlerService.handleAttackAction(lobbyId, opponent, damage);
+    }
+
+    private handleFlee(lobbyId: string, player: Player, success: boolean) {
+        this.gameSocketHandlerService.handleFlee(lobbyId, player, success);
     }
 }

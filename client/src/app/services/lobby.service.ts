@@ -5,7 +5,7 @@ import { GameState } from '@common/game-state';
 import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { shareReplay as rxjsShareReplay } from 'rxjs/operators';
 import { io, Socket } from 'socket.io-client';
 import { environment } from 'src/environments/environment';
@@ -16,6 +16,7 @@ import { environment } from 'src/environments/environment';
 export class LobbyService {
     private socket: Socket;
     private currentPlayer: Player | null = null;
+    private playerSwitchSubject = new Subject<{ newPlayerTurn: string; countDown: number }>();
 
     constructor() {
         this.socket = io(environment.serverUrl, {
@@ -32,6 +33,10 @@ export class LobbyService {
 
         this.socket.on('connect_error', (error) => {
             console.error('Socket connection error:', error);
+        });
+
+        this.socket.on('PlayerSwitch', (data: { newPlayerTurn: string; countDown: number }) => {
+            this.playerSwitchSubject.next(data);
         });
     }
 
@@ -266,12 +271,7 @@ export class LobbyService {
     }
 
     getPlayerSwitch(): Observable<{ newPlayerTurn: string; countDown: number }> {
-        return new Observable<{ newPlayerTurn: string; countDown: number }>((observer) => {
-            this.socket.on('PlayerSwitch', (data: { newPlayerTurn: string; countDown: number }) => {
-                observer.next(data);
-                observer.complete();
-            });
-        });
+        return this.playerSwitchSubject.asObservable();
     }
 
     changeTurnEnd(currentPlayer: Player, opponent: Player, playerTurn: string, gameState: GameState) {
@@ -314,17 +314,15 @@ export class LobbyService {
         this.socket.emit('playerDefeated', { player, lobbyId });
     }
 
-    newSpawnPoints(): Observable<{ player: Player; newSpawn: Coordinates }> {
-        return new Observable<{ player: Player; newSpawn: Coordinates }>((observer) => {
-            this.socket.on('changedSpawnPoint', (data: { player: Player; newSpawn: Coordinates }) => {
+    newSpawnPoints(): Observable<{ player: Player; newSpawn: Coordinates; combatEnded: boolean }> {
+        return new Observable<{ player: Player; newSpawn: Coordinates; combatEnded: boolean }>((observer) => {
+            this.socket.on('changedSpawnPoint', (data: { player: Player; newSpawn: Coordinates; combatEnded: boolean }) => {
                 observer.next(data);
-                observer.complete();
             });
         });
     }
 
     attackAction(lobbyId: string, opponent: Player, damage: number, opponentLife: number) {
-        console.log('Dans attack action on a fini la première action');
         this.socket.emit('attackAction', { lobbyId, opponent, damage, opponentLife });
     }
 
@@ -337,11 +335,22 @@ export class LobbyService {
         });
     }
 
-    updatePlayerTurn(): Observable<{ nextPlayer: Player }> {
-        return new Observable<{ nextPlayer: Player }>((observer) => {
-            this.socket.on('turn-changed', (data: { nextPlayer: Player }) => {
+    fleeCombat(lobbyId: string, player: Player, success: boolean) {
+        this.socket.emit('fleeCombat', { player, lobbyId, success });
+    }
+
+    onFleeSuccess(): Observable<{ fleeingPlayer: Player }> {
+        return new Observable((observer) => {
+            this.socket.on('fleeSuccess', (data: { fleeingPlayer: Player }) => {
                 observer.next(data);
-                observer.complete();
+            });
+        });
+    }
+
+    onFleeFailure(): Observable<{ fleeingPlayer: Player }> {
+        return new Observable((observer) => {
+            this.socket.on('fleeFailure', (data: { fleeingPlayer: Player }) => {
+                observer.next(data);
             });
         });
     }

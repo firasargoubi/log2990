@@ -203,34 +203,41 @@ export class GameSocketHandlerService {
             gameState.deletedPlayers.push(deletedPlayer);
         }
         const newGameState = this.boardService.handleBoardChange(gameState);
-        console.log('New Game State', newGameState);
         this.gameStates.set(lobbyId, gameState);
         this.io.to(lobbyId).emit('boardModified', { gameState: newGameState });
     }
 
     handleDefeat(player: Player, lobbyId: string) {
+        const combatEnded = true;
         const gameState = this.gameStates.get(lobbyId);
         const playerIndex = gameState.players.findIndex((p) => p.id === player.id);
         if (playerIndex === -1) return;
         const newSpawn = gameState.spawnPoints[playerIndex];
         gameState.playerPositions[playerIndex] = newSpawn;
-        this.io.to(lobbyId).emit('changedSpawnPoint', { player, newSpawn });
+        this.io.to(lobbyId).emit('changedSpawnPoint', { player, newSpawn, combatEnded });
     }
 
     handleAttackAction(lobbyId: string, opponent: Player, damage: number) {
-        console.log('Est rentré un première fois dans handleAction');
         const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) return;
         const opponentGame = gameState.players.find((p) => p.id === opponent.id);
         if (!opponentGame) return;
-        opponentGame.life -= damage;
-        this.io.to(lobbyId).emit('update-health', { playerUpdated: opponentGame, remainingHealth: opponentGame.life });
-        // if (opponentGame.life <= 0) {
-        //     this.io.to(lobbyId).emit('player-defeated', { playerId: opponent.id });
-        // }
-        const nextPlayer = gameState.players.find((p) => p.id === opponent.id);
-        if (nextPlayer) {
-            gameState.currentPlayer = nextPlayer.id;
-            this.io.to(lobbyId).emit('turn-changed', { nextPlayer });
+        if (damage > 0) {
+            opponentGame.life -= damage;
+        }
+        this.io.to(lobbyId).emit('update-health', { player: opponentGame, remainingHealth: opponentGame.life });
+    }
+
+    handleFlee(lobbyId: string, fleeingPlayer: Player, success: boolean) {
+        if (success) {
+            this.io.to(lobbyId).emit('fleeSuccess', { fleeingPlayer });
+        } else {
+            const player = this.gameStates.get(lobbyId).players.find((p) => p.id === fleeingPlayer.id);
+            if (isNaN(player.amountEscape)) {
+                player.amountEscape = 0;
+            }
+            player.amountEscape++;
+            this.io.to(lobbyId).emit('fleeFailure', { fleeingPlayer: player });
         }
     }
 }
