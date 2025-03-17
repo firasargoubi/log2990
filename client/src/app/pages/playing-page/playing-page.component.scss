@@ -1,304 +1,192 @@
-/* Global Styles */
+/* RESET GLOBAL */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px; /* Police réduite */
 }
 
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f0f7f0; /* Vert très doux */
+    background-color: #e6f7e9;
     color: #333;
     height: 100vh;
     overflow: hidden;
 }
 
-/* Main Game Container */
+/* CONTAINER GLOBAL */
 .game-container {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 95vh;
-    padding: 10px;
-    gap: 15px;
-    max-width: 1400px;
-    margin: 0 auto;
+    height: 100vh;
+    padding: 5px;
+    gap: 8px;
+    overflow: hidden;
+    align-items: flex-start;
 }
 
-/* Sidebar Left (Player Info) */
-.sidebar-left {
-    width: 22%;
-    height: 90vh;
-    background-color: #e8f3e8; /* Vert très clair et doux */
-    padding: 12px;
-    border-radius: 10px;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-    border: 1px solid #c5d6c5;
-    overflow-y: auto;
-}
-
-.component-box {
-    background-color: #f5f9f5;
-    padding: 12px;
-    margin-bottom: 12px;
+/* SIDEBARS COMPACTS */
+.sidebar-left,
+.sidebar-right {
+    flex: 0 0 20%;
+    background-color: #ddf3e3;
+    padding: 8px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-    border: 1px solid #d5e3d5;
+    border: 1px solid #a5d6a7;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 6px;
+    height: 100%;
+    overflow: hidden;
 }
 
-/* Titres */
-h1, h2, h3, h4, .component-box strong, .app-game-info strong {
-    font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
-    color: #4a6e4a;
+/* PLATEAU COMPACT */
+.board-container {
+    flex: 1;
+    background-color: #e8f5e9;
+    border: 1px solid #81c784;
+    border-radius: 8px;
+    padding: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    height: 100%;
+    overflow: hidden;
 }
 
-/* Avatar and Stats List */
+/* BLOCS UNIFORMES ET PETITS */
+.component-box,
+app-game-info,
+app-inventory,
+app-messages,
+app-countdown-timer,
+app-player-list {
+    background-color: #f1f8e9;
+    border: 1px solid #c5e1a5;
+    border-radius: 6px;
+    padding: 6px;
+    margin-bottom: 4px;
+}
+
+/* LISTES COMPACTES */
 ul {
     list-style-type: none;
-    padding-left: 5px;
+    padding-left: 0;
+    margin: 5px 0;
 }
 
 ul li {
-    margin-bottom: 8px;
-    padding-left: 25px;
+    margin-bottom: 4px;
+    padding-left: 14px;
     position: relative;
+    font-size: 11px;
 }
 
 ul li:before {
     position: absolute;
     left: 0;
-    font-size: 16px;
+    font-size: 12px;
 }
 
+/* ICONES LISTE */
 ul li:nth-child(1):before { content: "🍃"; }
 ul li:nth-child(2):before { content: "🐹"; }
 ul li:nth-child(3):before { content: "❤️"; }
-ul li:nth-child(4):before { content: "🦘"; }
+ul li:nth-child(4):before { content: "⚡"; }
 ul li:nth-child(5):before { content: "⚔️"; }
 ul li:nth-child(6):before { content: "🛡️"; }
 
-ul li strong {
-    color: #5a8c5a;
-    font-weight: bold;
-}
-
-/* Bonus Section */
 ul + ul li:nth-child(1):before { content: "🎁"; }
 ul + ul li:nth-child(2):before { content: "❤️"; }
-ul + ul li:nth-child(3):before { content: "🦘"; }
+ul + ul li:nth-child(3):before { content: "⚡"; }
 ul + ul li:nth-child(4):before { content: "🎲"; }
 ul + ul li:nth-child(5):before { content: "🎲"; }
 
-/* Avatar Styling */
+ul li strong {
+    color: #33691e;
+    font-weight: 600;
+    font-size: 11px;
+}
+
+/* AVATAR PETIT */
 img {
     border-radius: 50%;
-    border: 2px solid #75a475;
-    box-shadow: 0 0 5px rgba(117, 164, 117, 0.3);
+    border: 2px solid #8bc34a;
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
 }
 
-/* Sidebar Right (Game Info, Chat, and Buttons) */
-.sidebar-right {
-    width: 22%;
-    height: 90vh;
-    background-color: #e8f3e8;
-    padding: 12px;
-    border-radius: 10px;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-    border: 1px solid #c5d6c5;
-    overflow-y: auto;
-}
-
-/* Game Info */
-.app-game-info {
-    background-color: #f5f9f5;
-    padding: 12px;
-    margin-bottom: 12px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-    border: 1px solid #d5e3d5;
-}
-
-.app-game-info strong {
-    color: #5a8c5a;
-    font-weight: bold;
-}
-
-/* Action Buttons */
+/* BOUTONS PETITS ET JOLIS */
 .action-buttons {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-top: 12px;
+    gap: 6px;
 }
 
 .action-buttons button {
-    padding: 8px;
-    color: #3c5c3c;
-    background-color: #c5d6c5;
+    padding: 6px;
+    font-size: 11px;
+    background-color: #c5e1a5;
     border: none;
     border-radius: 6px;
-    font-weight: bold;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    transition: background-color 0.2s ease;
 }
 
 .action-buttons button:hover {
-    background-color: #aec5ae;
-    transform: translateY(-1px);
+    background-color: #aed581;
 }
 
-.action-buttons button:active {
-    transform: translateY(1px);
-}
-
-/* Game Board Section */
-.main-content {
-    width: 50%;
-    height: 90vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.board-container {
-    width: 100%;
-    height: 100%;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    background-color: #edf5ed;
-    border: 1px solid #c5d6c5;
-    padding: 5px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-app-game-board {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* Chat Section */
-.app-messages {
-    background-color: #f5f9f5;
-    padding: 12px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-    margin-bottom: 12px;
-    border: 1px solid #d5e3d5;
-    max-height: 25vh;
-    overflow-y: auto;
-}
-
-/* Countdown Timer Styling */
-.app-countdown-timer {
-    background-color: #f5f9f5;
-    padding: 12px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-    margin-bottom: 12px;
-    border: 1px solid #d5e3d5;
-}
-
-.app-countdown-timer h4 {
-    color: #5a8c5a;
-    font-weight: bold;
-    margin-bottom: 8px;
-    font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
-}
-
-/* Inventory */
-app-inventory {
-    background-color: #f5f9f5;
-    padding: 12px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-    margin-bottom: 12px;
-    border: 1px solid #d5e3d5;
-    display: block;
-    max-height: 20vh;
-    overflow-y: auto;
-}
-
-/* Loading Animation */
-.loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    padding: 20px;
-}
-
-.loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #c5d6c5;
-    border-top: 4px solid #5a8c5a;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 15px;
-}
-
-.loading-text {
-    font-weight: bold;
-    color: #5a8c5a;
-    font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* End Turn Button Special Styling */
 .end-turn-button {
-    background-color: #aec5ae;
-    color: #3c5c3c;
-    border: 1px solid #8aaa8a;
-    font-weight: bold;
+    background-color: #689f38 !important;
+    color: white !important;
 }
 
 .end-turn-button:disabled {
-    opacity: 0.6;
+    background-color: #d0e7c4 !important;
+    color: #666 !important;
     cursor: not-allowed;
-    background-color: #e8f3e8;
-    border-color: #c5d6c5;
 }
 
-/* Player List */
-app-player-list {
-    background-color: #f5f9f5;
-    padding: 12px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-    margin-bottom: 12px;
-    border: 1px solid #d5e3d5;
-    display: block;
-    max-height: 20vh;
-    overflow-y: auto;
+/* CHARGEMENT */
+.loading {
+    text-align: center;
+    font-weight: 600;
+    color: #689f38;
+    font-size: 12px;
 }
 
-/* Responsive Design for Mobile */
-@media (max-width: 768px) {
+.loading-spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid #c5e1a5;
+    border-top: 3px solid #689f38;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 5px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0); }
+    100% { transform: rotate(360deg); }
+}
+
+/* VERSION MOBILE */
+@media screen and (max-width: 900px) {
     .game-container {
         flex-direction: column;
         height: auto;
-        overflow-y: auto;
     }
-    
+
     .sidebar-left,
     .sidebar-right,
-    .main-content {
+    .board-container {
         width: 100%;
         height: auto;
-        margin-bottom: 15px;
     }
-    
+
     .action-buttons button {
         width: 100%;
     }
