@@ -65,14 +65,34 @@ describe('LobbySocketHandlerService', () => {
             objects: [],
         };
         const lobbyId = service.createLobby(game);
-        const player: Player = { id: '', name: 'test', avatar: 'avatar1', isHost: false, life: 100, speed: 10, attack: 10, defense: 10 };
+        const player: Player = {
+            id: '',
+            name: 'test',
+            avatar: 'avatar1',
+            isHost: false,
+            life: 100,
+            speed: 10,
+            attack: 10,
+            defense: 10,
+            maxLife: 0,
+        };
         service.handleJoinLobbyRequest(socketMock as Socket, lobbyId.id, player);
         const lobby = lobbies.get(lobbyId.id);
         expect(lobby?.players.length).to.equal(1);
     });
 
     it('should emit error if lobby not found on join', () => {
-        const player: Player = { id: '', name: 'test', avatar: 'avatar1', isHost: false, life: 100, speed: 10, attack: 10, defense: 10 };
+        const player: Player = {
+            id: '',
+            name: 'test',
+            avatar: 'avatar1',
+            isHost: false,
+            life: 100,
+            speed: 10,
+            attack: 10,
+            defense: 10,
+            maxLife: 0,
+        };
         service.handleJoinLobbyRequest(socketMock as Socket, 'unknown', player);
         expect((socketMock.emit as SinonSpy).calledWith('error', 'Lobby not found.')).to.equal(true);
     });
@@ -81,18 +101,48 @@ describe('LobbySocketHandlerService', () => {
         const lobbyId = 'lobby123';
         lobbies.set(lobbyId, {
             id: lobbyId,
-            players: [1, 2].map((i) => ({ id: i.toString(), name: '', avatar: '', isHost: false, life: 0, speed: 0, attack: 0, defense: 0 })),
+            players: [1, 2].map((i) => ({
+                id: i.toString(),
+                name: '',
+                avatar: '',
+                isHost: false,
+                life: 0,
+                speed: 0,
+                attack: 0,
+                defense: 0,
+                maxLife: 0,
+            })),
             isLocked: false,
             maxPlayers: 2,
             gameId: 'game1',
         });
-        const player: Player = { id: '', name: 'test', avatar: 'avatar1', isHost: false, life: 100, speed: 10, attack: 10, defense: 10 };
+        const player: Player = {
+            id: '',
+            name: 'test',
+            avatar: 'avatar1',
+            isHost: false,
+            life: 100,
+            speed: 10,
+            attack: 10,
+            defense: 10,
+            maxLife: 0,
+        };
         service.handleJoinLobbyRequest(socketMock as Socket, lobbyId, player);
         expect((socketMock.emit as SinonSpy).calledWith('error', 'Lobby is locked or full.')).to.equal(true);
     });
 
     it('should leave lobby and emit events', () => {
-        const player: Player = { id: '', name: 'test', avatar: 'avatar1', isHost: false, life: 100, speed: 10, attack: 10, defense: 10 };
+        const player: Player = {
+            id: '',
+            name: 'test',
+            avatar: 'avatar1',
+            isHost: false,
+            life: 100,
+            speed: 10,
+            attack: 10,
+            defense: 10,
+            maxLife: 0,
+        };
         const lobbyId = service.createLobby({
             id: 'g',
             mapSize: GameSize.small,
@@ -111,7 +161,17 @@ describe('LobbySocketHandlerService', () => {
     });
 
     it('should delete lobby if host leaves', () => {
-        const player: Player = { id: '', name: 'host', avatar: '', isHost: true, life: 0, speed: 0, attack: 0, defense: 0 };
+        const player: Player = {
+            id: '',
+            name: 'host',
+            avatar: '',
+            isHost: true,
+            life: 0,
+            speed: 0,
+            attack: 0,
+            defense: 0,
+            maxLife: 0,
+        };
         const lobbyId = service.createLobby({
             id: 'g',
             mapSize: GameSize.small,
