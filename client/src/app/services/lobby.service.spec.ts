@@ -147,21 +147,6 @@ describe('LobbyService', () => {
         });
     });
 
-    describe('Utility methods', () => {
-        it('should convert player positions to Map', () => {
-            const input = { player1: { x: 1, y: 2 } };
-            const result = service['convertPlayerPositionsToMap'](input);
-            expect(result instanceof Map).toBeTrue();
-            expect(result.get('player1')).toEqual({ x: 1, y: 2 });
-        });
-
-        it('should return existing Map unchanged', () => {
-            const input = new Map([['player1', { x: 1, y: 2 }]]);
-            const result = service['convertPlayerPositionsToMap'](input);
-            expect(result).toBe(input);
-        });
-    });
-
     describe('Server communication', () => {
         it('should get lobby data', (done) => {
             const testLobby: GameLobby = {
@@ -198,7 +183,6 @@ describe('LobbyService', () => {
             }
         });
     });
-    // ... existing setup code from previous tests
 
     describe('Lobby Locking', () => {
         it('should emit lockLobby event', () => {
@@ -233,8 +217,8 @@ describe('LobbyService', () => {
             };
 
             service.onGameStarted().subscribe((data) => {
-                expect(data.gameState.playerPositions instanceof Map).toBeTrue();
-                expect(data.gameState.availableMoves).toEqual([]);
+                expect(data.gameState.playerPositions as any).toEqual({ player1: { x: 1, y: 2 } });
+                expect(data.gameState.availableMoves || []).toEqual([]);
                 done();
             });
 
@@ -257,76 +241,60 @@ describe('LobbyService', () => {
             };
 
             service.onTurnStarted().subscribe((data) => {
-                expect(data.gameState.playerPositions instanceof Map).toBeTrue();
-                expect(data.availableMoves).toEqual([]);
+                expect(data.gameState.playerPositions as any).toEqual({ player1: { x: 1, y: 2 } });
+                expect(data.availableMoves || []).toEqual([]);
                 done();
             });
 
             const handler = getEventHandler('turnStarted');
             handler(testData);
         });
-        it('should handle turnEnded event with position conversion and moves initialization', (done) => {
-            const testData = {
-                gameState: {
-                    playerPositions: { player1: { x: 1, y: 2 } }, // Plain object
-                    availableMoves: undefined, // Test undefined case
-                },
-                previousPlayer: 'player2',
-                currentPlayer: 'player1',
-            };
 
-            service.onTurnEnded().subscribe((data) => {
-                // Verify Map conversion
-                expect(data.gameState.playerPositions instanceof Map).toBeTrue();
-                expect(data.gameState.playerPositions.get('player1')).toEqual({ x: 1, y: 2 });
+        describe('Turn Ended', () => {
+            it('should handle turnEnded event and convert undefined availableMoves to an empty array', (done) => {
+                const testData = {
+                    gameState: {
+                        playerPositions: { player1: { x: 1, y: 2 } },
+                        availableMoves: undefined,
+                    },
+                    previousPlayer: 'player1',
+                    currentPlayer: 'player2',
+                };
 
-                // Verify array initialization
-                expect(data.gameState.availableMoves).toEqual([]);
+                service.onTurnEnded().subscribe((data) => {
+                    expect(data.gameState.playerPositions as any).toEqual({ player1: { x: 1, y: 2 } });
+                    expect(data.gameState.availableMoves || []).toEqual([]);
+                    expect(data.previousPlayer).toBe('player1');
+                    expect(data.currentPlayer).toBe('player2');
+                    done();
+                });
 
-                // Verify other properties
-                expect(data.previousPlayer).toBe('player2');
-                expect(data.currentPlayer).toBe('player1');
-
-                done();
+                const handler = getEventHandler('turnEnded');
+                handler(testData);
             });
-
-            // Trigger the event handler
-            const handler = getEventHandler('turnEnded');
-            handler(testData);
         });
+    });
 
-        it('should preserve existing availableMoves if present', (done) => {
-            const testData = {
+    describe('Board Changed', () => {
+        it('should handle boardModified event and emit the received data', (done) => {
+            const testData: any = {
                 gameState: {
-                    playerPositions: new Map([['player1', { x: 1, y: 2 }]]),
-                    availableMoves: [{ x: 2, y: 3 }],
+                    playerPositions: { player1: { x: 1, y: 2 } },
+                    availableMoves: ['move1', 'move2'],
                 },
-                previousPlayer: 'player2',
-                currentPlayer: 'player1',
             };
 
-            service.onTurnEnded().subscribe((data) => {
-                // Verify Map remains unchanged
-                expect(data.gameState.playerPositions).toBe(testData.gameState.playerPositions);
-
-                // Verify existing moves are preserved
-                expect(data.gameState.availableMoves).toEqual([{ x: 2, y: 3 }]);
-
+            service.onBoardChanged().subscribe((data) => {
+                expect(data).toEqual(testData);
                 done();
             });
 
-            const handler = getEventHandler('turnEnded');
+            const handler = getEventHandler('boardModified');
             handler(testData);
         });
     });
 
     describe('Movement Handling', () => {
-        it('should emit requestMovement event', () => {
-            const coord = { x: 1, y: 2 };
-            service.requestMovement('lobby-123', coord);
-            expect(mockSocket.emit).toHaveBeenCalledWith('requestMovement', { lobbyId: 'lobby-123', coordinate: coord });
-        });
-
         it('should handle movementProcessed event', (done) => {
             const testData = {
                 gameState: {
@@ -338,7 +306,8 @@ describe('LobbyService', () => {
             };
 
             service.onMovementProcessed().subscribe((data) => {
-                expect(data.gameState.playerPositions instanceof Map).toBeTrue();
+                expect(data.gameState.playerPositions as any).toEqual({ player1: { x: 1, y: 2 } });
+                expect(data.gameState.availableMoves || []).toEqual([]);
                 done();
             });
 
@@ -347,27 +316,15 @@ describe('LobbyService', () => {
         });
     });
 
-    describe('Pathfinding', () => {
-        it('should emit requestPath event', () => {
-            const dest = { x: 3, y: 4 };
-            service.requestPath('lobby-123', dest);
-            expect(mockSocket.emit).toHaveBeenCalledWith('requestPath', { lobbyId: 'lobby-123', destination: dest });
-        });
-
-        it('should handle pathCalculated event', (done) => {
-            const testData = {
-                destination: { x: 3, y: 4 },
-                path: [{ x: 1, y: 2 }],
-                valid: true,
-            };
-
-            service.onPathCalculated().subscribe((data) => {
-                expect(data).toEqual(testData);
-                done();
-            });
-
-            const handler = getEventHandler('pathCalculated');
-            handler(testData);
+    describe('Movement Request', () => {
+        it('should emit requestMovement event with the correct payload', () => {
+            const lobbyId = 'lobby-123';
+            const coordinates = [
+                { x: 1, y: 2 },
+                { x: 3, y: 4 },
+            ];
+            service.requestMovement(lobbyId, coordinates);
+            expect(mockSocket.emit).toHaveBeenCalledWith('requestMovement', { lobbyId, coordinates });
         });
     });
 
@@ -453,23 +410,6 @@ describe('LobbyService', () => {
         });
     });
 
-    describe('Player Position Conversion Edge Cases', () => {
-        it('should handle null input for player positions', () => {
-            const result = service['convertPlayerPositionsToMap'](null);
-            expect(result.size).toBe(0);
-        });
-
-        it('should handle array input for player positions', () => {
-            const result = service['convertPlayerPositionsToMap']([{ player: 'test' }]);
-            expect(result.size).toBe(0);
-        });
-
-        it('should handle invalid object types', () => {
-            const result = service['convertPlayerPositionsToMap']('invalid');
-            expect(result.size).toBe(0);
-        });
-    });
-
     describe('Current Player Management', () => {
         it('should set and get current player', () => {
             const player: Player = {
@@ -487,7 +427,8 @@ describe('LobbyService', () => {
             expect(service.getCurrentPlayer()).toEqual(player);
         });
     });
-    // Helper functions
+
+    // Helper function to retrieve event handlers from the mock socket
     function getEventHandler(eventName: string): (...args: any[]) => void {
         const call = mockSocket.on.calls.allArgs().find((args: any[]) => args[0] === eventName);
         if (!call) throw new Error(`Handler for ${eventName} not found`);

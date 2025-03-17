@@ -19,18 +19,6 @@ export class LobbyService {
         this.socket = io(environment.serverUrl, {
             transports: ['websocket', 'polling'],
         });
-
-        this.socket.on('connect', () => {
-            console.log('Socket connected with ID:', this.socket.id);
-        });
-
-        this.socket.on('disconnect', (reason) => {
-            console.log('Socket disconnected: ', reason);
-        });
-
-        this.socket.on('connect_error', (error) => {
-            console.error('Socket connection error:', error);
-        });
     }
 
     setCurrentPlayer(player: Player): void {
