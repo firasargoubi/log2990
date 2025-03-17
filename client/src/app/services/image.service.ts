@@ -12,16 +12,12 @@ export class ImageService {
             return Promise.reject('Invalid HTML element');
         }
 
-        try {
-            const canvas = await html2canvas(componentElement, {
-                logging: false,
-                backgroundColor: null,
-            });
+        const canvas = await html2canvas(componentElement, {
+            logging: false,
+            backgroundColor: null,
+        });
 
-            return canvas.toDataURL('image/png');
-        } catch (error) {
-            return Promise.reject('Error capturing component: ' + error);
-        }
+        return canvas.toDataURL('image/png');
     }
 
     async captureBoardFromTiles(board: Tile[][]): Promise<string> {

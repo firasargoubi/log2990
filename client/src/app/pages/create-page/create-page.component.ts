@@ -9,8 +9,9 @@ import { GameCreationCardComponent } from '@app/components/game-creation-card/ga
 import { CREATE_PAGE_CONSTANTS, GameSize, GameType } from '@app/Consts/app.constants';
 import { Game } from '@common/game.interface';
 import { GameService } from '@app/services/game.service';
+import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-create-page',
@@ -23,9 +24,12 @@ export class CreatePageComponent implements OnInit {
     @Input() games$: Observable<Game[]> = new Observable<Game[]>();
     games: Game[] = [];
 
+    lobbyId: string = '';
     private notificationService = inject(NotificationService);
     private dialog = inject(MatDialog);
     private gameService = inject(GameService);
+    private subscriptions: Subscription[] = [];
+    private lobbyService = inject(LobbyService);
 
     ngOnInit(): void {
         this.loadGames();
@@ -35,7 +39,22 @@ export class CreatePageComponent implements OnInit {
         this.gameService.verifyGameAccessible(game.id).subscribe({
             next: (isAccessible) => {
                 if (isAccessible) {
-                    this.openBoxFormDialog(game);
+                    if (!this.lobbyId) {
+                        this.lobbyService.createLobby(game);
+                        this.subscriptions.push(
+                            this.lobbyService.onLobbyCreated().subscribe({
+                                next: (data) => {
+                                    this.lobbyId = data.lobby.id;
+                                    this.openBoxFormDialog(game);
+                                },
+                                error: (err) => {
+                                    this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorLobbyCreation + ' ' + err);
+                                },
+                            }),
+                        );
+                    } else {
+                        this.openBoxFormDialog(game);
+                    }
                 } else {
                     this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorGameDeleted);
                     this.loadGames();
@@ -57,14 +76,8 @@ export class CreatePageComponent implements OnInit {
     }
 
     private openBoxFormDialog(game: Game): void {
-        const translatedGame = {
-            ...game,
-            mode: this.translateMode(game.mode),
-            mapSize: this.translateSize(game.mapSize),
-        };
-
         const dialogRef = this.dialog.open(BoxFormDialogComponent, {
-            data: { boxId: game.id, game: translatedGame, gameList: this.games },
+            data: { boxId: game.id, game, gameList: this.games, lobbyId: this.lobbyId, isJoining: false },
         });
 
         dialogRef.afterClosed().subscribe({

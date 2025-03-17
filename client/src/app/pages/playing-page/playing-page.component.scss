@@ -1,0 +1,193 @@
+/* RESET GLOBAL */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px; /* Police réduite */
+}
+
+body {
+    background-color: #e6f7e9;
+    color: #333;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* CONTAINER GLOBAL */
+.game-container {
+    display: flex;
+    height: 100vh;
+    padding: 5px;
+    gap: 8px;
+    overflow: hidden;
+    align-items: flex-start;
+}
+
+/* SIDEBARS COMPACTS */
+.sidebar-left,
+.sidebar-right {
+    flex: 0 0 20%;
+    background-color: #ddf3e3;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #a5d6a7;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 6px;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* PLATEAU COMPACT */
+.board-container {
+    flex: 1;
+    background-color: #e8f5e9;
+    border: 1px solid #81c784;
+    border-radius: 8px;
+    padding: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* BLOCS UNIFORMES ET PETITS */
+.component-box,
+app-game-info,
+app-inventory,
+app-messages,
+app-countdown-timer,
+app-player-list {
+    background-color: #f1f8e9;
+    border: 1px solid #c5e1a5;
+    border-radius: 6px;
+    padding: 6px;
+    margin-bottom: 4px;
+}
+
+/* LISTES COMPACTES */
+ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 5px 0;
+}
+
+ul li {
+    margin-bottom: 4px;
+    padding-left: 14px;
+    position: relative;
+    font-size: 11px;
+}
+
+ul li:before {
+    position: absolute;
+    left: 0;
+    font-size: 12px;
+}
+
+/* ICONES LISTE */
+ul li:nth-child(1):before { content: "🍃"; }
+ul li:nth-child(2):before { content: "🐹"; }
+ul li:nth-child(3):before { content: "❤️"; }
+ul li:nth-child(4):before { content: "⚡"; }
+ul li:nth-child(5):before { content: "⚔️"; }
+ul li:nth-child(6):before { content: "🛡️"; }
+
+ul + ul li:nth-child(1):before { content: "🎁"; }
+ul + ul li:nth-child(2):before { content: "❤️"; }
+ul + ul li:nth-child(3):before { content: "⚡"; }
+ul + ul li:nth-child(4):before { content: "🎲"; }
+ul + ul li:nth-child(5):before { content: "🎲"; }
+
+ul li strong {
+    color: #33691e;
+    font-weight: 600;
+    font-size: 11px;
+}
+
+/* AVATAR PETIT */
+img {
+    border-radius: 50%;
+    border: 2px solid #8bc34a;
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+}
+
+/* BOUTONS PETITS ET JOLIS */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.action-buttons button {
+    padding: 6px;
+    font-size: 11px;
+    background-color: #c5e1a5;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.action-buttons button:hover {
+    background-color: #aed581;
+}
+
+.end-turn-button {
+    background-color: #689f38 !important;
+    color: white !important;
+}
+
+.end-turn-button:disabled {
+    background-color: #d0e7c4 !important;
+    color: #666 !important;
+    cursor: not-allowed;
+}
+
+/* CHARGEMENT */
+.loading {
+    text-align: center;
+    font-weight: 600;
+    color: #689f38;
+    font-size: 12px;
+}
+
+.loading-spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid #c5e1a5;
+    border-top: 3px solid #689f38;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 5px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0); }
+    100% { transform: rotate(360deg); }
+}
+
+/* VERSION MOBILE */
+@media screen and (max-width: 900px) {
+    .game-container {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .sidebar-left,
+    .sidebar-right,
+    .board-container {
+        width: 100%;
+        height: auto;
+    }
+
+    .action-buttons button {
+        width: 100%;
+    }
+}

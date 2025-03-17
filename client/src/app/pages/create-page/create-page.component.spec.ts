@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ComponentFixture, TestBed, fakeAsync, tick, discardPeriodicTasks } from '@angular/core/testing';
 import { CreatePageComponent } from './create-page.component';
 import { GameService } from '@app/services/game.service';
@@ -12,6 +13,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NotificationService } from '@app/services/notification.service';
+import { CREATE_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 
 describe('CreatePageComponent', () => {
     let component: CreatePageComponent;
@@ -126,44 +128,6 @@ describe('CreatePageComponent', () => {
         discardPeriodicTasks();
     }));
 
-    it('should reload games when dialog is closed with a result', fakeAsync(() => {
-        const newMockGame: Game = {
-            id: '3',
-            name: 'Go',
-            mapSize: GameSize.medium,
-            mode: GameType.classic,
-            previewImage: 'go.png',
-            description: 'A normal board game.',
-            lastModified: new Date(),
-            isVisible: true,
-            board: [
-                [0, 1],
-                [1, 0],
-            ],
-            objects: [],
-        };
-        gameServiceSpy.verifyGameAccessible.and.returnValue(of(true));
-
-        mockDialogRef.afterClosed.and.returnValue(of(newMockGame));
-        spyOn(component as unknown as { loadGames: () => void }, 'loadGames');
-        component.onBoxClick(newMockGame);
-        expect(matDialogSpy.open).toHaveBeenCalled();
-        expect(mockDialogRef.afterClosed).toHaveBeenCalled();
-
-        tick();
-        fixture.detectChanges();
-
-        expect(component['loadGames']).toHaveBeenCalled();
-
-        discardPeriodicTasks();
-    }));
-
-    it('should check if the game exists before opening the dialog', fakeAsync(() => {
-        gameServiceSpy.verifyGameAccessible.and.returnValue(of(true));
-        component.onBoxClick(component.games[0]);
-        expect(matDialogSpy.open).toHaveBeenCalled();
-    }));
-
     it('should block the dialog if the game is not available', fakeAsync(() => {
         gameServiceSpy.verifyGameAccessible.and.returnValue(of(false));
         component.onBoxClick(component.games[0]);
@@ -197,6 +161,63 @@ describe('CreatePageComponent', () => {
         fixture.detectChanges();
 
         expect(component.games).toEqual(initialGames);
+
+        discardPeriodicTasks();
+    }));
+
+    it('should create a new lobby if none exists and open the dialog', fakeAsync(() => {
+        gameServiceSpy.verifyGameAccessible.and.returnValue(of(true));
+        const createLobbySpy = spyOn(component['lobbyService'], 'createLobby').and.callThrough();
+        const onLobbyCreatedSpy = spyOn(component['lobbyService'], 'onLobbyCreated').and.returnValue(of({ lobbyId: '123' }));
+
+        component.onBoxClick(component.games[0]);
+
+        expect(createLobbySpy).toHaveBeenCalledWith(component.games[0]);
+        expect(onLobbyCreatedSpy).toHaveBeenCalled();
+        expect(component.lobbyId).toBe('123');
+        expect(matDialogSpy.open).toHaveBeenCalled();
+
+        discardPeriodicTasks();
+    }));
+    it('should open the dialog without creating a new lobby if one already exists', fakeAsync(() => {
+        component.lobbyId = 'existing-lobby-id';
+        gameServiceSpy.verifyGameAccessible.and.returnValue(of(true));
+        const createLobbySpy = spyOn(component['lobbyService'], 'createLobby');
+
+        component.onBoxClick(component.games[0]);
+
+        expect(createLobbySpy).not.toHaveBeenCalled();
+        expect(matDialogSpy.open).toHaveBeenCalled();
+
+        discardPeriodicTasks();
+    }));
+
+    it('should show error if lobby creation fails', fakeAsync(() => {
+        gameServiceSpy.verifyGameAccessible.and.returnValue(of(true));
+        spyOn(component['lobbyService'], 'createLobby');
+        spyOn(component['lobbyService'], 'onLobbyCreated').and.returnValue(throwError(() => new Error('Failed to create lobby')));
+
+        component.onBoxClick(component.games[0]);
+        tick();
+
+        expect(notificationServiceSpy.showError).toHaveBeenCalledWith(
+            CREATE_PAGE_CONSTANTS.errorLobbyCreation + ' ' + 'Error: Failed to create lobby',
+        );
+
+        discardPeriodicTasks();
+    }));
+
+    it('should show error and reload games if game is not accessible', fakeAsync(() => {
+        gameServiceSpy.verifyGameAccessible.and.returnValue(of(false));
+
+        const loadGamesSpy = spyOn(component as any, 'loadGames');
+
+        component.onBoxClick(component.games[0]);
+
+        tick();
+
+        expect(notificationServiceSpy.showError).toHaveBeenCalledWith(CREATE_PAGE_CONSTANTS.errorGameDeleted);
+        expect(loadGamesSpy).toHaveBeenCalled();
 
         discardPeriodicTasks();
     }));

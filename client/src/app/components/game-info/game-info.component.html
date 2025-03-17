@@ -1,0 +1,17 @@
+<div class="game-info">
+    <h3>Informations de la Partie</h3>
+
+    <p><strong>Taille de la carte:</strong> {{ mapSize }}</p>
+    <p><strong>Nombre de joueurs:</strong> {{ playerCount }}</p>
+    <p><strong>Joueur Actif:</strong> {{ activePlayer }}</p>
+
+    <p><strong>Joueurs:</strong></p>
+    <ul>
+        @for(player of players; track $index;) {
+
+        {{
+            player.name
+        }}
+        }
+    </ul>
+</div>
