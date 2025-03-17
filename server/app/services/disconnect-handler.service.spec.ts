@@ -27,7 +27,8 @@ describe('DisconnectHandlerService', () => {
         gameSocketHandler = { startTurn: sandbox.stub() } as unknown as GameSocketHandlerService;
         boardService = { handleEndTurn: sandbox.stub() } as any;
 
-        service = new DisconnectHandlerService(lobbies, gameStates, gameSocketHandler, boardService);
+        const lobbySocketHandler = { updateLobby: sandbox.stub() } as any;
+        service = new DisconnectHandlerService(lobbies, gameStates, gameSocketHandler, lobbySocketHandler, boardService);
 
         emitSpy = sandbox.spy();
         ioToStub = sandbox.stub().returns({ emit: emitSpy });
