@@ -182,7 +182,6 @@ export class GameSocketHandlerService {
             gameState.deletedPlayers.push(deletedPlayer);
         }
         const newGameState = this.boardService.handleBoardChange(gameState);
-        console.log('New Game State', newGameState);
         this.gameStates.set(lobbyId, gameState);
         this.io.to(lobbyId).emit('boardModified', { gameState: newGameState });
     }

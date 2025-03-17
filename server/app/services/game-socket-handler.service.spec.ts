@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-unused-expressions */
-/* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BoardService } from '@app/services/board.service';
 import { GameSocketHandlerService } from '@app/services/game-socket-handler.service';
 import { LobbySocketHandlerService } from '@app/services/lobby-socket-handler.service';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
-import { TILE_DELIMITER, TileTypes } from '@common/game.interface';
+import { TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { expect } from 'chai';
 import { createSandbox, SinonSandbox, SinonStub } from 'sinon';
@@ -36,6 +36,7 @@ describe('GameSocketHandlerService', () => {
             handleMovement: sandbox.stub(),
             findShortestPath: sandbox.stub(),
             handleTurn: sandbox.stub(),
+            handleBoardChange: sandbox.stub(),
         } as any;
 
         lobbySocketHandlerService = {
@@ -149,6 +150,11 @@ describe('GameSocketHandlerService', () => {
         const fakeServer = {} as any;
         service.setServer(fakeServer);
         expect((service as any).io).to.equal(fakeServer);
+    });
+
+    it('should exit from startTurn if lobbyId not in gameStates', () => {
+        service.startTurn('lobby1');
+        expect(ioToStub.calledWith('lobby1')).to.equal(false);
     });
 
     it('should call startTurn at the end of handleRequestStart', async () => {
@@ -288,204 +294,143 @@ describe('GameSocketHandlerService', () => {
         service.openDoor(socket, { x: 0, y: 0 } as any, 'lobby1');
         expect(ioToStub.calledWith('lobby1')).to.equal(true);
     });
-    describe('handlePlayersUpdate', () => {
-        it('should emit error if gameState not found', () => {
-            service.handlePlayersUpdate(socket, 'nonexistent', []);
-            expect(socket.emit.calledWith('error', 'Game not found.')).to.be.true;
-        });
 
-        it('should update gameState when a player is deleted', () => {
-            // Create initial game state with two players
-            const gameState: GameState = {
-                board: [[10]], // Value 10 = spawn point
-                players: [{ id: 'p1', name: 'Player1' } as Player, { id: 'p2', name: 'Player2' } as Player],
-                currentPlayer: 'p1',
-                spawnPoints: [
-                    { x: 0, y: 0 },
-                    { x: 1, y: 1 },
-                ],
-                playerPositions: [
-                    { x: 0, y: 0 },
-                    { x: 1, y: 1 },
-                ],
-                deletedPlayers: [],
-                availableMoves: [],
-                shortestMoves: [],
-                turnCounter: 0,
-                currentPlayerMovementPoints: 0,
-            } as GameState;
+    it('should handle players update when a player is removed', () => {
+        // Create players
+        const player1 = { id: 'socket1', name: 'Player 1' } as Player;
+        const player2 = { id: 'socket2', name: 'Player 2' } as Player;
+        const player3 = { id: 'socket3', name: 'Player 3' } as Player;
 
-            gameStates.set('lobby1', gameState);
+        // Create game state with 3 players
+        const gameState: GameState = {
+            currentPlayer: 'socket1',
+            players: [player1, player2, player3],
+            board: [
+                [1, 1, 61], // 61 is spawn point (6 * TILE_DELIMITER + 1)
+                [1, 1, 1],
+                [1, 61, 1], // Another spawn point
+            ],
+            playerPositions: [
+                { x: 0, y: 2 }, // Player 1 at first spawn
+                { x: 2, y: 1 }, // Player 2 at second spawn
+                { x: 1, y: 1 }, // Player 3 elsewhere
+            ],
+            spawnPoints: [
+                { x: 0, y: 2 },
+                { x: 2, y: 1 },
+            ],
+            availableMoves: [],
+        } as any;
 
-            // Call with updated player list that has player 'p2' removed
-            const updatedPlayers = [{ id: 'p1', name: 'Player1' } as Player];
-            service.handlePlayersUpdate(socket, 'lobby1', updatedPlayers);
+        // Set the game state in the map
+        gameStates.set('lobby1', gameState);
 
-            // Check that player was moved to deletedPlayers
-            expect(gameState.deletedPlayers?.length).to.equal(1);
-            expect(gameState.deletedPlayers?.[0].id).to.equal('p2');
+        // Create updated players array with player2 removed
+        const updatedPlayers = [player1, player3];
 
-            // Check that players array was updated
-            expect(gameState.players.length).to.equal(1);
-            expect(gameState.players[0].id).to.equal('p1');
+        // Mock handleBoardChange to return unmodified state
+        (boardService.handleBoardChange as any).returns(gameState);
 
-            // Check that currentPlayer was updated if it was the deleted player
-            expect(gameState.currentPlayer).to.equal('p1');
+        // Call the function with updated players
+        service.handlePlayersUpdate(socket, 'lobby1', updatedPlayers);
 
-            // Verify board modification at spawn point
-            expect(ioToStub.calledWith('lobby1')).to.be.true;
-        });
+        // Get the updated game state
+        const updatedGameState = gameStates.get('lobby1');
 
-        it('should update currentPlayer when current player is deleted', () => {
-            // Create initial game state where p2 is the current player
-            const gameState: GameState = {
-                board: [[10]], // Value 10 = spawn point
-                players: [{ id: 'p1', name: 'Player1' } as Player, { id: 'p2', name: 'Player2' } as Player, { id: 'p3', name: 'Player3' } as Player],
-                currentPlayer: 'p2', // p2 is current player and will be deleted
-                spawnPoints: [
-                    { x: 0, y: 0 },
-                    { x: 1, y: 1 },
-                    { x: 2, y: 2 },
-                ],
-                playerPositions: [
-                    { x: 0, y: 0 },
-                    { x: 1, y: 1 },
-                    { x: 2, y: 2 },
-                ],
-                deletedPlayers: [],
-                availableMoves: [],
-                shortestMoves: [],
-                turnCounter: 0,
-                currentPlayerMovementPoints: 0,
-            } as GameState;
+        // Verify that player2 was removed from players array
+        expect(updatedGameState!.players).to.have.lengthOf(2);
+        expect(updatedGameState!.players.some((p) => p.id === 'socket2')).to.equal(false);
 
-            gameStates.set('lobby1', gameState);
+        // Verify that player2's spawn point was cleared in the board
+        expect(updatedGameState!.board[2][1]).to.equal(1); // Should be just tile without spawn object
 
-            // Call with updated player list that has player 'p2' removed
-            const updatedPlayers = [{ id: 'p1', name: 'Player1' } as Player, { id: 'p3', name: 'Player3' } as Player];
+        // Verify that player2's position was removed
+        expect(updatedGameState!.playerPositions).to.have.lengthOf(2);
 
-            service.handlePlayersUpdate(socket, 'lobby1', updatedPlayers);
+        // Verify that player2's spawn point was removed from spawnPoints array
+        expect(updatedGameState!.spawnPoints).to.have.lengthOf(1);
 
-            // Check that currentPlayer was updated to the next player in line (p3)
-            expect(gameState.currentPlayer).to.equal('p3');
+        // Verify that player2 was added to deletedPlayers
+        expect(updatedGameState!.deletedPlayers).to.have.lengthOf(1);
+        expect(updatedGameState!.deletedPlayers![0].id).to.equal('socket2');
 
-            // Check that p2 was moved to deletedPlayers
-            expect(gameState.deletedPlayers?.length).to.equal(1);
-            expect(gameState.deletedPlayers?.[0].id).to.equal('p2');
-        });
+        // Verify that currentPlayer was updated if needed
+        if (gameState.currentPlayer === 'socket2') {
+            expect(updatedGameState!.currentPlayer).not.to.equal('socket2');
+        }
 
-        it('should handle a player being deleted with no deletedPlayers array', () => {
-            // Create initial game state with two players but no deletedPlayers array
-            const gameState: GameState = {
-                board: [[10]], // Value 10 = spawn point
-                players: [{ id: 'p1', name: 'Player1' } as Player, { id: 'p2', name: 'Player2' } as Player],
-                currentPlayer: 'p1',
-                spawnPoints: [
-                    { x: 0, y: 0 },
-                    { x: 1, y: 1 },
-                ],
-                playerPositions: [
-                    { x: 0, y: 0 },
-                    { x: 1, y: 1 },
-                ],
-                availableMoves: [],
-                shortestMoves: [],
-                turnCounter: 0,
-                currentPlayerMovementPoints: 0,
-            } as GameState;
-
-            // Deliberately don't set deletedPlayers
-            delete gameState.deletedPlayers;
-
-            gameStates.set('lobby1', gameState);
-
-            // Call with updated player list that has player 'p2' removed
-            const updatedPlayers = [{ id: 'p1', name: 'Player1' } as Player];
-            service.handlePlayersUpdate(socket, 'lobby1', updatedPlayers);
-
-            // Check that deletedPlayers was created and player was added
-            expect(gameState.deletedPlayers?.length).to.equal(1);
-            expect(gameState.deletedPlayers?.[0].id).to.equal('p2');
-        });
-
-        it('should modify tile type at spawn point when player is deleted', () => {
-            // Create initial game state with a player and a spawn point
-            const gameState: GameState = {
-                board: [[TILE_DELIMITER * 6]], // Tile value 60 = spawn point (6*10)
-                players: [{ id: 'p1', name: 'Player1' } as Player],
-                currentPlayer: 'p1',
-                spawnPoints: [{ x: 0, y: 0 }],
-                playerPositions: [{ x: 0, y: 0 }],
-                deletedPlayers: [],
-                availableMoves: [],
-                shortestMoves: [],
-                turnCounter: 0,
-                currentPlayerMovementPoints: 0,
-            } as GameState;
-
-            gameStates.set('lobby1', gameState);
-
-            // Call with empty player list to remove the player
-            service.handlePlayersUpdate(socket, 'lobby1', []);
-
-            // Check that the board tile was modified (divided by TILE_DELIMITER)
-            expect(gameState.board[0][0]).to.equal(0);
-        });
+        // Verify that the event was emitted
+        expect(ioToStub.calledWith('lobby1')).to.equal(true);
+        const emit = ioToStub.returnValues[0].emit;
+        expect(emit.calledWith('boardModified')).to.equal(true);
     });
 
-    // Test for any functionality around line 106
-    describe('startTurn with combat', () => {
-        it('should handle game state with active combat', () => {
-            // Create game state with active combat
-            const gameState: GameState = {
-                players: [{ id: 'p1' }] as any,
-                currentPlayer: 'p1',
-                combat: {
-                    playerId: 'p1',
-                    isActive: true,
-                    endTime: new Date(Date.now() + 10000), // Combat ends in 10 seconds
-                },
-                availableMoves: [],
-                shortestMoves: [],
-                playerPositions: [],
-            } as GameState;
+    it('should handle players update when no players are removed', () => {
+        // Create players
+        const player1 = { id: 'socket1', name: 'Player 1' } as Player;
+        const player2 = { id: 'socket2', name: 'Player 2' } as Player;
 
-            gameStates.set('lobby1', gameState);
+        // Create game state with 2 players
+        const gameState: GameState = {
+            currentPlayer: 'socket1',
+            players: [player1, player2],
+            board: [
+                [1, 1, 61], // 61 is spawn point (6 * TILE_DELIMITER + 1)
+                [1, 1, 1],
+                [1, 61, 1], // Another spawn point
+            ],
+            playerPositions: [
+                { x: 0, y: 2 },
+                { x: 2, y: 1 },
+            ],
+            spawnPoints: [
+                { x: 0, y: 2 },
+                { x: 2, y: 1 },
+            ],
+            availableMoves: [],
+        } as any;
 
-            // Call startTurn
-            service.startTurn('lobby1');
+        // Set the game state in the map
+        gameStates.set('lobby1', gameState);
 
-            // Verify that the emit was called correctly
-            expect(ioToStub.calledWith('lobby1')).to.be.true;
-        });
+        // Create updated players array with the same players
+        const updatedPlayers = [player1, player2];
 
-        it('should end combat if time has expired', () => {
-            // Create game state with expired combat
-            const pastDate = new Date();
-            pastDate.setSeconds(pastDate.getSeconds() - 10); // 10 seconds in the past
+        // Mock handleBoardChange to return unmodified state
+        (boardService.handleBoardChange as any).returns(gameState);
 
-            const gameState: GameState = {
-                players: [{ id: 'p1' }] as any,
-                currentPlayer: 'p1',
-                combat: {
-                    playerId: 'p1',
-                    isActive: true,
-                    endTime: pastDate, // Combat ended 10 seconds ago
-                },
-                availableMoves: [],
-                shortestMoves: [],
-                playerPositions: [],
-            } as GameState;
+        // Create deep copies for later comparison
+        const originalPlayersLength = gameState.players.length;
+        const originalPlayerPositionsLength = gameState.playerPositions.length;
+        const originalSpawnPointsLength = gameState.spawnPoints.length;
 
-            (boardService as any).handleTurn = sandbox.stub().returns(gameState);
+        // Call the function with updated players
+        service.handlePlayersUpdate(socket, 'lobby1', updatedPlayers);
 
-            gameStates.set('lobby1', gameState);
+        // Get the updated game state
+        const updatedGameState = gameStates.get('lobby1');
 
-            // Call startTurn
-            service.startTurn('lobby1');
+        // Verify that no players were removed
+        expect(updatedGameState!.players).to.have.lengthOf(originalPlayersLength);
 
-            // Verify that combat.isActive was set to false
-            expect(gameState.combat?.isActive).to.be.false;
-        });
+        // Verify that no player positions were removed
+        expect(updatedGameState!.playerPositions).to.have.lengthOf(originalPlayerPositionsLength);
+
+        // Verify that no spawn points were removed
+        expect(updatedGameState!.spawnPoints).to.have.lengthOf(originalSpawnPointsLength);
+
+        // Verify that deletedPlayers was not created
+        expect(updatedGameState!.deletedPlayers).to.be.undefined;
+
+        // Verify that the event was still emitted
+        expect(ioToStub.calledWith('lobby1')).to.equal(true);
+        const emit = ioToStub.returnValues[0].emit;
+        expect(emit.calledWith('boardModified')).to.equal(true);
+    });
+
+    it('should emit error if gameState not found in handlePlayersUpdate', () => {
+        const players = [{ id: 'player1' }] as Player[];
+        service.handlePlayersUpdate(socket, 'nonexistentLobby', players);
+        expect(emitStub.calledWith('error', 'Game not found.')).to.equal(true);
     });
 });

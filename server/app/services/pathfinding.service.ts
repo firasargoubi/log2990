@@ -37,15 +37,11 @@ export class PathfindingService {
             return Infinity;
         }
 
-        try {
-            const tileValue = gameState.board[x][y];
-            const tileType = tileValue % 10;
-            const cost = this.getTileCost(tileType);
+        const tileValue = gameState.board[x][y];
+        const tileType = tileValue % 10;
+        const cost = this.getTileCost(tileType);
 
-            return cost;
-        } catch (error) {
-            return Infinity;
-        }
+        return cost;
     }
 
     isPositionInBounds(gameState: GameState, position: Coordinates): boolean {
