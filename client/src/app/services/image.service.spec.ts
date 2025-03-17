@@ -1,11 +1,12 @@
-/* eslint-disable @typescript-eslint/no-magic-numbers */
+/* eslint-disable no-import-assign */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 import { TestBed } from '@angular/core/testing';
 import { ImageService } from './image.service';
 import { Tile } from '@common/tile';
 import { TileTypes } from '@app/interfaces/tile-types';
 import { ObjectsTypes } from '@app/Consts/app.constants';
+import * as html2canvasModule from 'html2canvas';
 
 describe('ImageService', () => {
     let service: ImageService;
@@ -15,10 +16,6 @@ describe('ImageService', () => {
             providers: [ImageService],
         });
         service = TestBed.inject(ImageService);
-    });
-
-    it('should be created', () => {
-        expect(service).toBeTruthy();
     });
 
     describe('getTileBackgroundUrl method', () => {
@@ -91,15 +88,25 @@ describe('ImageService', () => {
 
     describe('captureComponent method', () => {
         it('should reject with error when element is invalid', async () => {
-            await expectAsync((service as any).captureComponent(null)).toBeRejected();
+            await expectAsync(service.captureComponent(null as any)).toBeRejectedWith('Invalid HTML element');
         });
 
-        it('should reject with error when html2canvas throws', async () => {
-            const originalCaptureComponent = (service as any).captureComponent;
-            (service as any).captureComponent = jasmine.createSpy().and.rejectWith(new Error('Canvas error'));
+        it('should return a base64 image when capturing a valid element', async () => {
+            const mockElement = document.createElement('div');
+            document.body.appendChild(mockElement);
 
-            await expectAsync(service.captureBoardFromTiles([[{ type: TileTypes.Grass, x: 0, y: 0, id: '0-0', object: 0 }]])).toBeRejected();
-            (service as any).captureComponent = originalCaptureComponent;
+            const mockCanvas = document.createElement('canvas');
+            spyOn(mockCanvas, 'toDataURL').and.returnValue('data:,');
+
+            Object.defineProperty(html2canvasModule, 'default', {
+                value: jasmine.createSpy('html2canvas').and.returnValue(Promise.resolve(mockCanvas)),
+                writable: true,
+                configurable: true,
+            });
+
+            const result = await service.captureComponent(mockElement);
+            expect(result).toBe('data:,');
+            document.body.removeChild(mockElement);
         });
     });
 
@@ -108,6 +115,7 @@ describe('ImageService', () => {
         let mockBoard: HTMLDivElement;
         let mockTile: HTMLDivElement;
         let mockImage: HTMLImageElement;
+        let captureComponentSpy: jasmine.Spy;
 
         beforeEach(() => {
             mockContainer = document.createElement('div');
@@ -115,7 +123,7 @@ describe('ImageService', () => {
             mockTile = document.createElement('div');
             mockImage = document.createElement('img');
 
-            spyOn(service as any, 'captureComponent').and.resolveTo('data:image/png;base64,mockImageData');
+            captureComponentSpy = spyOn(service as any, 'captureComponent').and.resolveTo('data:');
 
             let createElementCallCount = 0;
             spyOn(document, 'createElement').and.callFake((tagName: string) => {
@@ -129,11 +137,15 @@ describe('ImageService', () => {
                 return document.createElement(tagName);
             });
 
-            spyOn(document.body, 'appendChild').and.returnValue(mockContainer);
-            spyOn(document.body, 'removeChild').and.returnValue(mockContainer);
-            spyOn(mockContainer, 'appendChild').and.returnValue(mockBoard);
-            spyOn(mockBoard, 'appendChild').and.returnValue(mockTile);
-            spyOn(mockTile, 'appendChild').and.returnValue(mockImage);
+            spyOn(document.body, 'appendChild').and.callThrough();
+            spyOn(document.body, 'removeChild').and.callThrough();
+            spyOn(mockContainer, 'appendChild').and.callThrough();
+            spyOn(mockBoard, 'appendChild').and.callThrough();
+            spyOn(mockTile, 'appendChild').and.callThrough();
+        });
+
+        afterEach(() => {
+            captureComponentSpy.and.callThrough();
         });
 
         it('should create a container with absolute positioning', async () => {
@@ -165,7 +177,7 @@ describe('ImageService', () => {
 
             await service.captureBoardFromTiles(board);
 
-            expect(document.body.removeChild).toHaveBeenCalled();
+            expect(document.body.removeChild).toHaveBeenCalledWith(mockContainer);
         });
 
         it('should handle errors and still remove container', async () => {
@@ -180,7 +192,7 @@ describe('ImageService', () => {
                 // Expected error
             }
 
-            expect(document.body.removeChild).toHaveBeenCalled();
+            expect(document.body.removeChild).toHaveBeenCalledWith(mockContainer);
         });
 
         it('should add object images to tiles when objects are present', async () => {
@@ -207,6 +219,34 @@ describe('ImageService', () => {
 
             const createElementCalls2 = (document.createElement as jasmine.Spy).calls.allArgs();
             expect(createElementCalls2.some((args) => args[0] === 'div')).toBeTrue();
+        });
+
+        it('should create correct object image elements with proper styling', async () => {
+            const board: Tile[][] = [
+                [
+                    {
+                        type: TileTypes.Grass,
+                        x: 0,
+                        y: 0,
+                        id: '0-0',
+                        object: ObjectsTypes.SWORD,
+                    },
+                ],
+            ];
+
+            spyOn(service as any, 'getObjectImageUrl').and.returnValue('assets/objects/sword.png');
+
+            await service.captureBoardFromTiles(board);
+
+            expect(document.createElement).toHaveBeenCalledWith('img');
+            expect(mockImage.src).toContain('assets/objects/sword.png');
+            expect(mockImage.style.width).toBe('30px');
+            expect(mockImage.style.height).toBe('30px');
+            expect(mockImage.style.position).toBe('absolute');
+            expect(mockImage.style.top).toBe('50%');
+            expect(mockImage.style.left).toBe('50%');
+            expect(mockImage.style.transform).toBe('translate(-50%, -50%)');
+            expect(mockTile.appendChild).toHaveBeenCalledWith(mockImage);
         });
     });
 });

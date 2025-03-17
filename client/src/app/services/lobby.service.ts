@@ -21,27 +21,9 @@ export class LobbyService {
         this.socket = io(environment.serverUrl, {
             transports: ['websocket', 'polling'],
         });
-
-        this.socket.on('connect', () => {
-            console.log('Socket connected with ID:', this.socket.id);
-        });
-
-        this.socket.on('disconnect', (reason) => {
-            console.log('Socket disconnected: ', reason);
-        });
-
-        this.socket.on('connect_error', (error) => {
-            console.error('Socket connection error:', error);
-        });
-
-        this.socket.on('combatUpdate', (data: { timeLeft: number }) => {
-            console.log('Combat time left: ', data.timeLeft);
-            // Update your UI with the remaining time
-        });
     }
 
     setCurrentPlayer(player: Player): void {
-        console.log('Setting current player in LobbyService:', player);
         this.currentPlayer = player;
     }
 
@@ -120,23 +102,7 @@ export class LobbyService {
     onGameStarted(): Observable<{ gameState: GameState }> {
         return new Observable((observer) => {
             this.socket.on('gameStarted', (data: { gameState: GameState }) => {
-
-                try {
-
-                    if (!data.gameState.availableMoves) {
-                        data.gameState.availableMoves = [];
-                        console.warn('availableMoves was undefined in gameState, set to empty array');
-                    }
-                    console.log('Processed game state:', {
-                        currentPlayer: data.gameState.currentPlayer,
-                        availableMoves: data.gameState.availableMoves,
-                        playerPositions: Array.from(data.gameState.playerPositions.entries()),
-                    });
-
-                    observer.next(data);
-                } catch (error) {
-                    console.error('Error processing game state:', error);
-                }
+                observer.next(data);
             });
         });
     }
@@ -144,48 +110,23 @@ export class LobbyService {
     onTurnStarted(): Observable<{ gameState: GameState; currentPlayer: string; availableMoves: Coordinates[] }> {
         return new Observable((observer) => {
             this.socket.on('turnStarted', (data: { gameState: GameState; currentPlayer: string; availableMoves: Coordinates[] }) => {
-
-                try {
-
-                    if (!data.availableMoves) {
-                        data.availableMoves = [];
-                        console.warn('availableMoves was undefined in turn data, set to empty array');
-                    }
-
-                    data.gameState.availableMoves = [...data.availableMoves];
-                    console.log('Processed turn data:', {
-                        currentPlayer: data.gameState.currentPlayer,
-                        availableMoves: data.gameState.availableMoves,
-                        gameStateAvailableMoves: data.gameState.availableMoves,
-                    });
-
-                    observer.next(data);
-                } catch (error) {
-                    console.error('Error processing turn started event:', error);
-                }
+                observer.next(data);
             });
         });
     }
 
     requestMovement(lobbyId: string, coordinates: Coordinates[]): void {
-        console.log('Requesting movement in lobby:', lobbyId, 'to coordinate:', coordinates);
         this.socket.emit('requestMovement', { lobbyId, coordinates });
     }
 
     onMovementProcessed(): Observable<{ gameState: GameState; playerMoved: string; newPosition: Coordinates }> {
         return new Observable((observer) => {
             this.socket.on('movementProcessed', (data: { gameState: GameState; playerMoved: string; newPosition: Coordinates }) => {
-
-                try {
-                    if (!data.gameState.availableMoves) {
-                        data.gameState.availableMoves = [];
-                        console.warn('availableMoves was undefined in movement data, set to empty array');
-                    }
-
-                    observer.next(data);
-                } catch (error) {
-                    console.error('Error processing movement event:', error);
+                if (!data.gameState.availableMoves) {
+                    data.gameState.availableMoves = [];
                 }
+
+                observer.next(data);
             });
         });
     }
@@ -197,48 +138,25 @@ export class LobbyService {
     onTurnEnded(): Observable<{ gameState: GameState; previousPlayer: string; currentPlayer: string }> {
         return new Observable((observer) => {
             this.socket.on('turnEnded', (data: { gameState: GameState; previousPlayer: string; currentPlayer: string }) => {
-
-                try {
-                    if (!data.gameState.availableMoves) {
-                        data.gameState.availableMoves = [];
-                        console.warn('availableMoves was undefined in turn ended data, set to empty array');
-                    }
-
-
-                    observer.next(data);
-                } catch (error) {
-                    console.error('Error processing turn ended event:', error);
+                if (!data.gameState.availableMoves) {
+                    data.gameState.availableMoves = [];
                 }
+
+                observer.next(data);
             });
         });
-    }
-
-    requestPath(lobbyId: string, destination: Coordinates): void {
-        this.socket.emit('requestPath', { lobbyId, destination });
     }
 
     onBoardChanged(): Observable<{ gameState: GameState }> {
         return new Observable((observer) => {
             this.socket.on('boardModified', (data: { gameState: GameState }) => {
-                console.log('Board changed event received:', data);
-
-                try {
-                    console.log('Processed board changed data:', {
-                        currentPlayer: data.gameState.currentPlayer,
-                        availableMoves: data.gameState.availableMoves,
-                    });
-
-                    observer.next(data);
-                } catch (error) {
-                    console.error('Error processing board changed event:', error);
-                }
+                observer.next(data);
             });
         });
     }
     onError(): Observable<string> {
         return new Observable((observer) => {
             this.socket.on('error', (error: string) => {
-                console.error('Socket error:', error);
                 observer.next(error);
             });
         });

@@ -33,6 +33,22 @@ describe('TileService', () => {
         service.modifyTile(tile);
     });
 
+    it('should modify tile type when current tool is valid non-door type', () => {
+        service.copyTileTool(TileTypes.Wall);
+
+        const tile: Tile = {
+            type: TileTypes.Grass,
+            x: 5,
+            y: 5,
+            id: '5-5',
+            object: 0,
+        };
+
+        service.modifyTile(tile);
+
+        expect(tile.type).toEqual(TileTypes.Wall);
+    });
+
     it('should copy the tile tool', () => {
         service.copyTileTool(TileTypes.Wall);
         expect(service.currentTool).toEqual(TileTypes.Wall);
