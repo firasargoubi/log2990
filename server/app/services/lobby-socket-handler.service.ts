@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 import { GameLobby } from '@common/game-lobby';
 import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
@@ -12,10 +13,10 @@ export class LobbySocketHandlerService {
         this.io = server;
     }
 
-    createLobby(game: Game): string {
+    createLobby(game: Game): GameLobby {
         const maxPlayers = this.getMaxPlayers(game.mapSize);
         const lobbyId = this.generateId();
-
+        console.log("game",game);
         const newLobby: GameLobby = {
             id: lobbyId,
             players: [],
@@ -26,7 +27,7 @@ export class LobbySocketHandlerService {
 
         this.lobbies.set(lobbyId, newLobby);
         this.updateLobby(lobbyId);
-        return lobbyId;
+        return newLobby;
     }
 
     handleJoinLobbyRequest(socket: Socket, lobbyId: string, player: Player): void {
@@ -46,7 +47,6 @@ export class LobbySocketHandlerService {
         lobby.players.push(player);
 
         socket.join(lobbyId);
-        this.io.to(lobbyId).emit('playerJoined', { lobbyId, player });
         this.updateLobby(lobbyId);
     }
 
@@ -65,12 +65,17 @@ export class LobbySocketHandlerService {
         }
 
         lobby.players.splice(playerIndex, 1);
-        socket.leave(lobbyId);
+        this.updateLobby(lobbyId);
+    }
 
-        this.io.to(lobbyId).emit('playerLeft', { lobbyId, playerName });
+    leaveGame(socket: Socket, lobbyId: string, playerName: string) {
+        const lobby = this.lobbies.get(lobbyId);
+        if (!lobby) return;
 
-        socket.emit('playerLeft', { lobbyId, playerName });
+        const playerIndex = lobby.players.findIndex((p) => p.name === playerName);
+        if (playerIndex === -1) return;
 
+        lobby.players.splice(playerIndex, 1);
         this.updateLobby(lobbyId);
     }
 
@@ -82,15 +87,14 @@ export class LobbySocketHandlerService {
         }
 
         lobby.isLocked = !lobby.isLocked;
-        this.io.to(lobbyId).emit('lobbyLocked', { lobbyId });
         this.updateLobby(lobbyId);
     }
 
     updateLobby(lobbyId: string): void {
         const lobby = this.lobbies.get(lobbyId);
         if (lobby) {
-            const lobbyCopy = JSON.parse(JSON.stringify(lobby));
-            this.io.to(lobbyId).emit('lobbyUpdated', { lobbyId, lobby: lobbyCopy });
+            console.log('Lobby updated:', lobby);
+            this.io.to(lobbyId).emit('lobbyUpdated', { lobby });
         }
     }
     getLobby(lobbyId: string): GameLobby | undefined {

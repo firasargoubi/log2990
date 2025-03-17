@@ -74,12 +74,11 @@ export class BoxFormDialogComponent implements OnDestroy {
         });
 
         this.subscriptions.push(
-            this.lobbyService.onPlayerJoined().subscribe({
+            this.lobbyService.onLobbyUpdated().subscribe({
                 next: (socketData) => {
-                    if (socketData.lobbyId === this.data.lobbyId) {
-                        this.dialogRef.close();
-                        this.router.navigate([`${PageUrl.Waiting}/${socketData.lobbyId}/${socketData.player.id}`], { replaceUrl: true });
-                    }
+                    this.dialogRef.close();
+                    const playerId = this.lobbyService.getSocketId();
+                    this.router.navigate([`${PageUrl.Waiting}/${socketData.lobby.id}/${playerId}`], { replaceUrl: true });
                 },
             }),
         );

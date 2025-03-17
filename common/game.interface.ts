@@ -46,6 +46,7 @@ export enum TileTypes {
     DoorClosed = 4,
     DoorOpen = 5,
     Wall = 6,
+    Floor,
 }
 
 export interface Tile {
@@ -54,3 +55,5 @@ export interface Tile {
     type: TileTypes;
     object: ObjectsTypes;
 }
+
+export const TILE_DELIMITER = 10;
