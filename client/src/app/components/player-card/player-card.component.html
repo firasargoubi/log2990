@@ -12,28 +12,10 @@
             }
         </ul>
         <div class="player-stats">
-            <p>
-                Vie: {{ player.life }}
-                @if (player.bonus?.life) {
-                <span>(+{{ player.bonus?.life }})</span>
-                }
-            </p>
-            <p>
-                Vitesse: {{ player.speed }}
-                @if (player.bonus?.speed) {
-                <span>(+{{ player.bonus?.speed }})</span>
-                }
-            </p>
-            <p>
-                Attaque: @if (player.bonus?.attack) {
-                <span>{{ player.bonus?.attack }}</span>
-                }
-            </p>
-            <p>
-                Défense: @if (player.bonus?.defense) {
-                <span>{{ player.bonus?.defense }}</span>
-                }
-            </p>
+            <p>Vie: {{ player.life }}</p>
+            <p>Vitesse: {{ player.speed }}</p>
+            <p>Attaque: {{ player.attack }}</p>
+            <p>Défense: {{ player.defense }}</p>
         </div>
     </div>
     <div class="player-actions">

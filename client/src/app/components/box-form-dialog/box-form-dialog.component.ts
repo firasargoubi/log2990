@@ -3,12 +3,12 @@ import { Component, inject, Inject, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
-import { PageUrl } from '@app/Consts/route-constants';
-import { Game } from '@common/game.interface';
 import { CREATE_PAGE_CONSTANTS, GAME_IMAGES, MAIN_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { PageUrl } from '@app/Consts/route-constants';
 import { GameService } from '@app/services/game.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
+import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Subscription } from 'rxjs';
 
@@ -116,7 +116,17 @@ export class BoxFormDialogComponent implements OnDestroy {
     }
 
     inputName(event: Event): void {
-        const inputName = (event.target as HTMLInputElement).value;
+        const inputName = (event.target as HTMLInputElement).value.trim(); // Trim pour supprimer les espaces autour du nom
+
+        if (inputName.length === 0) {
+            // Si le nom est vide ou composé uniquement d'espaces
+            this.form.get('name')?.setErrors({ whitespace: true }); // Définir une erreur de validation personnalisée
+        } else {
+            // Sinon, réinitialiser les erreurs si le nom est valide
+            this.form.get('name')?.setErrors(null); // Effacer les erreurs
+        }
+
+        // Mettre à jour la valeur du champ 'name' dans le formulaire
         this.form.get('name')?.setValue(inputName);
     }
 
@@ -124,12 +134,29 @@ export class BoxFormDialogComponent implements OnDestroy {
         if (!this.attributeClicked$) {
             this.attributeClicked$ = true;
             this.increasedAttribute = attribute;
+
+            // Récupérer la valeur actuelle de l'attribut
+            const currentValue = this.form.get(attribute)?.value;
+
+            // Si l'attribut est 'life' ou 'speed', augmenter de 2
+            if (currentValue !== undefined) {
+                const newValue = currentValue + 2; // Ajouter 2 au bonus
+                this.form.get(attribute)?.setValue(newValue); // Mettre à jour la valeur dans le formulaire
+            }
         }
     }
 
     pickDice(attribute: string): void {
         this.diceClicked$ = true;
         this.diceAttribute = attribute;
+
+        const currentValue = this.form.get(attribute)?.value;
+
+        // Si l'attribut est 'life' ou 'speed', augmenter de 2
+        if (currentValue !== undefined) {
+            const newValue = currentValue + 2; // Ajouter 2 au bonus
+            this.form.get(attribute)?.setValue(newValue); // Mettre à jour la valeur dans le formulaire
+        }
     }
 
     isRoomLocked(): boolean {

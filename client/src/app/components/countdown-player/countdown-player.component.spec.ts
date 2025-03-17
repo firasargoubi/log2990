@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { LobbyService } from '@app/services/lobby.service';
 import { of } from 'rxjs';
-import { CountdownComponent } from './countdown-timer.component';
+import { CountdownComponent } from './countdown-player.component';
 
 describe('CountdownComponent', () => {
     let component: CountdownComponent;

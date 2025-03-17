@@ -33,6 +33,11 @@ export class LobbyService {
         this.socket.on('connect_error', (error) => {
             console.error('Socket connection error:', error);
         });
+
+        this.socket.on('combatUpdate', (data: { timeLeft: number }) => {
+            console.log('Combat time left: ', data.timeLeft);
+            // Update your UI with the remaining time
+        });
     }
 
     setCurrentPlayer(player: Player): void {
@@ -123,6 +128,11 @@ export class LobbyService {
                         data.gameState.availableMoves = [];
                         console.warn('availableMoves was undefined in gameState, set to empty array');
                     }
+                    console.log('Processed game state:', {
+                        currentPlayer: data.gameState.currentPlayer,
+                        availableMoves: data.gameState.availableMoves,
+                        playerPositions: Array.from(data.gameState.playerPositions.entries()),
+                    });
 
                     observer.next(data);
                 } catch (error) {
@@ -145,6 +155,11 @@ export class LobbyService {
                     }
 
                     data.gameState.availableMoves = [...data.availableMoves];
+                    console.log('Processed turn data:', {
+                        currentPlayer: data.gameState.currentPlayer,
+                        availableMoves: data.gameState.availableMoves,
+                        gameStateAvailableMoves: data.gameState.availableMoves,
+                    });
 
                     observer.next(data);
                 } catch (error) {
@@ -156,6 +171,9 @@ export class LobbyService {
 
     requestMovement(lobbyId: string, coordinate: Coordinates): void {
         this.socket.emit('requestMovement', { lobbyId, coordinate });
+    requestMovement(lobbyId: string, coordinates: Coordinates[]): void {
+        console.log('Requesting movement in lobby:', lobbyId, 'to coordinate:', coordinates);
+        this.socket.emit('requestMovement', { lobbyId, coordinates });
     }
 
     onMovementProcessed(): Observable<{ gameState: GameState; playerMoved: string; newPosition: Coordinates }> {
@@ -163,8 +181,6 @@ export class LobbyService {
             this.socket.on('movementProcessed', (data: { gameState: GameState; playerMoved: string; newPosition: Coordinates }) => {
 
                 try {
-                    data.gameState.playerPositions = this.convertPlayerPositionsToMap(data.gameState.playerPositions);
-
                     if (!data.gameState.availableMoves) {
                         data.gameState.availableMoves = [];
                         console.warn('availableMoves was undefined in movement data, set to empty array');
@@ -187,8 +203,6 @@ export class LobbyService {
             this.socket.on('turnEnded', (data: { gameState: GameState; previousPlayer: string; currentPlayer: string }) => {
 
                 try {
-                    data.gameState.playerPositions = this.convertPlayerPositionsToMap(data.gameState.playerPositions);
-
                     if (!data.gameState.availableMoves) {
                         data.gameState.availableMoves = [];
                         console.warn('availableMoves was undefined in turn ended data, set to empty array');
@@ -208,9 +222,21 @@ export class LobbyService {
     }
 
     onPathCalculated(): Observable<{ destination: Coordinates; path: Coordinates[]; valid: boolean }> {
+    onBoardChanged(): Observable<{ gameState: GameState }> {
         return new Observable((observer) => {
-            this.socket.on('pathCalculated', (data: { destination: Coordinates; path: Coordinates[]; valid: boolean }) => {
-                observer.next(data);
+            this.socket.on('boardModified', (data: { gameState: GameState }) => {
+                console.log('Board changed event received:', data);
+
+                try {
+                    console.log('Processed board changed data:', {
+                        currentPlayer: data.gameState.currentPlayer,
+                        availableMoves: data.gameState.availableMoves,
+                    });
+
+                    observer.next(data);
+                } catch (error) {
+                    console.error('Error processing board changed event:', error);
+                }
             });
         });
     }
@@ -342,32 +368,6 @@ export class LobbyService {
         });
     }
 
-    private convertPlayerPositionsToMap(playerPositions: unknown): Map<string, Coordinates> {
-        const positionsMap = new Map<string, Coordinates>();
-
-        try {
-            if (playerPositions) {
-                if (playerPositions instanceof Map) {
-                    return playerPositions;
-                }
-
-                if (typeof playerPositions === 'object' && !Array.isArray(playerPositions)) {
-                    Object.entries(playerPositions).forEach(([playerId, position]) => {
-                        positionsMap.set(playerId, position as Coordinates);
-                    });
-                } else {
-                    console.warn('playerPositions is not an object:', playerPositions);
-                }
-            } else {
-                console.warn('playerPositions is undefined or null');
-            }
-        } catch (error) {
-            console.error('Error converting playerPositions to Map:', error);
-        }
-
-        return positionsMap;
-    }
-
     onCombatUpdate(): Observable<{ timeLeft: number }> {
         return new Observable((observer) => {
             this.socket.on('combatUpdate', (data) => {
@@ -391,6 +391,10 @@ export class LobbyService {
     //         });
     //     });
     // }
+
+    updateCountdown(time: number): void {
+        this.socket.emit('updateCountdown(time)', { time }); // Calls the updateCountdown method in SocketService
+    }
 }
 function shareReplay<T>(bufferSize: number): import('rxjs').OperatorFunction<T, T> {
     return rxjsShareReplay(bufferSize);

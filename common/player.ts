@@ -14,4 +14,5 @@ export interface Player {
         attack?: 'D4' | 'D6';
         defense?: 'D4' | 'D6';
     };
+    currentMP?: number;
 }

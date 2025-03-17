@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CombatComponent } from '@app/components/combat/combat.component';
-import { CountdownComponent } from '@app/components/countdown-timer/countdown-timer.component';
+import { CountdownPlayerComponent } from '@app/components/countdown-player/countdown-player.component';
 import { GameBoardComponent } from '@app/components/game-board/game-board.component';
 import { GameInfoComponent } from '@app/components/game-info/game-info.component';
 import { InventoryComponent } from '@app/components/inventory/inventory.component';
@@ -18,7 +18,7 @@ import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-playing-page',
-    imports: [CommonModule, CountdownComponent, InventoryComponent, GameInfoComponent, MessagesComponent, GameBoardComponent, CombatComponent],
+    imports: [CommonModule, CountdownPlayerComponent, InventoryComponent, GameInfoComponent, MessagesComponent, GameBoardComponent, CombatComponent],
     standalone: true,
     templateUrl: './playing-page.component.html',
     styleUrls: ['./playing-page.component.scss'],
@@ -74,12 +74,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             }
         });
 
-        this.turnSubscription = this.lobbyService.onTurnStarted().subscribe((data) => {
-            this.isPlayerTurn = data.currentPlayer === this.currentPlayer?.id;
-            this.remainingTime = 30; // Réinitialiser à 30 secondes pour chaque tour
-            // this.currentPlayer = data.currentPlayer;
-            this.startTurnCountdown(); // Démarrer le compte à rebours du tour
-        });
         this.lobbyService.onInteraction().subscribe((data) => {
             console.log(data);
             this.isInCombat = data.isInCombat;
@@ -102,6 +96,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 this.gameState = data.gameState;
                 this.syncCurrentPlayerWithGameState();
                 this.notifyPlayerTurn(data.currentPlayer);
+                this.isPlayerTurn = data.currentPlayer === this.currentPlayer?.id;
+                this.remainingTime = 30; // Réinitialiser à 30 secondes pour chaque tour
+                // this.currentPlayer = data.currentPlayer;
+                this.startTurnCountdown(); // Démarrer le compte à rebours du tour
             }),
 
             this.lobbyService.onTurnEnded().subscribe((data) => {
@@ -115,6 +113,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.lobbyService.onError().subscribe((error) => {
                 console.error('Socket error received', error);
                 this.notificationService.showError(error);
+            }),
+
+            this.lobbyService.onBoardChanged().subscribe((data) => {
+                this.gameState = data.gameState;
             }),
         );
     }
@@ -173,7 +175,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         }
     }
 
-    onMoveRequest(coordinate: Coordinates) {
+    onMoveRequest(coordinates: Coordinates[]) {
         if (!this.gameState || !this.currentPlayer) {
             console.error('Cannot move: game state or current player is missing');
             return;
@@ -184,10 +186,12 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.lobbyService.requestMovement(this.lobbyId, coordinate);
+        this.lobbyService.requestMovement(this.lobbyId, coordinates);
     }
 
     onActionRequest(tile: Tile) {
+
+        console.log('Action request:', tile);
         if (!this.gameState || !this.currentPlayer) {
             console.error('Cannot perform action: game state or current player is missing');
             return;
@@ -201,6 +205,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         if (!action) {
             return;
         }
+        console.log("Action effectuée:", action);
 
         if (action === 'battle') {
             this.opponent = this.actionService.findOpponent(tile) || null;
@@ -214,10 +219,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 console.error('Opponent not found for battle initialization');
             }
         }
-
+        console.log("Action effectuée:", action);
         this.lobbyService.executeAction(action, tile, this.lobbyId).subscribe({
             next: (data) => {
-                if (this.gameState?.gameBoard) {
+                if (this.gameState?.board) {
                     console.log('Mise à jour du gameBoard reçue:', data.newGameBoard);
 
                     this.gameState = {
@@ -301,9 +306,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     // Vérifier si le joueur courant est impliqué dans le combat
-    isCurrentPlayerInCombat(): boolean {
-        return this.gameState?.combat?.playerId === this.currentPlayer?.id;
-    }
 
     startTurnCountdown(): void {
         if (this.remainingTime > 0) {
