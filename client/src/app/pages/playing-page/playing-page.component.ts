@@ -7,7 +7,6 @@ import { GameInfoComponent } from '@app/components/game-info/game-info.component
 import { InventoryComponent } from '@app/components/inventory/inventory.component';
 import { MessagesComponent } from '@app/components/messages/messages.component';
 import { PlayerListComponent } from '@app/components/player-list/player-list.component';
-import { WAITING_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 import { PageUrl } from '@app/Consts/route-constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
@@ -62,11 +61,13 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.subscriptions.push(
             this.lobbyService.onGameStarted().subscribe((data) => {
                 this.gameState = data.gameState;
+                console.log('Game started:', this.gameState);
                 this.getCurrentPlayer();
             }),
 
             this.lobbyService.onTurnStarted().subscribe((data) => {
                 this.gameState = data.gameState;
+                console.log('Turn started:', this.gameState);
                 this.syncCurrentPlayerWithGameState();
                 this.notifyPlayerTurn(data.currentPlayer);
             }),
@@ -83,15 +84,27 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 this.notificationService.showError(error);
             }),
 
-            this.lobbyService.onPlayerLeft().subscribe((data) => {
-                if (data.playerName === this.currentPlayer?.name) {
-                    this.notificationService.showError('vous avez quitté la partie');
-                    this.router.navigate([PageUrl.Home], { replaceUrl: true });
+            this.lobbyService.onLobbyUpdated().subscribe((data) => {
+                if (data.lobby.id === this.lobbyId) {
+                    this.lobby = data.lobby;
+                    const currentPlayer = this.lobby.players.find((p) => p.id === this.currentPlayer.id);
+                    if (!currentPlayer) {
+                        this.lobbyService.disconnectFromRoom(this.lobbyId);
+                        this.router.navigate([PageUrl.Home], { replaceUrl: true });
+                        return;
+                    }
+                    const host = this.lobby.players.find((p) => p.isHost);
+                    if (!host) {
+                        console.log('Placeholder for resetting debug');
+                    }
+                    console.log('Lobby updated:', this.lobby);
+                    this.lobbyService.updatePlayers(this.lobby.id, this.lobby.players);
                 }
             }),
-            this.lobbyService.onHostDisconnected().subscribe(() => {
-                this.notificationService.showError(WAITING_PAGE_CONSTANTS.lobbyCancelled);
-                this.router.navigate([PageUrl.Home], { replaceUrl: true });
+
+            this.lobbyService.onBoardChanged().subscribe((data) => {
+                this.gameState = data.gameState;
+                console.log('Game state changed:', this.gameState);
             }),
         );
     }
@@ -147,7 +160,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.lobbyService.requestMovement(this.lobbyId, coordinates);
     }
 
-
     onEndTurn() {
         if (!this.gameState || !this.currentPlayer) {
             return;
@@ -192,7 +204,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         }
 
         const result = this.gameState.currentPlayer === this.currentPlayer.id;
-        console.log(`Is current player's turn? ${result} (Current: ${this.gameState.currentPlayer}, Player: ${this.currentPlayer.id})`);
 
         return result;
     }
@@ -202,7 +213,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
     onAbandon(playerName: string): void {
         if (this.lobbyId && this.currentPlayer) {
-            this.lobbyService.leaveLobby(this.lobbyId, playerName);
+            this.lobbyService.leaveGame(this.lobbyId, playerName);
         }
     }
     attack() {

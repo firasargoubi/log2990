@@ -20,7 +20,7 @@ import { MessagesComponent } from '@app/components/messages/messages.component';
     imports: [CommonModule, RouterLink, GameControlsComponent, PlayerListComponent, MessagesComponent],
 })
 export class WaitingPageComponent implements OnInit, OnDestroy {
-    lobby: GameLobby | null;
+    lobby: GameLobby;
     currentPlayer: Player = {
         id: '0000',
         name: 'Unknown',
@@ -45,28 +45,23 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
 
         if (lobbyId && player) {
             this.lobbyService.getLobby(lobbyId).subscribe((lobby) => {
-                this.lobby = { ...lobby, players: [...lobby.players] };
+                this.lobby = lobby;
                 this.currentPlayer = lobby.players.find((p) => p.id === player) || this.currentPlayer;
                 this.hostId = lobby.players.find((p) => p.isHost)?.id || '';
             });
 
             this.subscriptions.push(
                 this.lobbyService.onLobbyUpdated().subscribe((data) => {
-                    if (data.lobbyId === lobbyId) {
-                        this.lobby = { ...data.lobby, players: [...data.lobby.players], isLocked: data.lobby.isLocked, gameId: data.lobby.gameId };
-                        this.currentPlayer = data.lobby.players.find((p) => p.id === player) || this.currentPlayer;
-                        this.hostId = data.lobby.players.find((p) => p.isHost)?.id || '';
-                    }
-                }),
-            );
-
-            this.subscriptions.push(
-                this.lobbyService.onPlayerLeft().subscribe((data) => {
-                    if (this.lobby) {
-                        if (data.playerName === this.currentPlayer.name) {
-                            this.notificationService.showError(WAITING_PAGE_CONSTANTS.errorPlayerKicked);
+                    if (data.lobby.id === lobbyId) {
+                        this.lobby = data.lobby;
+                        const currentPlayer = data.lobby.players.find((p) => p.id === player);
+                        if (!currentPlayer) {
+                            this.lobbyService.disconnectFromRoom(lobbyId);
                             this.router.navigate([PageUrl.Home], { replaceUrl: true });
+                            return;
                         }
+                        this.currentPlayer = currentPlayer;
+                        this.hostId = data.lobby.players.find((p) => p.isHost)?.id || '';
                     }
                 }),
             );
@@ -90,13 +85,6 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
                 this.lobbyService.onGameStarted().subscribe(() => {
                     this.lobbyService.setCurrentPlayer(this.currentPlayer);
                     this.router.navigate([`${PageUrl.Play}/${lobbyId}`]);
-                }),
-            );
-            this.subscriptions.push(
-                this.lobbyService.onPlayerJoined().subscribe(() => {
-                    if (this.lobby && this.lobby.players.length === this.lobby.maxPlayers) {
-                        this.lobbyService.lockLobby(lobbyId);
-                    }
                 }),
             );
         }

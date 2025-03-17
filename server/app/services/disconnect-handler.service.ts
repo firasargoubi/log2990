@@ -33,8 +33,6 @@ export class DisconnectHandlerService {
                 lobby.players.splice(playerIndex, 1);
                 socket.leave(lobbyId);
 
-                this.io.to(lobbyId).emit('playerLeft', { lobbyId, playerName: player.name });
-
                 if (isHost) {
                     this.lobbies.delete(lobbyId);
                     this.gameStates.delete(lobbyId);
@@ -51,6 +49,10 @@ export class DisconnectHandlerService {
                 }
             }
         }
+    }
+
+    handleDisconnectFromRoom(socket: Socket, lobbyId: string) {
+        socket.leave(lobbyId);
     }
 
     private handlePlayerLeaveGame(lobbyId: string, playerId: string) {

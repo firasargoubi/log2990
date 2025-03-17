@@ -40,6 +40,7 @@ export class SocketService {
         socket.on('createLobby', (game: Game) => this.handleCreateLobby(socket, game));
         socket.on('joinLobby', (data: { lobbyId: string; player: Player }) => this.handleJoinLobby(socket, data));
         socket.on('leaveLobby', (data: { lobbyId: string; playerName: string }) => this.handleLeaveLobby(socket, data));
+        socket.on('leaveGame', (lobbyId: string, playerName: string) => this.handleLeaveGame(socket, lobbyId, playerName));
         socket.on('lockLobby', (lobbyId: string) => this.handleLockLobby(socket, lobbyId));
         socket.on('getLobby', (lobbyId: string, callback: (lobby: GameLobby | null) => void) => this.handleGetLobby(socket, lobbyId, callback));
         socket.on('getGameId', (lobbyId: string, callback: (gameId: string | null) => void) => this.handleGetGameId(socket, lobbyId, callback));
@@ -55,9 +56,11 @@ export class SocketService {
         socket.on('requestStart', (lobbyId: string) => this.handleRequestStart(socket, lobbyId));
         socket.on('endTurn', (data: { lobbyId: string }) => this.handleEndTurn(socket, data));
         socket.on('requestMovement', (data: { lobbyId: string; coordinates: Coordinates[] }) => this.handleRequestMovement(socket, data));
+        socket.on('updatePlayers', (lobbyId: string, players: Player[]) => this.handlePlayersUpdate(socket, lobbyId, players));
         socket.on('openDoor', (data: { lobbyId: string; tile: Tile }) => this.handleOpenDoor(socket, data));
         socket.on('closeDoor', (data: { lobbyId: string; tile: Tile }) => this.handleCloseDoor(socket, data));
         socket.on('disconnect', () => this.handleDisconnect(socket));
+        socket.on('disconnectFromRoom', (lobbyId: string) => this.handleDisconnectFromRoom(socket, lobbyId));
     }
 
     private handleCreateLobby(socket: Socket, game: Game): void {
@@ -65,8 +68,8 @@ export class SocketService {
             socket.emit('error', 'Invalid game data');
             return;
         }
-        const lobbyId = this.lobbyHandler.createLobby(game);
-        socket.emit('lobbyCreated', { lobbyId });
+        const lobby = this.lobbyHandler.createLobby(game);
+        socket.emit('lobbyCreated', { lobby });
     }
 
     private handleJoinLobby(socket: Socket, data: { lobbyId: string; player: Player }): void {
@@ -83,6 +86,10 @@ export class SocketService {
             return;
         }
         this.lobbyHandler.leaveLobby(socket, data.lobbyId, data.playerName);
+    }
+
+    private handleLeaveGame(socket: Socket, lobbyId: string, playerName: string): void {
+        this.lobbyHandler.leaveGame(socket, lobbyId, playerName);
     }
 
     private handleLockLobby(socket: Socket, lobbyId: string): void {
@@ -196,7 +203,15 @@ export class SocketService {
         this.gameSocketHandlerService.closeDoor(socket, data.tile, data.lobbyId);
     }
 
+    private handlePlayersUpdate(socket: Socket, lobbyId: string, players: Player[]): void {
+        this.gameSocketHandlerService.handlePlayersUpdate(socket, lobbyId, players);
+    }
+
     private handleDisconnect(socket: Socket): void {
         this.disconnectHandlerService.handleDisconnect(socket);
+    }
+
+    private handleDisconnectFromRoom(socket: Socket, lobbyId: string): void {
+        this.disconnectHandlerService.handleDisconnectFromRoom(socket, lobbyId);
     }
 }
