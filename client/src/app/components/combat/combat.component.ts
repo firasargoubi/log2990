@@ -1,10 +1,11 @@
 import { Component, inject, Input, OnChanges, OnInit } from '@angular/core';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
+import { TimerSyncService } from '@app/services/timer-sync.service'; // Importez le service
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
 
-// const TO_SECONDS = 1000;
+const TO_SECONDS = 1000;
 const FLEE_RATE = 30;
 @Component({
     selector: 'app-combat',
@@ -25,6 +26,7 @@ export class CombatComponent implements OnInit, OnChanges {
     private lobbyService = inject(LobbyService);
     private countDownInterval: ReturnType<typeof setInterval> | null = null;
     private notificationService = inject(NotificationService);
+    private timerSyncService = inject(TimerSyncService);
 
     ngOnInit() {
         if (this.gameState) {
@@ -45,17 +47,17 @@ export class CombatComponent implements OnInit, OnChanges {
         if (!this.opponent) {
             this.opponent = this.gameState?.players.find((p) => p.id !== this.currentPlayer.id) ?? this.opponent;
         }
-        // this.startCountdown();
+        this.timerSyncService.pausePlayerTimer(this.countDown);
     }
 
     startCountdown() {
-        // this.countDownInterval = setInterval(() => {
-        //     if (this.countDown > 0) {
-        //         this.countDown--;
-        //     } else {
-        //         this.endTimer();
-        //     }
-        // }, TO_SECONDS);
+        this.countDownInterval = setInterval(() => {
+            if (this.countDown > 0) {
+                this.countDown--;
+            } else {
+                this.endTimer();
+            }
+        }, TO_SECONDS);
     }
 
     endTimer() {
@@ -66,6 +68,7 @@ export class CombatComponent implements OnInit, OnChanges {
             clearInterval(this.countDownInterval);
         }
         this.onAttack();
+        this.timerSyncService.resumePlayerTimer();
     }
 
     onAttack() {
