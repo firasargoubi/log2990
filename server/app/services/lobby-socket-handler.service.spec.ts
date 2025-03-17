@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { LobbySocketHandlerService } from '@app/services/lobby-socket-handler.service';
 import { GameLobby } from '@common/game-lobby';
 import { Game, GameSize, GameType } from '@common/game.interface';
@@ -107,7 +107,7 @@ describe('LobbySocketHandlerService', () => {
         });
         lobbies.get(lobbyId.id)?.players.push(player);
         service.leaveLobby(socketMock as Socket, lobbyId.id, player.name);
-        expect((socketMock.leave as SinonSpy).calledWith(lobbyId)).to.equal(true);
+        expect((socketMock.leave as SinonSpy).calledWith(lobbyId.id)).to.equal(true);
     });
 
     it('should delete lobby if host leaves', () => {
@@ -131,7 +131,7 @@ describe('LobbySocketHandlerService', () => {
     });
 
     it('should lock and unlock lobby', () => {
-        const lobby = service.createLobby({
+        const lobbyId = service.createLobby({
             id: 'g',
             mapSize: GameSize.small,
             name: '',
@@ -143,10 +143,10 @@ describe('LobbySocketHandlerService', () => {
             board: [],
             objects: [],
         });
-        service.lockLobby(socketMock as Socket, lobby.id);
-        expect(lobbies.get(lobby.id)?.isLocked).to.equal(true);
-        service.lockLobby(socketMock as Socket, lobby.id);
-        expect(lobbies.get(lobby.id)?.isLocked).to.equal(false);
+        service.lockLobby(socketMock as Socket, lobbyId.id);
+        expect(lobbies.get(lobbyId.id)?.isLocked).to.equal(true);
+        service.lockLobby(socketMock as Socket, lobbyId.id);
+        expect(lobbies.get(lobbyId.id)?.isLocked).to.equal(false);
     });
 
     it('should emit error if locking unknown lobby', () => {
