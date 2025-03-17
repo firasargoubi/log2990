@@ -2,19 +2,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-lines */
 import { CommonModule } from '@angular/common';
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { BoxFormDialogComponent } from './box-form-dialog.component';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { Router, RouterModule } from '@angular/router';
+import { CREATE_PAGE_CONSTANTS, GAME_IMAGES, MAIN_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { PageUrl } from '@app/Consts/route-constants';
+import { GameService } from '@app/services/game.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
-import { GameService } from '@app/services/game.service';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Router, RouterModule } from '@angular/router';
-import { of, Subject, throwError } from 'rxjs';
-import { FormsModule } from '@angular/forms';
-import { PageUrl } from '@app/Consts/route-constants';
-import { CREATE_PAGE_CONSTANTS, GAME_IMAGES, MAIN_PAGE_CONSTANTS } from '@app/Consts/app.constants';
-import { Game, GameSize, GameType } from '@common/game.interface';
 import { GameLobby } from '@common/game-lobby';
+import { Game, GameSize, GameType } from '@common/game.interface';
+import { of, Subject, throwError } from 'rxjs';
+import { BoxFormDialogComponent } from './box-form-dialog.component';
 
 describe('BoxFormDialogComponent', () => {
     let component: BoxFormDialogComponent;
@@ -43,6 +43,7 @@ describe('BoxFormDialogComponent', () => {
             'verifyUsername',
             'joinLobby',
             'lockLobby',
+            'onLobbyUpdated', // Ajoutez cette méthode
         ]);
         mockNotificationService = jasmine.createSpyObj('NotificationService', ['showError']);
         mockGameService = jasmine.createSpyObj('GameService', ['fetchVisibleGames']);
@@ -50,10 +51,13 @@ describe('BoxFormDialogComponent', () => {
         mockRouter = jasmine.createSpyObj('Router', ['navigate']);
         onPlayerJoinedSubject = new Subject<any>();
         onErrorSubject = new Subject<any>();
+
+        // Simulez les méthodes de LobbyService
         mockLobbyService.verifyAvatars.and.returnValue(of({ avatars: [] }));
-        mockLobbyService.onPlayerJoined.and.returnValue(onPlayerJoinedSubject.asObservable());
+        mockLobbyService.onLobbyUpdated.and.returnValue(onPlayerJoinedSubject.asObservable()); // Simulez onLobbyUpdated
         mockLobbyService.onError.and.returnValue(onErrorSubject.asObservable());
         mockGameService.fetchVisibleGames.and.returnValue(of([]));
+
         await TestBed.configureTestingModule({
             imports: [CommonModule, FormsModule, RouterModule.forRoot([]), BoxFormDialogComponent],
             providers: [
@@ -65,6 +69,7 @@ describe('BoxFormDialogComponent', () => {
                 { provide: Router, useValue: mockRouter },
             ],
         }).compileComponents();
+
         fixture = TestBed.createComponent(BoxFormDialogComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();

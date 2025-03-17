@@ -82,6 +82,10 @@ export class SocketService {
         socket.on('fleeCombat', (data: { lobbyId: string; player: Player; success: boolean }) => {
             this.handleFlee(data.lobbyId, data.player, data.success);
         });
+
+        socket.on('terminateAttack', (data: { lobbyId: string }) => {
+            this.terminateAttack(data.lobbyId);
+        });
     }
 
     private handleCreateLobby(socket: Socket, game: Game): void {
@@ -258,5 +262,9 @@ export class SocketService {
 
     private handleFlee(lobbyId: string, player: Player, success: boolean) {
         this.gameSocketHandlerService.handleFlee(lobbyId, player, success);
+    }
+
+    private terminateAttack(lobbyId: string) {
+        this.gameSocketHandlerService.handleTerminateAttack(lobbyId);
     }
 }
