@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
+import { ChatMessage } from '@app/interfaces/chat-message';
 import { Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { environment } from 'src/environments/environment';
-import { ChatMessage } from '@app/interfaces/chat-message';
 
 @Injectable({
     providedIn: 'root',
@@ -11,7 +11,7 @@ export class SocketClientService {
     private socket: Socket;
 
     constructor() {
-        this.socket = io(environment.serverWebSocketUrl, {
+        this.socket = io(environment.serverUrl, {
             transports: ['websocket', 'polling'],
         });
     }
