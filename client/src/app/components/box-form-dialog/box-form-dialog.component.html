@@ -1,16 +1,16 @@
-<h2>Formulaire du jeu :</h2>
+<h2>Formulaire du jeu</h2>
 
 <form (keydown.enter)="onSubmit($event)" (ngSubmit)="onSubmit($event)">
-    <div>
-        <label for="name">Nom:</label>
+    <div class="form-group">
+        <label for="name">Nom du personnage:</label>
         <input id="name" type="text" placeholder="Entre le nom de ton personnage" maxlength="12" (input)="inputName($event)" required />
         @if (form.get('name')?.invalid && form.get('name')?.touched) {
-        <div class="error">Name is required.</div>
+        <div class="error">Le nom est requis.</div>
         }
     </div>
 
     <div class="avatar-grid">
-        <label>Choisi ton avatar: </label>
+        <label>Choisis ton avatar</label>
         <div class="avatars">
             @for (avatar of avatars; track avatar) {
             <img [src]="avatar" [class.selected]="form.get('avatar')?.value === avatar" (click)="selectAvatar(avatar)" alt="Avatar" />
@@ -19,7 +19,7 @@
     </div>
 
     <div class="description1">
-        <label>Choisi un attribut à bonifier</label>
+        <label>Choisis un attribut à bonifier</label>
     </div>
 
     <div class="stats">
