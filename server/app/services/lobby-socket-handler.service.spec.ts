@@ -369,10 +369,7 @@ describe('LobbySocketHandlerService', () => {
     });
 
     it('should do nothing if lobby not found in leaveGame', () => {
-        // Call leaveGame with a non-existent lobby ID
         service.leaveGame(socketMock as Socket, 'nonExistentLobbyId', 'testPlayer');
-
-        // Verify no socket methods were called
         expect((socketMock.leave as SinonSpy).called).to.be.false;
         expect((ioMock.to as SinonSpy).called).to.be.false;
     });

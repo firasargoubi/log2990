@@ -89,13 +89,13 @@ describe('GameSocketHandlerService', () => {
         } as any;
 
         (boardService.initializeGameState as any).resolves(gameState);
-        (boardService.handleTurn as any).returns(gameState); // ✅ nécessaire
+        (boardService.handleTurn as any).returns(gameState);
 
         lobbies.set('lobby1', lobby);
 
         await service.handleRequestStart(socket, 'lobby1');
 
-        expect(gameStates.get('lobby1')).to.deep.equal(gameState); // ✅ deep
+        expect(gameStates.get('lobby1')).to.deep.equal(gameState);
         expect(ioToStub.calledWith('lobby1')).to.equal(true);
     });
 
@@ -296,24 +296,22 @@ describe('GameSocketHandlerService', () => {
     });
 
     it('should handle players update when a player is removed', () => {
-        // Create players
         const player1 = { id: 'socket1', name: 'Player 1' } as Player;
         const player2 = { id: 'socket2', name: 'Player 2' } as Player;
         const player3 = { id: 'socket3', name: 'Player 3' } as Player;
 
-        // Create game state with 3 players
         const gameState: GameState = {
             currentPlayer: 'socket1',
             players: [player1, player2, player3],
             board: [
-                [1, 1, 61], // 61 is spawn point (6 * TILE_DELIMITER + 1)
+                [1, 1, 61],
                 [1, 1, 1],
-                [1, 61, 1], // Another spawn point
+                [1, 61, 1],
             ],
             playerPositions: [
-                { x: 0, y: 2 }, // Player 1 at first spawn
-                { x: 2, y: 1 }, // Player 2 at second spawn
-                { x: 1, y: 1 }, // Player 3 elsewhere
+                { x: 0, y: 2 },
+                { x: 2, y: 1 },
+                { x: 1, y: 1 },
             ],
             spawnPoints: [
                 { x: 0, y: 2 },
@@ -322,62 +320,48 @@ describe('GameSocketHandlerService', () => {
             availableMoves: [],
         } as any;
 
-        // Set the game state in the map
         gameStates.set('lobby1', gameState);
 
-        // Create updated players array with player2 removed
         const updatedPlayers = [player1, player3];
 
-        // Mock handleBoardChange to return unmodified state
         (boardService.handleBoardChange as any).returns(gameState);
 
-        // Call the function with updated players
         service.handlePlayersUpdate(socket, 'lobby1', updatedPlayers);
 
-        // Get the updated game state
         const updatedGameState = gameStates.get('lobby1');
 
-        // Verify that player2 was removed from players array
         expect(updatedGameState!.players).to.have.lengthOf(2);
         expect(updatedGameState!.players.some((p) => p.id === 'socket2')).to.equal(false);
 
-        // Verify that player2's spawn point was cleared in the board
-        expect(updatedGameState!.board[2][1]).to.equal(1); // Should be just tile without spawn object
+        expect(updatedGameState!.board[2][1]).to.equal(1);
 
-        // Verify that player2's position was removed
         expect(updatedGameState!.playerPositions).to.have.lengthOf(2);
 
-        // Verify that player2's spawn point was removed from spawnPoints array
         expect(updatedGameState!.spawnPoints).to.have.lengthOf(1);
 
-        // Verify that player2 was added to deletedPlayers
         expect(updatedGameState!.deletedPlayers).to.have.lengthOf(1);
         expect(updatedGameState!.deletedPlayers![0].id).to.equal('socket2');
 
-        // Verify that currentPlayer was updated if needed
         if (gameState.currentPlayer === 'socket2') {
             expect(updatedGameState!.currentPlayer).not.to.equal('socket2');
         }
 
-        // Verify that the event was emitted
         expect(ioToStub.calledWith('lobby1')).to.equal(true);
         const emit = ioToStub.returnValues[0].emit;
         expect(emit.calledWith('boardModified')).to.equal(true);
     });
 
     it('should handle players update when no players are removed', () => {
-        // Create players
         const player1 = { id: 'socket1', name: 'Player 1' } as Player;
         const player2 = { id: 'socket2', name: 'Player 2' } as Player;
 
-        // Create game state with 2 players
         const gameState: GameState = {
             currentPlayer: 'socket1',
             players: [player1, player2],
             board: [
-                [1, 1, 61], // 61 is spawn point (6 * TILE_DELIMITER + 1)
+                [1, 1, 61],
                 [1, 1, 1],
-                [1, 61, 1], // Another spawn point
+                [1, 61, 1],
             ],
             playerPositions: [
                 { x: 0, y: 2 },
@@ -390,39 +374,28 @@ describe('GameSocketHandlerService', () => {
             availableMoves: [],
         } as any;
 
-        // Set the game state in the map
         gameStates.set('lobby1', gameState);
 
-        // Create updated players array with the same players
         const updatedPlayers = [player1, player2];
 
-        // Mock handleBoardChange to return unmodified state
         (boardService.handleBoardChange as any).returns(gameState);
 
-        // Create deep copies for later comparison
         const originalPlayersLength = gameState.players.length;
         const originalPlayerPositionsLength = gameState.playerPositions.length;
         const originalSpawnPointsLength = gameState.spawnPoints.length;
 
-        // Call the function with updated players
         service.handlePlayersUpdate(socket, 'lobby1', updatedPlayers);
 
-        // Get the updated game state
         const updatedGameState = gameStates.get('lobby1');
 
-        // Verify that no players were removed
         expect(updatedGameState!.players).to.have.lengthOf(originalPlayersLength);
 
-        // Verify that no player positions were removed
         expect(updatedGameState!.playerPositions).to.have.lengthOf(originalPlayerPositionsLength);
 
-        // Verify that no spawn points were removed
         expect(updatedGameState!.spawnPoints).to.have.lengthOf(originalSpawnPointsLength);
 
-        // Verify that deletedPlayers was not created
         expect(updatedGameState!.deletedPlayers).to.be.undefined;
 
-        // Verify that the event was still emitted
         expect(ioToStub.calledWith('lobby1')).to.equal(true);
         const emit = ioToStub.returnValues[0].emit;
         expect(emit.calledWith('boardModified')).to.equal(true);

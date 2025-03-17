@@ -96,7 +96,6 @@ describe('SocketService', () => {
 
         socketService['handleCreateLobby'](mockSocket, {} as Game);
 
-        // The test is expecting the lobbyId but it's getting the lobby object
         expect(mockSocket.emit.calledWith('lobbyCreated', { lobby: gameLobby })).to.equal(true);
     });
 
@@ -121,7 +120,6 @@ describe('SocketService', () => {
         socketService['handleLeaveLobby'](mockSocket, data);
         expect(lobbyHandler.leaveLobby.calledWith(mockSocket, 'l1', 'p')).to.be.equal(true);
     });
-
 
     it('should handle valid leaveGame', () => {
         const data = { lobbyId: 'l1', playerName: 'p' };
@@ -166,24 +164,20 @@ describe('SocketService', () => {
     it('should verify callback behavior in handleGetGameId', () => {
         const callback = sandbox.spy();
 
-        // Test with null lobbyId
         socketService['handleGetGameId'](mockSocket, null as any, callback);
         expect(callback.calledWith(null)).to.be.equal(true);
         callback.resetHistory();
 
-        // Test with valid lobbyId but lobby not found
         lobbyHandler.getLobby.returns(undefined);
         socketService['handleGetGameId'](mockSocket, 'nonexistentLobby', callback);
         expect(callback.calledWith(null)).to.be.equal(true);
         callback.resetHistory();
 
-        // Test with valid lobby but no gameId
         lobbyHandler.getLobby.returns({} as GameLobby);
         socketService['handleGetGameId'](mockSocket, 'lobbyWithoutGameId', callback);
         expect(callback.calledWith(null)).to.be.equal(true);
         callback.resetHistory();
 
-        // Test with valid lobby and gameId
         lobbyHandler.getLobby.returns({ gameId: 'game123' } as GameLobby);
         socketService['handleGetGameId'](mockSocket, 'validLobby', callback);
         expect(callback.calledWith('game123')).to.be.equal(true);

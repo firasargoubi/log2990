@@ -219,9 +219,7 @@ describe('BoardService', () => {
         const result = (boardService as any).calculateShortestMoves(gs, { x: 0, y: 0 }, [{ x: 0, y: 1 }]);
         expect(result.length).to.equal(1);
     });
-    /* These tests should be added to board.service.spec.ts */
 
-    // Additional test for handleBoardChange
     it('should handle board changes correctly', () => {
         const state = {
             players: [{ id: 'p1', speed: 2, bonus: {} }],
@@ -242,7 +240,6 @@ describe('BoardService', () => {
         expect(pathfindingService.findReachablePositions.calledOnce).to.equal(true);
     });
 
-    // Test for when player index is not found in handleBoardChange
     it('should return unchanged state if player index not found in handleBoardChange', () => {
         const state = {
             players: [{ id: 'p1' }],
@@ -257,7 +254,6 @@ describe('BoardService', () => {
         expect(result.shortestMoves).to.deep.equal([]);
     });
 
-    // Test for when player position is not found in handleBoardChange
     it('should return unchanged state if player position not found in handleBoardChange', () => {
         const state = {
             players: [{ id: 'p1' }],
@@ -273,17 +269,15 @@ describe('BoardService', () => {
         expect(result.shortestMoves).to.deep.equal([]);
     });
 
-    // Test for empty player array in handleEndTurn
     it('should return unchanged state if players array is empty in handleEndTurn', () => {
         const state = { players: [], currentPlayer: '', turnCounter: 0 } as any;
         const result = boardService.handleEndTurn(state);
         expect(result).to.equal(state);
     });
 
-    // Test for movement points calculation with null or undefined values
     it('should handle null or undefined bonus values in getPlayerMovementPoints', () => {
         const player1 = { id: 'p1', speed: 2, bonus: null } as any;
-        const player2 = { id: 'p2', speed: 3 } as any; // No bonus property
+        const player2 = { id: 'p2', speed: 3 } as any;
 
         const mp1 = (boardService as any).getPlayerMovementPoints(player1);
         const mp2 = (boardService as any).getPlayerMovementPoints(player2);
@@ -292,10 +286,9 @@ describe('BoardService', () => {
         expect(mp2).to.equal(3);
     });
 
-    // Test assignment of spawn points with no spawn points available
     it('should handle no spawn points in board', async () => {
         const gs = {
-            board: [[1]], // No spawn points
+            board: [[1]],
             players: [{ id: 'p1', speed: 2 }],
             playerPositions: [],
             spawnPoints: [],
@@ -306,14 +299,13 @@ describe('BoardService', () => {
         expect(gs.spawnPoints).to.have.lengthOf(0);
     });
 
-    // Test with more spawn points than players
     it('should clean up excess spawn points', async () => {
         const gs = {
             board: [
-                [60, 0], // Two spawn points (60 = 6*10 = spawn point)
+                [60, 0],
                 [60, 0],
             ],
-            players: [{ id: 'p1', speed: 2 }], // One player
+            players: [{ id: 'p1', speed: 2 }],
             playerPositions: [],
             spawnPoints: [],
         } as any;
@@ -322,29 +314,26 @@ describe('BoardService', () => {
         expect(gs.playerPositions).to.have.lengthOf(1);
         expect(gs.spawnPoints).to.have.lengthOf(1);
 
-        // Check that one spawn point was converted to regular tile
         const remainingSpawnPoints = gs.board.flat().filter((tile: number) => Math.floor(tile / 10) === 6);
         expect(remainingSpawnPoints).to.have.lengthOf(1);
     });
 
-    // Test sort players by speed with bonus
     it('should sort players by speed including bonus values', () => {
         const gs = {
             players: [
-                { id: 'p1', speed: 1, bonus: { speed: 2 } }, // Total speed 3
-                { id: 'p2', speed: 2, bonus: { speed: 0 } }, // Total speed 2
-                { id: 'p3', speed: 4, bonus: null }, // Total speed 4
+                { id: 'p1', speed: 1, bonus: { speed: 2 } },
+                { id: 'p2', speed: 2, bonus: { speed: 0 } },
+                { id: 'p3', speed: 4, bonus: null },
             ],
         } as any;
 
         (boardService as any).sortPlayersBySpeed(gs);
 
-        expect(gs.players[0].id).to.equal('p3'); // Highest speed
+        expect(gs.players[0].id).to.equal('p3');
         expect(gs.players[1].id).to.equal('p1');
-        expect(gs.players[2].id).to.equal('p2'); // Lowest speed
+        expect(gs.players[2].id).to.equal('p2');
     });
 
-    // Test error handling in getGameFromId
     it('should propagate errors from gameService in getGameFromId', async () => {
         gameService.getGameById.rejects(new Error('Database error'));
 
@@ -357,14 +346,12 @@ describe('BoardService', () => {
         }
     });
 
-    // Test empty calculateShortestMoves
     it('should return empty array for empty moves in calculateShortestMoves', () => {
         const gs = { currentPlayerMovementPoints: 3 } as any;
         const result = (boardService as any).calculateShortestMoves(gs, { x: 0, y: 0 }, []);
         expect(result).to.deep.equal([]);
     });
 
-    // Test calculateShortestMoves with null path
     it('should handle null paths in calculateShortestMoves', () => {
         const gs = { currentPlayerMovementPoints: 3 } as any;
         pathfindingService.findShortestPath.returns(null);
@@ -373,7 +360,6 @@ describe('BoardService', () => {
         expect(result).to.deep.equal([]);
     });
 
-    // Test calculateShortestMoves with short path
     it('should handle path with single point in calculateShortestMoves', () => {
         const gs = { currentPlayerMovementPoints: 3 } as any;
         pathfindingService.findShortestPath.returns([{ x: 0, y: 0 }]);
@@ -444,12 +430,10 @@ describe('BoardService', () => {
         expect(result.shortestMoves).to.deep.equal([]);
     });
     it('should return empty array if gameState or startPosition is null in findAllPaths', async () => {
-        // Test with null gameState
         const result1 = (boardService as any).findAllPaths(null, { x: 0, y: 0 });
         expect(result1).to.be.an('array');
         expect(result1).to.be.empty;
 
-        // Test with null startPosition
         const gameState = {
             currentPlayerMovementPoints: 5,
         } as GameState;
@@ -488,7 +472,6 @@ describe('BoardService', () => {
         expect(result).to.be.empty;
     });
 
-    // Test zero movement points separately from negative
     it('should handle zero currentPlayerMovementPoints in findAllPaths', async () => {
         const gameState = {
             currentPlayerMovementPoints: 0,
@@ -507,27 +490,22 @@ describe('BoardService', () => {
         expect(result).to.be.empty;
     });
 
-    // Test for line 243: sortPlayersBySpeed with empty players array
     it('should not throw when sorting empty players array by speed', async () => {
         const gameState = {
             players: [],
         } as GameState;
 
-        // This should not throw an error
         expect(() => (boardService as any).sortPlayersBySpeed(gameState)).to.not.throw();
 
-        // The players array should still be empty
         expect(gameState.players).to.be.an('array');
         expect(gameState.players).to.be.empty;
     });
 
-    // Test for line 243: sortPlayersBySpeed with players with and without bonus
     it('should sort players by speed including bonuses', async () => {
         const player1: Player = {
             id: 'player1',
             name: 'Player 1',
             speed: 5,
-            // No bonus
         } as Player;
 
         const player2: Player = {
@@ -535,7 +513,7 @@ describe('BoardService', () => {
             name: 'Player 2',
             speed: 3,
             bonus: {
-                speed: 3, // Total speed: 6
+                speed: 3,
             },
         } as Player;
 
@@ -544,7 +522,7 @@ describe('BoardService', () => {
             name: 'Player 3',
             speed: 7,
             bonus: {
-                speed: 0, // Total speed: 7
+                speed: 0,
             },
         } as Player;
 
@@ -554,26 +532,23 @@ describe('BoardService', () => {
 
         (boardService as any).sortPlayersBySpeed(gameState);
 
-        // Should sort by speed + bonus in descending order
-        expect(gameState.players[0].id).to.equal('player3'); // Speed 7
-        expect(gameState.players[1].id).to.equal('player2'); // Speed 3 + bonus 3 = 6
-        expect(gameState.players[2].id).to.equal('player1'); // Speed 5 + no bonus = 5
+        expect(gameState.players[0].id).to.equal('player3');
+        expect(gameState.players[1].id).to.equal('player2');
+        expect(gameState.players[2].id).to.equal('player1');
     });
 
-    // Additional test to ensure full coverage
     it('should sort players with null or undefined bonus property correctly', async () => {
         const player1: Player = {
             id: 'player1',
             name: 'Player 1',
             speed: 5,
-            bonus: null, // Null bonus
+            bonus: null,
         } as Player;
 
         const player2: Player = {
             id: 'player2',
             name: 'Player 2',
             speed: 3,
-            // Undefined bonus
         } as Player;
 
         const gameState = {
@@ -582,8 +557,7 @@ describe('BoardService', () => {
 
         (boardService as any).sortPlayersBySpeed(gameState);
 
-        // Should handle null/undefined bonus without errors
-        expect(gameState.players[0].id).to.equal('player1'); // Speed 5
-        expect(gameState.players[1].id).to.equal('player2'); // Speed 3
+        expect(gameState.players[0].id).to.equal('player1');
+        expect(gameState.players[1].id).to.equal('player2');
     });
 });

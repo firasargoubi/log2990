@@ -16,7 +16,6 @@ export class LobbySocketHandlerService {
     createLobby(game: Game): GameLobby {
         const maxPlayers = this.getMaxPlayers(game.mapSize);
         const lobbyId = this.generateId();
-        console.log('game', game);
         const newLobby: GameLobby = {
             id: lobbyId,
             players: [],
@@ -93,7 +92,6 @@ export class LobbySocketHandlerService {
     updateLobby(lobbyId: string): void {
         const lobby = this.lobbies.get(lobbyId);
         if (lobby) {
-            console.log('Lobby updated:', lobby);
             this.io.to(lobbyId).emit('lobbyUpdated', { lobby });
         }
     }
