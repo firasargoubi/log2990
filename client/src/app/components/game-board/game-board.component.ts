@@ -6,7 +6,7 @@ import { LobbyService } from '@app/services/lobby.service';
 import { Coordinates } from '@common/coordinates';
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
-import { Tile } from '@app/interfaces/tile';
+import { Tile } from '@common/tile';
 
 @Component({
     selector: 'app-game-board',
@@ -79,8 +79,11 @@ export class GameBoardComponent implements OnInit, OnChanges {
         }
         return null;
     }
-
     onTileClick(tile: Tile) {
+        if (this.action) {
+            this.actionClicked.emit(tile);
+            return;
+        }
         if (this.isMyTurn() && this.isAvailableMove(tile.x, tile.y)) {
             this.tileClicked.emit(this.highlightedPath);
         }

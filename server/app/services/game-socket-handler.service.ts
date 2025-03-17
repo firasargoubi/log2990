@@ -1,7 +1,8 @@
-import { GameState } from '@common/game-state';
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
-import { TileTypes, Tile } from '@common/game.interface';
+import { GameState } from '@common/game-state';
+import { Tile, TileTypes } from '@common/game.interface';
+import { Player } from '@common/player';
 import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
 import { BoardService } from './board.service';
@@ -153,5 +154,26 @@ export class GameSocketHandlerService {
         const newGameState = this.boardService.handleBoardChange(updatedGameState);
         this.gameStates.set(lobbyId, newGameState);
         this.io.to(lobbyId).emit('boardModified', { gameState: newGameState });
+    }
+
+    initializeBattle(socket: Socket, currentPlayer: Player, opponent: Player) {
+        this.io.to(currentPlayer.id).to(opponent.id).emit('playersBattling', { isInCombat: true });
+    }
+
+    startBattle(socket: Socket, currentPlayer: Player, opponent: Player, gameState: GameState) {
+        const currentIndex = gameState.players.findIndex((p) => p.id === currentPlayer.id);
+        const opponentIndex = gameState.players.findIndex((p) => p.id === opponent.id);
+        const playerTurn = currentIndex < opponentIndex ? currentPlayer.id : opponent.id;
+        const player = gameState.players.find((p) => p.id === playerTurn);
+        const countDown = player.amountEscape === 2 ? 3 : 5;
+        this.io.to(currentPlayer.id).to(opponent.id).emit('PlayerTurn', { playerTurn, countDown });
+    }
+
+    changeTurnEnd(currentPlayer: Player, opponent: Player, playerTurn: string, gameState: GameState) {
+        const player = gameState.players.find((p) => p.id === playerTurn);
+        const newPlayerTurn = player.id === currentPlayer.id ? opponent.id : currentPlayer.id;
+        const newPlayer = gameState.players.find((p) => p.id === newPlayerTurn);
+        const countDown = newPlayer.amountEscape === 2 ? 3 : 5;
+        this.io.to(currentPlayer.id).to(opponent.id).emit('PlayerSwitch', { newPlayerTurn, countDown });
     }
 }

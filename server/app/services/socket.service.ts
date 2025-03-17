@@ -1,7 +1,9 @@
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
+import { GameState } from '@common/game-state';
 import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
+import { Tile } from '@common/tile';
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
@@ -56,6 +58,19 @@ export class SocketService {
         socket.on('endTurn', (data: { lobbyId: string }) => this.handleEndTurn(socket, data));
         socket.on('requestMovement', (data: { lobbyId: string; coordinates: Coordinates[] }) => this.handleRequestMovement(socket, data));
         socket.on('disconnect', () => this.handleDisconnect(socket));
+        socket.on('closeDoor', (data: { tile: Tile; lobbyId: string }) => this.handleCloseDoor(socket, data.tile, data.lobbyId));
+        socket.on('openDoor', (data: { tile: Tile; lobbyId: string }) => this.handleOpenDoor(socket, data.tile, data.lobbyId));
+        socket.on('initializeBattle', (data: { currentPlayer: Player; opponent: Player; lobbyId: string }) =>
+            this.handleBattleInitialization(socket, data.currentPlayer, data.opponent),
+        );
+
+        socket.on('startBattle', (data: { currentPlayer: Player; opponent: Player; gameState: GameState }) =>
+            this.handleStartBattle(socket, data.currentPlayer, data.opponent, data.gameState),
+        );
+
+        socket.on('changeTurnEndTimer', (data: { currentPlayer: Player; opponent: Player; playerTurn: string; gameState: GameState }) =>
+            this.handleChangeTurnEnd(data.currentPlayer, data.opponent, data.playerTurn, data.gameState),
+        );
     }
 
     private handleCreateLobby(socket: Socket, game: Game): void {
@@ -111,5 +126,25 @@ export class SocketService {
 
     private handleDisconnect(socket: Socket): void {
         this.disconnectHandlerService.handleDisconnect(socket);
+    }
+
+    private handleOpenDoor(socket: Socket, tile: Tile, lobbyId: string): void {
+        this.gameSocketHandlerService.openDoor(socket, tile, lobbyId);
+    }
+
+    private handleCloseDoor(socket: Socket, tile: Tile, lobbyId: string): void {
+        this.gameSocketHandlerService.closeDoor(socket, tile, lobbyId);
+    }
+
+    private handleBattleInitialization(socket: Socket, currentPlayer: Player, opponent: Player): void {
+        this.gameSocketHandlerService.initializeBattle(socket, currentPlayer, opponent);
+    }
+
+    private handleStartBattle(socket: Socket, currentPlayer: Player, opponent: Player, gameState: GameState): void {
+        this.gameSocketHandlerService.startBattle(socket, currentPlayer, opponent, gameState);
+    }
+
+    private handleChangeTurnEnd(currentPlayer: Player, opponent: Player, playerTurn: string, gameState: GameState): void {
+        this.gameSocketHandlerService.changeTurnEnd(currentPlayer, opponent, playerTurn, gameState);
     }
 }
