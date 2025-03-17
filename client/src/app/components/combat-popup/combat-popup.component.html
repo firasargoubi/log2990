@@ -1,0 +1,18 @@
+<!-- combat-popup.component.html -->
+<div class="combat-popup">
+    <h2>Combat</h2>
+    <div class="players">
+        <div class="player">
+            <h3>{{ currentPlayer.name }}</h3>
+            <p>Points de vie: {{ currentPlayer.health }}</p>
+        </div>
+        <div class="player">
+            <h3>{{ opponent.name }}</h3>
+            <p>Points de vie: {{ opponent.health }}</p>
+        </div>
+    </div>
+    <div class="combat-timer">
+        <p>Temps restant: {{ combatTimeLeft }}s</p>
+    </div>
+    <app-combat-action *ngIf="isPlayerTurn"></app-combat-action>
+</div>
