@@ -1,5 +1,6 @@
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
+import { GameState } from '@common/game-state';
 import { Game, Tile } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Server as HttpServer } from 'http';
@@ -76,11 +77,6 @@ export class SocketService {
 
         socket.on('changeTurnEndTimer', (data: { currentPlayer: Player; opponent: Player; playerTurn: string; gameState: GameState }) =>
             this.handleChangeTurnEnd(data.currentPlayer, data.opponent, data.playerTurn, data.gameState),
-        );
-        socket.on('playerDefeated', (data: { player: Player; lobbyId: string }) => this.handleDefeat(data.player, data.lobbyId));
-
-        socket.on('attackAction', (data: { lobbyId: string; opponent: Player; damage: number; opponentLife: number }) =>
-            this.handleAttackAction(data.lobbyId, data.opponent, data.damage),
         );
     }
 
@@ -234,5 +230,25 @@ export class SocketService {
 
     private handleDisconnectFromRoom(socket: Socket, lobbyId: string): void {
         this.disconnectHandlerService.handleDisconnectFromRoom(socket, lobbyId);
+    }
+
+    private handleBattleInitialization(socket: Socket, currentPlayer: Player, opponent: Player): void {
+        this.gameSocketHandlerService.initializeBattle(socket, currentPlayer, opponent);
+    }
+
+    private handleStartBattle(socket: Socket, currentPlayer: Player, opponent: Player, gameState: GameState): void {
+        this.gameSocketHandlerService.startBattle(socket, currentPlayer, opponent, gameState);
+    }
+
+    private handleChangeTurnEnd(currentPlayer: Player, opponent: Player, playerTurn: string, gameState: GameState): void {
+        this.gameSocketHandlerService.changeTurnEnd(currentPlayer, opponent, playerTurn, gameState);
+    }
+
+    private handleDefeat(player: Player, lobbyId: string): void {
+        this.gameSocketHandlerService.handleDefeat(player, lobbyId);
+    }
+
+    private handleAttackAction(lobbyId: string, opponent: Player, damage: number) {
+        this.gameSocketHandlerService.handleAttackAction(lobbyId, opponent, damage);
     }
 }
