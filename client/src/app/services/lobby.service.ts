@@ -256,7 +256,6 @@ export class LobbyService {
         return new Observable<{ isInCombat: boolean }>((observer) => {
             this.socket.on('playersBattling', (data: { isInCombat: boolean }) => {
                 observer.next(data);
-                observer.complete();
             });
         }).pipe(shareReplay(1));
     }
@@ -314,9 +313,9 @@ export class LobbyService {
         this.socket.emit('playerDefeated', { player, lobbyId });
     }
 
-    newSpawnPoints(): Observable<{ player: Player; newSpawn: Coordinates; combatEnded: boolean }> {
-        return new Observable<{ player: Player; newSpawn: Coordinates; combatEnded: boolean }>((observer) => {
-            this.socket.on('changedSpawnPoint', (data: { player: Player; newSpawn: Coordinates; combatEnded: boolean }) => {
+    newSpawnPoints(): Observable<{ player: Player; newSpawn: Coordinates }> {
+        return new Observable<{ player: Player; newSpawn: Coordinates }>((observer) => {
+            this.socket.on('changedSpawnPoint', (data: { player: Player; newSpawn: Coordinates }) => {
                 observer.next(data);
             });
         });
@@ -350,6 +349,18 @@ export class LobbyService {
     onFleeFailure(): Observable<{ fleeingPlayer: Player }> {
         return new Observable((observer) => {
             this.socket.on('fleeFailure', (data: { fleeingPlayer: Player }) => {
+                observer.next(data);
+            });
+        });
+    }
+
+    terminateAttack(lobbyId: string) {
+        this.socket.emit('terminateAttack', { lobbyId });
+    }
+
+    onAttackEnd(): Observable<{ isInCombat: boolean }> {
+        return new Observable((observer) => {
+            this.socket.on('attackEnd', (data: { isInCombat: boolean }) => {
                 observer.next(data);
             });
         });

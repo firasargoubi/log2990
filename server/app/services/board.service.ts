@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-import { GameState } from '@common/game-state';
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
+import { GameState } from '@common/game-state';
 import { Game, ObjectsTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Service } from 'typedi';
@@ -41,6 +41,7 @@ export class BoardService {
             spawnPoints: [],
             board: gameData.board,
             currentPlayerMovementPoints: 0,
+            currentPlayerActionPoints: 1,
         };
 
         this.sortPlayersBySpeed(gameState);
@@ -168,6 +169,8 @@ export class BoardService {
         gameState.currentPlayer = gameState.players[nextPlayerIndex].id;
 
         gameState.currentPlayerMovementPoints = this.getPlayerMovementPoints(gameState.players[nextPlayerIndex]);
+
+        gameState.currentPlayerActionPoints = 1;
 
         return this.handleTurn(gameState);
     }

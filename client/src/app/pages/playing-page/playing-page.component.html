@@ -18,6 +18,8 @@
                 <li><strong>Attaque:</strong> D{{ currentPlayer?.attack }}</li>
                 <li><strong>Défense:</strong> D{{ currentPlayer?.defense }}</li>
                 <li><strong>Points de mouvement restants:</strong> {{ gameState?.currentPlayerMovementPoints }}</li>
+                <li><strong>Points d'Actions restants:</strong> {{ gameState?.currentPlayerActionPoints }}</li>
+
             </ul>
         </div>
     </div>
@@ -60,7 +62,11 @@
         </div>
         } @else {
         <div class="action-buttons">
-            <button (click)="handleAction()">Action</button>
+            @if(action) {
+                <button class="action-buttons selected" (click)="handleAction()">Action</button>
+            } @else {
+                <button (click)="handleAction()">Action</button>
+            }
             <button (click)="abandon()" routerLink="/home">Abandonner</button>
             <button class="end-turn-button" [disabled]="!isCurrentPlayerTurn()" (click)="onEndTurn()">Terminer le tour</button>
             <!-- <button (click)="onAttackClick(currentPlayer?.id ?? '', lobbyId)">Attaquer</button> -->

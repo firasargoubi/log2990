@@ -1,20 +1,19 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { GameState } from '@common/game-state';
+import { TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
-import { TileTypes } from '@common/game.interface';
+import { NotificationService } from './notification.service';
 
 @Injectable({
     providedIn: 'root',
 })
 export class ActionService {
     gameState: GameState;
+    private notificationService = inject(NotificationService);
 
     getCurrentPlayerCoordinates(player: string): { x: number; y: number } | undefined {
         const playerIndex = this.gameState.players.findIndex((p) => p.id === player);
-        console.log(playerIndex);
-        console.log(this.gameState.playerPositions);
-        console.log(this.gameState.players);
         if (playerIndex === -1) {
             return;
         }
@@ -40,8 +39,6 @@ export class ActionService {
             return false;
         }
         const currentPlayerCoordinates = this.getCurrentPlayerCoordinates(this.gameState.currentPlayer);
-        console.log(currentPlayerCoordinates);
-        console.log(tile);
         if (!currentPlayerCoordinates) {
             return false;
         }
@@ -50,18 +47,29 @@ export class ActionService {
     }
 
     getActionType(tile: Tile, gameState: GameState): string | undefined {
+        if (gameState.currentPlayerActionPoints <= 0) {
+            this.notificationService.showInfo("Vous ne pouvez plus effectuer d'action ce tour-ci!");
+            return;
+        }
         this.gameState = gameState;
         if (this.isTileNextToPlayer(tile)) {
             if (this.isPlayerOnTile(tile)) {
+                this.gameState.currentPlayerActionPoints--;
                 return 'battle';
             }
             if (tile.type === TileTypes.DoorClosed) {
+                this.gameState.currentPlayerActionPoints--;
                 return 'openDoor';
             }
             if (tile.type === TileTypes.DoorOpen) {
+                this.gameState.currentPlayerActionPoints--;
                 return 'closeDoor';
             }
         }
         return;
+    }
+
+    incrementActionCounter() {
+        this.gameState.currentPlayerActionPoints++;
     }
 }
