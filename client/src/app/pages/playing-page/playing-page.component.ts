@@ -335,9 +335,12 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     onRemovePlayer(): void {
         this.remove.emit(this.player.id);
     }
-    onAbandon(playerName: string): void {
+    abandon() {
+        // Vérifier que le lobby et le joueur actuel existent
         if (this.lobbyId && this.currentPlayer) {
-            this.lobbyService.leaveGame(this.lobbyId, playerName);
+            // Appeler la méthode `leaveLobby` du service pour quitter le lobby
+            this.lobbyService.leaveLobby(this.lobbyId, this.currentPlayer.name);
+            this.router.navigate(['/home']);
         }
     }
 }
