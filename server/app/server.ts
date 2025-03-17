@@ -43,16 +43,6 @@ export class Server {
         const validationHandler = new ValidationSocketHandlerService(lobbyMap);
         const disconnectHandler = new DisconnectHandlerService(lobbyMap, gameStateMap, gameHandler, lobbyHandler, boardService);
         this.socketManager = new SocketService(this.server, lobbyHandler, gameHandler, validationHandler, disconnectHandler);
-        const gameService = new GameService();
-        const pathfindingService = new PathfindingService();
-        const boardService = new BoardService(gameService, pathfindingService);
-        const lobbyMap = new Map<string, GameLobby>();
-        const gameStateMap = new Map<string, GameState>();
-        const lobbyHandler = new LobbySocketHandlerService(lobbyMap);
-        const gameHandler = new GameSocketHandlerService(lobbyMap, gameStateMap, boardService, lobbyHandler);
-        const validationHandler = new ValidationSocketHandlerService(lobbyMap);
-        const disconnectHandler = new DisconnectHandlerService(lobbyMap, gameStateMap, gameHandler, lobbyHandler, boardService);
-        this.socketManager = new SocketService(this.server, lobbyHandler, gameHandler, validationHandler, disconnectHandler);
         this.socketManager.init();
 
         this.server.on('error', (error: NodeJS.ErrnoException) => this.onError(error));
