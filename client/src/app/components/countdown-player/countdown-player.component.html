@@ -1,11 +1,5 @@
 <div class="countdown-player">
-    @if (isPlayerTurn) {
     <p>
-        <strong>Il vous reste: {{ getDisplayTime() }} seconds</strong>
+        <strong>{{ isPlayerTurn ? 'Il vous reste: ' : 'Il reste au joueur Actif : ' }}{{ getDisplayTime() }} secondes</strong>
     </p>
-    } @if (!isPlayerTurn) {
-    <p>
-        <strong>Il reste au joueur Actif : {{ getDisplayTime() }} seconds</strong>
-    </p>
-    }
 </div>
