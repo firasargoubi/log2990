@@ -218,6 +218,13 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 }
                 this.notificationService.showInfo(`${data.fleeingPlayer.name} a fui le combat.`);
             }),
+
+            this.lobbyService.onAttackEnd().subscribe((data) => {
+                console.log('on rentre dans playing-page-component?');
+                this.isInCombat = data.isInCombat;
+                this.currentPlayer.life = this.currentPlayer.maxLife;
+                this.notificationService.showInfo(`${this.currentPlayer.name} a fini son combat`);
+            }),
         );
     }
 

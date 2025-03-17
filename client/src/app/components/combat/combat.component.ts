@@ -69,7 +69,6 @@ export class CombatComponent implements OnInit, OnChanges {
     }
 
     onAttack() {
-        console.log('ON EST DANS ONATTACK() CLIENT');
         if (!this.gameState) return;
         const attackRoll = this.rollDice(this.currentPlayer, 'attack') + this.currentPlayer.attack;
         const defenseRoll = this.rollDice(this.opponent, 'defense') + this.opponent.defense;
@@ -167,8 +166,7 @@ export class CombatComponent implements OnInit, OnChanges {
             if (playerIndex === -1) return;
             if (this.gameState && this.gameState.playerPositions) {
                 this.gameState.playerPositions[playerIndex] = data.newSpawn;
-                this.combatEnded = data.combatEnded;
-                this.currentPlayer.life = this.currentPlayer.maxLife;
+                this.lobbyService.terminateAttack(this.lobbyId);
             }
         });
     }
