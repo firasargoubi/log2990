@@ -300,6 +300,42 @@ export class LobbyService {
     updateCountdown(time: number): void {
         this.socket.emit('updateCountdown(time)', { time }); // Calls the updateCountdown method in SocketService
     }
+
+    handleDefeat(player: Player, lobbyId: string) {
+        this.socket.emit('playerDefeated', { player, lobbyId });
+    }
+
+    newSpawnPoints(): Observable<{ player: Player; newSpawn: Coordinates }> {
+        return new Observable<{ player: Player; newSpawn: Coordinates }>((observer) => {
+            this.socket.on('changedSpawnPoint', (data: { player: Player; newSpawn: Coordinates }) => {
+                observer.next(data);
+                observer.complete();
+            });
+        });
+    }
+
+    attackAction(lobbyId: string, opponent: Player, damage: number, opponentLife: number) {
+        console.log('Dans attack action on a fini la première action');
+        this.socket.emit('attackAction', { lobbyId, opponent, damage, opponentLife });
+    }
+
+    updateHealth(): Observable<{ player: Player; remainingHealth: number }> {
+        return new Observable<{ player: Player; remainingHealth: number }>((observer) => {
+            this.socket.on('update-health', (data: { player: Player; remainingHealth: number }) => {
+                observer.next(data);
+                observer.complete();
+            });
+        });
+    }
+
+    updatePlayerTurn(): Observable<{ nextPlayer: Player }> {
+        return new Observable<{ nextPlayer: Player }>((observer) => {
+            this.socket.on('turn-changed', (data: { nextPlayer: Player }) => {
+                observer.next(data);
+                observer.complete();
+            });
+        });
+    }
 }
 function shareReplay<T>(bufferSize: number): import('rxjs').OperatorFunction<T, T> {
     return rxjsShareReplay(bufferSize);

@@ -71,6 +71,12 @@ export class SocketService {
         socket.on('changeTurnEndTimer', (data: { currentPlayer: Player; opponent: Player; playerTurn: string; gameState: GameState }) =>
             this.handleChangeTurnEnd(data.currentPlayer, data.opponent, data.playerTurn, data.gameState),
         );
+
+        socket.on('playerDefeated', (data: { player: Player; lobbyId: string }) => this.handleDefeat(data.player, data.lobbyId));
+
+        socket.on('attackAction', (data: { lobbyId: string; opponent: Player; damage: number; opponentLife: number }) =>
+            this.handleAttackAction(data.lobbyId, data.opponent, data.damage),
+        );
     }
 
     private handleCreateLobby(socket: Socket, game: Game): void {
@@ -146,5 +152,13 @@ export class SocketService {
 
     private handleChangeTurnEnd(currentPlayer: Player, opponent: Player, playerTurn: string, gameState: GameState): void {
         this.gameSocketHandlerService.changeTurnEnd(currentPlayer, opponent, playerTurn, gameState);
+    }
+
+    private handleDefeat(player: Player, lobbyId: string): void {
+        this.gameSocketHandlerService.handleDefeat(player, lobbyId);
+    }
+
+    private handleAttackAction(lobbyId: string, opponent: Player, damage: number) {
+        this.gameSocketHandlerService.handleAttackAction(lobbyId, opponent, damage);
     }
 }

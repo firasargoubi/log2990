@@ -176,4 +176,30 @@ export class GameSocketHandlerService {
         const countDown = newPlayer.amountEscape === 2 ? 3 : 5;
         this.io.to(currentPlayer.id).to(opponent.id).emit('PlayerSwitch', { newPlayerTurn, countDown });
     }
+
+    handleDefeat(player: Player, lobbyId: string) {
+        const gameState = this.gameStates.get(lobbyId);
+        const playerIndex = gameState.players.findIndex((p) => p.id === player.id);
+        if (playerIndex === -1) return;
+        const newSpawn = gameState.spawnPoints[playerIndex];
+        gameState.playerPositions[playerIndex] = newSpawn;
+        this.io.to(lobbyId).emit('changedSpawnPoint', { player, newSpawn });
+    }
+
+    handleAttackAction(lobbyId: string, opponent: Player, damage: number) {
+        console.log('Est rentré un première fois dans handleAction');
+        const gameState = this.gameStates.get(lobbyId);
+        const opponentGame = gameState.players.find((p) => p.id === opponent.id);
+        if (!opponentGame) return;
+        opponentGame.life -= damage;
+        this.io.to(lobbyId).emit('update-health', { playerUpdated: opponentGame, remainingHealth: opponentGame.life });
+        // if (opponentGame.life <= 0) {
+        //     this.io.to(lobbyId).emit('player-defeated', { playerId: opponent.id });
+        // }
+        const nextPlayer = gameState.players.find((p) => p.id === opponent.id);
+        if (nextPlayer) {
+            gameState.currentPlayer = nextPlayer.id;
+            this.io.to(lobbyId).emit('turn-changed', { nextPlayer });
+        }
+    }
 }
