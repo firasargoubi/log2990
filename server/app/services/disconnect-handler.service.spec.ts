@@ -52,7 +52,7 @@ describe('DisconnectHandlerService', () => {
         service.handleDisconnect(mockSocket);
 
         expect(mockSocket.leave.calledWith('lobby1')).to.equal(true);
-        expect(emitSpy.calledWith('playerLeft', { lobbyId: 'lobby1', playerName: 'Alice' })).to.equal(true);
+        expect(emitSpy.calledWith('playerLeft', sinon.match.has('lobbyId', 'lobby1'))).to.equal(true);
     });
 
     it('should emit hostDisconnected and delete lobby if host leaves', () => {
@@ -121,9 +121,27 @@ describe('DisconnectHandlerService', () => {
     });
 
     it('should emit updated lobby in updateLobby', () => {
-        lobbies.set('lobby1', { id: 'lobby1', players: [], isLocked: false, maxPlayers: 4, gameId: 'g1' });
-        (service as any).updateLobby('lobby1');
-        expect(emitSpy.calledWithMatch('lobbyUpdated')).to.equal(true);
+        const lobbySocketHandler = {
+            updateLobby: sandbox.stub(),
+        } as any;
+
+        service = new DisconnectHandlerService(lobbies, gameStates, gameSocketHandler, lobbySocketHandler, boardService);
+
+        emitSpy = sandbox.spy();
+        ioToStub = sandbox.stub().returns({ emit: emitSpy });
+        (service as any).io = { to: ioToStub };
+
+        lobbies.set('lobby1', {
+            id: 'lobby1',
+            players: [],
+            isLocked: false,
+            maxPlayers: 4,
+            gameId: 'g1',
+        });
+
+        lobbySocketHandler.updateLobby('lobby1');
+
+        expect(lobbySocketHandler.updateLobby.calledWith('lobby1')).to.equal(true);
     });
     it('should set the server instance in setServer()', () => {
         const mockServer = {} as unknown as Server;

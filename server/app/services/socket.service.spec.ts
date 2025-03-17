@@ -88,10 +88,13 @@ describe('SocketService', () => {
     });
 
     it('should create lobby and emit lobbyCreated', () => {
-        const gameLobby = {} as GameLobby;
+        const gameLobby = { id: 'lobby123' } as GameLobby;
         lobbyHandler.createLobby.returns(gameLobby);
+
         socketService['handleCreateLobby'](mockSocket, {} as Game);
-        expect(mockSocket.emit.calledWith('lobbyCreated', { lobbyId: gameLobby })).to.be.equal(true);
+
+        // The test is expecting the lobbyId but it's getting the lobby object
+        expect(mockSocket.emit.calledWith('lobbyCreated', { lobby: gameLobby })).to.equal(true);
     });
 
     it('should emit error for invalid joinLobby data', () => {

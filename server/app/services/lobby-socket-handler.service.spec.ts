@@ -41,14 +41,16 @@ describe('LobbySocketHandlerService', () => {
             mode: GameType.classic,
             previewImage: '',
             description: '',
-            lastModified: undefined,
+            lastModified: new Date(),
             isVisible: false,
             board: [],
             objects: [],
         };
+
         const lobbyId = service.createLobby(game);
+
         expect(lobbies.has(lobbyId.id)).to.equal(true);
-        expect((ioMock.to as SinonSpy).calledWith(lobbyId)).to.equal(true);
+        expect((ioMock.to as SinonSpy).calledWith(lobbyId.id)).to.equal(true);
     });
 
     it('should handle player join lobby', () => {
@@ -92,7 +94,17 @@ describe('LobbySocketHandlerService', () => {
     });
 
     it('should leave lobby and emit events', () => {
-        const player: Player = { id: '', name: 'test', avatar: 'avatar1', isHost: false, life: 100, speed: 10, attack: 10, defense: 10 };
+        const player: Player = {
+            id: 'socket123',
+            name: 'test',
+            avatar: 'avatar1',
+            isHost: false,
+            life: 100,
+            speed: 10,
+            attack: 10,
+            defense: 10,
+        };
+
         const lobbyId = service.createLobby({
             id: 'g',
             mapSize: GameSize.small,
@@ -100,14 +112,19 @@ describe('LobbySocketHandlerService', () => {
             mode: GameType.classic,
             previewImage: '',
             description: '',
-            lastModified: undefined,
+            lastModified: new Date(),
             isVisible: false,
             board: [],
             objects: [],
         });
-        lobbies.get(lobbyId.id)?.players.push(player);
+
+        const lobby = lobbies.get(lobbyId.id);
+        lobby?.players.push(player);
+
         service.leaveLobby(socketMock as Socket, lobbyId.id, player.name);
+
         expect((socketMock.leave as SinonSpy).calledWith(lobbyId.id)).to.equal(true);
+        expect(lobbies.has(lobbyId.id)).to.equal(true);
     });
 
     it('should delete lobby if host leaves', () => {

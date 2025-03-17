@@ -29,6 +29,7 @@ describe('BoardService', () => {
         gameService.getGameById.resolves(null);
         try {
             await boardService.getGameFromId('id');
+            expect.fail('Should throw an error');
         } catch (e: any) {
             expect(e.message).to.equal('Game not found');
         }
@@ -182,7 +183,7 @@ describe('BoardService', () => {
 
     it('should shuffle and assign spawn points', async () => {
         const gs = {
-            board: [[10]],
+            board: [[60, 0]],
             players: [{ id: 'p1', speed: 2 }],
             playerPositions: [],
             spawnPoints: [],
@@ -190,6 +191,7 @@ describe('BoardService', () => {
 
         await (boardService as any).assignSpawnPoints(gs);
         expect(gs.playerPositions.length).to.equal(1);
+        expect(gs.spawnPoints.length).to.equal(1);
     });
 
     it('should sort players by speed descending', () => {
