@@ -5,8 +5,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BoardService } from '@app/services/board.service';
 import { GameLobby } from '@common/game-lobby';
-import { Game } from '@common/game.interface';
 import { GameState } from '@common/game-state';
+import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
 import { expect } from 'chai';
 import { createSandbox, SinonSandbox } from 'sinon';
@@ -36,7 +36,7 @@ describe('BoardService', () => {
             await boardService.getGameFromId('id');
             expect.fail('Should throw an error');
         } catch (e: any) {
-            expect(e.message).to.equal('Game not found');
+            expect(e.message).to.equal('Error fetching game: Game not found');
         }
     });
 

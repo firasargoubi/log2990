@@ -27,7 +27,7 @@ describe('DisconnectHandlerService', () => {
         gameSocketHandler = { startTurn: sandbox.stub() } as unknown as GameSocketHandlerService;
         boardService = { handleEndTurn: sandbox.stub() } as any;
 
-        const lobbySocketHandler = { updateLobby: sandbox.stub() } as any;
+        const lobbySocketHandler = { updateLobby: sandbox.stub().returns(undefined) } as any;
         service = new DisconnectHandlerService(lobbies, gameStates, gameSocketHandler, lobbySocketHandler, boardService);
 
         emitSpy = sandbox.spy();
@@ -52,7 +52,7 @@ describe('DisconnectHandlerService', () => {
         service.handleDisconnect(mockSocket);
 
         expect(mockSocket.leave.calledWith('lobby1')).to.equal(true);
-        expect(emitSpy.calledWith('playerLeft', sinon.match.has('lobbyId', 'lobby1'))).to.equal(true);
+        expect((service['lobbySocketHandler'].updateLobby as SinonStub).calledWith('lobby1')).to.equal(true);
     });
 
     it('should emit hostDisconnected and delete lobby if host leaves', () => {
