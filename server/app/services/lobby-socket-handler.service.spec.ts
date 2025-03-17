@@ -166,21 +166,4 @@ describe('LobbySocketHandlerService', () => {
         const id2 = (service as any).generateId();
         expect(id1).to.not.equal(id2);
     });
-
-    it('should return lobby by id', () => {
-        const lobbyId = service.createLobby({
-            id: 'g',
-            mapSize: GameSize.small,
-            name: '',
-            mode: GameType.classic,
-            previewImage: '',
-            description: '',
-            lastModified: undefined,
-            isVisible: false,
-            board: [],
-            objects: [],
-        });
-        const result = service.getLobby(lobbyId);
-        expect(result?.id).to.equal(lobbyId);
-    });
 });

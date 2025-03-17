@@ -55,3 +55,5 @@ export interface Tile {
     type: TileTypes;
     object: ObjectsTypes;
 }
+
+export const TILE_DELIMITER = 10;

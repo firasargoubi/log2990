@@ -1,11 +1,12 @@
 import { GameState } from '@common/game-state';
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
-import { TileTypes, Tile } from '@common/game.interface';
+import { TileTypes, Tile, TILE_DELIMITER } from '@common/game.interface';
 import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
 import { BoardService } from './board.service';
 import { LobbySocketHandlerService } from './lobby-socket-handler.service';
+import { Player } from '@common/player';
 
 @Service()
 export class GameSocketHandlerService {
@@ -152,6 +153,37 @@ export class GameSocketHandlerService {
 
         const newGameState = this.boardService.handleBoardChange(updatedGameState);
         this.gameStates.set(lobbyId, newGameState);
+        this.io.to(lobbyId).emit('boardModified', { gameState: newGameState });
+    }
+
+    handlePlayersUpdate(socket: Socket, lobbyId: string, players: Player[]) {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) {
+            socket.emit('error', 'Game not found.');
+            return;
+        }
+        let deletedPlayer: Player;
+        for (const player of gameState.players) {
+            if (!players.find((p) => p.id === player.id)) {
+                deletedPlayer = player;
+            }
+        }
+        if (deletedPlayer) {
+            const playerIndex = gameState.players.findIndex((p) => p.id === deletedPlayer.id);
+            gameState.currentPlayer = gameState.players[(playerIndex + 1) % gameState.players.length].id;
+            gameState.players.splice(playerIndex, 1);
+            const spawnPoint = gameState.spawnPoints[playerIndex];
+            gameState.board[spawnPoint.x][spawnPoint.y] = gameState.board[spawnPoint.x][spawnPoint.y] % TILE_DELIMITER;
+            gameState.spawnPoints.splice(playerIndex, 1);
+            gameState.playerPositions.splice(playerIndex, 1);
+            if (!gameState.deletedPlayers) {
+                gameState.deletedPlayers = [];
+            }
+            gameState.deletedPlayers.push(deletedPlayer);
+        }
+        const newGameState = this.boardService.handleBoardChange(gameState);
+        console.log('New Game State', newGameState);
+        this.gameStates.set(lobbyId, gameState);
         this.io.to(lobbyId).emit('boardModified', { gameState: newGameState });
     }
 }
