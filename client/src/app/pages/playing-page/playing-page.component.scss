@@ -89,18 +89,40 @@ ul li:before {
 }
 
 /* ICONES LISTE */
-ul li:nth-child(1):before { content: "🍃"; }
-ul li:nth-child(2):before { content: "🐹"; }
-ul li:nth-child(3):before { content: "❤️"; }
-ul li:nth-child(4):before { content: "⚡"; }
-ul li:nth-child(5):before { content: "⚔️"; }
-ul li:nth-child(6):before { content: "🛡️"; }
+ul li:nth-child(1):before {
+    content: '🍃';
+}
+ul li:nth-child(2):before {
+    content: '🐹';
+}
+ul li:nth-child(3):before {
+    content: '❤️';
+}
+ul li:nth-child(4):before {
+    content: '⚡';
+}
+ul li:nth-child(5):before {
+    content: '⚔️';
+}
+ul li:nth-child(6):before {
+    content: '🛡️';
+}
 
-ul + ul li:nth-child(1):before { content: "🎁"; }
-ul + ul li:nth-child(2):before { content: "❤️"; }
-ul + ul li:nth-child(3):before { content: "⚡"; }
-ul + ul li:nth-child(4):before { content: "🎲"; }
-ul + ul li:nth-child(5):before { content: "🎲"; }
+ul + ul li:nth-child(1):before {
+    content: '🎁';
+}
+ul + ul li:nth-child(2):before {
+    content: '❤️';
+}
+ul + ul li:nth-child(3):before {
+    content: '⚡';
+}
+ul + ul li:nth-child(4):before {
+    content: '🎲';
+}
+ul + ul li:nth-child(5):before {
+    content: '🎲';
+}
 
 ul li strong {
     color: #33691e;
@@ -169,8 +191,12 @@ img {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* VERSION MOBILE */
