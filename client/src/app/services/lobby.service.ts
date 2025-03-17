@@ -318,7 +318,6 @@ export class LobbyService {
         return new Observable<{ player: Player; newSpawn: Coordinates }>((observer) => {
             this.socket.on('changedSpawnPoint', (data: { player: Player; newSpawn: Coordinates }) => {
                 observer.next(data);
-                observer.complete();
             });
         });
     }
@@ -331,15 +330,7 @@ export class LobbyService {
     updateHealth(): Observable<{ player: Player; remainingHealth: number }> {
         return new Observable<{ player: Player; remainingHealth: number }>((observer) => {
             this.socket.on('update-health', (data: { player: Player; remainingHealth: number }) => {
-                observer.next(data);
-                observer.complete();
-            });
-        });
-    }
-
-    updatePlayerTurn(): Observable<{ nextPlayer: Player }> {
-        return new Observable<{ nextPlayer: Player }>((observer) => {
-            this.socket.on('turn-changed', (data: { nextPlayer: Player }) => {
+                console.log('Player in lobby Service: ', data.player);
                 observer.next(data);
                 observer.complete();
             });

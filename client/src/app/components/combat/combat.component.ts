@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, inject, Input, OnChanges, OnInit } from '@angular/core';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { GameState } from '@common/game-state';
@@ -13,9 +13,9 @@ const FLEE_RATE = 0;
 })
 export class CombatComponent implements OnInit, OnChanges {
     @Input() currentPlayer!: Player;
-    @Input() opponent!: Player;
     @Input() lobbyId!: string;
     @Input() gameState: GameState | null = null;
+    @Input() opponent!: Player;
     isPlayerTurn: boolean = false;
     playerTurn: string = '';
     countDown: number = 0;
@@ -31,13 +31,12 @@ export class CombatComponent implements OnInit, OnChanges {
         }
         this.subscribeToPlayerTurn();
         this.subscribeToPlayerSwitch();
+        this.subscribeToNewSpawnPoints();
         this.subscribeToFleeFailure();
     }
 
-    ngOnChanges(changes: SimpleChanges) {
-        if (changes['gameState'] && changes['gameState'].currentValue) {
-            this.gameState = changes['gameState'].currentValue;
-        }
+    ngOnChanges() {
+        this.subscribeToPlayerSwitch();
         if (!this.currentPlayer) {
             this.currentPlayer = this.gameState?.players.find((p) => p.id === this.playerTurn) ?? this.currentPlayer;
         }
@@ -65,15 +64,15 @@ export class CombatComponent implements OnInit, OnChanges {
         if (this.countDownInterval !== null) {
             clearInterval(this.countDownInterval);
         }
-        this.subscribeToPlayerSwitch();
+        this.onAttack();
     }
 
     onAttack() {
         console.log('ON EST DANS ONATTACK() CLIENT');
+        if (!this.gameState) return;
         const attackRoll = this.rollDice(this.currentPlayer, 'attack') + this.currentPlayer.attack;
         const defenseRoll = this.rollDice(this.opponent, 'defense') + this.opponent.defense;
         if (this.isOnIce(this.currentPlayer)) {
-            console.log("L'attaquant se trouve sur une tuile de glace");
             this.currentPlayer.attack -= 2;
             this.currentPlayer.defense -= 2;
         }
@@ -82,19 +81,16 @@ export class CombatComponent implements OnInit, OnChanges {
             this.opponent.defense -= 2;
         }
         const damage = attackRoll - defenseRoll;
-        console.log('dommage appliqué ', damage);
         if (damage > 0) {
             this.opponent.life -= damage;
-            console.log("La vie de l'opposant: ", this.opponent.life);
             if (this.opponent.life <= 0) {
                 this.handleDefeat(this.opponent);
             }
-        } else {
-            console.log("L'attaque n'a pas fonctionnée");
         }
-
         this.lobbyService.attackAction(this.lobbyId, this.opponent, damage, this.opponent.life);
+        this.lobbyService.changeTurnEnd(this.currentPlayer, this.opponent, this.playerTurn, this.gameState);
         this.subscribeChangeAttributes();
+        this.subscribeToPlayerSwitch();
     }
 
     onFlee() {
@@ -182,10 +178,6 @@ export class CombatComponent implements OnInit, OnChanges {
             }
         });
 
-        this.lobbyService.updatePlayerTurn().subscribe((data) => {
-            this.playerTurn = data.nextPlayer.id;
-            this.canAct = this.currentPlayer.id === this.playerTurn;
-        });
     }
 
     private subscribeToFleeFailure() {
