@@ -63,7 +63,6 @@ export class CombatComponent implements OnInit, OnChanges {
             this.playerTurn = data.playerTurn;
             this.countDown = data.countDown;
             this.canAct = this.currentPlayer.id === this.playerTurn;
-
         });
     }
 

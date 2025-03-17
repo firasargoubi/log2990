@@ -122,7 +122,6 @@ export class LobbyService {
             this.socket.on('gameStarted', (data: { gameState: GameState }) => {
 
                 try {
-                    data.gameState.playerPositions = this.convertPlayerPositionsToMap(data.gameState.playerPositions);
 
                     if (!data.gameState.availableMoves) {
                         data.gameState.availableMoves = [];
@@ -147,7 +146,6 @@ export class LobbyService {
             this.socket.on('turnStarted', (data: { gameState: GameState; currentPlayer: string; availableMoves: Coordinates[] }) => {
 
                 try {
-                    data.gameState.playerPositions = this.convertPlayerPositionsToMap(data.gameState.playerPositions);
 
                     if (!data.availableMoves) {
                         data.availableMoves = [];
@@ -169,8 +167,6 @@ export class LobbyService {
         });
     }
 
-    requestMovement(lobbyId: string, coordinate: Coordinates): void {
-        this.socket.emit('requestMovement', { lobbyId, coordinate });
     requestMovement(lobbyId: string, coordinates: Coordinates[]): void {
         console.log('Requesting movement in lobby:', lobbyId, 'to coordinate:', coordinates);
         this.socket.emit('requestMovement', { lobbyId, coordinates });
@@ -221,7 +217,6 @@ export class LobbyService {
         this.socket.emit('requestPath', { lobbyId, destination });
     }
 
-    onPathCalculated(): Observable<{ destination: Coordinates; path: Coordinates[]; valid: boolean }> {
     onBoardChanged(): Observable<{ gameState: GameState }> {
         return new Observable((observer) => {
             this.socket.on('boardModified', (data: { gameState: GameState }) => {
