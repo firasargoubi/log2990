@@ -8,6 +8,8 @@ import { GameInfoComponent } from '@app/components/game-info/game-info.component
 import { InventoryComponent } from '@app/components/inventory/inventory.component';
 import { MessagesComponent } from '@app/components/messages/messages.component';
 import { ActionService } from '@app/services/action.service';
+
+import { PageUrl } from '@app/Consts/route-constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { Coordinates } from '@common/coordinates';
@@ -89,11 +91,13 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.subscriptions.push(
             this.lobbyService.onGameStarted().subscribe((data) => {
                 this.gameState = data.gameState;
+                console.log('Game started:', this.gameState);
                 this.getCurrentPlayer();
             }),
 
             this.lobbyService.onTurnStarted().subscribe((data) => {
                 this.gameState = data.gameState;
+                console.log('Turn started:', this.gameState);
                 this.syncCurrentPlayerWithGameState();
                 this.notifyPlayerTurn(data.currentPlayer);
                 this.isPlayerTurn = data.currentPlayer === this.currentPlayer?.id;
@@ -115,8 +119,27 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 this.notificationService.showError(error);
             }),
 
+            this.lobbyService.onLobbyUpdated().subscribe((data) => {
+                if (data.lobby.id === this.lobbyId) {
+                    this.lobby = data.lobby;
+                    const currentPlayer = this.lobby.players.find((p) => p.id === this.currentPlayer.id);
+                    if (!currentPlayer) {
+                        this.lobbyService.disconnectFromRoom(this.lobbyId);
+                        this.router.navigate([PageUrl.Home], { replaceUrl: true });
+                        return;
+                    }
+                    const host = this.lobby.players.find((p) => p.isHost);
+                    if (!host) {
+                        console.log('Placeholder for resetting debug');
+                    }
+                    console.log('Lobby updated:', this.lobby);
+                    this.lobbyService.updatePlayers(this.lobby.id, this.lobby.players);
+                }
+            }),
+
             this.lobbyService.onBoardChanged().subscribe((data) => {
                 this.gameState = data.gameState;
+                console.log('Game state changed:', this.gameState);
             }),
         );
     }
@@ -286,9 +309,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     abandon() {
         // Vérifier que le lobby et le joueur actuel existent
         if (this.lobbyId && this.currentPlayer) {
-            // Appeler la méthode `leaveLobby` du service pour quitter le lobby
-            this.lobbyService.leaveLobby(this.lobbyId, this.currentPlayer.name);
-            this.router.navigate(['/home']);
+            this.lobbyService.leaveGame(this.lobbyId, playerName);
         }
     }
 

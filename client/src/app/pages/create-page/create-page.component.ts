@@ -44,7 +44,7 @@ export class CreatePageComponent implements OnInit {
                         this.subscriptions.push(
                             this.lobbyService.onLobbyCreated().subscribe({
                                 next: (data) => {
-                                    this.lobbyId = data.lobbyId;
+                                    this.lobbyId = data.lobby.id;
                                     this.openBoxFormDialog(game);
                                 },
                                 error: (err) => {

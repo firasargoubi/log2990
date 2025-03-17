@@ -6,6 +6,7 @@ export interface GameState {
     board: number[][];
     turnCounter: number;
     players: Player[];
+    deletedPlayers?: Player[];
     currentPlayer: string;
     availableMoves: Coordinates[];
     shortestMoves: Coordinates[][];
