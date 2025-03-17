@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { ObjectsTypes, TileTypes } from '@app/Consts/app.constants';
 import { Tile } from '@common/tile';
+import { ObjectsTypes, TileTypes } from '@app/Consts/app.constants';
 import html2canvas from 'html2canvas';
 
 @Injectable({
@@ -12,17 +12,12 @@ export class ImageService {
             return Promise.reject('Invalid HTML element');
         }
 
-        try {
-            const canvas = await html2canvas(componentElement, {
-                logging: false,
-                backgroundColor: null,
-            });
+        const canvas = await html2canvas(componentElement, {
+            logging: false,
+            backgroundColor: null,
+        });
 
-            const image = canvas.toDataURL('image/png');
-            return this.compressImage(image);
-        } catch (error) {
-            return Promise.reject('Error capturing component: ' + error);
-        }
+        return canvas.toDataURL('image/png');
     }
 
     async captureBoardFromTiles(board: Tile[][]): Promise<string> {
@@ -70,7 +65,7 @@ export class ImageService {
         try {
             const image = await this.captureComponent(boardElement);
             document.body.removeChild(container);
-            return this.compressImage(image);
+            return image;
         } catch (error) {
             document.body.removeChild(container);
             throw error;
@@ -117,36 +112,5 @@ export class ImageService {
             default:
                 return 'assets/objects/undefined.png';
         }
-    }
-
-    private async compressImage(imageSrc: string, quality: number = 0.7, maxWidth: number = 500, maxHeight: number = 500): Promise<string> {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.src = imageSrc;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                let width = img.width;
-                let height = img.height;
-
-                if (width > maxWidth || height > maxHeight) {
-                    const scaleFactor = Math.min(maxWidth / width, maxHeight / height);
-                    width = Math.round(width * scaleFactor);
-                    height = Math.round(height * scaleFactor);
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-
-                if (ctx) {
-                    ctx.drawImage(img, 0, 0, width, height);
-                    resolve(canvas.toDataURL('image/jpeg', quality));
-                } else {
-                    reject('Impossible de compresser l’image');
-                }
-            };
-
-            img.onerror = (error) => reject(error);
-        });
     }
 }

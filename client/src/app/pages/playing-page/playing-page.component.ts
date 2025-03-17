@@ -190,7 +190,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     onActionRequest(tile: Tile) {
-
         console.log('Action request:', tile);
         if (!this.gameState || !this.currentPlayer) {
             console.error('Cannot perform action: game state or current player is missing');
@@ -205,7 +204,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         if (!action) {
             return;
         }
-        console.log("Action effectuée:", action);
+        console.log('Action effectuée:', action);
 
         if (action === 'battle') {
             this.opponent = this.actionService.findOpponent(tile) || null;
@@ -219,7 +218,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 console.error('Opponent not found for battle initialization');
             }
         }
-        console.log("Action effectuée:", action);
+        console.log('Action effectuée:', action);
         this.lobbyService.executeAction(action, tile, this.lobbyId).subscribe({
             next: (data) => {
                 if (this.gameState?.board) {

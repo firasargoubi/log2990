@@ -47,3 +47,10 @@ export enum TileTypes {
     DoorOpen = 5,
     Wall = 6,
 }
+
+export interface Tile {
+    x: number;
+    y: number;
+    type: TileTypes;
+    object: ObjectsTypes;
+}

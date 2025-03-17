@@ -1,8 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { GameTileComponent } from '@app/components/game-tile/game-tile.component';
 import { OBJECT_MULTIPLIER } from '@app/Consts/app.constants';
-import { ActionService } from '@app/services/action.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { Coordinates } from '@common/coordinates';
 import { GameState } from '@common/game-state';
@@ -23,7 +22,6 @@ export class GameBoardComponent implements OnInit, OnChanges {
     @Input() action: boolean = false;
     @Output() tileClicked = new EventEmitter<Coordinates[]>();
     @Output() actionClicked = new EventEmitter<Tile>();
-    @Inject(ActionService) actionService: ActionService;
 
     tiles: Tile[][] = [];
     availableMoves: Coordinates[] = [];
@@ -81,15 +79,12 @@ export class GameBoardComponent implements OnInit, OnChanges {
         }
         return null;
     }
-
     onTileClick(tile: Tile) {
         if (this.action) {
-            console.log('action clicked');
             this.actionClicked.emit(tile);
             return;
         }
         if (this.isMyTurn() && this.isAvailableMove(tile.x, tile.y)) {
-            console.log(this.shortestMovesMap);
             this.tileClicked.emit(this.highlightedPath);
         }
     }
@@ -134,7 +129,6 @@ export class GameBoardComponent implements OnInit, OnChanges {
         let current = destination;
 
         while (current) {
-            console.log(current);
             if (this.isAdjacent(current, playerPosition)) {
                 path.unshift(playerPosition);
                 break;
