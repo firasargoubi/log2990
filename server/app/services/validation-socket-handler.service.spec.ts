@@ -66,19 +66,7 @@ describe('ValidationSocketHandlerService', () => {
     it('should callback avatars if lobby is not locked in verifyAvatars', () => {
         const lobby: GameLobby = {
             id: 'lobby1',
-            players: [
-                {
-                    id: '1',
-                    name: 'Alice',
-                    avatar: 'avatar1',
-                    isHost: false,
-                    life: 100,
-                    speed: 1,
-                    attack: 1,
-                    defense: 1,
-                    maxLife: 0,
-                },
-            ],
+            players: [{ id: '1', name: 'Alice', avatar: 'avatar1', isHost: false, life: 100, speed: 1, attack: 1, defense: 1 }],
             isLocked: false,
             maxPlayers: 4,
             gameId: 'g1',
@@ -106,19 +94,7 @@ describe('ValidationSocketHandlerService', () => {
     it('should callback usernames if lobby is not locked in verifyUsername', () => {
         const lobby: GameLobby = {
             id: 'lobby1',
-            players: [
-                {
-                    id: '1',
-                    name: 'Alice',
-                    avatar: 'avatar1',
-                    isHost: false,
-                    life: 100,
-                    speed: 1,
-                    attack: 1,
-                    defense: 1,
-                    maxLife: 0,
-                },
-            ],
+            players: [{ id: '1', name: 'Alice', avatar: 'avatar1', isHost: false, life: 100, speed: 1, attack: 1, defense: 1 }],
             isLocked: false,
             maxPlayers: 4,
             gameId: 'g1',
