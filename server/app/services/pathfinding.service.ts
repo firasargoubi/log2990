@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 import { Service } from 'typedi';
 import { GameState } from '@common/game-state';
 import { Coordinates } from '@common/coordinates';
