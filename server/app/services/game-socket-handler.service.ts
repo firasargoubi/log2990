@@ -132,6 +132,7 @@ export class GameSocketHandlerService {
         const updatedGameState: GameState = {
             ...gameState,
             board: newGameBoard,
+            currentPlayerActionPoints: 0,
         };
         const newGameState = this.boardService.handleBoardChange(updatedGameState);
         this.gameStates.set(lobbyId, newGameState);
@@ -149,6 +150,7 @@ export class GameSocketHandlerService {
         const updatedGameState = {
             ...gameState,
             board: newGameBoard,
+            currentPlayerActionPoints: 0,
         };
 
         const newGameState = this.boardService.handleBoardChange(updatedGameState);

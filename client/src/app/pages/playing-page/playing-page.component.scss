@@ -118,6 +118,11 @@ ul li strong {
     transform: scale(0.98);
 }
 
+.selected {
+    background-color: #388e3c;
+    color: black;
+}
+
 /* Game Board Section */
 .main-content {
     width: 40%;

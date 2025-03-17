@@ -91,6 +91,9 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.lobbyService.onInteraction().subscribe((data) => {
             this.isInCombat = data.isInCombat;
         });
+        if (this.gameState) {
+            this.gameState.currentPlayerActionPoints = 1;
+        }
     }
     onActionRequest(tile: Tile) {
         if (!this.gameState || !this.currentPlayer) {
@@ -103,6 +106,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         }
 
         const action = this.actionService.getActionType(tile, this.gameState);
+        this.handleAction();
         if (!action) {
             return;
         }
@@ -129,7 +133,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             },
             error: (err) => console.error('Error processing tile update:', err),
         });
-        this.action = false;
     }
 
     handleAction() {
