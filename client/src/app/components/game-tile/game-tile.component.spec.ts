@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { GameTileComponent } from './game-tile.component';
-import { GAME_IMAGES, TileTypes, ObjectsTypes } from '@app/Consts/app.constants';
-import { Tile } from '@app/interfaces/tile';
+import { GAME_IMAGES, ObjectsTypes, TileTypes } from '@app/Consts/app.constants';
 import { Player } from '@common/player';
+import { Tile } from '@common/tile';
+import { GameTileComponent } from './game-tile.component';
 
 describe('GameTileComponent', () => {
     let component: GameTileComponent;

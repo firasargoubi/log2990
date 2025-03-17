@@ -1,5 +1,6 @@
 import { Component, inject, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { LobbyService } from '@app/services/lobby.service';
+import { TimerSyncService } from '@app/services/timer-sync.service';
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
 
@@ -19,6 +20,8 @@ export class CombatComponent implements OnInit, OnChanges {
     countDown: number = 0;
     canAct: boolean = false;
     private lobbyService = inject(LobbyService);
+    private timerSyncService = inject(TimerSyncService);
+
     private countDownInterval: ReturnType<typeof setInterval> | null = null;
 
     ngOnInit() {
@@ -39,10 +42,14 @@ export class CombatComponent implements OnInit, OnChanges {
         if (!this.opponent) {
             this.opponent = this.gameState?.players.find((p) => p.id !== this.currentPlayer.id) ?? this.opponent;
         }
-        this.startCountdown();
+        this.startCombatCountdown();
     }
 
-    startCountdown() {
+    startCombatCountdown(): void {
+        // Mettre en pause le timer du joueur
+        this.timerSyncService.pausePlayerTimer(this.countDown);
+
+        // Démarrer le timer de combat
         this.countDownInterval = setInterval(() => {
             if (this.countDown > 0) {
                 this.countDown--;
@@ -58,7 +65,9 @@ export class CombatComponent implements OnInit, OnChanges {
         }
         if (this.countDownInterval !== null) {
             clearInterval(this.countDownInterval);
+            this.countDownInterval = null;
         }
+        this.timerSyncService.resumePlayerTimer();
         this.subscribeToPlayerSwitch();
     }
 
