@@ -7,184 +7,298 @@
 
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #f0f8f0; /* Light greenish background */
+    background-color: #f0f7f0; /* Vert très doux */
     color: #333;
+    height: 100vh;
+    overflow: hidden;
 }
 
 /* Main Game Container */
 .game-container {
     display: flex;
-    justify-content: space-between;
-    padding: 20px;
-    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    height: 95vh;
+    padding: 10px;
+    gap: 15px;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 /* Sidebar Left (Player Info) */
 .sidebar-left {
-    width: 25%;
-    background-color: #e8f5e9; /* Soft green background */
-    padding: 20px;
+    width: 22%;
+    height: 90vh;
+    background-color: #e8f3e8; /* Vert très clair et doux */
+    padding: 12px;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #c5d6c5;
+    overflow-y: auto;
 }
 
 .component-box {
-    background-color: #ffffff;
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    background-color: #f5f9f5;
+    padding: 12px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    border: 1px solid #d5e3d5;
+}
+
+/* Titres */
+h1, h2, h3, h4, .component-box strong, .app-game-info strong {
+    font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+    color: #4a6e4a;
 }
 
 /* Avatar and Stats List */
 ul {
     list-style-type: none;
+    padding-left: 5px;
 }
 
 ul li {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+    padding-left: 25px;
+    position: relative;
 }
 
-ul li strong {
-    color: #4caf50; /* Green for emphasis */
+ul li:before {
+    position: absolute;
+    left: 0;
+    font-size: 16px;
 }
+
+ul li:nth-child(1):before { content: "🍃"; }
+ul li:nth-child(2):before { content: "🐹"; }
+ul li:nth-child(3):before { content: "❤️"; }
+ul li:nth-child(4):before { content: "🦘"; }
+ul li:nth-child(5):before { content: "⚔️"; }
+ul li:nth-child(6):before { content: "🛡️"; }
+
+ul li strong {
+    color: #5a8c5a;
+    font-weight: bold;
+}
+
+/* Bonus Section */
+ul + ul li:nth-child(1):before { content: "🎁"; }
+ul + ul li:nth-child(2):before { content: "❤️"; }
+ul + ul li:nth-child(3):before { content: "🦘"; }
+ul + ul li:nth-child(4):before { content: "🎲"; }
+ul + ul li:nth-child(5):before { content: "🎲"; }
 
 /* Avatar Styling */
 img {
     border-radius: 50%;
-    border: 2px solid #4caf50;
-}
-
-/* Bonus Section */
-ul li {
-    color: #616161;
-}
-
-ul li strong {
-    font-size: 1rem;
-    color: #4caf50;
+    border: 2px solid #75a475;
+    box-shadow: 0 0 5px rgba(117, 164, 117, 0.3);
 }
 
 /* Sidebar Right (Game Info, Chat, and Buttons) */
 .sidebar-right {
-    width: 30%;
-    background-color: #e8f5e9;
-    padding: 20px;
+    width: 22%;
+    height: 90vh;
+    background-color: #e8f3e8;
+    padding: 12px;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #c5d6c5;
+    overflow-y: auto;
 }
 
 /* Game Info */
 .app-game-info {
-    background-color: #ffffff;
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-}
-
-.app-game-info p {
-    margin-bottom: 10px;
+    background-color: #f5f9f5;
+    padding: 12px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    border: 1px solid #d5e3d5;
 }
 
 .app-game-info strong {
-    color: #4caf50;
+    color: #5a8c5a;
+    font-weight: bold;
 }
 
 /* Action Buttons */
 .action-buttons {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-top: 20px;
+    gap: 8px;
+    margin-top: 12px;
 }
 
 .action-buttons button {
-    padding: 10px;
-    color: rgb(0, 5, 1);
+    padding: 8px;
+    color: #3c5c3c;
+    background-color: #c5d6c5;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     font-weight: bold;
     cursor: pointer;
-    transition: background-color 0.3s;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .action-buttons button:hover {
-    background-color: #388e3c; /* Darker green on hover */
+    background-color: #aec5ae;
+    transform: translateY(-1px);
 }
 
 .action-buttons button:active {
-    transform: scale(0.98);
+    transform: translateY(1px);
 }
 
 /* Game Board Section */
 .main-content {
-    width: 40%;
+    width: 50%;
+    height: 90vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .board-container {
     width: 100%;
+    height: 100%;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    background-size: cover;
-    background-position: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    background-color: #edf5ed;
+    border: 1px solid #c5d6c5;
+    padding: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+app-game-board {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 /* Chat Section */
 .app-messages {
-    background-color: #ffffff;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-    margin-bottom: 20px;
+    background-color: #f5f9f5;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    margin-bottom: 12px;
+    border: 1px solid #d5e3d5;
+    max-height: 25vh;
+    overflow-y: auto;
 }
 
 /* Countdown Timer Styling */
 .app-countdown-timer {
-    background-color: #ffffff;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-    margin-bottom: 20px;
+    background-color: #f5f9f5;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    margin-bottom: 12px;
+    border: 1px solid #d5e3d5;
 }
 
 .app-countdown-timer h4 {
-    color: #4caf50;
+    color: #5a8c5a;
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
 }
 
-/* Background Decorations */
-.game-container {
-    background-size: cover;
-    background-position: center;
-    border-radius: 10px;
+/* Inventory */
+app-inventory {
+    background-color: #f5f9f5;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    margin-bottom: 12px;
+    border: 1px solid #d5e3d5;
+    display: block;
+    max-height: 20vh;
+    overflow-y: auto;
 }
 
-/* Small paw print icon for decoration */
-.app-game-info:before,
-.app-messages:before {
-    content: '🐾';
-    font-size: 2rem;
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: -1;
+/* Loading Animation */
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 20px;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #c5d6c5;
+    border-top: 4px solid #5a8c5a;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+.loading-text {
+    font-weight: bold;
+    color: #5a8c5a;
+    font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* End Turn Button Special Styling */
+.end-turn-button {
+    background-color: #aec5ae;
+    color: #3c5c3c;
+    border: 1px solid #8aaa8a;
+    font-weight: bold;
+}
+
+.end-turn-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #e8f3e8;
+    border-color: #c5d6c5;
+}
+
+/* Player List */
+app-player-list {
+    background-color: #f5f9f5;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    margin-bottom: 12px;
+    border: 1px solid #d5e3d5;
+    display: block;
+    max-height: 20vh;
+    overflow-y: auto;
 }
 
 /* Responsive Design for Mobile */
 @media (max-width: 768px) {
     .game-container {
         flex-direction: column;
-        align-items: center;
+        height: auto;
+        overflow-y: auto;
     }
-
+    
     .sidebar-left,
     .sidebar-right,
     .main-content {
         width: 100%;
-        margin-bottom: 20px;
+        height: auto;
+        margin-bottom: 15px;
     }
-
+    
     .action-buttons button {
         width: 100%;
     }
