@@ -99,6 +99,20 @@ export class GameSocketHandlerService {
         }
     }
 
+    handleTeleport(socket: Socket, lobbyId: string, coordinates: Coordinates) {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) {
+            socket.emit('error', 'Game not found.');
+            return;
+        }
+        try {
+            const updatedGameState = this.boardService.handleTeleport(gameState, coordinates);
+            this.gameStates.set(lobbyId, updatedGameState);
+            this.io.to(lobbyId).emit('boardModified', { gameState: updatedGameState });
+        } catch (error) {
+            socket.emit('error', `Teleport error: ${error.message}`);
+        }
+    }
     startTurn(lobbyId: string) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) {

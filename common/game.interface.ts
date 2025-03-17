@@ -29,7 +29,7 @@ export interface Game {
 }
 
 export enum ObjectsTypes {
-    BOOTS = 0,
+    EMPTY = 0,
     SWORD = 1,
     POTION = 2,
     WAND = 3,
@@ -37,6 +37,7 @@ export enum ObjectsTypes {
     JUICE = 5,
     SPAWN = 6,
     RANDOM = 7,
+    BOOTS = 8,
 }
 
 export enum TileTypes {
@@ -54,3 +55,5 @@ export interface Tile {
     type: TileTypes;
     object: ObjectsTypes;
 }
+
+export const TILE_DELIMITER = 10;

@@ -17,4 +17,5 @@ export interface GameState {
         isActive: boolean;
         endTime: Date;
     };
+    debug: boolean;
 }
