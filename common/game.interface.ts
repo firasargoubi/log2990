@@ -1,14 +1,12 @@
-// common/game.interface.ts
-
 export enum GameType {
-    Classic = 'classic',
-    Capture = 'capture',
+    classic = 'classic',
+    capture = 'capture',
 }
 
 export enum GameSize {
-    Small = 'small',
-    Medium = 'medium',
-    Large = 'large',
+    small = 'small',
+    medium = 'medium',
+    large = 'large',
 }
 
 export interface GameObjectPlacement {
@@ -29,3 +27,33 @@ export interface Game {
     board: number[][];
     objects: GameObjectPlacement[];
 }
+
+export enum ObjectsTypes {
+    BOOTS = 0,
+    SWORD = 1,
+    POTION = 2,
+    WAND = 3,
+    CRYSTAL = 4,
+    JUICE = 5,
+    SPAWN = 6,
+    RANDOM = 7,
+}
+
+export enum TileTypes {
+    Grass = 1,
+    Water = 2,
+    Ice = 3,
+    DoorClosed = 4,
+    DoorOpen = 5,
+    Wall = 6,
+    Floor,
+}
+
+export interface Tile {
+    x: number;
+    y: number;
+    type: TileTypes;
+    object: ObjectsTypes;
+}
+
+export const TILE_DELIMITER = 10;
