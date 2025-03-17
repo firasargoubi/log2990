@@ -35,6 +35,7 @@
             [currentPlayerId]="currentPlayer.id"
             [lobbyId]="lobbyId"
             (tileClicked)="onMoveRequest($event)"
+            (infoSent)="onInfoSent($event)"
         >
         </app-game-board>
         } @else {

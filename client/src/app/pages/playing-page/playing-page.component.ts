@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, inject, HostListener } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CountdownComponent } from '@app/components/countdown-timer/countdown-timer.component';
 import { GameBoardComponent } from '@app/components/game-board/game-board.component';
@@ -31,7 +31,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     gameState: GameState;
     currentPlayer: Player;
 
-    debug: boolean = true;
+    debug: boolean = false;
     lobby: GameLobby;
 
     private lobbyService = inject(LobbyService);
@@ -39,6 +39,13 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     private route = inject(ActivatedRoute);
     private notificationService = inject(NotificationService);
     private subscriptions: Subscription[] = [];
+
+    @HostListener('document:keydown', ['$event'])
+    handleKeyboardEvent(event: KeyboardEvent) {
+        if (event.key === 'd' && this.currentPlayer.isHost) {
+            this.setDebugMode();
+        }
+    }
 
     ngOnInit() {
         this.route.params.subscribe((params) => {
@@ -92,6 +99,9 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.lobbyService.onHostDisconnected().subscribe(() => {
                 this.notificationService.showError(WAITING_PAGE_CONSTANTS.lobbyCancelled);
                 this.router.navigate([PageUrl.Home], { replaceUrl: true });
+            }),
+            this.lobbyService.onBoardChanged().subscribe((data) => {
+                this.gameState = data.gameState;
             }),
         );
     }
@@ -147,7 +157,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.lobbyService.requestMovement(this.lobbyId, coordinates);
     }
 
-
     onEndTurn() {
         if (!this.gameState || !this.currentPlayer) {
             return;
@@ -192,8 +201,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         }
 
         const result = this.gameState.currentPlayer === this.currentPlayer.id;
-        console.log(`Is current player's turn? ${result} (Current: ${this.gameState.currentPlayer}, Player: ${this.currentPlayer.id})`);
-
         return result;
     }
 
@@ -204,6 +211,16 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         if (this.lobbyId && this.currentPlayer) {
             this.lobbyService.leaveLobby(this.lobbyId, playerName);
         }
+    }
+
+    onInfoSent(details: string) {
+        console.log(details);
+    }
+
+
+    setDebugMode() {
+        this.debug = !this.debug;
+        this.lobbyService.setDebug(this.lobbyId, this.debug);
     }
     attack() {
         // Logique pour attaquer

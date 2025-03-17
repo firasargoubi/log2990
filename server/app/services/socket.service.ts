@@ -56,6 +56,7 @@ export class SocketService {
         socket.on('endTurn', (data: { lobbyId: string }) => this.handleEndTurn(socket, data));
         socket.on('requestMovement', (data: { lobbyId: string; coordinates: Coordinates[] }) => this.handleRequestMovement(socket, data));
         socket.on('teleport', (data: { lobbyId: string; coordinates: Coordinates }) => this.handleTeleport(socket, data));
+        socket.on('setDebug', (data: { lobbyId: string; debug: boolean }) => this.handleSetDebug(socket, data));
         socket.on('disconnect', () => this.handleDisconnect(socket));
     }
 
@@ -116,5 +117,9 @@ export class SocketService {
 
     private handleDisconnect(socket: Socket): void {
         this.disconnectHandlerService.handleDisconnect(socket);
+    }
+
+    private handleSetDebug(socket: Socket, data: { lobbyId: string; debug: boolean }): void {
+        this.gameSocketHandlerService.handleSetDebug(socket, data.lobbyId, data.debug);
     }
 }

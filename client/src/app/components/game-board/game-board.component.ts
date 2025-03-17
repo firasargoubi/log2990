@@ -22,6 +22,7 @@ export class GameBoardComponent implements OnInit, OnChanges {
     @Input() action: boolean = false;
     @Output() tileClicked = new EventEmitter<Coordinates[]>();
     @Output() actionClicked = new EventEmitter<Tile>();
+    @Output() infoSent = new EventEmitter<string>();
 
     tiles: Tile[][] = [];
     availableMoves: Coordinates[] = [];
@@ -86,6 +87,16 @@ export class GameBoardComponent implements OnInit, OnChanges {
         }
     }
 
+    onTileRightClick(event: MouseEvent, tile: Tile) {
+        event.preventDefault();
+        if (this.gameState.debug) {
+            console.log(tile);
+            this.lobbyService.requestTeleport(this.lobbyId, { x: tile.x, y: tile.y });
+        } else {
+            this.infoSent.emit(this.generateTileInfo(tile));
+        }
+    }
+
     onTileHover(tile: Tile) {
         if (this.action) {
             this.highlightedPath = [];
@@ -98,6 +109,20 @@ export class GameBoardComponent implements OnInit, OnChanges {
 
     onTileLeave() {
         this.highlightedPath = [];
+    }
+
+    private generateTileInfo(tile: Tile): string {
+        let details = '';
+        const player = this.getPlayerAtPosition(tile.x, tile.y);
+        if (player) {
+            details += `Player: ${player.player.name}\n`;
+        }
+        const item = tile.object;
+        if (item) {
+            details += `Item: ${item}\n`;
+        }
+        details += `Tile Type: ${tile.type}\n`;
+        return details;
     }
 
     private showPathToTile(destination: Coordinates): Coordinates[] {

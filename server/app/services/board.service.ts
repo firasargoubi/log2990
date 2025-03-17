@@ -299,7 +299,7 @@ export class BoardService {
         }
         const item = Math.floor(gameState.board[position.x][position.y] / TILE_DELIMITER);
         const tile = gameState.board[position.x][position.y] % TILE_DELIMITER;
-        if (item !== ObjectsTypes.SPAWN && item === ObjectsTypes.EMPTY) {
+        if (item !== ObjectsTypes.SPAWN && item !== ObjectsTypes.EMPTY) {
             return true;
         }
         if (tile === TileTypes.Wall || tile === TileTypes.DoorClosed) {

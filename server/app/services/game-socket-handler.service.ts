@@ -108,6 +108,7 @@ export class GameSocketHandlerService {
         try {
             const updatedGameState = this.boardService.handleTeleport(gameState, coordinates);
             this.gameStates.set(lobbyId, updatedGameState);
+            console.log(updatedGameState);
             this.io.to(lobbyId).emit('boardModified', { gameState: updatedGameState });
         } catch (error) {
             socket.emit('error', `Teleport error: ${error.message}`);
@@ -167,5 +168,21 @@ export class GameSocketHandlerService {
         const newGameState = this.boardService.handleBoardChange(updatedGameState);
         this.gameStates.set(lobbyId, newGameState);
         this.io.to(lobbyId).emit('boardModified', { gameState: newGameState });
+    }
+
+    handleSetDebug(socket: Socket, lobbyId: string, debug: boolean) {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) {
+            socket.emit('error', 'Game not found.');
+            return;
+        }
+
+        const updatedGameState = {
+            ...gameState,
+            debug,
+        };
+
+        this.gameStates.set(lobbyId, updatedGameState);
+        this.io.to(lobbyId).emit('boardModified', { gameState: updatedGameState });
     }
 }
