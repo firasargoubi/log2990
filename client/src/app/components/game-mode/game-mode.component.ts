@@ -15,8 +15,8 @@ export class GameModeDialogComponent {
     gameType = GameType;
     gameSize = GameSize;
     selectedMode: GameMode = {
-        type: GameType.Classic,
-        size: GameSize.Medium,
+        type: GameType.classic,
+        size: GameSize.medium,
     };
 
     constructor(private dialogRef: MatDialogRef<GameModeDialogComponent>) {}

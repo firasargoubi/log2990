@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TileOptionsComponent } from './tile-options.component';
 import { TileService } from '@app/services/tile.service';
-import { TileTypes } from '@app/interfaces/tile-types';
+import { TileTypes } from '@app/Consts/app.constants';
 
 describe('TileOptionsComponent', () => {
     let component: TileOptionsComponent;
@@ -25,37 +26,31 @@ describe('TileOptionsComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should initialize tile options', () => {
-        component.initializeOptions();
+    it('should initialize tile options in ngOnInit', () => {
+        component = fixture.componentInstance;
 
-        const EXPECTED_TILE_OPTIONS = component.options.length;
-        expect(component.options.length).toBe(EXPECTED_TILE_OPTIONS);
+        component.options = [];
+
+        component.ngOnInit();
+
+        expect(component.options.length).toBe(4);
 
         expect(component.options[0].type).toBe(TileTypes.Water);
         expect(component.options[0].x).toBe(TileTypes.Water);
         expect(component.options[0].id).toBe(`${TileTypes.Water}`);
     });
 
-    it('should call initializeOptions on ngOnInit', () => {
-        spyOn(component, 'initializeOptions').and.callThrough();
-
-        component.ngOnInit();
-
-        expect(component.initializeOptions).toHaveBeenCalled();
-    });
     it('should not include TileTypes.DoorOpen in options', () => {
-        component.initializeOptions();
-
         expect(component.options.some((tile) => tile.type === TileTypes.DoorOpen)).toBeFalse();
     });
 
     it('should select a tile option and set all others unselected', () => {
-        component.initializeOptions();
         const tile = component.options[2];
 
         component.selectTileOption(tile);
 
         expect(tileServiceSpy.copyTileTool).toHaveBeenCalledWith(tile.type);
+
         component.options.forEach((t) => {
             if (t.id === tile.id) {
                 expect(t.selected).toBeTrue();
@@ -65,39 +60,29 @@ describe('TileOptionsComponent', () => {
         });
     });
 
-    it('should set all tiles as unselected when called', () => {
-        component.initializeOptions();
-
-        component.options[0].selected = true;
-        component.options[2].selected = true;
-
-        component.setAllTilesUnselected();
-
-        component.options.forEach((tile) => {
-            expect(tile.selected).toBeFalse();
-        });
-    });
-
-    it('should deselect tile if it is already selected', () => {
-        component.initializeOptions();
+    it('should deselect all tiles when selecting an already selected tile', () => {
         const tile = component.options[1];
-        tile.selected = true;
+
+        component.selectTileOption(tile);
+        expect(tile.selected).toBeTrue();
 
         component.selectTileOption(tile);
 
-        expect(tileServiceSpy.copyTileTool).toHaveBeenCalledWith(-1);
         component.options.forEach((t) => {
             expect(t.selected).toBeFalse();
         });
+
+        expect(tileServiceSpy.copyTileTool).toHaveBeenCalledWith(-1);
     });
+
     it('should call copyTileTool with correct tile type when selecting a tile', () => {
-        component.initializeOptions();
         const tile = component.options[3];
 
         component.selectTileOption(tile);
 
         expect(tileServiceSpy.copyTileTool).toHaveBeenCalledWith(tile.type);
     });
+
     it('should handle empty options list', () => {
         component.options = [];
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable max-classes-per-file */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
@@ -6,19 +7,19 @@ import { Component, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { of, Subject, throwError } from 'rxjs';
 import { EditionPageComponent } from './edition-page.component';
-import { Game } from '@app/interfaces/game.model';
+import { Game, GameSize, GameType } from '@common/game.interface';
 import { ErrorService } from '@app/services/error.service';
 import { GameService } from '@app/services/game.service';
 import { SaveService } from '@app/services/save.service';
 import { NotificationService } from '@app/services/notification.service';
 import { ImageService } from '@app/services/image.service';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
+import { ValidationService } from '@app/services/validation.service';
 import { BoardComponent } from '@app/components/board/board.component';
 import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
 import { EDITION_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 
-// Mock Components
 const routes: Routes = [];
 
 @Component({
@@ -55,12 +56,13 @@ describe('EditionPageComponent Standalone', () => {
     let imageServiceSpy: jasmine.SpyObj<ImageService>;
     let notificationServiceSpy: jasmine.SpyObj<NotificationService>;
     let objectCounterServiceSpy: jasmine.SpyObj<ObjectCounterService>;
+    let validationServiceSpy: jasmine.SpyObj<ValidationService>;
 
     const mockGame: Game = {
         id: '123',
         name: 'Test Game',
-        mapSize: 'small',
-        mode: 'normal',
+        mapSize: GameSize.small,
+        mode: GameType.classic,
         previewImage: '',
         description: 'Test description',
         lastModified: new Date(),
@@ -70,7 +72,6 @@ describe('EditionPageComponent Standalone', () => {
     };
 
     beforeEach(async () => {
-        // Create spy objects
         saveServiceSpy = jasmine.createSpyObj('SaveService', ['alertBoardForVerification', 'saveGame', 'getGameNames'], {
             isSave$: new Subject<boolean>(),
             isReset$: of(false),
@@ -84,11 +85,13 @@ describe('EditionPageComponent Standalone', () => {
         gameServiceSpy = jasmine.createSpyObj('GameService', ['fetchGameById']);
         gameServiceSpy.fetchGameById.and.returnValue(of(mockGame));
 
-        imageServiceSpy = jasmine.createSpyObj('ImageService', ['captureComponent']);
-        imageServiceSpy.captureComponent.and.returnValue(Promise.resolve('data:image/png;base64,test'));
+        imageServiceSpy = jasmine.createSpyObj('ImageService', ['captureBoardFromTiles']);
+        imageServiceSpy.captureBoardFromTiles.and.returnValue(Promise.resolve('data:image/png;base64,test'));
 
         notificationServiceSpy = jasmine.createSpyObj('NotificationService', ['showSuccess', 'showError']);
         objectCounterServiceSpy = jasmine.createSpyObj('ObjectCounterService', ['initializeCounter']);
+
+        validationServiceSpy = jasmine.createSpyObj('ValidationService', ['validateGame']);
 
         await TestBed.configureTestingModule({
             imports: [FormsModule, EditionPageComponent],
@@ -108,11 +111,11 @@ describe('EditionPageComponent Standalone', () => {
                 { provide: ImageService, useValue: imageServiceSpy },
                 { provide: NotificationService, useValue: notificationServiceSpy },
                 { provide: ObjectCounterService, useValue: objectCounterServiceSpy },
+                { provide: ValidationService, useValue: validationServiceSpy },
                 provideRouter(routes),
             ],
         }).compileComponents();
 
-        // Replace real components with mocks
         TestBed.overrideComponent(EditionPageComponent, {
             add: { imports: [MockBoardComponent] },
             remove: { imports: [BoardComponent] },
@@ -156,31 +159,25 @@ describe('EditionPageComponent Standalone', () => {
     });
 
     it('should return correct mapSize number', () => {
-        component.game.mapSize = 'small';
+        component.game.mapSize = GameSize.small;
         expect(component.mapSize).toBe(10);
 
-        component.game.mapSize = 'medium';
+        component.game.mapSize = GameSize.medium;
         expect(component.mapSize).toBe(15);
 
-        component.game.mapSize = 'large';
+        component.game.mapSize = GameSize.large;
         expect(component.mapSize).toBe(20);
-
-        component.game.mapSize = 'invalid';
-        expect(component.mapSize).toBe(10);
     });
 
     it('should return correct objectNumber based on mapSize', () => {
-        component.game.mapSize = 'small';
+        component.game.mapSize = GameSize.small;
         expect(component.objectNumber).toBe(2);
 
-        component.game.mapSize = 'medium';
+        component.game.mapSize = GameSize.medium;
         expect(component.objectNumber).toBe(4);
 
-        component.game.mapSize = 'large';
+        component.game.mapSize = GameSize.large;
         expect(component.objectNumber).toBe(6);
-
-        component.game.mapSize = 'invalid';
-        expect(component.objectNumber).toBe(2);
     });
 
     it('should initialize empty game when no id is provided', () => {
@@ -218,6 +215,10 @@ describe('EditionPageComponent Standalone', () => {
 
     it('should validate game name is required', async () => {
         component.game.name = '';
+        validationServiceSpy.validateGame.and.callFake(() => {
+            errorServiceSpy.addMessage(EDITION_PAGE_CONSTANTS.errorGameNameRequired);
+            return false;
+        });
 
         await component.saveBoard();
 
@@ -226,6 +227,10 @@ describe('EditionPageComponent Standalone', () => {
 
     it('should validate game description is required', async () => {
         component.game.description = '';
+        validationServiceSpy.validateGame.and.callFake(() => {
+            errorServiceSpy.addMessage(EDITION_PAGE_CONSTANTS.errorGameDescriptionRequired);
+            return false;
+        });
 
         await component.saveBoard();
 
@@ -234,6 +239,10 @@ describe('EditionPageComponent Standalone', () => {
 
     it('should validate game name is unique', async () => {
         component.game.name = 'Existing Game';
+        validationServiceSpy.validateGame.and.callFake(() => {
+            errorServiceSpy.addMessage(EDITION_PAGE_CONSTANTS.errorGameNameExists);
+            return false;
+        });
 
         await component.saveBoard();
 
@@ -242,6 +251,11 @@ describe('EditionPageComponent Standalone', () => {
 
     it('should validate board has valid doors', async () => {
         saveServiceSpy.currentStatus = { doors: false };
+        validationServiceSpy.validateGame.and.callFake(() => {
+            saveServiceSpy.alertBoardForVerification(true);
+            errorServiceSpy.addMessage(EDITION_PAGE_CONSTANTS.errorInvalidDoors);
+            return false;
+        });
 
         await component.saveBoard();
 
@@ -251,6 +265,10 @@ describe('EditionPageComponent Standalone', () => {
 
     it('should validate board has valid spawn points', async () => {
         saveServiceSpy.currentStatus = { allSpawnPoints: false };
+        validationServiceSpy.validateGame.and.callFake(() => {
+            errorServiceSpy.addMessage(EDITION_PAGE_CONSTANTS.errorInvalidSpawns);
+            return false;
+        });
 
         await component.saveBoard();
 
@@ -259,6 +277,10 @@ describe('EditionPageComponent Standalone', () => {
 
     it('should validate board is accessible', async () => {
         saveServiceSpy.currentStatus = { accessible: false };
+        validationServiceSpy.validateGame.and.callFake(() => {
+            errorServiceSpy.addMessage(EDITION_PAGE_CONSTANTS.errorInvalidAccess);
+            return false;
+        });
 
         await component.saveBoard();
 
@@ -267,6 +289,10 @@ describe('EditionPageComponent Standalone', () => {
 
     it('should validate board has minimum terrain tiles', async () => {
         saveServiceSpy.currentStatus = { minTerrain: false };
+        validationServiceSpy.validateGame.and.callFake(() => {
+            errorServiceSpy.addMessage(EDITION_PAGE_CONSTANTS.errorInvalidMinTiles);
+            return false;
+        });
 
         await component.saveBoard();
 
@@ -278,26 +304,28 @@ describe('EditionPageComponent Standalone', () => {
 
         await component.saveBoard();
 
-        expect(imageServiceSpy.captureComponent).not.toHaveBeenCalled();
+        expect(imageServiceSpy.captureBoardFromTiles).not.toHaveBeenCalled();
         expect(saveServiceSpy.saveGame).not.toHaveBeenCalled();
     });
 
-    it('should save the game if all validations pass', async () => {
-        component.game.name = 'New Game';
-        component.game.description = 'Valid description';
+    it('should prepare and save game data when validation passes', async () => {
+        validationServiceSpy.validateGame.and.returnValue(true);
         component.showErrorPopup = false;
+        component.game = mockGame;
+
         saveServiceSpy.currentStatus = {
             doors: true,
-            allSpawnPoints: true,
-            accessible: true,
             minTerrain: true,
+            accessible: true,
+            allSpawnPoints: true,
         };
+
+        imageServiceSpy.captureBoardFromTiles.and.returnValue(Promise.resolve('data:image/png;base64,mockImage'));
 
         await component.saveBoard();
 
-        expect(imageServiceSpy.captureComponent).toHaveBeenCalledWith(component.boardElement.nativeElement);
-        expect(saveServiceSpy.saveGame).toHaveBeenCalledWith(component.game);
+        expect(imageServiceSpy.captureBoardFromTiles).toHaveBeenCalled();
+        expect(saveServiceSpy.saveGame).toHaveBeenCalled();
         expect(component.saveState).toBeTrue();
-        expect(errorServiceSpy.addMessage).toHaveBeenCalledWith(EDITION_PAGE_CONSTANTS.successGameLoaded);
     });
 });

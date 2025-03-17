@@ -6,7 +6,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { MatRadioModule } from '@angular/material/radio';
 import { By } from '@angular/platform-browser';
 import { GameModeDialogComponent } from '@app/components/game-mode/game-mode.component';
-import { GameType, GameSize } from '@app/Consts/app.constants';
+import { GameType, GameSize } from '@common/game.interface';
 
 describe('GameModeDialogComponent', () => {
     let component: GameModeDialogComponent;
@@ -54,19 +54,33 @@ describe('GameModeDialogComponent', () => {
     });
 
     it('should update selectedMode.type when a mode is selected', () => {
-        const radioButtons = fixture.debugElement.queryAll(By.css('.mode-radio-group input[type="radio"]'));
-        radioButtons[1].nativeElement.click();
+        const radioButtons = fixture.nativeElement.querySelectorAll('.mode-radio-group input[type="radio"]');
+
+        expect(radioButtons.length).toBeGreaterThan(0);
+
+        component.selectedMode.type = GameType.classic;
+
+        radioButtons[1].checked = true;
+        radioButtons[1].dispatchEvent(new Event('change'));
+
         fixture.detectChanges();
 
-        expect(component.selectedMode.type).toBe(GameType.Capture);
+        expect(component.selectedMode.type).toBe(GameType.capture);
     });
 
     it('should update selectedMode.size when a size is selected', () => {
-        const radioButtons = fixture.debugElement.queryAll(By.css('.size-radio-group input[type="radio"]'));
-        radioButtons[2].nativeElement.click();
+        const radioButtons = fixture.nativeElement.querySelectorAll('.size-radio-group input[type="radio"]');
+
+        expect(radioButtons.length).toBeGreaterThan(0);
+
+        component.selectedMode.size = GameSize.small;
+
+        radioButtons[2].checked = true;
+        radioButtons[2].dispatchEvent(new Event('change'));
+
         fixture.detectChanges();
 
-        expect(component.selectedMode.size).toBe(GameSize.Large);
+        expect(component.selectedMode.size).toBe(GameSize.large);
     });
 
     it('should call dialogRef.close() with no data when cancel is clicked', () => {
