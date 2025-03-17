@@ -16,7 +16,7 @@ export class LobbySocketHandlerService {
     createLobby(game: Game): GameLobby {
         const maxPlayers = this.getMaxPlayers(game.mapSize);
         const lobbyId = this.generateId();
-
+        console.log("game",game);
         const newLobby: GameLobby = {
             id: lobbyId,
             players: [],

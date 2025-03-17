@@ -1,7 +1,7 @@
 import { GameState } from '@common/game-state';
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
-import { TileTypes, Tile } from '@common/game.interface';
+import { TileTypes, Tile, TILE_DELIMITER } from '@common/game.interface';
 import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
 import { BoardService } from './board.service';
@@ -172,6 +172,8 @@ export class GameSocketHandlerService {
             const playerIndex = gameState.players.findIndex((p) => p.id === deletedPlayer.id);
             gameState.currentPlayer = gameState.players[(playerIndex + 1) % gameState.players.length].id;
             gameState.players.splice(playerIndex, 1);
+            const spawnPoint = gameState.spawnPoints[playerIndex];
+            gameState.board[spawnPoint.x][spawnPoint.y] = gameState.board[spawnPoint.x][spawnPoint.y] % TILE_DELIMITER;
             gameState.spawnPoints.splice(playerIndex, 1);
             gameState.playerPositions.splice(playerIndex, 1);
             if (!gameState.deletedPlayers) {
