@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LobbySocketHandlerService } from '@app/services/lobby-socket-handler.service';
 import { GameLobby } from '@common/game-lobby';

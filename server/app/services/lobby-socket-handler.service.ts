@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 import { GameLobby } from '@common/game-lobby';
 import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
