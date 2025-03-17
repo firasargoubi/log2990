@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, inject, Input, OnChanges, OnInit } from '@angular/core';
 import { LobbyService } from '@app/services/lobby.service';
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
@@ -11,9 +11,9 @@ const TO_SECONDS = 1000;
 })
 export class CombatComponent implements OnInit, OnChanges {
     @Input() currentPlayer!: Player;
-    @Input() opponent!: Player;
     @Input() lobbyId!: string;
     @Input() gameState: GameState | null = null;
+    @Input() opponent!: Player;
     isPlayerTurn: boolean = false;
     playerTurn: string = '';
     countDown: number = 0;
@@ -26,12 +26,12 @@ export class CombatComponent implements OnInit, OnChanges {
             this.lobbyService.handleAttack(this.currentPlayer, this.opponent, this.lobbyId, this.gameState);
         }
         this.subscribeToPlayerTurn();
+        this.subscribeToPlayerSwitch();
+        this.subscribeToNewSpawnPoints();
     }
 
-    ngOnChanges(changes: SimpleChanges) {
-        if (changes['gameState'] && changes['gameState'].currentValue) {
-            this.gameState = changes['gameState'].currentValue;
-        }
+    ngOnChanges() {
+        this.subscribeToPlayerSwitch();
         if (!this.currentPlayer) {
             this.currentPlayer = this.gameState?.players.find((p) => p.id === this.playerTurn) ?? this.currentPlayer;
         }
@@ -39,7 +39,7 @@ export class CombatComponent implements OnInit, OnChanges {
         if (!this.opponent) {
             this.opponent = this.gameState?.players.find((p) => p.id !== this.currentPlayer.id) ?? this.opponent;
         }
-        this.startCountdown();
+        // this.startCountdown();
     }
 
     startCountdown() {
@@ -59,11 +59,12 @@ export class CombatComponent implements OnInit, OnChanges {
         if (this.countDownInterval !== null) {
             clearInterval(this.countDownInterval);
         }
-        this.subscribeToPlayerSwitch();
+        this.onAttack();
     }
 
     onAttack() {
         console.log('ON EST DANS ONATTACK() CLIENT');
+        if (!this.gameState) return;
         const attackRoll = this.rollDice(this.currentPlayer, 'attack') + this.currentPlayer.attack;
         const defenseRoll = this.rollDice(this.opponent, 'defense') + this.opponent.defense;
         if (this.isOnIce(this.currentPlayer)) {
@@ -77,18 +78,24 @@ export class CombatComponent implements OnInit, OnChanges {
         }
         const damage = attackRoll - defenseRoll;
         console.log('dommage appliqué ', damage);
+        console.log('La vie avant que dommage est appliqué', this.opponent.life);
         if (damage > 0) {
             this.opponent.life -= damage;
+            console.log("L'attaque a bien fonctionnée");
             console.log("La vie de l'opposant: ", this.opponent.life);
             if (this.opponent.life <= 0) {
+                console.log('on appel handleDefeat');
                 this.handleDefeat(this.opponent);
             }
         } else {
             console.log("L'attaque n'a pas fonctionnée");
         }
-
+        console.log('Lobby ID : ', this.lobbyId);
         this.lobbyService.attackAction(this.lobbyId, this.opponent, damage, this.opponent.life);
+        this.lobbyService.changeTurnEnd(this.currentPlayer, this.opponent, this.playerTurn, this.gameState);
         this.subscribeChangeAttributes();
+        console.log("Coucou je fait l'appel de player switch à ce moment");
+        this.subscribeToPlayerSwitch();
     }
 
     private rollDice(player: Player, type: 'attack' | 'defense'): number {
@@ -115,6 +122,7 @@ export class CombatComponent implements OnInit, OnChanges {
         if (this.gameState) {
             this.lobbyService.handleDefeat(player, this.lobbyId);
         }
+        console.log('Je fait un appel vers les new spawn points');
         this.subscribeToNewSpawnPoints();
     }
 
@@ -140,6 +148,7 @@ export class CombatComponent implements OnInit, OnChanges {
             if (playerIndex === -1) return;
             if (this.gameState && this.gameState.playerPositions) {
                 this.gameState.playerPositions[playerIndex] = data.newSpawn;
+                
             }
         });
     }
@@ -154,13 +163,6 @@ export class CombatComponent implements OnInit, OnChanges {
                 console.log('data.remainingHealth ', data.remainingHealth);
                 console.log('opponent.life: ', opponent.life);
             }
-        });
-
-        this.lobbyService.updatePlayerTurn().subscribe((data) => {
-            this.playerTurn = data.nextPlayer.id;
-            this.canAct = this.currentPlayer.id === this.playerTurn;
-            console.log('new player turn: ', this.playerTurn);
-            console.log('canAct: ', this.canAct);
         });
     }
 }

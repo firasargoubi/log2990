@@ -218,19 +218,12 @@ export class GameSocketHandlerService {
     }
 
     handleAttackAction(lobbyId: string, opponent: Player, damage: number) {
-        console.log('Est rentré un première fois dans handleAction');
         const gameState = this.gameStates.get(lobbyId);
         const opponentGame = gameState.players.find((p) => p.id === opponent.id);
         if (!opponentGame) return;
-        opponentGame.life -= damage;
-        this.io.to(lobbyId).emit('update-health', { playerUpdated: opponentGame, remainingHealth: opponentGame.life });
-        // if (opponentGame.life <= 0) {
-        //     this.io.to(lobbyId).emit('player-defeated', { playerId: opponent.id });
-        // }
-        const nextPlayer = gameState.players.find((p) => p.id === opponent.id);
-        if (nextPlayer) {
-            gameState.currentPlayer = nextPlayer.id;
-            this.io.to(lobbyId).emit('turn-changed', { nextPlayer });
+        if (damage > 0) {
+            opponentGame.life -= damage;
         }
+        this.io.to(lobbyId).emit('update-health', { player: opponentGame, remainingHealth: opponentGame.life });
     }
 }

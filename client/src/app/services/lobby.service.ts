@@ -5,7 +5,7 @@ import { GameState } from '@common/game-state';
 import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { shareReplay as rxjsShareReplay } from 'rxjs/operators';
 import { io, Socket } from 'socket.io-client';
 import { environment } from 'src/environments/environment';
@@ -16,6 +16,7 @@ import { environment } from 'src/environments/environment';
 export class LobbyService {
     private socket: Socket;
     private currentPlayer: Player | null = null;
+    private playerSwitchSubject = new Subject<{ newPlayerTurn: string; countDown: number }>();
 
     constructor() {
         this.socket = io(environment.serverUrl, {
@@ -32,6 +33,10 @@ export class LobbyService {
 
         this.socket.on('connect_error', (error) => {
             console.error('Socket connection error:', error);
+        });
+
+        this.socket.on('PlayerSwitch', (data: { newPlayerTurn: string; countDown: number }) => {
+            this.playerSwitchSubject.next(data);
         });
     }
 
@@ -266,12 +271,7 @@ export class LobbyService {
     }
 
     getPlayerSwitch(): Observable<{ newPlayerTurn: string; countDown: number }> {
-        return new Observable<{ newPlayerTurn: string; countDown: number }>((observer) => {
-            this.socket.on('PlayerSwitch', (data: { newPlayerTurn: string; countDown: number }) => {
-                observer.next(data);
-                observer.complete();
-            });
-        });
+        return this.playerSwitchSubject.asObservable();
     }
 
     changeTurnEnd(currentPlayer: Player, opponent: Player, playerTurn: string, gameState: GameState) {
@@ -318,7 +318,6 @@ export class LobbyService {
         return new Observable<{ player: Player; newSpawn: Coordinates }>((observer) => {
             this.socket.on('changedSpawnPoint', (data: { player: Player; newSpawn: Coordinates }) => {
                 observer.next(data);
-                observer.complete();
             });
         });
     }
@@ -331,15 +330,7 @@ export class LobbyService {
     updateHealth(): Observable<{ player: Player; remainingHealth: number }> {
         return new Observable<{ player: Player; remainingHealth: number }>((observer) => {
             this.socket.on('update-health', (data: { player: Player; remainingHealth: number }) => {
-                observer.next(data);
-                observer.complete();
-            });
-        });
-    }
-
-    updatePlayerTurn(): Observable<{ nextPlayer: Player }> {
-        return new Observable<{ nextPlayer: Player }>((observer) => {
-            this.socket.on('turn-changed', (data: { nextPlayer: Player }) => {
+                console.log('Player in lobby Service: ', data.player);
                 observer.next(data);
                 observer.complete();
             });
