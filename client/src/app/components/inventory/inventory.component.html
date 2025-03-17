@@ -1,6 +1,8 @@
 <div class="inventory">
     <h3>Inventaire</h3>
     <ul>
-        <li *ngFor="let item of inventory">{{ item }}</li>
+        @for (item of inventory; track item) {
+        <li>{{ item }}</li>
+        }
     </ul>
 </div>
