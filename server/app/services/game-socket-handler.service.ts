@@ -1,5 +1,6 @@
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
+import { GameState } from '@common/game-state';
 import { Tile, TILE_DELIMITER, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Server, Socket } from 'socket.io';
