@@ -46,6 +46,7 @@ export enum TileTypes {
     DoorClosed = 4,
     DoorOpen = 5,
     Wall = 6,
+    Floor,
 }
 
 export interface Tile {
