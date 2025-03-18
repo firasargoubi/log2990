@@ -348,9 +348,9 @@ export class LobbyService {
         this.socket.emit('performAttack', { lobbyId, attackerId, defenderId });
     }
 
-    getAttackResult(): Observable<any> {
+    getAttackResult(): Observable<unknown> {
         return new Observable((observer) => {
-            this.socket.on('attackResult', (data: any) => {
+            this.socket.on('attackResult', (data: unknown) => {
                 observer.next(data);
             });
         });

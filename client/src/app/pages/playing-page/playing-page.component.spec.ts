@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+/* import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { PlayingPageComponent } from './playing-page.component';
 import { LobbyService } from '@app/services/lobby.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -419,4 +419,229 @@ describe('PlayingPageComponent', () => {
 
         expect(component.gameState).toEqual(updatedGameState);
     }));
+});
+*/
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ActivatedRoute, Router } from '@angular/router';
+import { LobbyService } from '@app/services/lobby.service';
+import { NotificationService } from '@app/services/notification.service';
+import { Coordinates } from '@common/coordinates';
+import { GameState } from '@common/game-state';
+import { Tile } from '@common/game.interface';
+import { Player } from '@common/player';
+import { of, Subject, Subscription } from 'rxjs';
+import { PlayingPageComponent } from './playing-page.component';
+
+describe('PlayingPageComponent', () => {
+    let component: PlayingPageComponent;
+    let fixture: ComponentFixture<PlayingPageComponent>;
+    let mockLobbyService: jasmine.SpyObj<LobbyService>;
+    let mockNotificationService: jasmine.SpyObj<NotificationService>;
+    let mockRouter: jasmine.SpyObj<Router>;
+    let activatedRouteParams$: Subject<any>;
+
+    beforeEach(async () => {
+        mockLobbyService = jasmine.createSpyObj('LobbyService', [
+            'onTileUpdate',
+            'onCombatUpdate',
+            'onInteraction',
+            'getCurrentPlayer',
+            'getSocketId',
+            'requestMovement',
+            'requestEndTurn',
+            'leaveLobby',
+            'updateCombatStatus',
+        ]);
+
+        mockNotificationService = jasmine.createSpyObj('NotificationService', ['showInfo', 'showSuccess', 'showError']);
+        mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+        activatedRouteParams$ = new Subject();
+
+        await TestBed.configureTestingModule({
+            imports: [PlayingPageComponent],
+            providers: [
+                { provide: LobbyService, useValue: mockLobbyService },
+                { provide: NotificationService, useValue: mockNotificationService },
+                { provide: Router, useValue: mockRouter },
+                { provide: ActivatedRoute, useValue: { params: activatedRouteParams$.asObservable() } },
+            ],
+        }).compileComponents();
+
+        fixture = TestBed.createComponent(PlayingPageComponent);
+        component = fixture.componentInstance;
+
+        component.currentPlayer = {
+            id: 'player1',
+            name: 'Test',
+            avatar: '',
+            life: 100,
+            maxLife: 100,
+            speed: 5,
+            attack: 5,
+            defense: 5,
+            isHost: false,
+        };
+
+        component.gameState = {
+            id: 'game1',
+            board: [],
+            turnCounter: 0,
+            players: [component.currentPlayer],
+            currentPlayer: 'player1',
+            availableMoves: [],
+            shortestMoves: [],
+            playerPositions: [],
+            spawnPoints: [],
+            currentPlayerMovementPoints: 5,
+            currentPlayerActionPoints: 1,
+        };
+    });
+
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
+
+    it('should initialize with lobbyId from route', fakeAsync(() => {
+        mockLobbyService.onTileUpdate.and.returnValue(of({ newGameBoard: [[1]] }));
+        mockLobbyService.onCombatUpdate.and.returnValue(of({ timeLeft: 25 }));
+        mockLobbyService.onInteraction.and.returnValue(of({ isInCombat: true }));
+        mockLobbyService.getCurrentPlayer.and.returnValue(component.currentPlayer);
+        mockLobbyService.getSocketId.and.returnValue('player1');
+
+        activatedRouteParams$.next({ id: 'lobby123' });
+        tick();
+
+        expect(component.lobbyId).toBe('lobby123');
+        expect(mockLobbyService.getCurrentPlayer).toHaveBeenCalled();
+    }));
+
+    it('should navigate home if no lobbyId in route', fakeAsync(() => {
+        activatedRouteParams$.next({});
+        tick();
+        expect(mockRouter.navigate).toHaveBeenCalledWith(['/home'], { replaceUrl: true });
+    }));
+
+    it('should handle move request if it is current player turn', () => {
+        component.lobbyId = 'lobby123';
+        const coords: Coordinates[] = [{ x: 1, y: 1 }];
+        mockLobbyService.requestMovement.and.stub();
+        component.onMoveRequest(coords);
+        expect(mockLobbyService.requestMovement).toHaveBeenCalledWith('lobby123', coords);
+    });
+
+    it('should not handle move request if it is not current player turn', () => {
+        component.gameState!.currentPlayer = 'otherPlayer';
+        mockLobbyService.requestMovement.and.stub();
+        component.onMoveRequest([]);
+        expect(mockLobbyService.requestMovement).not.toHaveBeenCalled();
+    });
+
+    it('should handle end turn only if current player', () => {
+        component.lobbyId = 'lobby123';
+        mockLobbyService.requestEndTurn.and.stub();
+        component.onEndTurn();
+        expect(mockLobbyService.requestEndTurn).toHaveBeenCalledWith('lobby123');
+    });
+
+    it('should get correct game name', () => {
+        expect(component.getGameName()).toBe('Forest Adventure');
+    });
+
+    it('should return correct map size', () => {
+        component.gameState!.board = new Array(8).fill([]);
+        expect(component.getMapSize()).toBe('Small');
+        component.gameState!.board = new Array(12).fill([]);
+        expect(component.getMapSize()).toBe('Medium');
+        component.gameState!.board = new Array(20).fill([]);
+        expect(component.getMapSize()).toBe('Large');
+    });
+
+    it('should return Unknown if gameState is null', () => {
+        component.gameState = null;
+        expect(component.getMapSize()).toBe('Unknown');
+    });
+
+    it('should return correct player count', () => {
+        expect(component.getPlayerCount()).toBe(1);
+    });
+
+    it('should return active player name', () => {
+        expect(component.getActivePlayer()).toBe('Test');
+    });
+
+    it('should emit remove event when onRemovePlayer is called', () => {
+        spyOn(component.remove, 'emit');
+        component.onRemovePlayer();
+        expect(component.remove.emit).toHaveBeenCalledWith(component.player.id);
+    });
+
+    it('should navigate to home when abandon is called', () => {
+        component.lobbyId = 'lobby123';
+        component.abandon();
+        expect(mockLobbyService.leaveLobby).toHaveBeenCalledWith('lobby123', component.currentPlayer.name);
+        expect(mockRouter.navigate).toHaveBeenCalledWith(['/home']);
+    });
+
+    it('should notify own turn', () => {
+        spyOn(mockNotificationService, 'showSuccess');
+        component.notifyPlayerTurn('player1');
+        expect(mockNotificationService.showSuccess).toHaveBeenCalledWith("C'est votre tour!");
+    });
+
+    it('should notify other player turn', () => {
+        component.gameState!.players.push({ id: 'p2', name: 'Other' } as Player);
+        spyOn(mockNotificationService, 'showInfo');
+        component.notifyPlayerTurn('p2');
+        expect(mockNotificationService.showInfo).toHaveBeenCalledWith("C'est le tour de Other");
+    });
+
+    it('should unsubscribe on destroy', () => {
+        const sub1 = new Subscription();
+        const sub2 = new Subscription();
+        spyOn(sub1, 'unsubscribe');
+        spyOn(sub2, 'unsubscribe');
+        component['subscriptions'] = [sub1, sub2];
+        component.ngOnDestroy();
+        expect(sub1.unsubscribe).toHaveBeenCalled();
+        expect(sub2.unsubscribe).toHaveBeenCalled();
+    });
+    it('should call performActionRequest with correct context', () => {
+        const mockTile = {} as Tile;
+        const performSpy = spyOn(component['interactionService'], 'performActionRequest');
+
+        component.onActionRequest(mockTile);
+
+        expect(performSpy).toHaveBeenCalled();
+    });
+    it('should start combat and countdown when attacking', () => {
+        const startCombatSpy = spyOn(component['lobbyService'], 'startCombat');
+        const startCountdownSpy = spyOn(component['turnTimerService'], 'startCountdown');
+
+        component.currentPlayer = { id: 'p1' } as Player;
+        component.onAttackClick('enemy1', 'lobby123');
+
+        expect(startCombatSpy).toHaveBeenCalledWith('enemy1', 'lobby123');
+        expect(component.isInCombat).toBeTrue();
+        expect(startCountdownSpy).toHaveBeenCalled();
+    });
+    it('should return players list from gameState', () => {
+        const players = [{ id: 'p1', name: 'A' }] as Player[];
+        component.gameState = { players } as GameState;
+
+        expect(component.getPlayers()).toEqual(players);
+    });
+    it('should return active player name from gameState', () => {
+        component.gameState = {
+            players: [{ id: 'p1', name: 'John' }],
+            currentPlayer: 'p1',
+        } as GameState;
+
+        expect(component.getActivePlayer()).toBe('John');
+    });
+    it("should return true if it is current player's turn", () => {
+        component.currentPlayer = { id: 'p1' } as Player;
+        component.gameState = { currentPlayer: 'p1' } as GameState;
+
+        expect(component.isCurrentPlayerTurn()).toBeTrue();
+    });
 });

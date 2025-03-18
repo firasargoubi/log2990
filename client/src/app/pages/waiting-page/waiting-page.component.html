@@ -1,5 +1,5 @@
 <div class="header-container">
-    <a routerLink="/home" class="logo-link" (click) = "removePlayer(currentPlayer.id)">
+    <a routerLink="/home" class="logo-link" (click)="removePlayer(currentPlayer.id)">
         <img class="logo" src="assets/images/logo.png" alt="Logo" />
     </a>
     <h2 mat-dialog-title>Salle d'attente</h2>
@@ -15,7 +15,7 @@
                 Code d'accès : <strong>{{ lobby?.id }}</strong>
             </p>
 
-            @if (lobby.players.length  >= 2 && currentPlayer.isHost) {
+            @if (lobby.players.length >= 2 && currentPlayer.isHost) {
             <button (click)="startGame()" [disabled]="!lobby || !currentPlayer || !lobby.isLocked">Start Game</button>
             }
 
@@ -23,7 +23,14 @@
             </app-player-list>
 
             @if (isHost()) {
-            <button mat-icon-button (click)="lockRoom()" class="action promote" matTooltip="Promouvoir" matTooltipPosition="below">
+            <button
+                mat-icon-button
+                (click)="lockRoom()"
+                [disabled]="lobby?.isLocked"
+                class="action promote"
+                matTooltip="Promouvoir"
+                matTooltipPosition="below"
+            >
                 <i>🔒</i>
             </button>
             }

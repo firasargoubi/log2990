@@ -117,7 +117,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.lobbyService.onGameEnded().subscribe((data) => {
             this.isInCombat = false;
             this.lobbyService.updateCombatStatus(this.isInCombat);
-            console.log("Winner: ",data.winner);
+            console.log('Winner: ', data.winner);
         });
 
         if (this.gameState) {

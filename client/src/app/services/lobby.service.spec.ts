@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { LobbyService } from './lobby.service';
 import { TestBed } from '@angular/core/testing';
-import { environment } from 'src/environments/environment';
-import { Game, ObjectsTypes, TileTypes } from '@common/game.interface';
-import { Tile } from '@common/tile';
-import { Player } from '@common/player';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
+import { Game, ObjectsTypes, TileTypes } from '@common/game.interface';
+import { Player } from '@common/player';
+import { Tile } from '@common/tile';
+import { environment } from 'src/environments/environment';
+import { LobbyService } from './lobby.service';
 
 describe('LobbyService', () => {
     let service: LobbyService;
@@ -849,6 +849,29 @@ describe('LobbyService', () => {
             });
             const handler = getEventHandler('attackEnd');
             handler(testData);
+        });
+
+        it('should update combat status and emit correct value', (done) => {
+            // Initializing the spy to monitor the emitted values
+            const expectedValue = true;
+
+            service.updateCombatStatus(expectedValue);
+
+            service.isInCombat$.subscribe((status) => {
+                expect(status).toBe(expectedValue);
+                done();
+            });
+        });
+
+        it('should update combat status to false and emit correct value', (done) => {
+            const expectedValue = false;
+
+            service.updateCombatStatus(expectedValue);
+
+            service.isInCombat$.subscribe((status) => {
+                expect(status).toBe(expectedValue);
+                done();
+            });
         });
     });
 
