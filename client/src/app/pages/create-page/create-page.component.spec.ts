@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ComponentFixture, TestBed, fakeAsync, tick, discardPeriodicTasks } from '@angular/core/testing';
 import { CreatePageComponent } from './create-page.component';
@@ -14,6 +15,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NotificationService } from '@app/services/notification.service';
 import { CREATE_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { LobbyService } from '@app/services/lobby.service';
 
 describe('CreatePageComponent', () => {
     let component: CreatePageComponent;
@@ -23,6 +25,7 @@ describe('CreatePageComponent', () => {
     let mockDialogRef: jasmine.SpyObj<MatDialogRef<BoxFormDialogComponent>>;
     let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
     let notificationServiceSpy: jasmine.SpyObj<NotificationService>;
+    let lobbyServiceSpy: jasmine.SpyObj<LobbyService>;
 
     beforeEach(async () => {
         const mockGamesSubject = new BehaviorSubject<Game[]>([
@@ -60,6 +63,7 @@ describe('CreatePageComponent', () => {
 
         gameServiceSpy = jasmine.createSpyObj('GameService', ['fetchVisibleGames', 'verifyGameAccessible']);
         gameServiceSpy.fetchVisibleGames.and.returnValue(mockGamesSubject.asObservable());
+        lobbyServiceSpy = jasmine.createSpyObj('LobbyService', ['createLobby', 'onLobbyCreated']);
         notificationServiceSpy = jasmine.createSpyObj('NotificationService', ['showSuccess', 'showError']);
         const activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', [], { snapshot: { params: {} } });
 
@@ -81,6 +85,7 @@ describe('CreatePageComponent', () => {
             ],
             providers: [
                 { provide: GameService, useValue: gameServiceSpy },
+                { provide: LobbyService, useValue: lobbyServiceSpy },
                 { provide: MatDialog, useValue: matDialogSpy },
                 { provide: ActivatedRoute, useValue: activatedRouteSpy },
                 { provide: MatSnackBar, useValue: snackBarSpy },
@@ -167,8 +172,8 @@ describe('CreatePageComponent', () => {
 
     it('should create a new lobby if none exists and open the dialog', fakeAsync(() => {
         gameServiceSpy.verifyGameAccessible.and.returnValue(of(true));
-        const createLobbySpy = spyOn(component['lobbyService'], 'createLobby').and.callThrough();
-        const onLobbyCreatedSpy = spyOn(component['lobbyService'], 'onLobbyCreated').and.returnValue(
+        lobbyServiceSpy.createLobby.and.callFake(() => {});
+        lobbyServiceSpy.onLobbyCreated.and.returnValue(
             of({
                 lobby: {
                     id: '123',
@@ -181,22 +186,24 @@ describe('CreatePageComponent', () => {
         );
 
         component.onBoxClick(component.games[0]);
+        tick();
 
-        expect(createLobbySpy).toHaveBeenCalledWith(component.games[0]);
-        expect(onLobbyCreatedSpy).toHaveBeenCalled();
+        expect(lobbyServiceSpy.createLobby).toHaveBeenCalledWith(component.games[0]);
+        expect(lobbyServiceSpy.onLobbyCreated).toHaveBeenCalled();
         expect(component.lobbyId).toBe('123');
         expect(matDialogSpy.open).toHaveBeenCalled();
 
         discardPeriodicTasks();
     }));
+
     it('should open the dialog without creating a new lobby if one already exists', fakeAsync(() => {
         component.lobbyId = 'existing-lobby-id';
         gameServiceSpy.verifyGameAccessible.and.returnValue(of(true));
-        const createLobbySpy = spyOn(component['lobbyService'], 'createLobby');
 
         component.onBoxClick(component.games[0]);
+        tick();
 
-        expect(createLobbySpy).not.toHaveBeenCalled();
+        expect(lobbyServiceSpy.createLobby).not.toHaveBeenCalled();
         expect(matDialogSpy.open).toHaveBeenCalled();
 
         discardPeriodicTasks();
@@ -204,8 +211,7 @@ describe('CreatePageComponent', () => {
 
     it('should show error if lobby creation fails', fakeAsync(() => {
         gameServiceSpy.verifyGameAccessible.and.returnValue(of(true));
-        spyOn(component['lobbyService'], 'createLobby');
-        spyOn(component['lobbyService'], 'onLobbyCreated').and.returnValue(throwError(() => new Error('Failed to create lobby')));
+        lobbyServiceSpy.onLobbyCreated.and.returnValue(throwError(() => new Error('Failed to create lobby')));
 
         component.onBoxClick(component.games[0]);
         tick();
