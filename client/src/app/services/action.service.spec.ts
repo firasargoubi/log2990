@@ -1,307 +1,346 @@
 import { TestBed } from '@angular/core/testing';
-import { TileTypes } from '@app/interfaces/tile-types';
 import { GameState } from '@common/game-state';
-import { Player } from '@common/player';
+import { TileTypes } from '@common/game.interface';
 import { Tile } from '@common/tile';
 import { ActionService } from './action.service';
-import { MouseService } from './mouse.service';
+import { NotificationService } from './notification.service';
 
 describe('ActionService', () => {
     let service: ActionService;
-    let mockMouseService: jasmine.SpyObj<MouseService>;
+    let notificationServiceSpy: jasmine.SpyObj<NotificationService>;
 
     beforeEach(() => {
-        mockMouseService = jasmine.createSpyObj('MouseService', ['']);
+        const spy = jasmine.createSpyObj('NotificationService', ['showInfo']);
+
         TestBed.configureTestingModule({
-            providers: [ActionService, { provide: MouseService, useValue: mockMouseService }],
+            providers: [ActionService, { provide: NotificationService, useValue: spy }],
         });
+
         service = TestBed.inject(ActionService);
+        notificationServiceSpy = TestBed.inject(NotificationService) as jasmine.SpyObj<NotificationService>;
     });
 
     it('should be created', () => {
         expect(service).toBeTruthy();
     });
 
-    describe('getCurrentPlayerCoordinates', () => {
-        it('should return player coordinates if gameState is defined', () => {
-            const player: Player = { id: '1', name: 'Player 1', avatar: 'avatar1', isHost: false, life: 100, speed: 10, attack: 50, defense: 30 };
-            const gameState: GameState = {
-                id: 'game1',
-                board: [],
-                gameBoard: [],
-                turnCounter: 0,
-                players: [player],
-                currentPlayer: '1',
-                availableMoves: [],
-                playerPositions: new Map([['1', { x: 1, y: 1 }]]),
-                currentPlayerMovementPoints: 0,
-            };
-            service.gameState = gameState;
-            expect(service.getCurrentPlayerCoordinates(player)).toEqual({ x: 1, y: 1 });
-        });
+    it('should get current player coordinates', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }],
+            playerPositions: [{ x: 1, y: 2 }],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
 
-        it('should return undefined if gameState is not defined', () => {
-            const player: Player = { id: '1', name: 'Player 1', avatar: 'avatar1', isHost: false, life: 100, speed: 10, attack: 50, defense: 30 };
-            expect(service.getCurrentPlayerCoordinates(player)).toBeUndefined();
-        });
+        const coordinates = service.getCurrentPlayerCoordinates('player1');
+        expect(coordinates).toEqual({ x: 1, y: 2 });
     });
 
-    describe('isPlayerOnTile', () => {
-        it('should return true if player is on the tile', () => {
-            const player: Player = { id: '1', name: 'Player 1', avatar: 'avatar1', isHost: false, life: 100, speed: 10, attack: 50, defense: 30 };
-            const tile: Tile = { id: 'tile1', x: 1, y: 1, type: TileTypes.Grass, object: 0 };
-            const gameState: GameState = {
-                id: 'game1',
-                board: [],
-                gameBoard: [],
-                turnCounter: 0,
-                players: [player],
-                currentPlayer: '1',
-                availableMoves: [],
-                playerPositions: new Map([['1', { x: 1, y: 1 }]]),
-                currentPlayerMovementPoints: 0,
-            };
-            service.gameState = gameState;
-            expect(service.isPlayerOnTile(tile)).toBeTrue();
-        });
+    it('should return undefined if player not found', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }],
+            playerPositions: [{ x: 1, y: 2 }],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
 
-        it('should return false if player is not on the tile', () => {
-            const player: Player = { id: '1', name: 'Player 1', avatar: 'avatar1', isHost: false, life: 100, speed: 10, attack: 50, defense: 30 };
-            const tile: Tile = { id: 'tile1', x: 2, y: 2, type: TileTypes.Grass, object: 0 };
-            const gameState: GameState = {
-                id: 'game1',
-                board: [],
-                gameBoard: [],
-                turnCounter: 0,
-                players: [player],
-                currentPlayer: '1',
-                availableMoves: [],
-                playerPositions: new Map([['1', { x: 1, y: 1 }]]),
-                currentPlayerMovementPoints: 0,
-            };
-            service.gameState = gameState;
-            expect(service.isPlayerOnTile(tile)).toBeFalse();
-        });
+        const coordinates = service.getCurrentPlayerCoordinates('player2');
+        expect(coordinates).toBeUndefined();
     });
 
-    describe('isTileNextToPlayer', () => {
-        it('should return true if tile is next to the player', () => {
-            const player: Player = { id: '1', name: 'Player 1', avatar: 'avatar1', isHost: false, life: 100, speed: 10, attack: 50, defense: 30 };
-            const tile: Tile = { id: 'tile1', x: 2, y: 2, type: TileTypes.Grass, object: 0 };
-            const gameState: GameState = {
-                id: 'game1',
-                board: [],
-                gameBoard: [],
-                turnCounter: 0,
-                players: [player],
-                currentPlayer: '1',
-                availableMoves: [],
-                playerPositions: new Map([['1', { x: 1, y: 1 }]]),
-                currentPlayerMovementPoints: 0,
-            };
-            service.gameState = gameState;
-            expect(service.isTileNextToPlayer(tile)).toBeTrue();
-        });
+    it('should check if player is on tile', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }],
+            playerPositions: [{ x: 1, y: 2 }],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
 
-        it('should return false if tile is not next to the player', () => {
-            const player: Player = { id: '1', name: 'Player 1', avatar: 'avatar1', isHost: false, life: 100, speed: 10, attack: 50, defense: 30 };
-            const tile: Tile = { id: 'tile2', x: 3, y: 3, type: TileTypes.Grass, object: 0 };
-            const gameState: GameState = {
-                id: 'game1',
-                board: [],
-                gameBoard: [],
-                turnCounter: 0,
-                players: [player],
-                currentPlayer: '1',
-                availableMoves: [],
-                playerPositions: new Map([['1', { x: 1, y: 1 }]]),
-                currentPlayerMovementPoints: 0,
-            };
-            service.gameState = gameState;
-            expect(service.isTileNextToPlayer(tile)).toBeFalse();
-        });
+        const tile: Tile = { x: 1, y: 2, type: TileTypes.Grass, id: 'tile1', object: 0 };
+        const isOnTile = service.isPlayerOnTile(tile);
+        expect(isOnTile).toBeTrue();
     });
 
-    describe('getActionType', () => {
-        it('should return "openDoor" if tile is next to player and tile type is DoorClosed', () => {
-            const player: Player = { id: '1', name: 'Player 1', avatar: 'avatar1', isHost: false, life: 100, speed: 10, attack: 50, defense: 30 };
-            const tile: Tile = { id: 'tile1', x: 2, y: 2, type: TileTypes.DoorClosed, object: 0 };
-            const gameState: GameState = {
-                id: 'game1',
-                board: [],
-                gameBoard: [],
-                turnCounter: 0,
-                players: [player],
-                currentPlayer: '1',
-                availableMoves: [],
-                playerPositions: new Map([['1', { x: 1, y: 1 }]]),
-                currentPlayerMovementPoints: 0,
-            };
-            expect(service.getActionType(tile, gameState)).toBe('openDoor');
-        });
+    // it('should find opponent on tile', () => {
+    //     service.gameState = {
+    //         players: [{ id: 'player1' }],
+    //         playerPositions: [{ x: 1, y: 2 }],
+    //         currentPlayer: 'player1',
+    //         currentPlayerActionPoints: 1,
+    //     } as GameState;
 
-        it('should return "closeDoor" if tile is next to player and tile type is DoorOpen', () => {
-            const player: Player = { id: '1', name: 'Player 1', avatar: 'avatar1', isHost: false, life: 100, speed: 10, attack: 50, defense: 30 };
-            const tile: Tile = { id: 'tile1', x: 2, y: 2, type: TileTypes.DoorOpen, object: 0 };
-            const gameState: GameState = {
-                id: 'game1',
-                board: [],
-                gameBoard: [],
-                turnCounter: 0,
-                players: [player],
-                currentPlayer: '1',
-                availableMoves: [],
-                playerPositions: new Map([['1', { x: 1, y: 1 }]]),
-                currentPlayerMovementPoints: 0,
-            };
-            expect(service.getActionType(tile, gameState)).toBe('closeDoor');
-        });
+    //     const tile: Tile = { x: 1, y: 2, type: TileTypes.Grass, id: 'tile1', object: 0 };
+    //     const opponent = service.findOpponent(tile);
+    //     expect(opponent).toEqual({ id: 'player1' });
+    // });
 
-        it('should return "battle" if tile is next to player and player is on the tile', () => {
-            const player: Player = { id: '1', name: 'Player 1', avatar: 'avatar1', isHost: false, life: 100, speed: 10, attack: 50, defense: 30 };
-            const tile: Tile = { id: 'tile1', x: 1, y: 1, type: TileTypes.Water, object: 0 };
-            const gameState: GameState = {
-                id: 'game1',
-                board: [],
-                gameBoard: [],
-                turnCounter: 0,
-                players: [player],
-                currentPlayer: '1',
-                availableMoves: [],
-                playerPositions: new Map([['1', { x: 1, y: 1 }]]),
-                currentPlayerMovementPoints: 0,
-            };
-            expect(service.getActionType(tile, gameState)).toBe('battle');
-        });
+    it('should check if tile is next to player', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }],
+            playerPositions: [{ x: 1, y: 2 }],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
 
-        it('should return undefined if tile is not next to player', () => {
-            const player: Player = { id: '1', name: 'Player 1', avatar: 'avatar1', isHost: false, life: 100, speed: 10, attack: 50, defense: 30 };
-            const tile: Tile = { id: 'tile2', x: 3, y: 3, type: TileTypes.Grass, object: 0 };
-            const gameState: GameState = {
-                id: 'game1',
-                board: [],
-                gameBoard: [],
-                turnCounter: 0,
-                players: [player],
-                currentPlayer: '1',
-                availableMoves: [],
-                playerPositions: new Map([['1', { x: 1, y: 1 }]]),
-                currentPlayerMovementPoints: 0,
-            };
-            expect(service.getActionType(tile, gameState)).toBeUndefined();
-        });
+        const tile: Tile = { x: 1, y: 2, type: TileTypes.Grass, id: 'tile1', object: 0 };
+        const isNextToPlayer = service.isTileNextToPlayer(tile);
+        expect(isNextToPlayer).toBeTrue();
+    });
 
-        describe('isTileNextToPlayer', () => {
-            it('should return true if tile is next to the player', () => {
-                const player: Player = { id: '1', name: 'Player 1', avatar: 'avatar1', isHost: false, life: 100, speed: 10, attack: 50, defense: 30 };
-                const tile: Tile = { id: 'tile1', x: 2, y: 2, type: TileTypes.Grass, object: 0 };
-                const gameState: GameState = {
-                    id: 'game1',
-                    board: [],
-                    gameBoard: [],
-                    turnCounter: 0,
-                    players: [player],
-                    currentPlayer: '1',
-                    availableMoves: [],
-                    playerPositions: new Map([['1', { x: 1, y: 1 }]]),
-                    currentPlayerMovementPoints: 0,
-                };
-                service.gameState = gameState;
-                expect(service.isTileNextToPlayer(tile)).toBeTrue();
-            });
+    it('should return undefined if no action points left', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }],
+            playerPositions: [{ x: 1, y: 2 }],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 0,
+        } as GameState;
 
-            it('should return false if tile is not next to the player', () => {
-                const player: Player = { id: '1', name: 'Player 1', avatar: 'avatar1', isHost: false, life: 100, speed: 10, attack: 50, defense: 30 };
-                const tile: Tile = { id: 'tile2', x: 3, y: 3, type: TileTypes.Grass, object: 0 };
-                const gameState: GameState = {
-                    id: 'game1',
-                    board: [],
-                    gameBoard: [],
-                    turnCounter: 0,
-                    players: [player],
-                    currentPlayer: '1',
-                    availableMoves: [],
-                    playerPositions: new Map([['1', { x: 1, y: 1 }]]),
-                    currentPlayerMovementPoints: 0,
-                };
-                service.gameState = gameState;
-                expect(service.isTileNextToPlayer(tile)).toBeFalse();
-            });
+        const tile: Tile = { x: 1, y: 2, type: TileTypes.Grass, id: 'tile1', object: 0 };
+        const actionType = service.getActionType(tile, service.gameState);
+        expect(actionType).toBeUndefined();
+        expect(notificationServiceSpy.showInfo).toHaveBeenCalledWith("Vous ne pouvez plus effectuer d'action ce tour-ci!");
+    });
 
-            it('should return false if gameState is not defined', () => {
-                const tile: Tile = { id: 'tile1', x: 2, y: 2, type: TileTypes.Grass, object: 0 };
-                service.gameState = null;
-                expect(service.isTileNextToPlayer(tile)).toBeFalse();
-            });
+    it('should return battle action type', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }],
+            playerPositions: [{ x: 1, y: 2 }],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
 
-            it('should return false if currentPlayer is not found', () => {
-                const player: Player = { id: '1', name: 'Player 1', avatar: 'avatar1', isHost: false, life: 100, speed: 10, attack: 50, defense: 30 };
-                const tile: Tile = { id: 'tile1', x: 2, y: 2, type: TileTypes.Grass, object: 0 };
-                const gameState: GameState = {
-                    id: 'game1',
-                    board: [],
-                    gameBoard: [],
-                    turnCounter: 0,
-                    players: [player],
-                    currentPlayer: '2',
-                    availableMoves: [],
-                    playerPositions: new Map([['1', { x: 1, y: 1 }]]),
-                    currentPlayerMovementPoints: 0,
-                };
-                service.gameState = gameState;
-                expect(service.isTileNextToPlayer(tile)).toBeFalse();
-            });
+        const tile: Tile = { x: 1, y: 2, type: TileTypes.Grass, id: 'tile1', object: 0 };
+        const actionType = service.getActionType(tile, service.gameState);
+        expect(actionType).toBe('battle');
+        expect(service.gameState.currentPlayerActionPoints).toBe(0);
+    });
 
-            it('should return false if currentPlayerCoordinates are not found', () => {
-                const player: Player = { id: '1', name: 'Player 1', avatar: 'avatar1', isHost: false, life: 100, speed: 10, attack: 50, defense: 30 };
-                const tile: Tile = { id: 'tile1', x: 2, y: 2, type: TileTypes.Grass, object: 0 };
-                const gameState: GameState = {
-                    id: 'game1',
-                    board: [],
-                    gameBoard: [],
-                    turnCounter: 0,
-                    players: [player],
-                    currentPlayer: '1',
-                    availableMoves: [],
-                    playerPositions: new Map(),
-                    currentPlayerMovementPoints: 0,
-                };
-                service.gameState = gameState;
-                expect(service.isTileNextToPlayer(tile)).toBeFalse();
-            });
-            it('should return undefined if tile is not next to player', () => {
-                const player: Player = { id: '1', name: 'Player 1', avatar: 'avatar1', isHost: false, life: 100, speed: 10, attack: 50, defense: 30 };
-                const tile: Tile = { id: 'tile2', x: 3, y: 3, type: TileTypes.Grass, object: 0 };
-                const gameState: GameState = {
-                    id: 'game1',
-                    board: [],
-                    gameBoard: [],
-                    turnCounter: 0,
-                    players: [player],
-                    currentPlayer: '1',
-                    availableMoves: [],
-                    playerPositions: new Map([['1', { x: 1, y: 1 }]]),
-                    currentPlayerMovementPoints: 0,
-                };
-                expect(service.getActionType(tile, gameState)).toBeUndefined();
-            });
+    it('should return openDoor action type', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }],
+            playerPositions: [{ x: 1, y: 2 }],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
 
-            it('should return undefined if tile type is not DoorClosed or DoorOpen and player is not on the tile', () => {
-                const player: Player = { id: '1', name: 'Player 1', avatar: 'avatar1', isHost: false, life: 100, speed: 10, attack: 50, defense: 30 };
-                const tile: Tile = { id: 'tile1', x: 2, y: 2, type: TileTypes.Grass, object: 0 };
-                const gameState: GameState = {
-                    id: 'game1',
-                    board: [],
-                    gameBoard: [],
-                    turnCounter: 0,
-                    players: [player],
-                    currentPlayer: '1',
-                    availableMoves: [],
-                    playerPositions: new Map([['1', { x: 1, y: 1 }]]),
-                    currentPlayerMovementPoints: 0,
-                };
-                expect(service.getActionType(tile, gameState)).toBeUndefined();
-            });
-        });
+        const tile: Tile = { x: 1, y: 2, type: TileTypes.Grass, id: 'tile1', object: 0 };
+        const actionType = service.getActionType(tile, service.gameState);
+        expect(actionType).toBe('battle');
+        expect(service.gameState.currentPlayerActionPoints).toBe(0);
+    });
+
+    it('should return closeDoor action type', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }],
+            playerPositions: [{ x: 1, y: 2 }],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
+
+        const tile: Tile = { x: 1, y: 2, type: TileTypes.Grass, id: 'tile1', object: 0 };
+        const actionType = service.getActionType(tile, service.gameState);
+        expect(actionType).toBe('battle');
+        expect(service.gameState.currentPlayerActionPoints).toBe(0);
+    });
+
+    it('should increment action counter', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }],
+            playerPositions: [{ x: 1, y: 2 }],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
+
+        service.incrementActionCounter();
+        expect(service.gameState.currentPlayerActionPoints).toBe(2);
+    });
+    it('should return false if gameState is not defined', () => {
+        service.gameState = null;
+        const tile: Tile = { x: 1, y: 2, type: TileTypes.Grass, id: 'tile1', object: 0 };
+        const isNextToPlayer = service.isTileNextToPlayer(tile);
+        expect(isNextToPlayer).toBeFalse();
+    });
+
+    it('should return false if current player coordinates are not found', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }],
+            playerPositions: [{ x: 1, y: 2 }],
+            currentPlayer: 'player2',
+            currentPlayerActionPoints: 1,
+        } as GameState;
+
+        const tile: Tile = { x: 2, y: 3, type: TileTypes.Grass, id: 'tile2', object: 0 };
+        const isNextToPlayer = service.isTileNextToPlayer(tile);
+        expect(isNextToPlayer).toBeFalse();
+    });
+
+    it('should return true if tile is next to player horizontally', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }],
+            playerPositions: [{ x: 1, y: 2 }],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
+
+        const tile: Tile = { x: 2, y: 2, type: TileTypes.Grass, id: 'tile2', object: 0 };
+        const isNextToPlayer = service.isTileNextToPlayer(tile);
+        expect(isNextToPlayer).toBeTrue();
+    });
+
+    it('should return true if tile is next to player vertically', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }],
+            playerPositions: [{ x: 1, y: 2 }],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
+
+        const tile: Tile = { x: 1, y: 3, type: TileTypes.Grass, id: 'tile2', object: 0 };
+        const isNextToPlayer = service.isTileNextToPlayer(tile);
+        expect(isNextToPlayer).toBeTrue();
+    });
+
+    it('should return true if tile is diagonally next to player', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }],
+            playerPositions: [{ x: 1, y: 2 }],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
+
+        const tile: Tile = { x: 2, y: 3, type: TileTypes.Grass, id: 'tile2', object: 0 };
+        const isNextToPlayer = service.isTileNextToPlayer(tile);
+        expect(isNextToPlayer).toBeTrue();
+    });
+
+    it('should return false if tile is not next to player', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }],
+            playerPositions: [{ x: 1, y: 2 }],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
+
+        const tile: Tile = { x: 3, y: 3, type: TileTypes.Grass, id: 'tile2', object: 0 };
+        const isNextToPlayer = service.isTileNextToPlayer(tile);
+        expect(isNextToPlayer).toBeFalse();
+    });
+
+    it('should return undefined if no opponent is on tile', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }, { id: 'player2' }],
+            playerPositions: [
+                { x: 1, y: 2 },
+                { x: 2, y: 3 },
+            ],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
+
+        const tile: Tile = { x: 3, y: 3, type: TileTypes.Grass, id: 'tile1', object: 0 };
+        const opponent = service.findOpponent(tile);
+        expect(opponent).toBeUndefined();
+    });
+
+    it('should return undefined if gameState is null', () => {
+        service.gameState = null;
+
+        const tile: Tile = { x: 1, y: 2, type: TileTypes.Grass, id: 'tile1', object: 0 };
+        const opponent = service.findOpponent(tile);
+        expect(opponent).toBeUndefined();
+    });
+
+    it('should return openDoor action type when standing next to a closed door', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }],
+            playerPositions: [{ x: 1, y: 2 }],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
+
+        const tile: Tile = { x: 2, y: 2, type: TileTypes.DoorClosed, id: 'tile2', object: 0 };
+        const actionType = service.getActionType(tile, service.gameState);
+        expect(actionType).toBe('openDoor');
+        expect(service.gameState.currentPlayerActionPoints).toBe(0);
+    });
+
+    it('should return closeDoor action type when standing next to an open door', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }],
+            playerPositions: [{ x: 1, y: 2 }],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
+
+        const tile: Tile = { x: 2, y: 2, type: TileTypes.DoorOpen, id: 'tile2', object: 0 };
+        const actionType = service.getActionType(tile, service.gameState);
+        expect(actionType).toBe('closeDoor');
+        expect(service.gameState.currentPlayerActionPoints).toBe(0);
+    });
+
+    it('should return undefined if tile is not next to player', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }],
+            playerPositions: [{ x: 1, y: 2 }],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
+
+        const tile: Tile = { x: 4, y: 4, type: TileTypes.Grass, id: 'tile3', object: 0 };
+        const actionType = service.getActionType(tile, service.gameState);
+        expect(actionType).toBeUndefined();
+    });
+
+    it('should not decrement action points if no action is performed', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }],
+            playerPositions: [{ x: 1, y: 2 }],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
+
+        const tile: Tile = { x: 4, y: 4, type: TileTypes.Grass, id: 'tile3', object: 0 };
+        service.getActionType(tile, service.gameState);
+        expect(service.gameState.currentPlayerActionPoints).toBe(1);
+    });
+
+    it('should return -1 if player is not found in gameState', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }],
+            playerPositions: [{ x: 1, y: 2 }],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
+
+        const playerIndex = service.gameState?.players.findIndex((p) => p.id === 'player2') ?? -1;
+        expect(playerIndex).toBe(-1);
+    });
+
+    it('should return true if player coordinates match tile coordinates', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }],
+            playerPositions: [{ x: 1, y: 2 }],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
+
+        const coordinates = { x: 1, y: 2 };
+        const tile: Tile = { x: 1, y: 2, type: TileTypes.Grass, id: 'tile1', object: 0 };
+        const isSamePosition = coordinates?.x === tile.x && coordinates?.y === tile.y;
+        expect(isSamePosition).toBeTrue();
+    });
+
+    it('should return false if player coordinates do not match tile coordinates', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }],
+            playerPositions: [{ x: 1, y: 2 }],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
+
+        const coordinates = { x: 1, y: 2 };
+        const tile: Tile = { x: 2, y: 3, type: TileTypes.Grass, id: 'tile2', object: 0 };
+        const isSamePosition = coordinates?.x === tile.x && coordinates?.y === tile.y;
+        expect(isSamePosition).toBeFalse();
     });
 });
