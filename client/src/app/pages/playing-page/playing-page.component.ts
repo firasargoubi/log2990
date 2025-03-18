@@ -153,7 +153,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.interval = window.setInterval(() => {
                 if (this.remainingTime > 0) {
                     this.remainingTime--;
-                    this.updateTimerForAllPlayers();
                 } else {
                     if (this.interval !== null) {
                         clearInterval(this.interval);
@@ -162,9 +161,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             }, DELAY_COUNTDOWN);
         }
     }
-    updateTimerForAllPlayers() {
-        throw new Error('Method not implemented.');
-    }
+
     ngOnDestroy() {
         this.abandon();
         this.subscriptions.forEach((sub) => sub.unsubscribe());
@@ -317,7 +314,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         } else {
             const player = this.gameState?.players.find((p) => p.id === playerId);
             if (player) {
-                this.notificationService.showInfo(`${PLAYING_PAGE_DESCRIPTION.turnOff}${player.name}`);
+                this.notificationService.showInfo(`${PLAYING_PAGE_DESCRIPTION.turnOff} ${player.name}`);
             }
         }
     }
