@@ -211,7 +211,6 @@ export class GameSocketHandlerService {
     handleDefeat(player: Player, lobbyId: string) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
-        console.log('GameState when Won', gameState);
         const playerIndex = gameState.players.findIndex((p) => p.id === player.id);
         if (playerIndex === -1) return;
         const originalSpawn = gameState.spawnPoints[playerIndex];
@@ -259,22 +258,32 @@ export class GameSocketHandlerService {
         }
 
         gameState.playerPositions[playerIndex] = newSpawn;
-
-        this.io.to(lobbyId).emit('combatEnded', { winner: player });
+        gameState.currentPlayerActionPoints = 0;
+        let newGameState = gameState;
         if (player.id === gameState.currentPlayer) {
-            this.handleEndTurnInternally(gameState);
+            newGameState = this.handleEndTurnInternally(gameState);
+        } else {
+            newGameState = this.boardService.handleTurn(gameState);
         }
-        this.gameStates.set(lobbyId, gameState);
-        this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState });
+        this.gameStates.set(lobbyId, newGameState);
+        this.io.to(lobbyId).emit('combatEnded', { winner: player });
+        this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
     }
 
-    handleAttackAction(lobbyId: string, attacker: Player, defender: Player) {
+    handleAttackAction(lobbyId: string, attacker: Player, defender: Player, debug: boolean = false) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
 
-        // Calculate attack and defense rolls on the server
-        const attackDice = Math.floor(Math.random() * attacker.attack) + 1;
-        const defenseDice = Math.floor(Math.random() * defender.defense) + 1;
+        let attackDice;
+        let defenseDice;
+
+        if (debug) {
+            attackDice = attacker.attack;
+            defenseDice = defender.defense;
+        } else {
+            attackDice = Math.floor(Math.random() * attacker.attack) + 1;
+            defenseDice = Math.floor(Math.random() * defender.defense) + 1;
+        }
 
         let attackRoll = attackDice + attacker.attack;
         let defenseRoll = defenseDice + defender.defense;
@@ -297,9 +306,7 @@ export class GameSocketHandlerService {
         }
 
         if (defender.life <= 0) {
-            console.log('Defender defeated', defender);
             this.handleDefeat(defender, lobbyId);
-
             return;
         }
         this.io.to(lobbyId).emit('attackResult', {
@@ -344,7 +351,7 @@ export class GameSocketHandlerService {
         if (playerIndex !== -1) {
             gameState.players[playerIndex] = fleeingPlayer;
         }
-
+        gameState.currentPlayerActionPoints = 0;
         this.gameStates.set(lobbyId, gameState);
         this.io.to(lobbyId).emit(GameEvents.FleeSuccess, { fleeingPlayer, isSuccessful });
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState });
