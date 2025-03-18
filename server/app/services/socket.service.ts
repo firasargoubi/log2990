@@ -56,6 +56,8 @@ export class SocketService {
         socket.on('requestStart', (lobbyId: string) => this.handleRequestStart(socket, lobbyId));
         socket.on('endTurn', (data: { lobbyId: string }) => this.handleEndTurn(socket, data));
         socket.on('requestMovement', (data: { lobbyId: string; coordinates: Coordinates[] }) => this.handleRequestMovement(socket, data));
+        socket.on('teleport', (data: { lobbyId: string; coordinates: Coordinates }) => this.handleTeleport(socket, data));
+        socket.on('setDebug', (data: { lobbyId: string; debug: boolean }) => this.handleSetDebug(socket, data));
         socket.on('updatePlayers', (lobbyId: string, players: Player[]) => this.handlePlayersUpdate(socket, lobbyId, players));
         socket.on('openDoor', (data: { lobbyId: string; tile: Tile }) => this.handleOpenDoor(socket, data));
         socket.on('closeDoor', (data: { lobbyId: string; tile: Tile }) => this.handleCloseDoor(socket, data));
@@ -199,6 +201,10 @@ export class SocketService {
         this.gameSocketHandlerService.handleEndTurn(socket, data.lobbyId);
     }
 
+    private handleTeleport(socket: Socket, data: { lobbyId: string; coordinates: Coordinates }): void {
+        this.gameSocketHandlerService.handleTeleport(socket, data.lobbyId, data.coordinates);
+    }
+
     private handleRequestMovement(socket: Socket, data: { lobbyId: string; coordinates: Coordinates[] }): void {
         if (!data || !data.coordinates) {
             socket.emit('error', 'Invalid coordinates');
@@ -245,6 +251,10 @@ export class SocketService {
 
     private handleDisconnect(socket: Socket): void {
         this.disconnectHandlerService.handleDisconnect(socket);
+    }
+
+    private handleSetDebug(socket: Socket, data: { lobbyId: string; debug: boolean }): void {
+        this.gameSocketHandlerService.handleSetDebug(socket, data.lobbyId, data.debug);
     }
 
     private handleDisconnectFromRoom(socket: Socket, lobbyId: string): void {

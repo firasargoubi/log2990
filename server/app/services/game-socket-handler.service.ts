@@ -101,6 +101,22 @@ export class GameSocketHandlerService {
             socket.emit(GameEvents.Error, `${gameSocketMessages.movementError}${error.message}`);
         }
     }
+
+    handleTeleport(socket: Socket, lobbyId: string, coordinates: Coordinates) {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) {
+            socket.emit('error', 'Game not found.');
+            return;
+        }
+        try {
+            const updatedGameState = this.boardService.handleTeleport(gameState, coordinates);
+            this.gameStates.set(lobbyId, updatedGameState);
+            console.log(updatedGameState);
+            this.io.to(lobbyId).emit('boardModified', { gameState: updatedGameState });
+        } catch (error) {
+            socket.emit('error', `Teleport error: ${error.message}`);
+        }
+    }
     startTurn(lobbyId: string) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
@@ -270,14 +286,31 @@ export class GameSocketHandlerService {
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
     }
 
-    handleAttackAction(lobbyId: string, attacker: Player, defender: Player, debug: boolean = false) {
+    handleSetDebug(socket: Socket, lobbyId: string, debug: boolean) {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) {
+            socket.emit('error', 'Game not found.');
+            return;
+        }
+
+        const updatedGameState = {
+            ...gameState,
+            debug,
+        };
+
+        this.gameStates.set(lobbyId, updatedGameState);
+        this.io.to(lobbyId).emit('boardModified', { gameState: updatedGameState });
+    }
+
+    handleAttackAction(lobbyId: string, attacker: Player, defender: Player) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
 
         let attackDice;
         let defenseDice;
 
-        if (debug) {
+        if (gameState.debug) {
+            console.log('MAX STATS');
             attackDice = attacker.attack;
             defenseDice = defender.defense;
         } else {
@@ -285,20 +318,17 @@ export class GameSocketHandlerService {
             defenseDice = Math.floor(Math.random() * defender.defense) + 1;
         }
 
-        let attackRoll = attackDice + attacker.attack;
-        let defenseRoll = defenseDice + defender.defense;
-
         // Apply ice tile effects if needed
         if (this.isPlayerOnIceTile(gameState, attacker)) {
-            attackRoll -= 2;
+            attackDice -= 2;
         }
 
         if (this.isPlayerOnIceTile(gameState, defender)) {
-            defenseRoll -= 2;
+            defenseDice -= 2;
         }
 
         // Calculate damage
-        const damage = Math.max(0, attackRoll - defenseRoll);
+        const damage = Math.max(0, attackDice - defenseDice);
 
         // Apply damage to defender
         if (damage > 0) {
@@ -310,8 +340,8 @@ export class GameSocketHandlerService {
             return;
         }
         this.io.to(lobbyId).emit('attackResult', {
-            attackRoll,
-            defenseRoll,
+            attackRoll: attackDice,
+            defenseRoll: defenseDice,
             attackerHP: attacker.life,
             defenderHP: defender.life,
             damage,
@@ -340,10 +370,12 @@ export class GameSocketHandlerService {
         // Determine flee success (or use forced success)
         const FLEE_RATE = 30; // 30% chance
         const fleeingChance = Math.random() * 100;
-        const isSuccessful = forceSuccess || fleeingChance <= FLEE_RATE;
 
+        const isSuccessful = forceSuccess || fleeingChance <= FLEE_RATE;
+        console.log('Fleeing Chance :', fleeingChance, isSuccessful);
         if (!isSuccessful) {
-            this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
+            this.io.to(lobbyId).emit('fleeFailure', { fleeingPlayer });
+            return;
         }
 
         // Update player in gameState

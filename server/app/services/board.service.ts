@@ -1,7 +1,7 @@
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
-import { Game, ObjectsTypes } from '@common/game.interface';
+import { Game, ObjectsTypes, TILE_DELIMITER, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Service } from 'typedi';
 import { GameService } from './game.service';
@@ -45,6 +45,7 @@ export class BoardService {
             board: gameData.board,
             currentPlayerMovementPoints: DEFAULT_MOVEMENT_POINTS,
             currentPlayerActionPoints: DEFAULT_ACTION_POINTS,
+            debug: false,
         };
 
         this.sortPlayersBySpeed(gameState);
@@ -140,6 +141,34 @@ export class BoardService {
         gameState.currentPlayerActionPoints = 1;
 
         return this.handleTurn(gameState);
+    }
+
+    handleTeleport(gameState: GameState, targetCoordinate: Coordinates): GameState {
+        const indexPlayer = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
+
+        if (indexPlayer === -1) {
+            return gameState;
+        }
+        const playerPosition = gameState.playerPositions[indexPlayer];
+        if (!playerPosition) {
+            return gameState;
+        }
+
+        if (this.isOccupied(gameState, targetCoordinate, indexPlayer)) {
+            return gameState;
+        }
+
+        gameState.playerPositions[indexPlayer] = targetCoordinate;
+
+        if (gameState.currentPlayerMovementPoints >= 0) {
+            gameState.availableMoves = this.findAllPaths(gameState, targetCoordinate);
+            gameState.shortestMoves = this.calculateShortestMoves(gameState, targetCoordinate, gameState.availableMoves);
+        } else {
+            gameState.availableMoves = [];
+            gameState.shortestMoves = [];
+        }
+
+        return gameState;
     }
 
     private updatePlayerMoves(gameState: GameState, playerIndex: number): GameState {
@@ -241,5 +270,26 @@ export class BoardService {
             }
         }
         return shortestMoves;
+    }
+
+    private isOccupied(gameState: GameState, position: Coordinates, index: number): boolean {
+        for (const [playerIndex, playerPosition] of gameState.playerPositions.entries()) {
+            if (playerIndex === index) {
+                continue;
+            }
+            if (playerPosition.x === position.x && playerPosition.y === position.y) {
+                return true;
+            }
+        }
+        const item = Math.floor(gameState.board[position.x][position.y] / TILE_DELIMITER);
+        const tile = gameState.board[position.x][position.y] % TILE_DELIMITER;
+        if (item !== ObjectsTypes.SPAWN && item !== ObjectsTypes.EMPTY) {
+            return true;
+        }
+        if (tile === TileTypes.Wall || tile === TileTypes.DoorClosed) {
+            return true;
+        }
+
+        return false;
     }
 }
