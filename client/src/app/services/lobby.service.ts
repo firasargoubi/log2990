@@ -5,7 +5,7 @@ import { GameState } from '@common/game-state';
 import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { shareReplay as rxjsShareReplay } from 'rxjs/operators';
 import { io, Socket } from 'socket.io-client';
 import { environment } from 'src/environments/environment';
@@ -16,6 +16,8 @@ import { environment } from 'src/environments/environment';
 export class LobbyService {
     private socket: Socket;
     private currentPlayer: Player | null = null;
+    private isInCombatSubject = new BehaviorSubject<boolean>(false); // Valeur par défaut
+    isInCombat$ = this.isInCombatSubject.asObservable();
 
     constructor() {
         this.socket = io(environment.serverUrl, {
@@ -275,20 +277,8 @@ export class LobbyService {
         });
     }
 
-    onCombatUpdate(): Observable<{ timeLeft: number }> {
-        return new Observable((observer) => {
-            this.socket.on('combatUpdate', (data) => {
-                observer.next(data);
-            });
-        });
-    }
-
     startCombat(playerId: string, lobbyId: string): void {
         this.socket.emit('startCombat', { playerId, lobbyId });
-    }
-
-    updateCombatTime(timeLeft: number): void {
-        this.socket.emit('combatUpdate', { timeLeft }); // Émettre le temps restant à tous les joueurs
     }
 
     updateCountdown(time: number): void {
@@ -350,6 +340,23 @@ export class LobbyService {
                 observer.next(data);
             });
         });
+    }
+
+    onCombatUpdate(): Observable<{ timeLeft: number }> {
+        return new Observable((observer) => {
+            this.socket.on('combatUpdate', (data) => {
+                observer.next(data); // Envoie le temps restant
+            });
+        });
+    }
+
+    // Cette méthode peut être utilisée pour émettre un changement de temps
+    updateCombatTime(timeLeft: number): void {
+        this.socket.emit('combatUpdate', { timeLeft });
+    }
+
+    updateCombatStatus(isInCombat: boolean): void {
+        this.isInCombatSubject.next(isInCombat);
     }
 }
 function shareReplay<T>(bufferSize: number): import('rxjs').OperatorFunction<T, T> {

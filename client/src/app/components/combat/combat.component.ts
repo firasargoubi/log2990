@@ -2,18 +2,17 @@ import { Component, inject, Input, OnChanges, OnInit } from '@angular/core';
 import { CombatService } from '@app/services/combat.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
-import { TimerSyncService } from '@app/services/timer-sync.service'; // Inject TimerSyncService
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
 
-// const TO_SECONDS = 1000;
+const TO_SECONDS = 1000;
 const FLEE_RATE = 30;
 @Component({
     selector: 'app-combat',
     templateUrl: './combat.component.html',
     styleUrls: ['./combat.component.scss'],
 })
-export class CombatComponent implements OnInit, OnChanges, OnDestroy {
+export class CombatComponent implements OnInit, OnChanges {
     @Input() currentPlayer!: Player;
     @Input() lobbyId!: string;
     @Input() gameState: GameState | null = null;
@@ -30,7 +29,6 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
     defenceDisplay: string = '';
     damage: number;
     private lobbyService = inject(LobbyService);
-    private timerSyncService = inject(TimerSyncService);
 
     private countDownInterval: ReturnType<typeof setInterval> | null = null;
     private notificationService = inject(NotificationService);
@@ -56,37 +54,22 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
         if (!this.opponent) {
             this.opponent = this.gameState?.players.find((p) => p.id !== this.currentPlayer.id) ?? this.opponent;
         }
-        // this.startCountdown();
     }
 
     startCountdown() {
-        // this.countDownInterval = setInterval(() => {
-        //     if (this.countDown > 0) {
-        //         this.countDown--;
-        //     } else {
-        //         this.endTimer();
-        //     }
-        // }, TO_SECONDS);
+        this.countDownInterval = setInterval(() => {
+            if (this.countDown > 0) {
+                this.countDown--;
+            } else {
+                this.endTimer();
+            }
+        }, TO_SECONDS);
     }
 
     stopCombatCountdown() {
         if (this.countDownInterval !== null) {
             clearInterval(this.countDownInterval);
             this.countDownInterval = null;
-        }
-        this.timerSyncService.resumePlayerTimer(); // Resume player timer once combat is done
-    }
-
-    startCountdown() {
-        // Initialize countdown for player when the combat countdown isn't active
-        if (!this.countDownInterval) {
-            this.countDownInterval = setInterval(() => {
-                if (this.countDown > 0) {
-                    this.countDown--;
-                } else {
-                    this.stopCombatCountdown();
-                }
-            }, TO_SECONDS);
         }
     }
 

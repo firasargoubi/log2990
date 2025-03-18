@@ -89,6 +89,8 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
         this.lobbyService.onInteraction().subscribe((data) => {
             this.isInCombat = data.isInCombat;
+            console.log('combat?', this.isInCombat);
+            this.lobbyService.updateCombatStatus(this.isInCombat);
         });
         if (this.gameState) {
             this.gameState.currentPlayerActionPoints = 1;
@@ -208,6 +210,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
             this.lobbyService.onFleeSuccess().subscribe((data) => {
                 this.isInCombat = false;
+                this.lobbyService.updateCombatStatus(this.isInCombat);
                 this.currentPlayer.life = this.currentPlayer.maxLife;
                 if (this.currentPlayer.name === data.fleeingPlayer.name) {
                     this.notificationService.showInfo('Vous avez fuit le combat.');
@@ -218,6 +221,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
             this.lobbyService.onAttackEnd().subscribe((data) => {
                 this.isInCombat = data.isInCombat;
+                this.lobbyService.updateCombatStatus(this.isInCombat);
                 this.currentPlayer.life = this.currentPlayer.maxLife;
                 this.notificationService.showInfo(`${this.currentPlayer.name} a fini son combat`);
             }),

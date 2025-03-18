@@ -232,6 +232,7 @@ export class GameSocketHandlerService {
     handleFlee(lobbyId: string, fleeingPlayer: Player, success: boolean) {
         if (success) {
             this.io.to(lobbyId).emit('fleeSuccess', { fleeingPlayer });
+            this.handleTerminateAttack(lobbyId);
         } else {
             const player = this.gameStates.get(lobbyId).players.find((p) => p.id === fleeingPlayer.id);
             if (isNaN(player.amountEscape)) {
@@ -245,5 +246,10 @@ export class GameSocketHandlerService {
     handleTerminateAttack(lobbyId: string) {
         const isInCombat = false;
         this.io.to(lobbyId).emit('attackEnd', { isInCombat });
+    }
+
+    updateCombatTime(lobbyId: string, timeLeft: number): void {
+        // Diffuse l'événement à tous les clients du lobby avec le temps restant
+        this.io.to(lobbyId).emit('combatUpdate', { timeLeft });
     }
 }

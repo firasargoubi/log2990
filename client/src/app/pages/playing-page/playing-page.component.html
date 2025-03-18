@@ -19,7 +19,6 @@
                 <li><strong>Défense:</strong> D{{ currentPlayer?.defense }}</li>
                 <li><strong>Points de mouvement restants:</strong> {{ gameState?.currentPlayerMovementPoints }}</li>
                 <li><strong>Points d'Actions restants:</strong> {{ gameState?.currentPlayerActionPoints }}</li>
-
             </ul>
         </div>
     </div>
@@ -49,23 +48,24 @@
         <!-- Countdown for the active player or others -->
 
         @if (isCurrentPlayerTurn()) {
-        <app-countdown-player [countdown]="60" [isPlayerTurn]="true" [isInCombat]="false" [lobbyId]="lobbyId" [isTransitioning]="false">
+        <app-countdown-player [countdown]="60" [isPlayerTurn]="true" [isInCombat]="isInCombat" [lobbyId]="lobbyId" [isTransitioning]="false">
         </app-countdown-player>
         } @else {
-        <app-countdown-player [countdown]="60" [isPlayerTurn]="false" [isInCombat]="false" [isTransitioning]="false"> </app-countdown-player>
+        <app-countdown-player [countdown]="60" [isPlayerTurn]="false" [isInCombat]="isInCombat" [isTransitioning]="false"> </app-countdown-player>
         }
 
         <app-inventory></app-inventory>
         @if (isInCombat) {
+
         <div class="action-buttons">
             <app-combat [gameState]="gameState" [currentPlayer]="currentPlayer!" [opponent]="opponent!" [lobbyId]="lobbyId"></app-combat>
         </div>
         } @else {
         <div class="action-buttons">
             @if(action) {
-                <button class="action-buttons selected" (click)="handleAction()">Action</button>
+            <button class="action-buttons selected" (click)="handleAction()">Action</button>
             } @else {
-                <button (click)="handleAction()">Action</button>
+            <button (click)="handleAction()">Action</button>
             }
             <button (click)="abandon()" routerLink="/home">Abandonner</button>
             <button class="end-turn-button" [disabled]="!isCurrentPlayerTurn()" (click)="onEndTurn()">Terminer le tour</button>
