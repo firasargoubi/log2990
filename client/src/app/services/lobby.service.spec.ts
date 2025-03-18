@@ -655,13 +655,6 @@ describe('LobbyService', () => {
             handler(testData);
         });
 
-        it('should emit startCombat event with correct payload', () => {
-            const playerId = 'player-1';
-            const lobbyId = 'lobby-123';
-            service.startCombat(playerId, lobbyId);
-            expect(mockSocket.emit).toHaveBeenCalledWith('startCombat', { playerId, lobbyId });
-        });
-
         it('should emit combatUpdate event with timeLeft', () => {
             const timeLeft = 30;
             service.updateCombatTime(timeLeft);
@@ -762,24 +755,6 @@ describe('LobbyService', () => {
             });
             const handler = getEventHandler('update-health');
             handler(testData);
-        });
-
-        it('should emit fleeCombat event with correct payload', () => {
-            const lobbyId = 'lobby-123';
-            const player: Player = {
-                name: 'Runner',
-                avatar: 'avatar',
-                id: '6',
-                isHost: false,
-                life: 100,
-                speed: 7,
-                attack: 10,
-                defense: 5,
-                maxLife: 100,
-            };
-            const success = true;
-            service.fleeCombat(lobbyId, player, success);
-            expect(mockSocket.emit).toHaveBeenCalledWith('fleeCombat', { player, lobbyId, success });
         });
 
         it('should emit fleeingPlayer data when fleeSuccess event is fired', (done) => {

@@ -93,7 +93,6 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
 
             this.subscriptions.push(
                 this.lobbyService.onGameStarted().subscribe(() => {
-                    console.log('Game started');
                     this.lobbyService.setCurrentPlayer(this.currentPlayer);
                     this.router.navigate([`${PageUrl.Play}/${lobbyId}`]);
                 }),

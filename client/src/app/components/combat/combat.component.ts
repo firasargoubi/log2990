@@ -111,7 +111,7 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
             return;
         }
         this.stopCombatCountdown();
-        this.lobbyService.flee(this.gameState.id, this.currentPlayer, true);
+        this.lobbyService.flee(this.gameState.id, this.currentPlayer, false);
     }
 
     private setupSubscriptions() {
@@ -157,6 +157,9 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
                 if (this.currentPlayer.id === data.fleeingPlayer.id) {
                     this.currentPlayer.amountEscape = data.fleeingPlayer.amountEscape;
                 }
+                this.countDown = 5;
+                this.canAct = data.fleeingPlayer.id !== this.currentPlayer.id;
+                this.startCountdown();
                 this.notificationService.showInfo(`${data.fleeingPlayer.name} n'a pas réussi à fuir le combat.`);
             }),
         );

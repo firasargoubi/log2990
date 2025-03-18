@@ -55,4 +55,12 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.gameListener.ngOnDestroy();
         this.playerService.ngOnDestroy();
     }
+    onInfoSent(details: string) {
+        console.log(details);
+    }
+
+    setDebugMode() {
+        this.debug = !this.debug;
+        this.lobbyService.setDebug(this.lobbyId, this.debug);
+    }
 }
