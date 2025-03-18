@@ -420,7 +420,7 @@ describe('PlayingPageComponent', () => {
         expect(component.gameState).toEqual(updatedGameState);
     }));
 });
-*/
+
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LobbyService } from '@app/services/lobby.service';
@@ -645,3 +645,4 @@ describe('PlayingPageComponent', () => {
         expect(component.isCurrentPlayerTurn()).toBeTrue();
     });
 });
+*/

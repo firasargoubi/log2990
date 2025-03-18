@@ -61,7 +61,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     private notificationService = inject(NotificationService);
     private subscriptions: Subscription[] = [];
 
-
     get isAnimated(): boolean {
         return this.gameState.animation || false;
     }
@@ -70,7 +69,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     handleKeyboardEvent(event: KeyboardEvent) {
         if (event.key === 'd' && this.currentPlayer.isHost) {
             this.setDebugMode();
-            console.log("DEBUG YIPEE");
         }
     }
 
