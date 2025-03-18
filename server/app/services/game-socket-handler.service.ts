@@ -1,3 +1,4 @@
+import { GameSocketConstants, gameSocketMessages } from '@app/constants/gameSocketHandlerConst';
 import { Coordinates } from '@common/coordinates';
 import { GameEvents } from '@common/events';
 import { GameLobby } from '@common/game-lobby';
@@ -24,13 +25,13 @@ export class GameSocketHandlerService {
     async handleRequestStart(socket: Socket, lobbyId: string) {
         const lobby = this.lobbies.get(lobbyId);
         if (!lobby) {
-            socket.emit(GameEvents.Error, 'Lobby not found.');
+            socket.emit(GameEvents.Error, gameSocketMessages.lobbyNotFound);
             return;
         }
 
         const player = lobby.players.find((p) => p.id === socket.id);
         if (!player || !player.isHost) {
-            socket.emit(GameEvents.Error, 'Only the host can start the game.');
+            socket.emit(GameEvents.Error, gameSocketMessages.onlyHostStart);
             return;
         }
 
@@ -46,19 +47,19 @@ export class GameSocketHandlerService {
 
             this.startTurn(lobbyId);
         } catch (error) {
-            socket.emit(GameEvents.Error, `Failed to start game: ${error.message}`);
+            socket.emit(GameEvents.Error, `${gameSocketMessages.failedStartGame} ${error.message}`);
         }
     }
 
     handleEndTurn(socket: Socket, lobbyId: string) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) {
-            socket.emit(GameEvents.Error, 'Game not found.');
+            socket.emit(GameEvents.Error, gameSocketMessages.gameNotFound);
             return;
         }
 
         if (socket.id !== gameState.currentPlayer) {
-            socket.emit(GameEvents.Error, "It's not your turn.");
+            socket.emit(GameEvents.Error, gameSocketMessages.notYourTurn);
             return;
         }
 
@@ -71,7 +72,7 @@ export class GameSocketHandlerService {
 
             this.startTurn(lobbyId);
         } catch (error) {
-            socket.emit(GameEvents.Error, `Failed to end turn: ${error.message}`);
+            socket.emit(GameEvents.Error, `${gameSocketMessages.failedEndTurn} ${error.message}`);
         }
     }
 
@@ -93,7 +94,7 @@ export class GameSocketHandlerService {
                 this.handleEndTurn(socket, lobbyId);
             }
         } catch (error) {
-            socket.emit(GameEvents.Error, `Movement error: ${error.message}`);
+            socket.emit(GameEvents.Error, `${gameSocketMessages.movementError}${error.message}`);
         }
     }
 
@@ -107,7 +108,7 @@ export class GameSocketHandlerService {
 
             this.io.to(lobbyId).emit(GameEvents.TurnStarted, { gameState });
         } catch (error) {
-            this.io.to(lobbyId).emit(GameEvents.Error, `Turn error: ${error.message}`);
+            this.io.to(lobbyId).emit(GameEvents.Error, `${gameSocketMessages.turnError}${error.message}`);
         }
     }
 
@@ -155,7 +156,7 @@ export class GameSocketHandlerService {
         const opponentIndex = gameState.players.findIndex((p) => p.id === opponent.id);
         const playerTurn = currentIndex < opponentIndex ? currentPlayer.id : opponent.id;
         const player = gameState.players.find((p) => p.id === playerTurn);
-        const countDown = player.amountEscape === 2 ? 3 : 5;
+        const countDown = player.amountEscape === 2 ? GameSocketConstants.EscapeCountdown : GameSocketConstants.DefaultCountdown;
         this.io.to(currentPlayer.id).to(opponent.id).emit(GameEvents.PlayerTurn, { playerTurn, countDown });
     }
 
@@ -163,7 +164,7 @@ export class GameSocketHandlerService {
         const player = gameState.players.find((p) => p.id === playerTurn);
         const newPlayerTurn = player.id === currentPlayer.id ? opponent.id : currentPlayer.id;
         const newPlayer = gameState.players.find((p) => p.id === newPlayerTurn);
-        const countDown = newPlayer.amountEscape === 2 ? 3 : 5;
+        const countDown = newPlayer.amountEscape === 2 ? GameSocketConstants.EscapeCountdown : GameSocketConstants.DefaultCountdown;
         this.io.to(currentPlayer.id).to(opponent.id).emit(GameEvents.PlayerSwitch, { newPlayerTurn, countDown });
     }
 
@@ -235,7 +236,7 @@ export class GameSocketHandlerService {
     private getGameStateOrEmitError(socket: Socket, lobbyId: string): GameState | null {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) {
-            socket.emit(GameEvents.Error, 'Game not found.');
+            socket.emit(GameEvents.Error, gameSocketMessages.gameNotFound);
             return null;
         }
         return gameState;
