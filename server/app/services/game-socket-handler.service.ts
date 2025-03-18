@@ -137,6 +137,7 @@ export class GameSocketHandlerService {
     closeDoor(socket: Socket, tile: Tile, lobbyId: string) {
         const gameState = this.getGameStateOrEmitError(socket, lobbyId);
         if (!gameState) return;
+        const currentPlayerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
         const newGameBoard = gameState.board.map((row) => [...row]);
         newGameBoard[tile.x][tile.y] = TileTypes.DoorClosed;
         const updatedGameState: GameState = {
@@ -144,6 +145,8 @@ export class GameSocketHandlerService {
             board: newGameBoard,
             currentPlayerActionPoints: 0,
         };
+
+        updatedGameState.players[currentPlayerIndex].currentAP = 0;
         const newGameState = this.boardService.handleBoardChange(updatedGameState);
         this.gameStates.set(lobbyId, newGameState);
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
@@ -152,6 +155,7 @@ export class GameSocketHandlerService {
     openDoor(socket: Socket, tile: Tile, lobbyId: string) {
         const gameState = this.getGameStateOrEmitError(socket, lobbyId);
         if (!gameState) return;
+        const currentPlayerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
         const newGameBoard = gameState.board.map((row) => [...row]);
         newGameBoard[tile.x][tile.y] = TileTypes.DoorOpen;
         const updatedGameState = {
@@ -159,6 +163,8 @@ export class GameSocketHandlerService {
             board: newGameBoard,
             currentPlayerActionPoints: 0,
         };
+
+        updatedGameState.players[currentPlayerIndex].currentAP = 0;
 
         const newGameState = this.boardService.handleBoardChange(updatedGameState);
         this.gameStates.set(lobbyId, newGameState);
@@ -183,6 +189,10 @@ export class GameSocketHandlerService {
         if (opponentIndex !== -1) {
             gameState.players[opponentIndex].amountEscape = 0;
         }
+
+        console.log('Start Battle');
+        console.log(currentPlayer);
+        console.log(opponent);
 
         this.combatTimes.set(lobbyId, time);
         const playerTurn = currentPlayerIndex < opponentIndex ? currentPlayerIndex : opponentIndex;
@@ -232,16 +242,18 @@ export class GameSocketHandlerService {
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
     }
 
-    handleDefeat(player: Player, lobbyId: string) {
+    handleDefeat(lobbyId: string, winner: Player, loser: Player) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
-        const playerIndex = gameState.players.findIndex((p) => p.id === player.id);
-        if (playerIndex === -1) return;
-        const originalSpawn = gameState.spawnPoints[playerIndex];
+        const winnerIndex = gameState.players.findIndex((p) => p.id === winner.id);
+        const loserIndex = gameState.players.findIndex((p) => p.id === loser.id);
+        if (winnerIndex === -1 || loserIndex === -1) return;
+        const originalSpawn = gameState.spawnPoints[loserIndex];
+        const isInSpawnPoints = originalSpawn === gameState.playerPositions[loserIndex];
         const occupiedPositions = new Set(gameState.playerPositions.map((pos) => JSON.stringify(pos)));
         let newSpawn = originalSpawn;
 
-        if (occupiedPositions.has(JSON.stringify(originalSpawn))) {
+        if (!isInSpawnPoints && occupiedPositions.has(JSON.stringify(originalSpawn))) {
             const queue: Coordinates[] = [originalSpawn];
             const visited = new Set<string>();
             visited.add(JSON.stringify(originalSpawn));
@@ -281,16 +293,24 @@ export class GameSocketHandlerService {
             }
         }
 
-        gameState.playerPositions[playerIndex] = newSpawn;
+        winner.life = winner.maxLife;
+        loser.life = loser.maxLife;
+
+        gameState.playerPositions[loserIndex] = newSpawn;
         gameState.currentPlayerActionPoints = 0;
         let newGameState = gameState;
-        if (player.id === gameState.currentPlayer) {
+        if (loser.id === gameState.currentPlayer) {
             newGameState = this.handleEndTurnInternally(gameState);
         } else {
             newGameState = this.boardService.handleTurn(gameState);
         }
+        newGameState.players[winnerIndex] = winner;
+        newGameState.players[winnerIndex].currentAP = 0;
+        newGameState.players[loserIndex] = loser;
         this.gameStates.set(lobbyId, newGameState);
-        this.io.to(lobbyId).emit('combatEnded', { winner: player });
+
+        console.log('After Battle Ended', newGameState);
+        this.io.to(lobbyId).emit('combatEnded', { loser });
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
     }
 
@@ -325,8 +345,8 @@ export class GameSocketHandlerService {
             attackDice = attacker.attack;
             defenseDice = defender.defense;
         } else {
-            attackDice = Math.floor(Math.random() * attacker.attack) + 1;
-            defenseDice = Math.floor(Math.random() * defender.defense) + 1;
+            attackDice = Math.floor(Math.random() * this.getDiceValue(attacker.bonus.attack)) + 1;
+            defenseDice = Math.floor(Math.random() * this.getDiceValue(defender.bonus.defense)) + 1;
         }
 
         if (this.isPlayerOnIceTile(gameState, attacker)) {
@@ -336,19 +356,25 @@ export class GameSocketHandlerService {
         if (this.isPlayerOnIceTile(gameState, defender)) {
             defenseDice -= 2;
         }
-        const damage = Math.max(0, attackDice - defenseDice);
+        const damage = Math.max(0, attackDice + attacker.attack - defenseDice - defender.defense);
 
         if (damage > 0) {
             defender.life -= damage;
         }
 
         if (defender.life <= 0) {
-            this.handleDefeat(defender, lobbyId);
+            attacker.winCount += 1;
+            if (attacker.winCount === 3) {
+                this.io.to(lobbyId).emit('gameOver', { winner: attacker.name });
+                console.log('Game Over HAHAHHAHAHAHHAHAHAHAHHAHHAHA');
+                return;
+            }
+            this.handleDefeat(lobbyId, attacker, defender);
             return;
         }
         this.io.to(lobbyId).emit('attackResult', {
-            attackRoll: attackDice,
-            defenseRoll: defenseDice,
+            attackRoll: attackDice + attacker.attack,
+            defenseRoll: defenseDice + defender.defense,
             attackerHP: attacker.life,
             defenderHP: defender.life,
             damage,
@@ -386,6 +412,7 @@ export class GameSocketHandlerService {
         }
 
         gameState.currentPlayerActionPoints = 0;
+        gameState.players[playerIndex].currentAP = 0;
         this.gameStates.set(lobbyId, gameState);
         this.io.to(lobbyId).emit(GameEvents.FleeSuccess, { fleeingPlayer, isSuccessful });
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState });
@@ -409,6 +436,16 @@ export class GameSocketHandlerService {
         this.io.to(lobbyId).emit('combatPlayersUpdate', {
             players: gameState.players,
         });
+    }
+
+    private getDiceValue(playerDice: string): number {
+        if (playerDice === 'D4') {
+            return 4;
+        }
+        if (playerDice === 'D6') {
+            return 6;
+        }
+        return 0;
     }
     private getGameStateOrEmitError(socket: Socket, lobbyId: string): GameState | null {
         const gameState = this.gameStates.get(lobbyId);

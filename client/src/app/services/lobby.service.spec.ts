@@ -1070,9 +1070,9 @@ describe('LobbyService', () => {
 
         it('should handle combatEnded event with winner', (done) => {
             const testData = {
-                winner: { name: 'Winner' } as Player,
+                loser: { name: 'Winner' } as Player,
             };
-            service.onGameEnded().subscribe((data) => {
+            service.onCombatEnded().subscribe((data) => {
                 expect(data).toEqual(testData);
                 done();
             });

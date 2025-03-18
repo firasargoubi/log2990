@@ -105,13 +105,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.lobbyService.updateCombatStatus(this.isInCombat);
         });
 
-        this.lobbyService.onStartCombat().subscribe((data) => {
-            this.isInCombat = true;
-            this.isPlayerTurn = data.firstPlayer.id === this.currentPlayer.id;
-            console.log(this.isPlayerTurn);
-        });
-
-        this.lobbyService.onGameEnded().subscribe((data) => {
+        this.lobbyService.onCombatEnded().subscribe((data) => {
             this.isInCombat = false;
             this.lobbyService.updateCombatStatus(this.isInCombat);
         });
@@ -205,6 +199,12 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 this.getCurrentPlayer();
             }),
 
+            this.lobbyService.onStartCombat().subscribe((data) => {
+                this.isInCombat = true;
+                this.isPlayerTurn = data.firstPlayer.id === this.currentPlayer.id;
+                console.log(this.isPlayerTurn);
+            }),
+
             this.lobbyService.onTurnStarted().subscribe((data) => {
                 this.gameState = data.gameState;
                 this.syncCurrentPlayerWithGameState();
@@ -217,6 +217,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
             this.lobbyService.onMovementProcessed().subscribe((data) => {
                 this.gameState = data.gameState;
+                this.currentPlayer = data.gameState.players.find((p) => p.id === this.currentPlayer.id) || this.currentPlayer;
             }),
 
             this.lobbyService.onError().subscribe((error) => {
@@ -238,6 +239,12 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
             this.lobbyService.onBoardChanged().subscribe((data) => {
                 this.gameState = data.gameState;
+                for (const player of data.gameState.players) {
+                    console.log('Player ', player.name);
+                    console.log(player);
+                }
+                this.currentPlayer = data.gameState.players.find((p) => p.id === this.currentPlayer.id) || this.currentPlayer;
+                console.log("CurrentPlayer",this.currentPlayer);
             }),
 
             this.lobbyService.onFleeSuccess().subscribe((data) => {
@@ -256,6 +263,11 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 this.lobbyService.updateCombatStatus(this.isInCombat);
                 this.currentPlayer.life = this.currentPlayer.maxLife;
                 this.notificationService.showInfo(`${this.currentPlayer.name} a fini son combat`);
+            }),
+
+            this.lobbyService.onGameOver().subscribe((data) => {
+                this.abandon();
+                this.notificationService.showInfo(`${data.winner} est vraiment le goat my god.`);
             }),
         );
     }

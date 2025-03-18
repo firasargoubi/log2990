@@ -64,8 +64,6 @@ export class SocketService {
         socket.on('disconnect', () => this.handleDisconnect(socket));
         socket.on('disconnectFromRoom', (lobbyId: string) => this.handleDisconnectFromRoom(socket, lobbyId));
 
-        socket.on('playerDefeated', (data: { player: Player; lobbyId: string }) => this.handleDefeat(data.player, data.lobbyId));
-
         socket.on('attackAction', (data: { lobbyId: string; attacker: Player; defender: Player }) =>
             this.handleAttackAction(data.lobbyId, data.attacker, data.defender),
         );
@@ -271,10 +269,6 @@ export class SocketService {
 
     private handleChangeTurnEnd(currentPlayer: Player, opponent: Player, playerTurn: string, gameState: GameState): void {
         this.gameSocketHandlerService.changeTurnEnd(currentPlayer, opponent, playerTurn, gameState);
-    }
-
-    private handleDefeat(player: Player, lobbyId: string): void {
-        this.gameSocketHandlerService.handleDefeat(player, lobbyId);
     }
 
     private handleAttackAction(lobbyId: string, attacker: Player, defender: Player) {

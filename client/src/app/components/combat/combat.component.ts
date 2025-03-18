@@ -37,7 +37,7 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
     private notificationService = inject(NotificationService);
 
     ngOnInit() {
-        if (this.gameState) {
+        if (this.gameState && this.gameState.currentPlayer === this.currentPlayer.id) {
             this.lobbyService.handleAttack(this.currentPlayer, this.opponent, this.lobbyId, this.gameState);
         }
         this.setupSubscriptions();
@@ -153,8 +153,8 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
             }),
         );
         this.subscriptions.push(
-            this.lobbyService.onGameEnded().subscribe(() => {
-                this.notificationService.showInfo('La partie est terminée!');
+            this.lobbyService.onCombatEnded().subscribe((data) => {
+                this.notificationService.showInfo(`La partie est terminée! ${data.loser.name} a perdu ! `);
             }),
         );
 
