@@ -228,10 +228,14 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             }),
 
             this.lobbyService.onFleeSuccess().subscribe((data) => {
-                if (this.currentPlayer.id === data.fleeingPlayer.id) {
-                    this.currentPlayer.amountEscape = data.fleeingPlayer.amountEscape; // Mise à jour côté client
+                this.isInCombat = false;
+                this.lobbyService.updateCombatStatus(this.isInCombat);
+                this.currentPlayer.life = this.currentPlayer.maxLife;
+                if (this.currentPlayer.name === data.fleeingPlayer.name) {
+                    this.notificationService.showInfo('Vous avez fuit le combat.');
+                    return;
                 }
-                this.notificationService.showInfo(`${data.fleeingPlayer.name} a réussi à fuir le combat.`);
+                this.notificationService.showInfo(`${data.fleeingPlayer.name} a fui le combat.`);
             }),
 
             this.lobbyService.onAttackEnd().subscribe((data) => {
@@ -336,12 +340,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     setDebugMode() {
         this.debug = !this.debug;
         this.lobbyService.setDebug(this.lobbyId, this.debug);
-    }
-
-    updateTimerForAllPlayers(): void {
-        if (this.currentPlayer) {
-            this.lobbyService.updateCombatTime(this.remainingTime);
-        }
     }
 
     getCurrentPlayer() {

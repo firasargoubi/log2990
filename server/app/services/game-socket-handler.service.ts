@@ -363,28 +363,36 @@ export class GameSocketHandlerService {
     handleFlee(lobbyId: string, fleeingPlayer: Player) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
+
         fleeingPlayer.amountEscape = fleeingPlayer.amountEscape ?? 0;
+
         if (fleeingPlayer.amountEscape >= 2) {
             this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
             return;
         }
+
         fleeingPlayer.amountEscape++;
+
         const playerIndex = gameState.players.findIndex((p) => p.id === fleeingPlayer.id);
         if (playerIndex !== -1) {
             gameState.players[playerIndex].amountEscape = fleeingPlayer.amountEscape;
         }
-        const FLEE_RATE = 5; // 5% de chance de fuite
-        const fleeingChance = Math.random() * 100;
-        const isSuccessful = fleeingChance <= FLEE_RATE;
 
-        if (!isSuccessful) {
-            this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
-            return;
+        const FLEE_RATE = 30;
+        const isSuccessful = Math.random() * 100 <= FLEE_RATE;
+
+        const opponent = gameState.players.find((p) => p.id !== fleeingPlayer.id);
+        if (opponent) {
+            gameState.currentPlayer = opponent.id;
         }
-        gameState.currentPlayerActionPoints = 0;
+
+        if (isSuccessful) {
+            this.io.to(lobbyId).emit(GameEvents.FleeSuccess, { fleeingPlayer, isSuccessful });
+        } else {
+            this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
+        }
+
         this.gameStates.set(lobbyId, gameState);
-        this.io.to(lobbyId).emit(GameEvents.FleeSuccess, { fleeingPlayer, isSuccessful });
-        this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState });
         this.updateCombatPlayers(lobbyId);
     }
 

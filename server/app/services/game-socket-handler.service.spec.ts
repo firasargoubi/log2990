@@ -492,18 +492,22 @@ describe('GameSocketHandlerService', () => {
 
         gameStates.set('lobby1', gameState);
 
-        service.handleFlee('lobby1', player, true);
+        const originalMathRandom = Math.random;
+        Math.random = () => 0.1;
+
+        service.handleFlee('lobby1', player);
 
         expect(ioToStub.calledWith('lobby1')).to.be.true;
         const emit = ioToStub.returnValues[0].emit;
         expect(emit.calledWith('fleeSuccess', { fleeingPlayer: player, isSuccessful: true })).to.be.true;
+        Math.random = originalMathRandom;
     });
     it('should increment amountEscape and emit fleeFailure when handleFlee fails', () => {
         const player = { id: 'p1', amountEscape: 2 } as Player;
         const gameState = { players: [player] } as GameState;
         gameStates.set('lobby1', gameState);
 
-        service.handleFlee('lobby1', player, false);
+        service.handleFlee('lobby1', player);
 
         expect(ioToStub.calledWith('lobby1')).to.be.true;
         const emit = ioToStub.returnValues[0].emit;
@@ -515,7 +519,7 @@ describe('GameSocketHandlerService', () => {
         const gameState = { players: [player] } as GameState;
         gameStates.set('lobby1', gameState);
 
-        service.handleFlee('lobby1', player, false);
+        service.handleFlee('lobby1', player);
         expect(player.amountEscape).to.equal(1);
     });
     it('should emit attackEnd with isInCombat false in handleTerminateAttack', () => {
@@ -752,7 +756,7 @@ describe('GameSocketHandlerService', () => {
         const gameState = { players: [player] } as GameState;
         gameStates.set('lobby1', gameState);
 
-        service.handleFlee('lobby1', player, false);
+        service.handleFlee('lobby1', player);
 
         expect(ioToStub.calledWith('lobby1')).to.be.true;
         const emit = ioToStub.returnValues[0].emit;
@@ -764,7 +768,7 @@ describe('GameSocketHandlerService', () => {
         const gameState = { players: [] } as GameState;
         gameStates.set('lobby1', gameState);
 
-        service.handleFlee('lobby1', player, true);
+        service.handleFlee('lobby1', player);
         expect(ioToStub.calledWith('lobby1')).to.be.true;
     });
 
@@ -813,10 +817,6 @@ describe('GameSocketHandlerService', () => {
         expect(result).to.be.false;
     });
 
-    it('should return false in isWithinBounds if tile is out of bounds', () => {
-        const result = (global as any).isWithinBounds({ x: 5, y: 0 }, [[0]]);
-        expect(result).to.be.false;
-    });
     it('should return false in isWithinBounds if tile is out of bounds', () => {
         const result = isWithinBounds({ x: 5, y: 0 }, [[0]]);
         expect(result).to.be.false;
