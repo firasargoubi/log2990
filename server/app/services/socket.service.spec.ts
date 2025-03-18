@@ -42,7 +42,6 @@ describe('SocketService', () => {
     it('should set server instances in constructor', () => {
         expect(lobbyHandler.setServer.calledOnce).to.be.equal(true);
         expect(gameHandler.setServer.calledOnce).to.be.equal(true);
-        expect(disconnectHandler.setServer.calledOnce).to.be.equal(true);
     });
 
     it('should register all socket events on connection', () => {

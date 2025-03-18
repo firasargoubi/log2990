@@ -49,6 +49,7 @@ export class BoardService {
         await this.assignSpawnPoints(gameState);
 
         if (gameState.players.length > 0) {
+            gameState.players[0].currentMP = this.getPlayerMovementPoints(gameState.players[0]);
             gameState.currentPlayer = gameState.players[0].id;
             gameState.currentPlayerMovementPoints = this.getPlayerMovementPoints(gameState.players[0]);
         }
@@ -73,6 +74,7 @@ export class BoardService {
 
         const currentPlayer = gameState.players[playerIndex];
         gameState.currentPlayerMovementPoints = this.getPlayerMovementPoints(currentPlayer);
+        gameState.players[playerIndex].currentMP = gameState.currentPlayerMovementPoints;
 
         const availableMoves = this.findAllPaths(gameState, playerPosition);
 
@@ -103,8 +105,6 @@ export class BoardService {
         gameState.availableMoves = availableMoves;
 
         gameState.shortestMoves = this.calculateShortestMoves(gameState, playerPosition, availableMoves);
-
-        console.log(gameState);
 
         return gameState;
     }
@@ -147,6 +147,8 @@ export class BoardService {
 
         gameState.currentPlayerMovementPoints -= movementCost;
 
+        gameState.players[indexPlayer].currentMP = gameState.currentPlayerMovementPoints;
+
         if (gameState.currentPlayerMovementPoints >= 0) {
             gameState.availableMoves = this.findAllPaths(gameState, targetCoordinate);
             gameState.shortestMoves = this.calculateShortestMoves(gameState, targetCoordinate, gameState.availableMoves);
@@ -171,6 +173,8 @@ export class BoardService {
         gameState.currentPlayer = gameState.players[nextPlayerIndex].id;
 
         gameState.currentPlayerMovementPoints = this.getPlayerMovementPoints(gameState.players[nextPlayerIndex]);
+
+        gameState.players[currentPlayerIndex].currentMP = gameState.currentPlayerMovementPoints;
 
         gameState.currentPlayerActionPoints = 1;
 
@@ -200,9 +204,7 @@ export class BoardService {
     }
 
     private getPlayerMovementPoints(player: Player): number {
-        const speedBonus = (player.speed || 0) + (player.bonus?.speed || 0);
-
-        return speedBonus;
+        return player.speed || 0;
     }
 
     private async assignSpawnPoints(gameState: GameState): Promise<void> {

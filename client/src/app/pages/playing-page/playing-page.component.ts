@@ -72,7 +72,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
                 this.getCurrentPlayer();
             } else {
-                this.router.navigate(['/main']);
+                this.router.navigate(['/home', { replaceUrl: true }]);
             }
         });
         this.lobbyService.onTileUpdate().subscribe({
@@ -238,7 +238,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         const currentPlayer = this.lobbyService.getCurrentPlayer();
 
         if (!currentPlayer) {
-            this.router.navigate(['/home']);
+            this.router.navigate(['/home'], { replaceUrl: true });
             return;
         }
         this.currentPlayer = currentPlayer;
@@ -348,7 +348,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             return;
         }
         if (this.lobbyId && this.currentPlayer) {
-            this.lobbyService.leaveLobby(this.lobbyId, this.currentPlayer.name);
+            this.lobbyService.disconnect();
             this.router.navigate(['/home'], { replaceUrl: true });
         }
     }
