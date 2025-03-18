@@ -9,15 +9,15 @@ import { NotificationService } from './notification.service';
     providedIn: 'root',
 })
 export class ActionService {
-    gameState: GameState;
+    gameState: GameState | null;
     private notificationService = inject(NotificationService);
 
     getCurrentPlayerCoordinates(player: string): { x: number; y: number } | undefined {
-        const playerIndex = this.gameState.players.findIndex((p) => p.id === player);
+        const playerIndex = this.gameState?.players.findIndex((p) => p.id === player) ?? -1;
         if (playerIndex === -1) {
             return;
         }
-        return this.gameState.playerPositions[playerIndex];
+        return this.gameState?.playerPositions[playerIndex];
     }
 
     isPlayerOnTile(tile: Tile): boolean {
@@ -70,6 +70,8 @@ export class ActionService {
     }
 
     incrementActionCounter() {
-        this.gameState.currentPlayerActionPoints++;
+        if (this.gameState) {
+            this.gameState.currentPlayerActionPoints++;
+        }
     }
 }

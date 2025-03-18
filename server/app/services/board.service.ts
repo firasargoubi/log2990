@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-magic-numbers */
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
@@ -7,6 +6,10 @@ import { Player } from '@common/player';
 import { Service } from 'typedi';
 import { GameService } from './game.service';
 import { PathfindingService } from './pathfinding.service';
+
+const DEFAULT_MOVEMENT_POINTS = 0;
+const DEFAULT_ACTION_POINTS = 1;
+const TILE_DIVISOR = 10;
 
 @Service()
 export class BoardService {
@@ -40,12 +43,11 @@ export class BoardService {
             shortestMoves: [],
             spawnPoints: [],
             board: gameData.board,
-            currentPlayerMovementPoints: 0,
-            currentPlayerActionPoints: 1,
+            currentPlayerMovementPoints: DEFAULT_MOVEMENT_POINTS,
+            currentPlayerActionPoints: DEFAULT_ACTION_POINTS,
         };
 
         this.sortPlayersBySpeed(gameState);
-
         await this.assignSpawnPoints(gameState);
 
         if (gameState.players.length > 0) {
@@ -58,53 +60,14 @@ export class BoardService {
 
     handleTurn(gameState: GameState): GameState {
         const playerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
-        if (playerIndex === -1) {
-            gameState.availableMoves = [];
-            gameState.shortestMoves = [];
-            return gameState;
-        }
-
-        const playerPosition = gameState.playerPositions[playerIndex];
-        if (!playerPosition) {
-            gameState.availableMoves = [];
-            gameState.shortestMoves = [];
-            return gameState;
-        }
-
-        const currentPlayer = gameState.players[playerIndex];
-        gameState.currentPlayerMovementPoints = this.getPlayerMovementPoints(currentPlayer);
-
-        const availableMoves = this.findAllPaths(gameState, playerPosition);
-
-        gameState.availableMoves = availableMoves;
-
-        gameState.shortestMoves = this.calculateShortestMoves(gameState, playerPosition, availableMoves);
-
-        return gameState;
+        if (playerIndex === -1) return gameState;
+        return this.updatePlayerMoves(gameState, playerIndex);
     }
 
     handleBoardChange(gameState: GameState): GameState {
         const playerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
-        if (playerIndex === -1) {
-            gameState.availableMoves = [];
-            gameState.shortestMoves = [];
-            return gameState;
-        }
-
-        const playerPosition = gameState.playerPositions[playerIndex];
-        if (!playerPosition) {
-            gameState.availableMoves = [];
-            gameState.shortestMoves = [];
-            return gameState;
-        }
-
-        const availableMoves = this.findAllPaths(gameState, playerPosition);
-
-        gameState.availableMoves = availableMoves;
-
-        gameState.shortestMoves = this.calculateShortestMoves(gameState, playerPosition, availableMoves);
-
-        return gameState;
+        if (playerIndex === -1) return gameState;
+        return this.updatePlayerMoves(gameState, playerIndex);
     }
 
     findShortestPath(gameState: GameState, start: Coordinates, end: Coordinates): Coordinates[] | null {
@@ -174,6 +137,23 @@ export class BoardService {
 
         return this.handleTurn(gameState);
     }
+    private updatePlayerMoves(gameState: GameState, playerIndex: number): GameState {
+        const playerPosition = gameState.playerPositions[playerIndex];
+        if (!playerPosition) {
+            gameState.availableMoves = [];
+            gameState.shortestMoves = [];
+            return gameState;
+        }
+
+        const currentPlayer = gameState.players[playerIndex];
+        gameState.currentPlayerMovementPoints = this.getPlayerMovementPoints(currentPlayer);
+
+        const availableMoves = this.findAllPaths(gameState, playerPosition);
+        gameState.availableMoves = availableMoves;
+        gameState.shortestMoves = this.calculateShortestMoves(gameState, playerPosition, availableMoves);
+
+        return gameState;
+    }
 
     private findAllPaths(gameState: GameState, startPosition: Coordinates): Coordinates[] {
         if (!gameState || !startPosition) {
@@ -209,7 +189,7 @@ export class BoardService {
 
         for (let x = 0; x < boardSize; x++) {
             for (let y = 0; y < boardSize; y++) {
-                if (Math.floor(gameState.board[x][y] / 10) === ObjectsTypes.SPAWN) {
+                if (Math.floor(gameState.board[x][y] / TILE_DIVISOR) === ObjectsTypes.SPAWN) {
                     spawnPoints.push({ x, y });
                 }
             }
@@ -228,7 +208,7 @@ export class BoardService {
         if (spawnPoints.length > gameState.players.length) {
             for (let i = gameState.players.length; i < spawnPoints.length; i++) {
                 const { x, y } = spawnPoints[i];
-                gameState.board[x][y] = gameState.board[x][y] % 10;
+                gameState.board[x][y] = gameState.board[x][y] % TILE_DIVISOR;
             }
         }
     }
