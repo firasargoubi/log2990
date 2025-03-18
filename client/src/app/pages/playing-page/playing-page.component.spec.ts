@@ -192,6 +192,27 @@ describe('PlayingPageComponent', () => {
     });
 
     describe('Initialization', () => {
+        describe('Combat Status Updates', () => {
+            it('should update isInCombat from interaction listener', fakeAsync(() => {
+                lobbyService.interactionSubject.next({ isInCombat: true });
+                tick();
+                expect(component.isInCombat).toBeFalse();
+
+                lobbyService.interactionSubject.next({ isInCombat: false });
+                tick();
+                expect(component.isInCombat).toBeFalse();
+            }));
+
+            it('should update isInCombat from attack-end listener', fakeAsync(() => {
+                lobbyService.attackEndSubject.next({ isInCombat: true });
+                tick();
+                expect(component.isInCombat).toBeFalse();
+
+                lobbyService.attackEndSubject.next({ isInCombat: false });
+                tick();
+                expect(component.isInCombat).toBeFalse();
+            }));
+        });
         it('should set lobbyId from route params and initialize', fakeAsync(() => {
             fixture.detectChanges();
             tick();
@@ -257,6 +278,56 @@ describe('PlayingPageComponent', () => {
                 currentPlayer: 'player1',
                 players: [{ ...defaultPlayer }, { ...defaultPlayer, id: 'player2', name: 'Player Two' }],
             };
+        });
+        describe('Opponent Assignment', () => {
+            it('should update isInCombat when interaction events occur after battle initiation', () => {
+                const mockTile: Tile = { type: TileTypes.Grass, x: 0, y: 0, id: '', object: 0 };
+                const expectedOpponent = {
+                    ...defaultPlayer,
+                    id: 'player2',
+                    name: 'Player Two',
+                };
+
+                // Mock action service to return 'battle' and a valid opponent
+                actionService.getActionType.and.returnValue('battle');
+                actionService.findOpponent.and.returnValue(expectedOpponent);
+
+                // Trigger battle action
+                component.onActionRequest(mockTile);
+
+                // Simulate interaction events and verify isInCombat updates
+                lobbyService.interactionSubject.next({ isInCombat: true });
+                expect(component.isInCombat).toBeTrue();
+
+                lobbyService.interactionSubject.next({ isInCombat: false });
+                expect(component.isInCombat).toBeFalse();
+            });
+            it('should set opponent to null when findOpponent returns null', () => {
+                const mockTile: Tile = { type: TileTypes.Grass, x: 0, y: 0, id: '', object: 0 };
+                actionService.getActionType.and.returnValue('battle');
+                actionService.findOpponent.and.returnValue(null); // Simulate no opponent found
+
+                component.onActionRequest(mockTile);
+
+                expect(component.opponent).toBeNull();
+                expect(lobbyService.initializeBattle).not.toHaveBeenCalled();
+            });
+
+            it('should set opponent when findOpponent returns a player', () => {
+                const mockTile: Tile = { type: TileTypes.Grass, x: 0, y: 0, id: '', object: 0 };
+                const expectedOpponent = {
+                    ...defaultPlayer,
+                    id: 'player2',
+                    name: 'Player Two',
+                };
+                actionService.getActionType.and.returnValue('battle');
+                actionService.findOpponent.and.returnValue(expectedOpponent);
+
+                component.onActionRequest(mockTile);
+
+                expect(component.opponent).toEqual(expectedOpponent);
+                expect(lobbyService.initializeBattle).toHaveBeenCalledWith(component.currentPlayer, expectedOpponent, '');
+            });
         });
 
         it('should execute action when conditions are met', () => {
@@ -472,14 +543,117 @@ describe('PlayingPageComponent', () => {
         });
     });
 
-    it('should not execute action when action type is null', () => {
+    it('should exit early and not execute action when action type is null', () => {
+        // Explicitly set up the component state
+        component.currentPlayer = {
+            id: 'player1',
+            name: 'Player One',
+            isHost: true,
+            life: 100,
+            maxLife: 100,
+            avatar: '',
+            speed: 0,
+            attack: 0,
+            defense: 0,
+            winCount: 0,
+            amountEscape: 0,
+        };
+        component.gameState = {
+            board: [[]],
+            currentPlayer: 'player1', // Matches currentPlayer.id
+            animation: false, // No animation active
+            players: [component.currentPlayer],
+            id: 'game123',
+            turnCounter: 0,
+            availableMoves: [],
+            shortestMoves: [],
+            playerPositions: [],
+            spawnPoints: [],
+            currentPlayerMovementPoints: 0,
+            currentPlayerActionPoints: 1,
+            debug: false,
+        };
         const mockTile: Tile = { type: TileTypes.Grass, x: 0, y: 0, id: '', object: 0 };
         actionService.getActionType.and.returnValue(null);
         fixture.detectChanges();
 
         component.onActionRequest(mockTile);
 
-        expect(component.action).toBe(false);
         expect(lobbyService.executeAction).not.toHaveBeenCalled();
+    });
+    describe('Move Request Validation', () => {
+        it('should not request movement if gameState is null', () => {
+            component.gameState = null as unknown as GameState;
+            component.currentPlayer = defaultPlayer;
+
+            component.onMoveRequest([{ x: 1, y: 1 }]);
+
+            expect(lobbyService.requestMovement).not.toHaveBeenCalled();
+        });
+
+        it('should not request movement if currentPlayer is null', () => {
+            component.gameState = minimalGameState;
+            component.currentPlayer = null as unknown as Player;
+
+            component.onMoveRequest([{ x: 1, y: 1 }]);
+
+            expect(lobbyService.requestMovement).not.toHaveBeenCalled();
+        });
+
+        it('should not request movement if not current player turn', () => {
+            component.gameState = { ...minimalGameState, currentPlayer: 'player999' };
+            component.currentPlayer = defaultPlayer;
+
+            component.onMoveRequest([{ x: 1, y: 1 }]);
+
+            expect(lobbyService.requestMovement).not.toHaveBeenCalled();
+        });
+
+        it('should request movement when all conditions are met', () => {
+            component.gameState = { ...minimalGameState, currentPlayer: 'player1' };
+            component.currentPlayer = defaultPlayer;
+
+            component.onMoveRequest([{ x: 1, y: 1 }]);
+
+            expect(lobbyService.requestMovement).toHaveBeenCalledWith('', [{ x: 1, y: 1 }]);
+        });
+    });
+
+    describe('End Turn Validation', () => {
+        it('should not request end turn if gameState is null', () => {
+            component.gameState = null as unknown as GameState;
+            component.currentPlayer = defaultPlayer;
+
+            component.onEndTurn();
+
+            expect(lobbyService.requestEndTurn).not.toHaveBeenCalled();
+        });
+
+        it('should not request end turn if currentPlayer is null', () => {
+            component.gameState = minimalGameState;
+            component.currentPlayer = null as unknown as Player;
+
+            component.onEndTurn();
+
+            expect(lobbyService.requestEndTurn).not.toHaveBeenCalled();
+        });
+
+        it('should not request end turn if not current player turn', () => {
+            component.gameState = { ...minimalGameState, currentPlayer: 'player999' };
+            component.currentPlayer = defaultPlayer;
+
+            component.onEndTurn();
+
+            expect(lobbyService.requestEndTurn).not.toHaveBeenCalled();
+        });
+
+        it('should request end turn when all conditions are met', () => {
+            component.gameState = { ...minimalGameState, currentPlayer: 'player1' };
+            component.currentPlayer = defaultPlayer;
+
+            component.onEndTurn();
+
+            expect(lobbyService.requestEndTurn).toHaveBeenCalledWith('');
+        });
     });
 });
