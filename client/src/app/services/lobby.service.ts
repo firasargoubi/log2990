@@ -119,6 +119,10 @@ export class LobbyService {
         this.socket.emit('requestMovement', { lobbyId, coordinates });
     }
 
+    requestTeleport(lobbyId: string, coordinates: Coordinates): void {
+        this.socket.emit('teleport', { lobbyId, coordinates });
+    }
+
     onMovementProcessed(): Observable<{ gameState: GameState; playerMoved: string; newPosition: Coordinates }> {
         return new Observable((observer) => {
             this.socket.on('movementProcessed', (data: { gameState: GameState; playerMoved: string; newPosition: Coordinates }) => {
@@ -184,6 +188,10 @@ export class LobbyService {
                 observer.next(data);
             });
         });
+    }
+
+    setDebug(lobbyId: string, debug: boolean): void {
+        this.socket.emit('setDebug', { lobbyId, debug });
     }
 
     verifyRoom(gameId: string): Observable<{ exists: boolean; isLocked?: boolean }> {

@@ -7,6 +7,7 @@
         [isPathHighlighted]="isOnHighlightedPath(tile.x, tile.y)"
         [player]="getPlayerAtPosition(tile.x, tile.y)"
         (tileClick)="onTileClick(tile)"
+        (contextmenu)="onTileRightClick($event,tile)"
         (mouseenter)="onTileHover(tile)"
         (mouseleave)="onTileLeave()"
       ></app-game-tile>
