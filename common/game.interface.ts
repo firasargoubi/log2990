@@ -38,6 +38,8 @@ export enum ObjectsTypes {
     SPAWN = 6,
     RANDOM = 7,
     BOOTS = 8,
+    TRAP,
+    WALL,
 }
 
 export enum TileTypes {
@@ -48,6 +50,7 @@ export enum TileTypes {
     DoorOpen = 5,
     Wall = 6,
     Floor,
+    Empty,
 }
 
 export interface Tile {

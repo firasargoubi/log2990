@@ -52,6 +52,7 @@ describe('LobbyFormComponent', () => {
             attack: 10,
             defense: 8,
             maxLife: 0,
+            winCount: 0,
         };
         const mockLobby: GameLobby = {
             id: '123',
@@ -90,6 +91,7 @@ describe('LobbyFormComponent', () => {
             attack: 10,
             defense: 8,
             maxLife: 0,
+            winCount: 0,
         };
         const mockLobby: GameLobby = {
             id: '123',
@@ -140,6 +142,7 @@ describe('LobbyFormComponent', () => {
             attack: 10,
             defense: 8,
             maxLife: 0,
+            winCount: 0,
         };
         const mockLobby: GameLobby = {
             id: '123',
@@ -171,6 +174,7 @@ describe('LobbyFormComponent', () => {
             attack: 10,
             defense: 8,
             maxLife: 0,
+            winCount: 0,
         };
         const mockLobby: GameLobby = {
             id: '123',
@@ -205,6 +209,7 @@ describe('LobbyFormComponent', () => {
             attack: 10,
             defense: 8,
             maxLife: 0,
+            winCount: 0,
         };
         const mockLobby: GameLobby = {
             id: '123',

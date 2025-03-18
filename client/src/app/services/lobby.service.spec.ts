@@ -111,6 +111,7 @@ describe('LobbyService', () => {
                 attack: 0,
                 defense: 0,
                 maxLife: 0,
+                winCount: 0,
             };
             service.joinLobby(lobbyId, player);
             expect(mockSocket.emit).toHaveBeenCalledWith('joinLobby', { lobbyId, player });
@@ -182,6 +183,7 @@ describe('LobbyService', () => {
                     attack: 10,
                     defense: 8,
                     maxLife: 0,
+                    winCount: 0,
                 },
                 {
                     name: 'player2',
@@ -193,6 +195,7 @@ describe('LobbyService', () => {
                     attack: 12,
                     defense: 7,
                     maxLife: 0,
+                    winCount: 0,
                 },
             ];
 
@@ -451,6 +454,7 @@ describe('LobbyService', () => {
                 attack: 10,
                 defense: 8,
                 maxLife: 0,
+                winCount: 0,
             };
 
             service.setCurrentPlayer(player);
@@ -507,6 +511,7 @@ describe('LobbyService', () => {
                 attack: 15,
                 defense: 5,
                 maxLife: 100,
+                winCount: 0,
             };
             const opponent: Player = {
                 name: 'Bob',
@@ -518,6 +523,7 @@ describe('LobbyService', () => {
                 attack: 12,
                 defense: 6,
                 maxLife: 90,
+                winCount: 0,
             };
             const lobbyId = 'lobby-123';
 
@@ -569,6 +575,7 @@ describe('LobbyService', () => {
                 attack: 15,
                 defense: 5,
                 maxLife: 100,
+                winCount: 0,
             };
             const opponent: Player = {
                 name: 'Bob',
@@ -580,6 +587,7 @@ describe('LobbyService', () => {
                 attack: 12,
                 defense: 6,
                 maxLife: 90,
+                winCount: 0,
             };
             const lobbyId = 'lobby-123';
             const gameState: GameState = { playerPositions: {} } as GameState;
@@ -601,6 +609,7 @@ describe('LobbyService', () => {
                 attack: 15,
                 defense: 5,
                 maxLife: 100,
+                winCount: 0,
             };
             const opponent: Player = {
                 name: 'Bob',
@@ -612,6 +621,7 @@ describe('LobbyService', () => {
                 attack: 12,
                 defense: 6,
                 maxLife: 90,
+                winCount: 0,
             };
             const playerTurn = 'Alice';
             const gameState: GameState = { playerPositions: {} } as GameState;
@@ -679,6 +689,7 @@ describe('LobbyService', () => {
                 attack: 0,
                 defense: 0,
                 maxLife: 0,
+                winCount: 0,
             };
             const lobbyId = 'lobby-123';
             service.handleDefeat(player, lobbyId);
@@ -697,6 +708,7 @@ describe('LobbyService', () => {
                     attack: 10,
                     defense: 5,
                     maxLife: 100,
+                    winCount: 0,
                 },
                 newSpawn: { x: 10, y: 20 },
             };
@@ -723,6 +735,7 @@ describe('LobbyService', () => {
                 attack: 12,
                 defense: 4,
                 maxLife: 80,
+                winCount: 0,
             };
             const damage = 10;
             const opponentLife = 70;
@@ -742,6 +755,7 @@ describe('LobbyService', () => {
                     attack: 10,
                     defense: 5,
                     maxLife: 50,
+                    winCount: 0,
                 },
                 remainingHealth: 40,
             };
@@ -770,6 +784,7 @@ describe('LobbyService', () => {
                     attack: 10,
                     defense: 5,
                     maxLife: 100,
+                    winCount: 0,
                 },
             };
             service.onFleeSuccess().subscribe({
@@ -795,6 +810,7 @@ describe('LobbyService', () => {
                     attack: 8,
                     defense: 4,
                     maxLife: 80,
+                    winCount: 0,
                 },
             };
             service.onFleeFailure().subscribe({
@@ -863,6 +879,7 @@ describe('LobbyService', () => {
                     attack: 12,
                     defense: 8,
                     maxLife: 100,
+                    winCount: 0,
                 },
                 {
                     name: 'Mage',
@@ -874,6 +891,7 @@ describe('LobbyService', () => {
                     attack: 15,
                     defense: 5,
                     maxLife: 80,
+                    winCount: 0,
                 },
             ];
 
@@ -948,6 +966,7 @@ describe('LobbyService', () => {
                 attack: 20,
                 defense: 10,
                 maxLife: 100,
+                winCount: 0,
             };
             const defender: Player = {
                 name: 'Defender',
@@ -959,6 +978,7 @@ describe('LobbyService', () => {
                 attack: 15,
                 defense: 8,
                 maxLife: 90,
+                winCount: 0,
             };
             service.attack(lobbyId, attacker, defender);
             expect(mockSocket.emit).toHaveBeenCalledWith('attack', { lobbyId, attacker, defender });
@@ -976,6 +996,7 @@ describe('LobbyService', () => {
                 attack: 10,
                 defense: 5,
                 maxLife: 50,
+                winCount: 0,
             };
             const success = true;
             service.flee(lobbyId, player, success);
@@ -1016,6 +1037,7 @@ describe('LobbyService', () => {
                 attack: 20,
                 defense: 10,
                 maxLife: 100,
+                winCount: 0,
             };
             const opponent: Player = {
                 name: 'Opponent',
@@ -1027,6 +1049,7 @@ describe('LobbyService', () => {
                 attack: 15,
                 defense: 8,
                 maxLife: 90,
+                winCount: 0,
             };
             const time = 30;
             service.startCombat(lobbyId, currentPlayer, opponent, time);

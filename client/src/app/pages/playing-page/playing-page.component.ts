@@ -7,10 +7,10 @@ import { GameBoardComponent } from '@app/components/game-board/game-board.compon
 import { GameInfoComponent } from '@app/components/game-info/game-info.component';
 import { InventoryComponent } from '@app/components/inventory/inventory.component';
 import { MessagesComponent } from '@app/components/messages/messages.component';
-import { ActionService } from '@app/services/action.service';
-
 import { PlayerListComponent } from '@app/components/player-list/player-list.component';
+import { MapSize } from '@app/Consts/app.constants';
 import { PageUrl } from '@app/Consts/route-constants';
+import { ActionService } from '@app/services/action.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { Coordinates } from '@common/coordinates';
@@ -45,15 +45,13 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     @Output() remove = new EventEmitter<string>();
     @Input() player!: Player;
 
-    debug: boolean = false;
     isInCombat: boolean = false;
-    remainingTime: number = 0;
-    isPlayerTurn: boolean = false; // Indique si c'est le tour du joueur
+    isPlayerTurn: boolean = false;
     combatSubscription: Subscription | null = null;
-    turnSubscription: Subscription | null = null;
-
     lobby: GameLobby;
-    private interval: number | null = null;
+    interval: number | null = null;
+    private remainingTime: number = 0;
+    private debug: boolean = false;
     private lobbyService = inject(LobbyService);
     private actionService = inject(ActionService);
     private router = inject(Router);
@@ -108,10 +106,9 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.lobbyService.onStartCombat().subscribe((data) => {
             this.isInCombat = true;
             this.isPlayerTurn = data.firstPlayer.id === this.currentPlayer.id;
-            console.log(this.isPlayerTurn);
         });
 
-        this.lobbyService.onGameEnded().subscribe((data) => {
+        this.lobbyService.onGameEnded().subscribe(() => {
             this.isInCombat = false;
             this.lobbyService.updateCombatStatus(this.isInCombat);
         });
@@ -160,16 +157,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
     handleAction() {
         this.action = !this.action;
-    }
-
-    onAttackClick(playerId: string, lobbyId: string): void {
-        const opponent = this.gameState.players.find((p) => p.id === playerId);
-        if (!opponent) {
-            return;
-        }
-        this.lobbyService.startCombat(lobbyId, this.currentPlayer, opponent, 50);
-        this.isInCombat = true;
-        this.remainingTime = 30;
     }
 
     startTurnCountdown(): void {
@@ -241,14 +228,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             }),
 
             this.lobbyService.onFleeSuccess().subscribe((data) => {
-                this.isInCombat = false;
-                this.lobbyService.updateCombatStatus(this.isInCombat);
-                this.currentPlayer.life = this.currentPlayer.maxLife;
-                if (this.currentPlayer.name === data.fleeingPlayer.name) {
-                    this.notificationService.showInfo('Vous avez fuit le combat.');
-                    return;
+                if (this.currentPlayer.id === data.fleeingPlayer.id) {
+                    this.currentPlayer.amountEscape = data.fleeingPlayer.amountEscape; // Mise à jour côté client
                 }
-                this.notificationService.showInfo(`${data.fleeingPlayer.name} a fui le combat.`);
+                this.notificationService.showInfo(`${data.fleeingPlayer.name} a réussi à fuir le combat.`);
             }),
 
             this.lobbyService.onAttackEnd().subscribe((data) => {
@@ -258,35 +241,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 this.notificationService.showInfo(`${this.currentPlayer.name} a fini son combat`);
             }),
         );
-    }
-
-    getCurrentPlayer() {
-        const currentPlayer = this.lobbyService.getCurrentPlayer();
-
-        if (!currentPlayer) {
-            this.router.navigate(['/home'], { replaceUrl: true });
-            return;
-        }
-        this.currentPlayer = currentPlayer;
-        const socketId = this.lobbyService.getSocketId();
-        if (this.currentPlayer.id !== socketId) {
-            this.currentPlayer.id = socketId;
-        }
-
-        return;
-    }
-
-    syncCurrentPlayerWithGameState() {
-        if (!this.gameState || !this.currentPlayer) return;
-
-        const playerInGameState = this.gameState.players.find((p) => p.id === this.currentPlayer?.id);
-
-        if (playerInGameState) {
-            if (JSON.stringify(playerInGameState) !== JSON.stringify(this.currentPlayer)) {
-                this.currentPlayer = playerInGameState;
-                this.lobbyService.setCurrentPlayer(this.currentPlayer);
-            }
-        }
     }
 
     notifyPlayerTurn(playerId: string) {
@@ -331,8 +285,8 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     getMapSize(): string {
         if (!this.gameState) return 'Unknown';
         const size = this.gameState.board.length;
-        if (size <= 10) return 'Small';
-        if (size <= 15) return 'Medium';
+        if (size <= MapSize.SMALL) return 'Small';
+        if (size <= MapSize.MEDIUM) return 'Medium';
         return 'Large';
     }
 
@@ -375,13 +329,47 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.router.navigate(['/home'], { replaceUrl: true });
         }
     }
+    onInfoSent(details: string) {
+        console.log(details);
+    }
 
     setDebugMode() {
         this.debug = !this.debug;
         this.lobbyService.setDebug(this.lobbyId, this.debug);
     }
 
-    onInfoSent(details: string) {
-        console.log(details);
+    updateTimerForAllPlayers(): void {
+        if (this.currentPlayer) {
+            this.lobbyService.updateCombatTime(this.remainingTime);
+        }
+    }
+
+    getCurrentPlayer() {
+        const currentPlayer = this.lobbyService.getCurrentPlayer();
+
+        if (!currentPlayer) {
+            this.router.navigate(['/home'], { replaceUrl: true });
+            return;
+        }
+        this.currentPlayer = currentPlayer;
+        const socketId = this.lobbyService.getSocketId();
+        if (this.currentPlayer.id !== socketId) {
+            this.currentPlayer.id = socketId;
+        }
+
+        return;
+    }
+
+    syncCurrentPlayerWithGameState() {
+        if (!this.gameState || !this.currentPlayer) return;
+
+        const playerInGameState = this.gameState.players.find((p) => p.id === this.currentPlayer?.id);
+
+        if (playerInGameState) {
+            if (JSON.stringify(playerInGameState) !== JSON.stringify(this.currentPlayer)) {
+                this.currentPlayer = playerInGameState;
+                this.lobbyService.setCurrentPlayer(this.currentPlayer);
+            }
+        }
     }
 }

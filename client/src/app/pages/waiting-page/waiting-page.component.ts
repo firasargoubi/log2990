@@ -31,6 +31,7 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
         speed: 0,
         attack: 0,
         defense: 0,
+        winCount: 0,
     };
     hostId: string = '0000';
     private subscriptions: Subscription[] = [];
