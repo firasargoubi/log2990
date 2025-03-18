@@ -206,3 +206,5 @@ export const PLAYING_PAGE_DESCRIPTION = {
     hasFled: 'a fui le combat.',
     hasFinishedCombat: 'a fini son combat',
 };
+
+export const DELAY_COUNTDOWN = 1000;

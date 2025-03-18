@@ -80,8 +80,8 @@ export class SocketService {
             this.handleChangeTurnEnd(data.currentPlayer, data.opponent, data.playerTurn, data.gameState),
         );
 
-        socket.on('fleeCombat', (data: { lobbyId: string; player: Player; success: boolean }) => {
-            this.handleFlee(data.lobbyId, data.player, data.success);
+        socket.on('fleeCombat', (data: { lobbyId: string; player: Player }) => {
+            this.handleFlee(data.lobbyId, data.player);
         });
 
         socket.on('terminateAttack', (data: { lobbyId: string }) => {
@@ -92,8 +92,8 @@ export class SocketService {
             this.handleAttackAction(data.lobbyId, data.attacker, data.defender);
         });
 
-        socket.on('flee', (data: { lobbyId: string; player: Player; success: boolean }) => {
-            this.handleFlee(data.lobbyId, data.player, data.success);
+        socket.on('flee', (data: { lobbyId: string; player: Player }) => {
+            this.handleFlee(data.lobbyId, data.player);
         });
 
         socket.on('updateCombatTime', (data: { lobbyId: string; timeLeft: number }) => {
@@ -281,8 +281,8 @@ export class SocketService {
         this.gameSocketHandlerService.handleAttackAction(lobbyId, attacker, defender);
     }
 
-    private handleFlee(lobbyId: string, player: Player, success: boolean) {
-        this.gameSocketHandlerService.handleFlee(lobbyId, player, success);
+    private handleFlee(lobbyId: string, player: Player) {
+        this.gameSocketHandlerService.handleFlee(lobbyId, player);
     }
 
     private terminateAttack(lobbyId: string) {

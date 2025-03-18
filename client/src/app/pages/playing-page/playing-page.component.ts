@@ -7,7 +7,7 @@ import { GameBoardComponent } from '@app/components/game-board/game-board.compon
 import { GameInfoComponent } from '@app/components/game-info/game-info.component';
 import { InventoryComponent } from '@app/components/inventory/inventory.component';
 import { MessagesComponent } from '@app/components/messages/messages.component';
-import { MAP_SIZES, MapSize, PLAYING_PAGE, PLAYING_PAGE_DESCRIPTION } from '@app/Consts/app.constants';
+import { DELAY_COUNTDOWN, MAP_SIZES, MapSize, PLAYING_PAGE, PLAYING_PAGE_DESCRIPTION } from '@app/Consts/app.constants';
 import { PageUrl } from '@app/Consts/route-constants';
 import { ActionService } from '@app/services/action.service';
 import { LobbyService } from '@app/services/lobby.service';
@@ -148,21 +148,23 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.action = !this.action;
     }
 
-    // startTurnCountdown(): void {
-    //     if (this.remainingTime > 0) {
-    //         this.interval = window.setInterval(() => {
-    //             if (this.remainingTime > 0) {
-    //                 this.remainingTime--;
-    //                 this.updateTimerForAllPlayers();
-    //             } else {
-    //                 if (this.interval !== null) {
-    //                     clearInterval(this.interval);
-    //                 }
-    //             }
-    //         }, TIMEOUT_START_COMBAT);
-    //     }
-    // }
-
+    startTurnCountdown(): void {
+        if (this.remainingTime > 0) {
+            this.interval = window.setInterval(() => {
+                if (this.remainingTime > 0) {
+                    this.remainingTime--;
+                    this.updateTimerForAllPlayers();
+                } else {
+                    if (this.interval !== null) {
+                        clearInterval(this.interval);
+                    }
+                }
+            }, DELAY_COUNTDOWN);
+        }
+    }
+    updateTimerForAllPlayers() {
+        throw new Error('Method not implemented.');
+    }
     ngOnDestroy() {
         this.abandon();
         this.subscriptions.forEach((sub) => sub.unsubscribe());
@@ -310,7 +312,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                     this.notificationService.showInfo(PLAYING_PAGE_DESCRIPTION.combatFlee);
                     return;
                 }
-                this.notificationService.showInfo(`${data.fleeingPlayer.name} a fui le combat.`);
+                this.notificationService.showInfo(`${data.fleeingPlayer.name} a réussi à fuir le combat.`);
             }),
 
             this.lobbyService.onAttackEnd().subscribe((data) => {
