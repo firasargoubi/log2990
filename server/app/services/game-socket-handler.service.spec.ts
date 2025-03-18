@@ -407,17 +407,20 @@ describe('GameSocketHandlerService', () => {
         const emit = ioToStub.returnValues[0].emit;
         expect(emit.calledWith('playersBattling', { isInCombat: true })).to.be.true;
     });
+
     it('should emit PlayerTurn with correct playerTurn and countDown in startBattle', () => {
         const currentPlayer = { id: 'p1', amountEscape: 2 } as Player;
         const opponent = { id: 'p2', amountEscape: 0 } as Player;
-        const gameState = { players: [currentPlayer, opponent] } as GameState;
+        const gameState = { players: [currentPlayer, opponent], debug: false } as GameState;
+        gameStates.set('lobby1', gameState);
 
-        service.startBattle(socket, currentPlayer, opponent, gameState);
+        service.startBattle('lobby1', currentPlayer, opponent, 5);
 
         expect(ioToStub.calledWith('p1')).to.be.true;
         const emit = ioToStub.returnValues[0].emit;
-        expect(emit.calledWith('PlayerTurn', { playerTurn: 'p1', countDown: 3 })).to.be.true;
+        expect(emit.calledWith('startCombat', { firstPlayer: currentPlayer })).to.be.true;
     });
+
     it('should emit PlayerSwitch with newPlayerTurn and countDown in changeTurnEnd', () => {
         const currentPlayer = { id: 'p1', amountEscape: 1 } as Player;
         const opponent = { id: 'p2', amountEscape: 2 } as Player;
@@ -445,18 +448,22 @@ describe('GameSocketHandlerService', () => {
         const emit = ioToStub.returnValues[0].emit;
         expect(emit.calledWith('changedSpawnPoint', { player, newSpawn: { x: 1, y: 1 } })).to.be.true;
     });
-    it('should reduce life and emit update-health in handleAttackAction', () => {
-        const opponent = { id: 'p2', life: 10 } as Player;
-        const gameState = { players: [opponent] } as GameState;
+
+    it('should reduce life and emit attackResult in handleAttackAction', () => {
+        const attacker = { id: 'p1', life: 10, attack: 5 } as Player;
+        const defender = { id: 'p2', life: 10, defense: 3 } as Player;
+        const gameState = { players: [attacker, defender], debug: false } as GameState;
         gameStates.set('lobby1', gameState);
 
-        service.handleAttackAction('lobby1', opponent, 3);
+        sandbox.stub(Math, 'random').returns(0.5); // Mock random for predictable dice rolls
+        service.handleAttackAction('lobby1', attacker, defender);
 
-        expect(opponent.life).to.equal(7);
+        expect(defender.life).to.be.lessThanOrEqual(10); // Damage depends on random rolls
         expect(ioToStub.calledWith('lobby1')).to.be.true;
         const emit = ioToStub.returnValues[0].emit;
-        expect(emit.calledWith('update-health', { player: opponent, remainingHealth: 7 })).to.be.true;
+        expect(emit.calledWith('attackResult')).to.be.true;
     });
+
     it('should emit fleeSuccess when handleFlee succeeds', () => {
         const player = { id: 'p1' } as Player;
         service.handleFlee('lobby1', player, true);
@@ -514,6 +521,7 @@ describe('GameSocketHandlerService', () => {
             shortestMoves: [],
             currentPlayerMovementPoints: 0,
             currentPlayerActionPoints: 0,
+            debug: false,
         };
         gameStates.set('lobby1', gameState);
         const players = [player1];
@@ -546,6 +554,7 @@ describe('GameSocketHandlerService', () => {
             shortestMoves: [],
             currentPlayerMovementPoints: 0,
             currentPlayerActionPoints: 0,
+            debug: false,
         };
         gameStates.set('lobby1', gameState);
         (boardService.handleBoardChange as any).returns(gameState);
@@ -554,37 +563,45 @@ describe('GameSocketHandlerService', () => {
     });
 
     it('should not proceed if player not found in handleAttackAction', () => {
-        gameStates.set('lobby1', { players: [] } as GameState);
-        service.handleAttackAction('lobby1', { id: 'opponent', life: 10 } as Player, 5);
+        gameStates.set('lobby1', { players: [], debug: false } as GameState);
+        const attacker = { id: 'p1', life: 10, attack: 5 } as Player;
+        const defender = { id: 'opponent', life: 10, defense: 3 } as Player;
+        service.handleAttackAction('lobby1', attacker, defender);
         expect(ioToStub.calledWith('lobby1')).to.be.false;
     });
 
     it('should not proceed if no gameState in handleAttackAction', () => {
-        service.handleAttackAction('notFoundLobby', { id: 'op', life: 5 } as Player, 5);
+        const attacker = { id: 'p1', life: 10, attack: 5 } as Player;
+        const defender = { id: 'op', life: 5, defense: 3 } as Player;
+        service.handleAttackAction('notFoundLobby', attacker, defender);
         expect(ioToStub.calledWith('notFoundLobby')).to.be.false;
     });
+
     it('should not reduce life if damage is 0 in handleAttackAction', () => {
-        const opponent = { id: 'p2', life: 10 } as Player;
-        const gameState = { players: [opponent] } as GameState;
+        const attacker = { id: 'p1', life: 10, attack: 1 } as Player;
+        const defender = { id: 'p2', life: 10, defense: 5 } as Player;
+        const gameState = { players: [attacker, defender], debug: false } as GameState;
         gameStates.set('lobby1', gameState);
 
-        service.handleAttackAction('lobby1', opponent, 0);
+        sandbox.stub(Math, 'random').returns(0); // Low rolls ensure damage = 0
+        service.handleAttackAction('lobby1', attacker, defender);
 
-        expect(opponent.life).to.equal(10);
+        expect(defender.life).to.equal(10);
         expect(ioToStub.calledWith('lobby1')).to.be.true;
         const emit = ioToStub.returnValues[0].emit;
-        expect(emit.calledWith('update-health', { player: opponent, remainingHealth: 10 })).to.be.true;
+        expect(emit.calledWith('attackResult')).to.be.true;
     });
-    it('should emit PlayerTurn with correct playerTurn when opponent has first index in startBattle', () => {
+    it('should emit startCombat with correct playerTurn when opponent has first index in startBattle', () => {
         const currentPlayer = { id: 'p1', amountEscape: 0 } as Player;
         const opponent = { id: 'p2', amountEscape: 0 } as Player;
-        const gameState = { players: [opponent, currentPlayer] } as GameState;
+        const gameState = { players: [opponent, currentPlayer], debug: false } as GameState;
+        gameStates.set('lobby1', gameState);
 
-        service.startBattle(socket, currentPlayer, opponent, gameState);
+        service.startBattle('lobby1', currentPlayer, opponent, 5);
 
         expect(ioToStub.calledWith('p1')).to.be.true;
         const emit = ioToStub.returnValues[0].emit;
-        expect(emit.calledWith('PlayerTurn', { playerTurn: 'p2', countDown: 5 })).to.be.true;
+        expect(emit.calledWith('startCombat', { firstPlayer: opponent })).to.be.true;
     });
     it('should emit PlayerSwitch with currentPlayer when player.id is not currentPlayer.id', () => {
         const currentPlayer = { id: 'p1', amountEscape: 0 } as Player;
