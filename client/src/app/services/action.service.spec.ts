@@ -343,4 +343,42 @@ describe('ActionService', () => {
         const isSamePosition = coordinates?.x === tile.x && coordinates?.y === tile.y;
         expect(isSamePosition).toBeFalse();
     });
+
+    it('should return undefined when gameState is null', () => {
+        service.gameState = null;
+        const coordinates = service.getCurrentPlayerCoordinates('player1');
+        expect(coordinates).toBeUndefined();
+    });
+
+    it('should return undefined if no player is on the tile (y coordinate mismatch)', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }, { id: 'player2' }],
+            playerPositions: [
+                { x: 1, y: 2 },
+                { x: 2, y: 4 },
+            ],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
+
+        const tile: Tile = { x: 2, y: 3, type: TileTypes.Grass, id: 'tile2', object: 0 };
+        const opponent = service.findOpponent(tile);
+        expect(opponent).toBeUndefined();
+    });
+
+    it('should return undefined if no player is on the tile (x coordinate mismatch)', () => {
+        service.gameState = {
+            players: [{ id: 'player1' }, { id: 'player2' }],
+            playerPositions: [
+                { x: 1, y: 2 },
+                { x: 3, y: 3 },
+            ],
+            currentPlayer: 'player1',
+            currentPlayerActionPoints: 1,
+        } as GameState;
+
+        const tile: Tile = { x: 2, y: 3, type: TileTypes.Grass, id: 'tile3', object: 0 };
+        const opponent = service.findOpponent(tile);
+        expect(opponent).toBeUndefined();
+    });
 });
