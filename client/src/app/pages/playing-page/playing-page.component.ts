@@ -153,7 +153,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.interval = window.setInterval(() => {
                 if (this.remainingTime > 0) {
                     this.remainingTime--;
-                    this.updateTimerForAllPlayers();
                 } else {
                     if (this.interval !== null) {
                         clearInterval(this.interval);
@@ -162,28 +161,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             }, DELAY_COUNTDOWN);
         }
     }
-    updateTimerForAllPlayers() {
-        throw new Error('Method not implemented.');
-    }
+
     ngOnDestroy() {
         this.abandon();
         this.subscriptions.forEach((sub) => sub.unsubscribe());
-    }
-
-    getCurrentPlayer() {
-        const currentPlayer = this.lobbyService.getCurrentPlayer();
-
-        if (!currentPlayer) {
-            this.router.navigate([PageUrl.Home], { replaceUrl: true });
-            return;
-        }
-        this.currentPlayer = currentPlayer;
-        const socketId = this.lobbyService.getSocketId();
-        if (this.currentPlayer.id !== socketId) {
-            this.currentPlayer.id = socketId;
-        }
-
-        return;
     }
 
     onMoveRequest(coordinates: Coordinates[]) {
@@ -261,6 +242,9 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.router.navigate([PageUrl.Home], { replaceUrl: true });
         }
     }
+    onInfoSent(details: string) {
+        console.log(details);
+    }
 
     private setupGameListeners() {
         this.subscriptions.push(
@@ -330,7 +314,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         } else {
             const player = this.gameState?.players.find((p) => p.id === playerId);
             if (player) {
-                this.notificationService.showInfo(`${PLAYING_PAGE_DESCRIPTION.turnOff}${player.name}`);
+                this.notificationService.showInfo(`${PLAYING_PAGE_DESCRIPTION.turnOff} ${player.name}`);
             }
         }
     }
