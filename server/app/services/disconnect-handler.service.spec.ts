@@ -1,151 +1,79 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { BoardService } from '@app/services/board.service';
-import { DisconnectHandlerService } from '@app/services/disconnect-handler.service';
-import { GameSocketHandlerService } from '@app/services/game-socket-handler.service';
-import { GameLobby } from '@common/game-lobby';
-import { GameState } from '@common/game-state';
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+/* eslint-disable no-unused-expressions */
 import { expect } from 'chai';
-import * as sinon from 'sinon';
-import { createSandbox, SinonSandbox, SinonSpy, SinonStub } from 'sinon';
-import { Server } from 'socket.io';
+import { createSandbox, SinonStubbedInstance } from 'sinon';
+import { DisconnectHandlerService } from './disconnect-handler.service';
+import { LobbySocketHandlerService } from './lobby-socket-handler.service';
+import { GameLobby } from '@common/game-lobby';
+import { Socket } from 'socket.io';
 
 describe('DisconnectHandlerService', () => {
-    let sandbox: SinonSandbox;
-    let lobbies: Map<string, GameLobby>;
-    let gameStates: Map<string, GameState>;
-    let gameSocketHandler: GameSocketHandlerService;
-    let boardService: BoardService;
-    let service: DisconnectHandlerService;
-    let mockSocket: any;
-    let ioToStub: SinonStub;
-    let emitSpy: SinonSpy;
+    const sandbox = createSandbox();
+
+    let disconnectHandlerService: DisconnectHandlerService;
+    let lobbySocketHandlerMock: SinonStubbedInstance<LobbySocketHandlerService>;
+    let lobbiesMock: Map<string, GameLobby>;
 
     beforeEach(() => {
-        sandbox = createSandbox();
-        lobbies = new Map();
-        gameStates = new Map();
-        gameSocketHandler = { startTurn: sandbox.stub() } as unknown as GameSocketHandlerService;
-        boardService = { handleEndTurn: sandbox.stub() } as any;
+        lobbySocketHandlerMock = {
+            leaveGame: sandbox.stub(),
+            leaveLobby: sandbox.stub(),
+        } as unknown as SinonStubbedInstance<LobbySocketHandlerService>;
 
-        const lobbySocketHandler = { updateLobby: sandbox.stub().returns(undefined) } as any;
-        service = new DisconnectHandlerService(lobbies, gameStates, gameSocketHandler, lobbySocketHandler, boardService);
+        lobbiesMock = new Map<string, GameLobby>([
+            ['lobby1', { players: [{ id: 'socket1', name: 'Player1' }] } as GameLobby],
+            ['lobby2', { players: [{ id: 'socket2', name: 'Player2' }] } as GameLobby],
+        ]);
 
-        emitSpy = sandbox.spy();
-        ioToStub = sandbox.stub().returns({ emit: emitSpy });
-
-        (service as any).io = { to: ioToStub };
-
-        mockSocket = { id: 'socket1', leave: sandbox.spy() };
+        disconnectHandlerService = new DisconnectHandlerService(lobbiesMock, lobbySocketHandlerMock);
     });
 
-    afterEach(() => sandbox.restore());
-
-    it('should remove player from lobby and emit playerLeft', () => {
-        lobbies.set('lobby1', {
-            id: 'lobby1',
-            players: [{ id: 'socket1', name: 'Alice', isHost: false } as any],
-            isLocked: false,
-            maxPlayers: 4,
-            gameId: 'g1',
-        });
-
-        service.handleDisconnect(mockSocket);
-
-        expect(mockSocket.leave.calledWith('lobby1')).to.equal(true);
-        expect((service['lobbySocketHandler'].updateLobby as SinonStub).calledWith('lobby1')).to.equal(true);
+    afterEach(() => {
+        sandbox.restore();
     });
 
-    it('should emit hostDisconnected and delete lobby if host leaves', () => {
-        lobbies.set('lobby1', {
-            id: 'lobby1',
-            players: [{ id: 'socket1', name: 'Alice', isHost: true } as any],
-            isLocked: false,
-            maxPlayers: 4,
-            gameId: 'g1',
-        });
+    it('should call leaveGame and leaveLobby when a player is found in a lobby', () => {
+        const mockSocket: Partial<Socket> = { id: 'socket1' };
 
-        gameStates.set('lobby1', {} as any);
+        disconnectHandlerService.handleDisconnect(mockSocket as Socket);
 
-        service.handleDisconnect(mockSocket);
-
-        expect(lobbies.has('lobby1')).to.equal(false);
-        expect(gameStates.has('lobby1')).to.equal(false);
-        expect(emitSpy.calledWith('hostDisconnected')).to.equal(true);
+        expect(lobbySocketHandlerMock.leaveGame.calledOnceWith(mockSocket, 'lobby1', 'Player1')).to.be.true;
+        expect(lobbySocketHandlerMock.leaveLobby.calledOnceWith(mockSocket, 'lobby1', 'Player1')).to.be.true;
     });
 
-    it('should delete lobby and gameState if no players left', () => {
-        lobbies.set('lobby1', {
-            id: 'lobby1',
-            players: [{ id: 'socket1', name: 'Alice', isHost: false } as any],
-            isLocked: false,
-            maxPlayers: 4,
-            gameId: 'g1',
-        });
-        gameStates.set('lobby1', {} as any);
+    it('should not call leaveGame or leaveLobby if the player is not in any lobby', () => {
+        const mockSocket: Partial<Socket> = { id: 'unknownSocket' };
 
-        service.handleDisconnect(mockSocket);
+        disconnectHandlerService.handleDisconnect(mockSocket as Socket);
 
-        expect(lobbies.has('lobby1')).to.equal(false);
-        expect(gameStates.has('lobby1')).to.equal(false);
+        expect(lobbySocketHandlerMock.leaveGame.called).to.be.false;
+        expect(lobbySocketHandlerMock.leaveLobby.called).to.be.false;
     });
 
-    it('should call handlePlayerLeaveGame if player leaves and others remain', () => {
-        lobbies.set('lobby1', {
-            id: 'lobby1',
-            players: [{ id: 'socket1', name: 'Alice', isHost: false } as any, { id: 'socket2', name: 'Bob', isHost: true } as any],
-            isLocked: false,
-            maxPlayers: 4,
-            gameId: 'g1',
-        });
-        gameStates.set('lobby1', {} as any);
-        const spy = sandbox.spy(service as any, 'handlePlayerLeaveGame');
+    it('should handle undefined room ID gracefully', () => {
+        const leaveStub = sandbox.stub();
+        const mockSocket: Partial<Socket> = { id: 'socket1', leave: leaveStub };
 
-        service.handleDisconnect(mockSocket);
+        disconnectHandlerService.handleDisconnectFromRoom(mockSocket as Socket, undefined);
 
-        expect(spy.calledWith('lobby1', 'socket1')).to.equal(true);
+        expect(leaveStub.called).to.be.false;
     });
 
-    it('should emit turnEnded and call startTurn if current player leaves', () => {
-        const gs: GameState = {
-            currentPlayer: 'socket1',
-            availableMoves: [],
-            playerPositions: new Map(),
-        } as any;
-        gameStates.set('lobby1', gs);
-        (boardService.handleEndTurn as any).returns(gs);
+    it('should handle empty room ID gracefully', () => {
+        const leaveStub = sandbox.stub();
+        const mockSocket: Partial<Socket> = { id: 'socket1', leave: leaveStub };
 
-        (service as any).handlePlayerLeaveGame('lobby1', 'socket1');
+        disconnectHandlerService.handleDisconnectFromRoom(mockSocket as Socket, '');
 
-        expect(emitSpy.calledWithMatch('turnEnded', { gameState: sinon.match.any })).to.equal(true);
-        expect((gameSocketHandler.startTurn as SinonStub).calledWith('lobby1')).to.equal(true);
+        expect(leaveStub.called).to.be.false;
     });
 
-    it('should emit updated lobby in updateLobby', () => {
-        const lobbySocketHandler = {
-            updateLobby: sandbox.stub(),
-        } as any;
+    it('should remove the socket from the room when the player disconnects from a room', () => {
+        const leaveStub = sandbox.stub();
+        const mockSocket: Partial<Socket> = { id: 'socket1', leave: leaveStub };
 
-        service = new DisconnectHandlerService(lobbies, gameStates, gameSocketHandler, lobbySocketHandler, boardService);
+        disconnectHandlerService.handleDisconnectFromRoom(mockSocket as Socket, 'lobby1');
 
-        emitSpy = sandbox.spy();
-        ioToStub = sandbox.stub().returns({ emit: emitSpy });
-        (service as any).io = { to: ioToStub };
-
-        lobbies.set('lobby1', {
-            id: 'lobby1',
-            players: [],
-            isLocked: false,
-            maxPlayers: 4,
-            gameId: 'g1',
-        });
-
-        lobbySocketHandler.updateLobby('lobby1');
-
-        expect(lobbySocketHandler.updateLobby.calledWith('lobby1')).to.equal(true);
-    });
-    it('should set the server instance in setServer()', () => {
-        const mockServer = {} as unknown as Server;
-        service.setServer(mockServer);
-        expect((service as any).io).to.equal(mockServer);
+        expect(leaveStub.calledOnceWith('lobby1')).to.be.true;
     });
 });

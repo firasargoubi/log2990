@@ -415,6 +415,7 @@ describe('BoardService', () => {
             playerPositions: [{ x: 0, y: 0 }],
             availableMoves: [{ x: 1, y: 1 }],
             currentPlayerMovementPoints: -1,
+            // eslint-disable-next-line max-lines
         } as any;
 
         pathfindingService.findShortestPath.returns([
@@ -428,27 +429,27 @@ describe('BoardService', () => {
     });
     it('should return empty array if gameState or startPosition is null in findAllPaths', async () => {
         const result1 = (boardService as any).findAllPaths(null, { x: 0, y: 0 });
-        expect(result1).to.be.an('array');
-        expect(result1).to.be.empty;
+        expect(Array.isArray(result1)).to.equal(true);
+        expect(result1.length === 0).to.equal(true);
 
         const gameState = {
             currentPlayerMovementPoints: 5,
         } as GameState;
         const result2 = (boardService as any).findAllPaths(gameState, null);
-        expect(result2).to.be.an('array');
-        expect(result2).to.be.empty;
+        expect(Array.isArray(result2)).to.equal(true);
+        expect(result2.length === 0).to.equal(true);
     });
 
     it('should handle null gameState in findAllPaths', async () => {
         const result = (boardService as any).findAllPaths(null, { x: 0, y: 0 });
-        expect(result).to.be.an('array');
-        expect(result).to.be.empty;
+        expect(Array.isArray(result)).to.equal(true);
+        expect(result.length === 0).to.equal(true);
     });
 
     it('should handle undefined gameState in findAllPaths', async () => {
         const result = (boardService as any).findAllPaths(undefined, { x: 0, y: 0 });
-        expect(result).to.be.an('array');
-        expect(result).to.be.empty;
+        expect(Array.isArray(result)).to.equal(true);
+        expect(result.length === 0).to.equal(true);
     });
 
     it('should handle null startPosition in findAllPaths', async () => {
@@ -456,8 +457,8 @@ describe('BoardService', () => {
             currentPlayerMovementPoints: 5,
         } as GameState;
         const result = (boardService as any).findAllPaths(gameState, null);
-        expect(result).to.be.an('array');
-        expect(result).to.be.empty;
+        expect(Array.isArray(result)).to.equal(true);
+        expect(result.length === 0).to.equal(true);
     });
 
     it('should handle undefined startPosition in findAllPaths', async () => {
@@ -465,8 +466,8 @@ describe('BoardService', () => {
             currentPlayerMovementPoints: 5,
         } as GameState;
         const result = (boardService as any).findAllPaths(gameState, undefined);
-        expect(result).to.be.an('array');
-        expect(result).to.be.empty;
+        expect(Array.isArray(result)).to.equal(true);
+        expect(result.length === 0).to.equal(true);
     });
 
     it('should handle zero currentPlayerMovementPoints in findAllPaths', async () => {
@@ -474,8 +475,8 @@ describe('BoardService', () => {
             currentPlayerMovementPoints: 0,
         } as GameState;
         const result = (boardService as any).findAllPaths(gameState, { x: 0, y: 0 });
-        expect(result).to.be.an('array');
-        expect(result).to.be.empty;
+        expect(Array.isArray(result)).to.equal(true);
+        expect(result.length === 0).to.equal(true);
     });
 
     it('should handle negative currentPlayerMovementPoints in findAllPaths', async () => {
@@ -483,8 +484,8 @@ describe('BoardService', () => {
             currentPlayerMovementPoints: -1,
         } as GameState;
         const result = (boardService as any).findAllPaths(gameState, { x: 0, y: 0 });
-        expect(result).to.be.an('array');
-        expect(result).to.be.empty;
+        expect(Array.isArray(result)).to.equal(true);
+        expect(result.length === 0).to.equal(true);
     });
 
     it('should not throw when sorting empty players array by speed', async () => {
@@ -494,8 +495,8 @@ describe('BoardService', () => {
 
         expect(() => (boardService as any).sortPlayersBySpeed(gameState)).to.not.throw();
 
-        expect(gameState.players).to.be.an('array');
-        expect(gameState.players).to.be.empty;
+        expect(Array.isArray(gameState.players)).to.equal(true);
+        expect(gameState.players.length === 0).to.equal(true);
     });
 
     it('should sort players by speed including bonuses', async () => {
@@ -556,5 +557,31 @@ describe('BoardService', () => {
 
         expect(gameState.players[0].id).to.equal('player1');
         expect(gameState.players[1].id).to.equal('player2');
+    });
+    it('should return [] if findReachablePositions returns null', () => {
+        pathfindingService.findReachablePositions.returns(null);
+
+        const gameState = { currentPlayerMovementPoints: 5 } as any;
+        const result = (boardService as any).findAllPaths(gameState, { x: 0, y: 0 });
+
+        expect(result).to.deep.equal([]);
+    });
+    it('should return [] if findReachablePositions throws error', () => {
+        pathfindingService.findReachablePositions.throws(new Error('Test error'));
+
+        const gameState = { currentPlayerMovementPoints: 5 } as any;
+        const result = (boardService as any).findAllPaths(gameState, { x: 0, y: 0 });
+
+        expect(result).to.deep.equal([]);
+    });
+    it('should return bonus.speed only if player.speed is 0', () => {
+        const player = { speed: 0, bonus: { speed: 3 } } as any;
+        const result = (boardService as any).getPlayerMovementPoints(player);
+        expect(result).to.equal(3);
+    });
+    it('should return 0 if both player.speed and bonus.speed are 0', () => {
+        const player = { speed: 0, bonus: { speed: 0 } } as any;
+        const result = (boardService as any).getPlayerMovementPoints(player);
+        expect(result).to.equal(0);
     });
 });

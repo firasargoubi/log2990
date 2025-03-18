@@ -46,8 +46,17 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
 
         if (lobbyId && player) {
             this.lobbyService.getLobby(lobbyId).subscribe((lobby) => {
+                if (lobby === null) {
+                    this.router.navigate([PageUrl.Home], { replaceUrl: true });
+                    return;
+                }
+
                 this.lobby = lobby;
                 this.currentPlayer = lobby.players.find((p) => p.id === player) || this.currentPlayer;
+                if (this.currentPlayer.id === '0000') {
+                    this.router.navigate([PageUrl.Home], { replaceUrl: true });
+                    return;
+                }
                 this.hostId = lobby.players.find((p) => p.isHost)?.id || '';
             });
 

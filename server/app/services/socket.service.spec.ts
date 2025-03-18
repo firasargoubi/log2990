@@ -42,7 +42,6 @@ describe('SocketService', () => {
     it('should set server instances in constructor', () => {
         expect(lobbyHandler.setServer.calledOnce).to.be.equal(true);
         expect(gameHandler.setServer.calledOnce).to.be.equal(true);
-        expect(disconnectHandler.setServer.calledOnce).to.be.equal(true);
     });
 
     it('should register all socket events on connection', () => {
@@ -592,5 +591,148 @@ describe('SocketService', () => {
 
         handler({ lobbyId: 'lobbyABC' }, callback);
         expect(validationHandler.verifyAvatars.calledWith(socketMock, 'lobbyABC', callback)).to.be.equal(true);
+    });
+    it('should call handleBattleInitialization when initializeBattle event is received', () => {
+        const socketMock: any = { on: sandbox.spy() };
+        const ioOnSpy = sandbox.stub();
+        (socketService as any).io = { on: ioOnSpy };
+
+        ioOnSpy.callsFake((event: string, cb: any) => {
+            if (event === 'connection') cb(socketMock);
+        });
+
+        socketService.init();
+
+        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'initializeBattle')?.args[1];
+        const data = {
+            currentPlayer: { id: 'p1' },
+            opponent: { id: 'p2' },
+            lobbyId: 'lobby123',
+        };
+        handler(data);
+        expect(gameHandler.initializeBattle.calledWith(socketMock, data.currentPlayer, data.opponent)).to.be.equal(true);
+    });
+
+    it('should call handleStartBattle when startBattle event is received', () => {
+        const socketMock: any = { on: sandbox.spy() };
+        const ioOnSpy = sandbox.stub();
+        (socketService as any).io = { on: ioOnSpy };
+
+        ioOnSpy.callsFake((event: string, cb: any) => {
+            if (event === 'connection') cb(socketMock);
+        });
+
+        socketService.init();
+
+        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'startBattle')?.args[1];
+        const data = {
+            currentPlayer: { id: 'p1' },
+            opponent: { id: 'p2' },
+            gameState: {} as any,
+        };
+        handler(data);
+        expect(gameHandler.startBattle.calledWith(socketMock, data.currentPlayer, data.opponent, data.gameState)).to.be.equal(true);
+    });
+
+    it('should call handleChangeTurnEnd when changeTurnEndTimer event is received', () => {
+        const socketMock: any = { on: sandbox.spy() };
+        const ioOnSpy = sandbox.stub();
+        (socketService as any).io = { on: ioOnSpy };
+
+        ioOnSpy.callsFake((event: string, cb: any) => {
+            if (event === 'connection') cb(socketMock);
+        });
+
+        socketService.init();
+
+        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'changeTurnEndTimer')?.args[1];
+        const data = {
+            currentPlayer: { id: 'p1' },
+            opponent: { id: 'p2' },
+            playerTurn: 'p1',
+            gameState: {} as any,
+        };
+        handler(data);
+        expect(gameHandler.changeTurnEnd.calledWith(data.currentPlayer, data.opponent, data.playerTurn, data.gameState)).to.be.equal(true);
+    });
+
+    it('should call handleDefeat when playerDefeated event is received', () => {
+        const socketMock: any = { on: sandbox.spy() };
+        const ioOnSpy = sandbox.stub();
+        (socketService as any).io = { on: ioOnSpy };
+
+        ioOnSpy.callsFake((event: string, cb: any) => {
+            if (event === 'connection') cb(socketMock);
+        });
+
+        socketService.init();
+
+        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'playerDefeated')?.args[1];
+        const data = {
+            player: { id: 'p1' },
+            lobbyId: 'lobby123',
+        };
+        handler(data);
+        expect(gameHandler.handleDefeat.calledWith(data.player, data.lobbyId)).to.be.equal(true);
+    });
+
+    it('should call handleAttackAction when attackAction event is received', () => {
+        const socketMock: any = { on: sandbox.spy() };
+        const ioOnSpy = sandbox.stub();
+        (socketService as any).io = { on: ioOnSpy };
+
+        ioOnSpy.callsFake((event: string, cb: any) => {
+            if (event === 'connection') cb(socketMock);
+        });
+
+        socketService.init();
+
+        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'attackAction')?.args[1];
+        const data = {
+            lobbyId: 'lobby123',
+            opponent: { id: 'p2' },
+            damage: 5,
+            opponentLife: 10,
+        };
+        handler(data);
+        expect(gameHandler.handleAttackAction.calledWith(data.lobbyId, data.opponent, data.damage)).to.be.equal(true);
+    });
+
+    it('should call handleFlee when fleeCombat event is received', () => {
+        const socketMock: any = { on: sandbox.spy() };
+        const ioOnSpy = sandbox.stub();
+        (socketService as any).io = { on: ioOnSpy };
+
+        ioOnSpy.callsFake((event: string, cb: any) => {
+            if (event === 'connection') cb(socketMock);
+        });
+
+        socketService.init();
+
+        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'fleeCombat')?.args[1];
+        const data = {
+            lobbyId: 'lobby123',
+            player: { id: 'p1' },
+            success: true,
+        };
+        handler(data);
+        expect(gameHandler.handleFlee.calledWith(data.lobbyId, data.player, data.success)).to.be.equal(true);
+    });
+
+    it('should call terminateAttack when terminateAttack event is received', () => {
+        const socketMock: any = { on: sandbox.spy() };
+        const ioOnSpy = sandbox.stub();
+        (socketService as any).io = { on: ioOnSpy };
+
+        ioOnSpy.callsFake((event: string, cb: any) => {
+            if (event === 'connection') cb(socketMock);
+        });
+
+        socketService.init();
+
+        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'terminateAttack')?.args[1];
+        const data = { lobbyId: 'lobbyXYZ' };
+        handler(data);
+        expect(gameHandler.handleTerminateAttack.calledWith(data.lobbyId)).to.be.equal(true);
     });
 });

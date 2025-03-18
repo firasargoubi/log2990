@@ -19,4 +19,5 @@ export interface GameState {
         isActive: boolean;
         endTime: Date;
     };
+    animation?: boolean;
 }

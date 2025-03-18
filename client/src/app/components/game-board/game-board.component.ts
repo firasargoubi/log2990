@@ -27,8 +27,6 @@ export class GameBoardComponent implements OnInit, OnChanges {
     availableMoves: Coordinates[] = [];
     highlightedPath: Coordinates[] = [];
 
-    private shortestMovesMap: Map<string, Coordinates> = new Map();
-
     constructor(private lobbyService: LobbyService) {}
 
     ngOnInit() {
@@ -80,6 +78,9 @@ export class GameBoardComponent implements OnInit, OnChanges {
         return null;
     }
     onTileClick(tile: Tile) {
+        if (this.gameState.animation) {
+            return;
+        }
         if (this.action) {
             this.actionClicked.emit(tile);
             return;
@@ -90,6 +91,9 @@ export class GameBoardComponent implements OnInit, OnChanges {
     }
 
     onTileHover(tile: Tile) {
+        if (this.gameState.animation) {
+            return;
+        }
         if (this.action) {
             this.highlightedPath = [];
             return;
@@ -104,72 +108,13 @@ export class GameBoardComponent implements OnInit, OnChanges {
     }
 
     private showPathToTile(destination: Coordinates): Coordinates[] {
-        if (!this.gameState) {
-            return [];
-        }
+        const playerIndex = this.gameState.players.findIndex((p) => p.id === this.currentPlayerId);
+        if (playerIndex === -1) return [];
 
-        const playerIndex = this.gameState.players.findIndex((p) => p.id === this.gameState.currentPlayer);
-        if (playerIndex === -1) {
-            return [];
-        }
+        const tileIndex = this.gameState.availableMoves.findIndex((move) => move.x === destination.x && move.y === destination.y);
+        if (tileIndex === -1) return [];
 
-        const playerPosition = this.gameState.playerPositions[playerIndex];
-        if (!playerPosition) {
-            return [];
-        }
-        const isValidDestination = this.gameState.availableMoves.some((move) => move.x === destination.x && move.y === destination.y);
-
-        if (!isValidDestination) {
-            return [];
-        }
-        const path: Coordinates[] = [destination];
-
-        this.transformShortestMovesToMap(this.gameState);
-
-        let current = destination;
-
-        while (current) {
-            if (this.isAdjacent(current, playerPosition)) {
-                path.unshift(playerPosition);
-                break;
-            }
-
-            const nextStepKey = `${current.x},${current.y}`;
-            const nextStep = this.shortestMovesMap.get(nextStepKey);
-
-            if (!nextStep) {
-                break;
-            }
-
-            path.unshift(nextStep);
-            current = nextStep;
-        }
-
-        return path;
-    }
-
-    private isAdjacent(pos1: Coordinates, pos2: Coordinates): boolean {
-        const xDiff = Math.abs(pos1.x - pos2.x);
-        const yDiff = Math.abs(pos1.y - pos2.y);
-
-        return (xDiff === 1 && yDiff === 0) || (xDiff === 0 && yDiff === 1);
-    }
-
-    private transformShortestMovesToMap(gameState: GameState): void {
-        this.shortestMovesMap = new Map<string, Coordinates>();
-
-        if (!gameState || !gameState.shortestMoves) {
-            return;
-        }
-        gameState.shortestMoves.forEach((pair) => {
-            if (pair && pair.length >= 2) {
-                const destination = pair[0];
-                const nextStep = pair[1];
-                const key = `${destination.x},${destination.y}`;
-                this.shortestMovesMap.set(key, nextStep);
-            }
-        });
-        return;
+        return this.gameState.shortestMoves[tileIndex];
     }
 
     private isMyTurn(): boolean {
