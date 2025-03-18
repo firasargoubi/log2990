@@ -1,4 +1,4 @@
-import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-constants';
+import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
 import { Coordinates } from '@common/coordinates';
 import { GameEvents } from '@common/events';
 import { GameLobby } from '@common/game-lobby';

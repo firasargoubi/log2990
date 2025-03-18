@@ -16,6 +16,7 @@ describe('PlayerCardComponent', () => {
         attack: 0,
         defense: 0,
         maxLife: 0,
+        winCount: 0,
     };
 
     beforeEach(async () => {

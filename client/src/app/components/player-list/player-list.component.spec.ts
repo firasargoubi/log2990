@@ -23,6 +23,7 @@ describe('PlayerListComponent', () => {
                 attack: 0,
                 defense: 0,
                 maxLife: 0,
+                winCount: 0,
             },
             {
                 id: '2',
@@ -34,6 +35,7 @@ describe('PlayerListComponent', () => {
                 attack: 0,
                 defense: 0,
                 maxLife: 0,
+                winCount: 0,
             },
         ];
 

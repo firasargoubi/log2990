@@ -177,6 +177,7 @@ export class BoxFormDialogComponent implements OnDestroy {
         });
         this.attributeClicked$ = false;
         this.diceClicked$ = false;
+        this.formValid$ = false;
     }
 
     onSubmit(event: Event): void {
@@ -280,6 +281,7 @@ export class BoxFormDialogComponent implements OnDestroy {
             attack: formData.attack,
             defense: formData.defense,
             bonus,
+            winCount: 0,
         };
     }
 

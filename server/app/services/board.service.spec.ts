@@ -5,7 +5,7 @@ import { BoardService } from '@app/services/board.service';
 import { GameLobby } from '@common/game-lobby';
 
 import { GameState } from '@common/game-state';
-import { Game } from '@common/game.interface';
+import { Game, ObjectsTypes, TILE_DELIMITER, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { expect } from 'chai';
 import { createSandbox, SinonSandbox } from 'sinon';
@@ -591,5 +591,157 @@ describe('BoardService', () => {
         const player = { speed: 0, bonus: { speed: 0 } } as any;
         const result = (boardService as any).getPlayerMovementPoints(player);
         expect(result).to.equal(0);
+    });
+    it('should return game state unchanged if player not found in handleTeleport', () => {
+        const state: GameState = {
+            players: [{ id: 'p1' }],
+            currentPlayer: 'pX',
+            playerPositions: [],
+        } as any;
+
+        const result = boardService.handleTeleport(state, { x: 2, y: 2 });
+        expect(result).to.equal(state);
+    });
+
+    it('should return game state unchanged if playerPosition is undefined in handleTeleport', () => {
+        const state: GameState = {
+            players: [{ id: 'p1' }],
+            currentPlayer: 'p1',
+            playerPositions: [],
+        } as any;
+
+        const result = boardService.handleTeleport(state, { x: 2, y: 2 });
+        expect(result).to.equal(state);
+    });
+
+    it('should return game state unchanged if target position is occupied in handleTeleport', () => {
+        sandbox.stub(boardService as any, 'isOccupied').returns(true);
+
+        const state: GameState = {
+            players: [{ id: 'p1' }],
+            currentPlayer: 'p1',
+            playerPositions: [{ x: 0, y: 0 }],
+        } as any;
+
+        const result = boardService.handleTeleport(state, { x: 2, y: 2 });
+        expect(result).to.equal(state);
+    });
+
+    it('should correctly update player position in handleTeleport', () => {
+        sandbox.stub(boardService as any, 'isOccupied').returns(false);
+
+        const state: GameState = {
+            players: [{ id: 'p1' }],
+            currentPlayer: 'p1',
+            playerPositions: [{ x: 0, y: 0 }],
+        } as any;
+
+        const result = boardService.handleTeleport(state, { x: 2, y: 2 });
+        expect(result.playerPositions[0]).to.deep.equal({ x: 2, y: 2 });
+    });
+
+    it('should handle empty availableMoves correctly in handleTeleport', () => {
+        sandbox.stub(boardService as any, 'isOccupied').returns(false);
+        const state: GameState = {
+            players: [{ id: 'p1' }],
+            currentPlayer: 'p1',
+            playerPositions: [{ x: 0, y: 0 }],
+            currentPlayerMovementPoints: -1,
+        } as any;
+
+        const result = boardService.handleTeleport(state, { x: 2, y: 2 });
+        expect(result.availableMoves).to.deep.equal([]);
+        expect(result.shortestMoves).to.deep.equal([]);
+    });
+
+    it('should ensure getPlayerMovementPoints returns default if undefined', () => {
+        const player: Player = { id: 'p1', speed: undefined } as any;
+        const result = (boardService as any).getPlayerMovementPoints(player);
+        expect(result).to.equal(0);
+    });
+
+    it('should correctly return true if another player is at position', () => {
+        const state: GameState = {
+            board: [[0]],
+            players: [{ id: 'p1' }, { id: 'p2' }],
+            playerPositions: [
+                { x: 0, y: 0 },
+                { x: 1, y: 1 },
+            ],
+        } as any;
+
+        const result = (boardService as any).isOccupied(state, { x: 1, y: 1 }, 0);
+        expect(result).to.be.equal(true);
+    });
+    it('should return true if another player occupies the position', () => {
+        const gameState = {
+            board: [[0]],
+            playerPositions: [
+                { x: 0, y: 0 },
+                { x: 1, y: 1 },
+            ],
+        } as any;
+
+        const result = (boardService as any).isOccupied(gameState, { x: 1, y: 1 }, 0);
+        expect(result).to.equal(true);
+    });
+
+    it('should return true if item is neither SPAWN nor EMPTY', () => {
+        const gameState = {
+            board: [[ObjectsTypes.SPAWN * TILE_DELIMITER + TileTypes.Wall]],
+            playerPositions: [{ x: 2, y: 2 }],
+        } as any;
+
+        const position = { x: 0, y: 0 };
+        const result = (boardService as any).isOccupied(gameState, position, 0);
+        expect(result).to.equal(true);
+    });
+
+    it('should return true if tile is a wall or closed door', () => {
+        const gameState = {
+            board: [[0 * TILE_DELIMITER + TileTypes.Wall]],
+            playerPositions: [{ x: 2, y: 2 }],
+        } as any;
+
+        const position = { x: 0, y: 0 };
+        const result = (boardService as any).isOccupied(gameState, position, 0);
+        expect(result).to.equal(true);
+    });
+    it('should update available and shortest moves in handleTeleport when movement points >= 0', () => {
+        const stubFindAllPaths = sandbox.stub(boardService as any, 'findAllPaths').returns([{ x: 1, y: 1 }]);
+        const stubCalculateShortestMoves = sandbox.stub(boardService as any, 'calculateShortestMoves').returns([[{ x: 1, y: 1 }]]);
+        sandbox.stub(boardService as any, 'isOccupied').returns(false);
+
+        const state: GameState = {
+            players: [{ id: 'p1' }],
+            currentPlayer: 'p1',
+            playerPositions: [{ x: 0, y: 0 }],
+            currentPlayerMovementPoints: 1,
+        } as any;
+
+        const result = boardService.handleTeleport(state, { x: 2, y: 2 });
+
+        expect(stubFindAllPaths.calledOnce).to.equal(true);
+        expect(stubCalculateShortestMoves.calledOnce).to.equal(true);
+        expect(result.availableMoves).to.deep.equal([{ x: 1, y: 1 }]);
+        expect(result.shortestMoves).to.deep.equal([[{ x: 1, y: 1 }]]);
+    });
+    it('should return true in isOccupied if item is not SPAWN or EMPTY', () => {
+        const state: GameState = {
+            board: [[(ObjectsTypes.WALL || 3) * TILE_DELIMITER]],
+            playerPositions: [{ x: 2, y: 2 }],
+        } as any;
+
+        const result = (boardService as any).isOccupied(state, { x: 0, y: 0 }, 0);
+        expect(result).to.equal(true);
+    });
+    it('should return false in isOccupied if position not occupied and item is SPAWN or EMPTY and tile not wall/door', () => {
+        const state: GameState = {
+            board: [[ObjectsTypes.SPAWN * TILE_DELIMITER + TileTypes.Floor]],
+            playerPositions: [{ x: 1, y: 1 }],
+        } as any;
+
+        const result = (boardService as any).isOccupied(state, { x: 0, y: 0 }, 0);
+        expect(result).to.equal(false);
     });
 });

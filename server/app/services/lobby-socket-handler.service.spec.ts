@@ -80,6 +80,7 @@ describe('LobbySocketHandlerService', () => {
             attack: 10,
             defense: 10,
             maxLife: 0,
+            winCount: 0,
         };
         service.handleJoinLobbyRequest(socketMock as Socket, lobbyId.id, player);
         const lobby = lobbies.get(lobbyId.id);
@@ -97,6 +98,7 @@ describe('LobbySocketHandlerService', () => {
             attack: 10,
             defense: 10,
             maxLife: 0,
+            winCount: 0,
         };
         service.handleJoinLobbyRequest(socketMock as Socket, 'unknown', player);
         expect((socketMock.emit as SinonSpy).calledWith('error', 'Lobby not found.')).to.equal(true);
@@ -116,6 +118,7 @@ describe('LobbySocketHandlerService', () => {
                 attack: 0,
                 defense: 0,
                 maxLife: 0,
+                winCount: 0,
             })),
             isLocked: false,
             maxPlayers: 2,
@@ -131,6 +134,7 @@ describe('LobbySocketHandlerService', () => {
             attack: 10,
             defense: 10,
             maxLife: 0,
+            winCount: 0,
         };
         service.handleJoinLobbyRequest(socketMock as Socket, lobbyId, player);
         expect((socketMock.emit as SinonSpy).calledWith('error', 'Lobby is locked or full.')).to.equal(true);
@@ -147,6 +151,7 @@ describe('LobbySocketHandlerService', () => {
             attack: 10,
             defense: 10,
             maxLife: 0,
+            winCount: 0,
         };
 
         const lobbyId = service.createLobby({
@@ -179,6 +184,7 @@ describe('LobbySocketHandlerService', () => {
             attack: 0,
             defense: 0,
             maxLife: 0,
+            winCount: 0,
         };
         const lobbyId = service.createLobby({
             id: 'g',
@@ -221,6 +227,7 @@ describe('LobbySocketHandlerService', () => {
             attack: 10,
             defense: 10,
             maxLife: 0,
+            winCount: 0,
         };
 
         const lobby = lobbies.get(lobbyId.id);
@@ -279,6 +286,7 @@ describe('LobbySocketHandlerService', () => {
             attack: 10,
             defense: 10,
             maxLife: 0,
+            winCount: 0,
         };
 
         const regularPlayer: Player = {
@@ -291,6 +299,7 @@ describe('LobbySocketHandlerService', () => {
             attack: 10,
             defense: 10,
             maxLife: 0,
+            winCount: 0,
         };
 
         const lobby = lobbies.get(lobbyId.id);
@@ -316,7 +325,18 @@ describe('LobbySocketHandlerService', () => {
             objects: [],
         });
 
-        const hostPlayer = { id: 'host123', name: 'hostPlayer', avatar: '', isHost: true, life: 0, speed: 0, attack: 0, defense: 0, maxLife: 0 };
+        const hostPlayer = {
+            id: 'host123',
+            name: 'hostPlayer',
+            avatar: '',
+            isHost: true,
+            life: 0,
+            speed: 0,
+            attack: 0,
+            defense: 0,
+            maxLife: 0,
+            winCount: 0,
+        };
         const regularPlayer = {
             id: 'regular123',
             name: 'regularPlayer',
@@ -327,6 +347,7 @@ describe('LobbySocketHandlerService', () => {
             attack: 0,
             defense: 0,
             maxLife: 0,
+            winCount: 0,
         };
 
         const lobby = lobbies.get(lobbyId.id);
@@ -377,6 +398,7 @@ describe('LobbySocketHandlerService', () => {
             attack: 10,
             defense: 10,
             maxLife: 0,
+            winCount: 0,
         };
         const lobby = lobbies.get(lobbyId.id);
         expect(lobby).to.not.be.undefined;
@@ -416,6 +438,7 @@ describe('LobbySocketHandlerService', () => {
             attack: 10,
             defense: 10,
             maxLife: 0,
+            winCount: 0,
         };
 
         const lobby = lobbies.get(lobbyId.id);
