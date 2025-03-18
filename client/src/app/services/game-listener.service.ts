@@ -1,100 +1,116 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { PageUrl } from '@app/Consts/route-constants';
 import { LobbyService } from '@app/services/lobby.service';
-import { GameLobby } from '@common/game-lobby';
+import { NotificationService } from '@app/services/notification.service';
+import { Coordinates } from '@common/coordinates';
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
+import { Tile } from '@common/tile';
 import { Subscription } from 'rxjs';
+import { ActionService } from './action.service';
+import { PlayerService } from './player.service';
 
-export interface GameListenerContext {
-    lobbyId: string;
-    currentPlayer: Player;
-    gameState: GameState | null;
-    lobby: GameLobby;
-    updateState: (newState: GameState) => void;
-    updateLobby: (newLobby: GameLobby) => void;
-    setCurrentPlayer: (player: Player) => void;
-    onPlayerRemoved: () => void;
-    onPlayerTurn: (playerId: string) => void;
-    onCombatStateChange: (isInCombat: boolean) => void;
-    showInfo: (message: string) => void;
-    showError: (message: string) => void;
-    showSuccess: (message: string) => void;
-}
-
-@Injectable({ providedIn: 'root' })
-export class GameListenerService {
-    isInCombat: boolean = false;
+@Injectable({
+    providedIn: 'root',
+})
+export class GameListener implements OnDestroy {
+    private currentPlayer: Player;
+    private gameState: GameState | null = null;
+    private lobbyId: string = '';
+    private isInCombat: boolean = false;
+    private remainingTime: number = 0;
+    private interval: number | null = null;
+    private subscriptions: Subscription[] = [];
 
     constructor(
         private lobbyService: LobbyService,
+        private actionService: ActionService,
         private router: Router,
+        private playerService: PlayerService,
+        private notificationService: NotificationService,
     ) {}
 
-    setupListeners(context: GameListenerContext): Subscription[] {
-        return [
+    initializeGame(lobbyId: string) {
+        this.lobbyId = lobbyId;
+        this.setupGameListeners();
+        this.getCurrentPlayer();
+    }
+
+    onActionRequest(tile: Tile) {
+        if (!this.gameState || !this.currentPlayer) return;
+        if (this.gameState.currentPlayer !== this.currentPlayer.id) return;
+        if (this.gameState.animation) return;
+
+        const action = this.actionService.getActionType(tile, this.gameState);
+        if (!action) return;
+
+        if (action === 'battle') {
+            const opponent = this.actionService.findOpponent(tile) || null;
+            if (opponent) {
+                this.lobbyService.initializeBattle(this.currentPlayer, opponent, this.lobbyId);
+            }
+        }
+
+        this.lobbyService.executeAction(action, tile, this.lobbyId).subscribe({
+            next: (data) => {
+                if (this.gameState?.board) {
+                    this.gameState = {
+                        ...this.gameState,
+                        board: data.newGameBoard.map((row) => [...row]),
+                    };
+                }
+            },
+        });
+    }
+
+    onAttackClick(playerId: string, lobbyId: string): void {
+        const opponent = this.gameState?.players.find((p) => p.id === playerId);
+        if (!opponent) return;
+
+        this.lobbyService.startCombat(lobbyId, this.currentPlayer, opponent, 50);
+        this.isInCombat = true;
+        this.remainingTime = 30;
+    }
+
+    onMoveRequest(coordinates: Coordinates[]) {
+        if (!this.gameState || !this.currentPlayer) return;
+        if (this.gameState.currentPlayer !== this.currentPlayer.id) return;
+
+        this.lobbyService.requestMovement(this.lobbyId, coordinates);
+    }
+
+    onEndTurn() {
+        if (!this.gameState || !this.currentPlayer) return;
+        if (this.gameState.currentPlayer !== this.currentPlayer.id) return;
+
+        this.lobbyService.requestEndTurn(this.lobbyId);
+    }
+
+    ngOnDestroy() {
+        this.subscriptions.forEach((sub) => sub.unsubscribe());
+    }
+
+    private setupGameListeners() {
+        this.subscriptions.push(
             this.lobbyService.onGameStarted().subscribe((data) => {
-                context.updateState(data.gameState);
-                const currentPlayer = this.lobbyService.getCurrentPlayer();
-                if (currentPlayer) context.setCurrentPlayer(currentPlayer);
+                this.gameState = data.gameState;
+                this.getCurrentPlayer();
             }),
-
             this.lobbyService.onTurnStarted().subscribe((data) => {
-                context.updateState(data.gameState);
-                const currentPlayer = this.lobbyService.getCurrentPlayer();
-                if (currentPlayer) context.setCurrentPlayer(currentPlayer);
-                context.onPlayerTurn(data.currentPlayer);
+                this.gameState = data.gameState;
+                this.playerService.syncCurrentPlayerWithGameState();
+                this.playerService.notifyPlayerTurn(data.currentPlayer);
             }),
+            // Ajouter les autres listeners ici...
+        );
+    }
 
-            this.lobbyService.onTurnEnded().subscribe((data) => {
-                context.updateState(data.gameState);
-            }),
-
-            this.lobbyService.onMovementProcessed().subscribe((data) => {
-                context.updateState(data.gameState);
-            }),
-
-            this.lobbyService.onError().subscribe((error) => {
-                context.showError(error);
-            }),
-
-            this.lobbyService.onLobbyUpdated().subscribe((data) => {
-                if (data.lobby.id === context.lobbyId) {
-                    context.updateLobby(data.lobby);
-                    const stillPresent = data.lobby.players.find((p) => p.id === context.currentPlayer.id);
-                    if (!stillPresent) {
-                        this.lobbyService.disconnectFromRoom(context.lobbyId);
-                        context.onPlayerRemoved();
-                        this.router.navigate([PageUrl.Home], { replaceUrl: true });
-                    } else {
-                        this.lobbyService.updatePlayers(context.lobbyId, data.lobby.players);
-                    }
-                }
-            }),
-
-            this.lobbyService.onBoardChanged().subscribe((data) => {
-                context.updateState(data.gameState);
-            }),
-
-            this.lobbyService.onFleeSuccess().subscribe((data) => {
-                this.isInCombat = false;
-                context.onCombatStateChange(false);
-                this.lobbyService.updateCombatStatus(this.isInCombat);
-                context.currentPlayer.life = context.currentPlayer.maxLife;
-                if (context.currentPlayer.name === data.fleeingPlayer.name) {
-                    context.showInfo('Vous avez fui le combat.');
-                } else {
-                    context.showInfo(`${data.fleeingPlayer.name} a fui le combat.`);
-                }
-            }),
-
-            this.lobbyService.onAttackEnd().subscribe((data) => {
-                context.onCombatStateChange(data.isInCombat);
-                this.lobbyService.updateCombatStatus(data.isInCombat);
-                context.currentPlayer.life = context.currentPlayer.maxLife;
-                context.showInfo(`${context.currentPlayer.name} a fini son combat.`);
-            }),
-        ];
+    private getCurrentPlayer() {
+        const currentPlayer = this.lobbyService.getCurrentPlayer();
+        if (!currentPlayer) {
+            this.router.navigate(['/home'], { replaceUrl: true });
+            return;
+        }
+        this.currentPlayer = currentPlayer;
     }
 }
