@@ -694,7 +694,7 @@ describe('SocketService', () => {
             success: true,
         };
         handler(data);
-        expect(gameHandler.handleFlee.calledWith(data.lobbyId, data.player, data.success)).to.be.equal(true);
+        expect(gameHandler.handleFlee.calledWith(data.lobbyId, data.player)).to.be.equal(true);
     });
 
     it('should call terminateAttack when terminateAttack event is received', () => {
