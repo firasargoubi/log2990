@@ -1,3 +1,4 @@
+import { DEFAULT_ACTION_POINTS, DEFAULT_MOVEMENT_POINTS, ERROR_MESSAGES, TILE_DIVISOR } from '@app/constants/board-constants';
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
@@ -6,11 +7,6 @@ import { Player } from '@common/player';
 import { Service } from 'typedi';
 import { GameService } from './game.service';
 import { PathfindingService } from './pathfinding.service';
-import { ERROR_MESSAGES } from '@app/constants/boardConst';
-
-const DEFAULT_MOVEMENT_POINTS = 0;
-const DEFAULT_ACTION_POINTS = 1;
-const TILE_DIVISOR = 10;
 
 @Service()
 export class BoardService {
