@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-magic-numbers */
-import { GAME_IMAGES, OBJECT_NAMES, OBJECTS_DESCRIPTION, ObjectsTypes } from '@app/Consts/app.constants';
 import { ItemModel } from './item.model';
+import { ObjectsTypes } from '@app/Consts/app.constants';
 
 describe('ItemModel', () => {
     it('should create an instance with the correct type', () => {
@@ -19,143 +18,68 @@ describe('ItemModel', () => {
     });
 
     describe('image getter', () => {
-        it('should return correct image for ObjectsTypes.BOOTS', () => {
-            const itemModel = new ItemModel(ObjectsTypes.BOOTS);
-            expect(itemModel.image).toBe(GAME_IMAGES.boots);
-        });
+        const testCases = [
+            { type: 0, expectedImage: 'assets/objects/boots.png' },
+            { type: 1, expectedImage: 'assets/objects/sword.png' },
+            { type: 2, expectedImage: 'assets/objects/potion.png' },
+            { type: 3, expectedImage: 'assets/objects/wand.png' },
+            { type: 4, expectedImage: 'assets/objects/crystal_ball.png' },
+            { type: 5, expectedImage: 'assets/objects/berry-juice.png' },
+            { type: 6, expectedImage: 'assets/objects/vortex.png' },
+            { type: 7, expectedImage: 'assets/objects/gnome.png' },
+            { type: 999, expectedImage: 'assets/objects/undefined.png' },
+        ];
 
-        it('should return correct image for ObjectsTypes.SWORD', () => {
-            const itemModel = new ItemModel(ObjectsTypes.SWORD);
-            expect(itemModel.image).toBe(GAME_IMAGES.sword);
-        });
-
-        it('should return correct image for ObjectsTypes.POTION', () => {
-            const itemModel = new ItemModel(ObjectsTypes.POTION);
-            expect(itemModel.image).toBe(GAME_IMAGES.potion);
-        });
-
-        it('should return correct image for ObjectsTypes.WAND', () => {
-            const itemModel = new ItemModel(ObjectsTypes.WAND);
-            expect(itemModel.image).toBe(GAME_IMAGES.wand);
-        });
-
-        it('should return correct image for ObjectsTypes.CRYSTAL', () => {
-            const itemModel = new ItemModel(ObjectsTypes.CRYSTAL);
-            expect(itemModel.image).toBe(GAME_IMAGES.crystalBall);
-        });
-
-        it('should return correct image for ObjectsTypes.JUICE', () => {
-            const itemModel = new ItemModel(ObjectsTypes.JUICE);
-            expect(itemModel.image).toBe(GAME_IMAGES.berryJuice);
-        });
-
-        it('should return correct image for ObjectsTypes.SPAWN', () => {
-            const itemModel = new ItemModel(ObjectsTypes.SPAWN);
-            expect(itemModel.image).toBe(GAME_IMAGES.vortex);
-        });
-
-        it('should return correct image for ObjectsTypes.RANDOM', () => {
-            const itemModel = new ItemModel(ObjectsTypes.RANDOM);
-            expect(itemModel.image).toBe(GAME_IMAGES.gnome);
-        });
-
-        it('should return the undefined image for unknown types', () => {
-            const itemModel = new ItemModel(999);
-            expect(itemModel.image).toBe(GAME_IMAGES.undefined);
+        testCases.forEach(({ type, expectedImage }) => {
+            it(`should return correct image for type ${type}`, () => {
+                const itemModel = new ItemModel(type);
+                expect(itemModel.image).toBe(expectedImage);
+            });
         });
     });
 
     describe('name getter', () => {
-        it('should return correct name for ObjectsTypes.BOOTS', () => {
-            const itemModel = new ItemModel(ObjectsTypes.BOOTS);
-            expect(itemModel.name).toBe(OBJECT_NAMES.boots);
-        });
+        const testCases = [
+            { type: 0, expectedName: 'Bottes de vitesse' },
+            { type: 1, expectedName: 'Épée de puissance' },
+            { type: 2, expectedName: 'Potion de soin' },
+            { type: 3, expectedName: 'Baguette magique' },
+            { type: 4, expectedName: 'Boule de cristal' },
+            { type: 5, expectedName: 'Jus de baies' },
+            { type: 6, expectedName: 'Vortex' },
+            { type: 7, expectedName: 'Gnome' },
+            { type: 999, expectedName: 'Objet inconnu' },
+        ];
 
-        it('should return correct name for ObjectsTypes.SWORD', () => {
-            const itemModel = new ItemModel(ObjectsTypes.SWORD);
-            expect(itemModel.name).toBe(OBJECT_NAMES.sword);
-        });
-
-        it('should return correct name for ObjectsTypes.POTION', () => {
-            const itemModel = new ItemModel(ObjectsTypes.POTION);
-            expect(itemModel.name).toBe(OBJECT_NAMES.potion);
-        });
-
-        it('should return correct name for ObjectsTypes.WAND', () => {
-            const itemModel = new ItemModel(ObjectsTypes.WAND);
-            expect(itemModel.name).toBe(OBJECT_NAMES.wand);
-        });
-
-        it('should return correct name for ObjectsTypes.CRYSTAL', () => {
-            const itemModel = new ItemModel(ObjectsTypes.CRYSTAL);
-            expect(itemModel.name).toBe(OBJECT_NAMES.crystalBall);
-        });
-
-        it('should return correct name for ObjectsTypes.JUICE', () => {
-            const itemModel = new ItemModel(ObjectsTypes.JUICE);
-            expect(itemModel.name).toBe(OBJECT_NAMES.berryJuice);
-        });
-
-        it('should return correct name for ObjectsTypes.SPAWN', () => {
-            const itemModel = new ItemModel(ObjectsTypes.SPAWN);
-            expect(itemModel.name).toBe(OBJECT_NAMES.vortex);
-        });
-
-        it('should return correct name for ObjectsTypes.RANDOM', () => {
-            const itemModel = new ItemModel(ObjectsTypes.RANDOM);
-            expect(itemModel.name).toBe(OBJECT_NAMES.gnome);
-        });
-
-        it('should return the undefined name for unknown types', () => {
-            const itemModel = new ItemModel(999);
-            expect(itemModel.name).toBe(OBJECT_NAMES.undefined);
+        testCases.forEach(({ type, expectedName }) => {
+            it(`should return correct name for type ${type}`, () => {
+                const itemModel = new ItemModel(type);
+                expect(itemModel.name).toBe(expectedName);
+            });
         });
     });
 
     describe('description getter', () => {
-        it('should return correct description for ObjectsTypes.BOOTS', () => {
-            const itemModel = new ItemModel(ObjectsTypes.BOOTS);
-            expect(itemModel.description).toBe(OBJECTS_DESCRIPTION.boots);
-        });
+        const testCases = [
+            { type: 0, expectedDescription: 'Les bottes magiques vous permettront de vous déplacer à une vitesse SUPERSONIQUE!' },
+            { type: 1, expectedDescription: 'Cette épée effectue plus de dégats sur vos ennemis!' },
+            { type: 2, expectedDescription: 'Figez le temps et profitez-en pour vous déplacer une fois de plus que vos adversaires...' },
+            {
+                type: 3,
+                expectedDescription: "Cette mystérieuse baguette vous permet d'ensorceler un de vos adversaires et de le dérouter de son chemin!",
+            },
+            { type: 4, expectedDescription: "Vos talents de clairvoyance vous permettent d'identifier tous les points faibles d'un de vos ennemis." },
+            { type: 5, expectedDescription: 'Ne paniquez pas, ce nectar soignera toutes vos blessures!' },
+            { type: 6, expectedDescription: "Cet objet indique l'endroit où une bataille épique est sur le point d'avoir lieu" },
+            { type: 7, expectedDescription: 'Ce petit gnome farceur a un cadeau pour vous. À vos risque et périls...' },
+            { type: 999, expectedDescription: 'Objet inconnu' },
+        ];
 
-        it('should return correct description for ObjectsTypes.SWORD', () => {
-            const itemModel = new ItemModel(ObjectsTypes.SWORD);
-            expect(itemModel.description).toBe(OBJECTS_DESCRIPTION.sword);
-        });
-
-        it('should return correct description for ObjectsTypes.POTION', () => {
-            const itemModel = new ItemModel(ObjectsTypes.POTION);
-            expect(itemModel.description).toBe(OBJECTS_DESCRIPTION.potion);
-        });
-
-        it('should return correct description for ObjectsTypes.WAND', () => {
-            const itemModel = new ItemModel(ObjectsTypes.WAND);
-            expect(itemModel.description).toBe(OBJECTS_DESCRIPTION.wand);
-        });
-
-        it('should return correct description for ObjectsTypes.CRYSTAL', () => {
-            const itemModel = new ItemModel(ObjectsTypes.CRYSTAL);
-            expect(itemModel.description).toBe(OBJECTS_DESCRIPTION.crystal);
-        });
-
-        it('should return correct description for ObjectsTypes.JUICE', () => {
-            const itemModel = new ItemModel(ObjectsTypes.JUICE);
-            expect(itemModel.description).toBe(OBJECTS_DESCRIPTION.berryJuice);
-        });
-
-        it('should return correct description for ObjectsTypes.SPAWN', () => {
-            const itemModel = new ItemModel(ObjectsTypes.SPAWN);
-            expect(itemModel.description).toBe(OBJECTS_DESCRIPTION.vortex);
-        });
-
-        it('should return correct description for ObjectsTypes.RANDOM', () => {
-            const itemModel = new ItemModel(ObjectsTypes.RANDOM);
-            expect(itemModel.description).toBe(OBJECTS_DESCRIPTION.gnome);
-        });
-
-        it('should return the undefined description for unknown types', () => {
-            const itemModel = new ItemModel(999);
-            expect(itemModel.description).toBe(OBJECTS_DESCRIPTION.undefined);
+        testCases.forEach(({ type, expectedDescription }) => {
+            it(`should return correct description for type ${type}`, () => {
+                const itemModel = new ItemModel(type);
+                expect(itemModel.description).toBe(expectedDescription);
+            });
         });
     });
 });

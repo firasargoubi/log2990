@@ -23,7 +23,6 @@ describe('GameListenerService', () => {
         spawnPoints: [],
         currentPlayerMovementPoints: 3,
         currentPlayerActionPoints: 1,
-        debug: false,
     };
 
     const mockLobby: GameLobby = {
