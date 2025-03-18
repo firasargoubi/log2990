@@ -225,15 +225,25 @@ describe('GameService', () => {
             req.flush(true);
         });
 
-        it('should handle errors when verifying game name', () => {
+        it('should handle errors when verifying game name by completing silently', () => {
+            let completed = false;
+
             service.verifyGameName(mockGame).subscribe({
-                next: (result) => {
-                    expect(result).toBeFalsy();
+                next: () => {
+                    fail('Should not emit a value on error');
+                },
+                error: () => {
+                    fail('Should not emit an error on error');
+                },
+                complete: () => {
+                    completed = true;
                 },
             });
 
             const req = httpMock.expectOne(`${baseUrl}/validateName`);
             req.error(new ErrorEvent('Network error'));
+
+            expect(completed).toBeTrue();
         });
     });
 
@@ -250,17 +260,26 @@ describe('GameService', () => {
             req.flush(true);
         });
 
-        it('should handle errors when verifying game accessibility', () => {
+        it('should handle errors when verifying game accessibility by completing silently', () => {
             const gameId = '123';
+            let completed = false;
 
             service.verifyGameAccessible(gameId).subscribe({
-                next: (result) => {
-                    expect(result).toBeFalsy();
+                next: () => {
+                    fail('Should not emit a value on error');
+                },
+                error: () => {
+                    fail('Should not emit an error on error');
+                },
+                complete: () => {
+                    completed = true;
                 },
             });
 
             const req = httpMock.expectOne(`${baseUrl}${ApiEndpoint.Validate}/${gameId}`);
             req.error(new ErrorEvent('Network error'));
+
+            expect(completed).toBeTrue();
         });
     });
 
