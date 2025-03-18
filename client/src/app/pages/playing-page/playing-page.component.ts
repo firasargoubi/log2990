@@ -70,7 +70,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     handleKeyboardEvent(event: KeyboardEvent) {
         if (event.key === 'd' && this.currentPlayer.isHost) {
             this.setDebugMode();
-            console.log("DEBUG YIPEE");
         }
     }
 
@@ -104,7 +103,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
         this.lobbyService.onInteraction().subscribe((data) => {
             this.isInCombat = data.isInCombat;
-            console.log('combat?', this.isInCombat);
             this.lobbyService.updateCombatStatus(this.isInCombat);
         });
 
@@ -117,7 +115,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.lobbyService.onGameEnded().subscribe((data) => {
             this.isInCombat = false;
             this.lobbyService.updateCombatStatus(this.isInCombat);
-            console.log('Winner: ', data.winner);
         });
 
         if (this.gameState) {
@@ -212,7 +209,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.lobbyService.onTurnStarted().subscribe((data) => {
                 this.gameState = data.gameState;
                 this.syncCurrentPlayerWithGameState();
-                console.log('onGameStarted', this.gameState);
                 this.notifyPlayerTurn(data.currentPlayer);
             }),
 
@@ -243,7 +239,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
             this.lobbyService.onBoardChanged().subscribe((data) => {
                 this.gameState = data.gameState;
-                console.log('onBoardChanged', this.gameState);
             }),
 
             this.lobbyService.onFleeSuccess().subscribe((data) => {

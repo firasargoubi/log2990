@@ -38,7 +38,6 @@ export class CreatePageComponent implements OnInit {
 
     onBoxClick(game: Game): void {
         this.currentGame = game;
-
         this.gameService.verifyGameAccessible(this.currentGame.id).subscribe({
             next: (isAccessible) => {
                 if (!isAccessible) {
