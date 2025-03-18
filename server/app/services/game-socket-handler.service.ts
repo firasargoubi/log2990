@@ -198,9 +198,53 @@ export class GameSocketHandlerService {
 
     handleDefeat(player: Player, lobbyId: string) {
         const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) return;
         const playerIndex = gameState.players.findIndex((p) => p.id === player.id);
         if (playerIndex === -1) return;
-        const newSpawn = gameState.spawnPoints[playerIndex];
+        const originalSpawn = gameState.spawnPoints[playerIndex];
+        const occupiedPositions = new Set(gameState.playerPositions.map((pos) => JSON.stringify(pos)));
+        let newSpawn = originalSpawn;
+
+        if (occupiedPositions.has(JSON.stringify(originalSpawn))) {
+            const queue: Coordinates[] = [originalSpawn];
+            const visited = new Set<string>();
+            visited.add(JSON.stringify(originalSpawn));
+            let queueStart = 0;
+            let found = false;
+
+            while (queueStart < queue.length && !found) {
+                const current = queue[queueStart++];
+
+                if (isTileValid(current, gameState, occupiedPositions)) {
+                    newSpawn = current;
+                    found = true;
+                    break;
+                }
+
+                const directions = [
+                    { x: -1, y: 0 },
+                    { x: 1, y: 0 },
+                    { x: 0, y: -1 },
+                    { x: 0, y: 1 },
+                ];
+
+                for (const dir of directions) {
+                    const neighbor = {
+                        x: current.x + dir.x,
+                        y: current.y + dir.y,
+                    };
+
+                    if (isWithinBounds(neighbor, gameState.board)) {
+                        const neighborKey = JSON.stringify(neighbor);
+                        if (!visited.has(neighborKey)) {
+                            visited.add(neighborKey);
+                            queue.push(neighbor);
+                        }
+                    }
+                }
+            }
+        }
+
         gameState.playerPositions[playerIndex] = newSpawn;
         this.io.to(lobbyId).emit(GameEvents.ChangedSpawn, { player, newSpawn });
     }
@@ -241,4 +285,21 @@ export class GameSocketHandlerService {
         }
         return gameState;
     }
+}
+
+function isTileValid(tile: Coordinates, gameState: GameState, occupiedPositions: Set<string>): boolean {
+    const isOccupiedByPlayer = occupiedPositions.has(JSON.stringify(tile));
+    const isGrassTile = gameState.board[tile.x]?.[tile.y] === 0;
+    return !isOccupiedByPlayer && isGrassTile;
+}
+
+// Calculer la distance entre deux points (Manhattan)
+// function getDistance(a: Coordinates, b: Coordinates): number {
+//     return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+// }
+
+function isWithinBounds(tile: Coordinates, board: number[][]): boolean {
+    if (tile.y < 0 || tile.y >= board.length) return false;
+    const row = board[tile.y];
+    return tile.x >= 0 && tile.x < row.length;
 }
