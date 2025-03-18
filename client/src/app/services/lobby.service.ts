@@ -18,7 +18,7 @@ import { environment } from 'src/environments/environment';
 export class LobbyService {
     private socket: Socket;
     private currentPlayer: Player | null = null;
-    private isInCombatSubject = new BehaviorSubject<boolean>(false); // Valeur par défaut
+    private isInCombatSubject = new BehaviorSubject<boolean>(false);
     isInCombat$ = this.isInCombatSubject.asObservable();
 
     constructor() {
@@ -42,7 +42,6 @@ export class LobbyService {
     disconnect(): void {
         if (this.socket) {
             this.socket.disconnect();
-            window.location.reload();
         }
     }
 
