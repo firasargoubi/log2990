@@ -5,7 +5,6 @@ import { LobbySocketHandlerService } from './lobby-socket-handler.service';
 
 @Service()
 export class DisconnectHandlerService {
-
     constructor(
         private lobbies: Map<string, GameLobby>,
         private lobbySocketHandler: LobbySocketHandlerService,

@@ -49,4 +49,31 @@ describe('DisconnectHandlerService', () => {
         expect(lobbySocketHandlerMock.leaveGame.called).to.be.false;
         expect(lobbySocketHandlerMock.leaveLobby.called).to.be.false;
     });
+
+    it('should handle undefined room ID gracefully', () => {
+        const leaveStub = sandbox.stub();
+        const mockSocket: Partial<Socket> = { id: 'socket1', leave: leaveStub };
+
+        disconnectHandlerService.handleDisconnectFromRoom(mockSocket as Socket, undefined);
+
+        expect(leaveStub.called).to.be.false;
+    });
+
+    it('should handle empty room ID gracefully', () => {
+        const leaveStub = sandbox.stub();
+        const mockSocket: Partial<Socket> = { id: 'socket1', leave: leaveStub };
+
+        disconnectHandlerService.handleDisconnectFromRoom(mockSocket as Socket, '');
+
+        expect(leaveStub.called).to.be.false;
+    });
+
+    it('should remove the socket from the room when the player disconnects from a room', () => {
+        const leaveStub = sandbox.stub();
+        const mockSocket: Partial<Socket> = { id: 'socket1', leave: leaveStub };
+
+        disconnectHandlerService.handleDisconnectFromRoom(mockSocket as Socket, 'lobby1');
+
+        expect(leaveStub.calledOnceWith('lobby1')).to.be.true;
+    });
 });

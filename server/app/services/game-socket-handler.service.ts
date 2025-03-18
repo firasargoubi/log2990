@@ -99,7 +99,6 @@ export class GameSocketHandlerService {
             this.gameStates.set(lobbyId, updatedGameState);
 
             this.io.to(lobbyId).emit(GameEvents.MovementProcessed, { gameState });
-
         } catch (error) {
             socket.emit(GameEvents.Error, `${gameSocketMessages.movementError}${error.message}`);
         }

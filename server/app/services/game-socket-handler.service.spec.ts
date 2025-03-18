@@ -12,7 +12,7 @@ import { GameState } from '@common/game-state';
 import { TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { expect } from 'chai';
-import { createSandbox, SinonSandbox, SinonStub } from 'sinon';
+import { createSandbox, SinonSandbox, SinonStub, SinonFakeTimers, useFakeTimers } from 'sinon';
 
 describe('GameSocketHandlerService', () => {
     let sandbox: SinonSandbox;
@@ -22,6 +22,7 @@ describe('GameSocketHandlerService', () => {
     let lobbySocketHandlerService: LobbySocketHandlerService;
     let service: GameSocketHandlerService;
     let socket: any;
+    let clock: SinonFakeTimers;
 
     let emitStub: SinonStub;
     let ioToStub: SinonStub;
@@ -31,6 +32,7 @@ describe('GameSocketHandlerService', () => {
         sandbox = createSandbox();
         lobbies = new Map<string, GameLobby>();
         gameStates = new Map<string, GameState>();
+        clock = useFakeTimers();
 
         boardService = {
             initializeGameState: sandbox.stub(),
@@ -56,6 +58,7 @@ describe('GameSocketHandlerService', () => {
     });
 
     afterEach(() => {
+        clock.restore();
         sandbox.restore();
     });
 
@@ -141,6 +144,7 @@ describe('GameSocketHandlerService', () => {
         (boardService.handleTurn as any).returns(updated);
         gameStates.set('lobby1', gs);
         service.handleRequestMovement(socket, 'lobby1', [{ x: 1, y: 1 }]);
+        clock.runAll();
         expect(ioToStub.calledWith('lobby1')).to.equal(true);
     });
 
