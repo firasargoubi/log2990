@@ -22,7 +22,9 @@ export class DisconnectHandlerService {
         }
     }
 
-    handleDisconnectFromRoom(socket: Socket, lobbyId: string) {
-        socket.leave(lobbyId);
+    handleDisconnectFromRoom(socket: Socket, lobbyId?: string) {
+        if (lobbyId) {
+            socket.leave(lobbyId);
+        }
     }
 }

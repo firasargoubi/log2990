@@ -92,10 +92,9 @@ export class BoardService {
         if (!isValidMove) {
             return gameState;
         }
-
         const path = this.pathfindingService.findShortestPath(gameState, playerPosition, targetCoordinate, gameState.currentPlayerMovementPoints);
 
-        if (!path) {
+        if (!path || path.length < 2) {
             return gameState;
         }
 
@@ -144,9 +143,10 @@ export class BoardService {
     }
     private updatePlayerMoves(gameState: GameState, playerIndex: number): GameState {
         const playerPosition = gameState.playerPositions[playerIndex];
+        gameState.availableMoves = [];
+        gameState.shortestMoves = [];
+
         if (!playerPosition) {
-            gameState.availableMoves = [];
-            gameState.shortestMoves = [];
             return gameState;
         }
 
@@ -233,13 +233,12 @@ export class BoardService {
 
     private calculateShortestMoves(gameState: GameState, playerPosition: Coordinates, availableMoves: Coordinates[]): Coordinates[][] {
         const shortestMoves: Coordinates[][] = [];
-
         for (const move of availableMoves) {
             const path = this.pathfindingService.findShortestPath(gameState, playerPosition, move, gameState.currentPlayerMovementPoints);
-
-            shortestMoves.push(path);
+            if (path && path.length > 0) {
+                shortestMoves.push(path);
+            }
         }
-
         return shortestMoves;
     }
 }

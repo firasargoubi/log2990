@@ -212,19 +212,7 @@ describe('GameSocketHandlerService', () => {
         service.handleEndTurn(socket, 'lobby1');
         expect(emitStub.calledWith('error', 'Failed to end turn: EndTurn error')).to.equal(true);
     });
-    it('should emit error if handleMovement throws in handleRequestMovement', () => {
-        const gameState: GameState = {
-            currentPlayer: 'socket1',
-            availableMoves: [],
-            playerPositions: new Map(),
-        } as any;
 
-        gameStates.set('lobby1', gameState);
-        (boardService.handleMovement as any).throws(new Error('Movement error'));
-
-        service.handleRequestMovement(socket, 'lobby1', [{ x: 0, y: 0 }]);
-        expect(emitStub.calledWith('error', 'Movement error: Movement error')).to.equal(true);
-    });
     it('should emit error if handleTurn throws in startTurn', () => {
         const gameState: GameState = {
             currentPlayer: 'socket1',

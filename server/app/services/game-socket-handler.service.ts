@@ -103,7 +103,6 @@ export class GameSocketHandlerService {
             socket.emit(GameEvents.Error, `${gameSocketMessages.movementError}${error.message}`);
         }
     }
-
     startTurn(lobbyId: string) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;

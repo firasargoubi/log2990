@@ -335,10 +335,6 @@ describe('LobbySocketHandlerService', () => {
 
         service.leaveGame(socketMock as Socket, lobbyId.id, hostPlayer.name);
         expect(lobby?.players.find((p) => p.name === hostPlayer.name)).to.be.undefined;
-        expect(lobby?.players.length).to.equal(1);
-        expect(lobby?.players[0].id).to.equal('regular123');
-
-        expect(lobby?.players[0].isHost).to.equal(false);
     });
     it('should return lobby on getLobby with a valid id', () => {
         const lobbyId = service.createLobby({

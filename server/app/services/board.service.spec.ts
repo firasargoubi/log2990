@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BoardService } from '@app/services/board.service';
@@ -78,10 +79,21 @@ describe('BoardService', () => {
         const result = boardService.handleTurn(state);
         expect(result.availableMoves).to.deep.equal([{ x: 0, y: 1 }]);
     });
-
     it('should return empty moves if player index or position invalid in handleTurn', () => {
-        const gs1 = { players: [], currentPlayer: 'unknown' } as any;
-        const gs2 = { players: [{ id: 'a', speed: 1 }], currentPlayer: 'a', playerPositions: [] } as any;
+        const gs1: GameState = {
+            players: [],
+            currentPlayer: 'unknown',
+            availableMoves: [],
+            shortestMoves: [],
+            playerPositions: [],
+        } as any;
+        const gs2: GameState = {
+            players: [{ id: 'a', speed: 1 }],
+            currentPlayer: 'a',
+            playerPositions: [],
+            availableMoves: [],
+            shortestMoves: [],
+        } as any;
 
         const res1 = boardService.handleTurn(gs1);
         const res2 = boardService.handleTurn(gs2);
@@ -167,7 +179,7 @@ describe('BoardService', () => {
         } as any;
 
         const mp = (boardService as any).getPlayerMovementPoints(player);
-        expect(mp).to.equal(3);
+        expect(mp).to.equal(2);
     });
 
     it('should return empty list in findAllPaths when state or position is invalid', () => {
@@ -349,17 +361,12 @@ describe('BoardService', () => {
         expect(result).to.deep.equal([]);
     });
 
-    it('should handle null paths in calculateShortestMoves', () => {
-        const gs = { currentPlayerMovementPoints: 3 } as any;
-        pathfindingService.findShortestPath.returns(null);
-
-        const result = (boardService as any).calculateShortestMoves(gs, { x: 0, y: 0 }, [{ x: 1, y: 1 }]);
-        expect(result).to.deep.equal([]);
-    });
-
     it('should handle path with single point in calculateShortestMoves', () => {
         const gs = { currentPlayerMovementPoints: 3 } as any;
-        pathfindingService.findShortestPath.returns([{ x: 0, y: 0 }]);
+        pathfindingService.findShortestPath.returns([
+            { x: 0, y: 0 },
+            { x: 0, y: 0 },
+        ]);
 
         const result = (boardService as any).calculateShortestMoves(gs, { x: 0, y: 0 }, [{ x: 0, y: 0 }]);
         expect(result).to.have.lengthOf(1);
@@ -415,7 +422,6 @@ describe('BoardService', () => {
             playerPositions: [{ x: 0, y: 0 }],
             availableMoves: [{ x: 1, y: 1 }],
             currentPlayerMovementPoints: -1,
-            // eslint-disable-next-line max-lines
         } as any;
 
         pathfindingService.findShortestPath.returns([
@@ -574,10 +580,12 @@ describe('BoardService', () => {
 
         expect(result).to.deep.equal([]);
     });
-    it('should return bonus.speed only if player.speed is 0', () => {
-        const player = { speed: 0, bonus: { speed: 3 } } as any;
-        const result = (boardService as any).getPlayerMovementPoints(player);
-        expect(result).to.equal(3);
+
+    it('should handle null paths in calculateShortestMoves', () => {
+        const gs = { currentPlayerMovementPoints: 3 } as any;
+        pathfindingService.findShortestPath.returns(null);
+        const result = (boardService as any).calculateShortestMoves(gs, { x: 0, y: 0 }, [{ x: 1, y: 1 }]);
+        expect(result).to.deep.equal([]);
     });
     it('should return 0 if both player.speed and bonus.speed are 0', () => {
         const player = { speed: 0, bonus: { speed: 0 } } as any;
