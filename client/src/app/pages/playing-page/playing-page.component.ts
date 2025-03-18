@@ -1,47 +1,19 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CombatComponent } from '@app/components/combat/combat.component';
-import { CountdownPlayerComponent } from '@app/components/countdown-player/countdown-player.component';
-import { GameBoardComponent } from '@app/components/game-board/game-board.component';
-import { GameInfoComponent } from '@app/components/game-info/game-info.component';
-import { InventoryComponent } from '@app/components/inventory/inventory.component';
-import { MessagesComponent } from '@app/components/messages/messages.component';
-import { ActionService } from '@app/services/action.service';
-
-import { PlayerListComponent } from '@app/components/player-list/player-list.component';
-import { PageUrl } from '@app/Consts/route-constants';
-import { LobbyService } from '@app/services/lobby.service';
-import { NotificationService } from '@app/services/notification.service';
+import { GameListener } from '@app/services/game-listener.service';
+import { PlayerService } from '@app/services/player.service';
 import { Coordinates } from '@common/coordinates';
-import { GameLobby } from '@common/game-lobby';
-import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
-import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-playing-page',
-    imports: [
-        CommonModule,
-        CountdownPlayerComponent,
-        InventoryComponent,
-        GameInfoComponent,
-        MessagesComponent,
-        GameBoardComponent,
-        CombatComponent,
-        PlayerListComponent,
-    ],
-    standalone: true,
     templateUrl: './playing-page.component.html',
     styleUrls: ['./playing-page.component.scss'],
 })
 export class PlayingPageComponent implements OnInit, OnDestroy {
-    @Output() action: boolean = false;
-    @Output() currentPlayer: Player;
-    @Output() lobbyId: string = '';
-    @Output() opponent: Player | null = null;
-    @Output() gameState: GameState;
+    @Input() player!: Player;
     @Output() remove = new EventEmitter<string>();
     @Input() player!: Player;
 
@@ -78,9 +50,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             const lobbyId = params['id'];
             if (lobbyId) {
                 this.lobbyId = lobbyId;
-                this.setupGameListeners();
-
-                this.getCurrentPlayer();
+                this.gameListener.initializeGame(lobbyId);
             } else {
                 this.router.navigate(['/home', { replaceUrl: true }]);
             }
@@ -312,79 +282,16 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     onMoveRequest(coordinates: Coordinates[]) {
-        if (!this.gameState || !this.currentPlayer) {
-            return;
-        }
-
-        if (this.gameState.currentPlayer !== this.currentPlayer.id) {
-            return;
-        }
-
-        this.lobbyService.requestMovement(this.lobbyId, coordinates);
+        this.gameListener.onMoveRequest(coordinates);
     }
 
     onEndTurn() {
-        if (!this.gameState || !this.currentPlayer) {
-            return;
-        }
-
-        if (this.gameState.currentPlayer !== this.currentPlayer.id) {
-            return;
-        }
-
-        this.lobbyService.requestEndTurn(this.lobbyId);
+        this.gameListener.onEndTurn();
     }
 
-    getGameName(): string {
-        return 'Forest Adventure';
-    }
-
-    getMapSize(): string {
-        if (!this.gameState) return 'Unknown';
-        const size = this.gameState.board.length;
-        if (size <= 10) return 'Small';
-        if (size <= 15) return 'Medium';
-        return 'Large';
-    }
-
-    getPlayerCount(): number {
-        return this.gameState?.players.length || 0;
-    }
-
-    getActivePlayer(): string {
-        if (!this.gameState) return 'Unknown';
-        const player = this.gameState.players.find((p) => p.id === this.gameState?.currentPlayer);
-        return player?.name || 'Unknown';
-    }
-
-    getPlayers(): Player[] {
-        return this.gameState?.players || [];
-    }
-
-    isCurrentPlayerTurn(): boolean {
-        if (!this.gameState || !this.currentPlayer) {
-            return false;
-        }
-
-        const result = this.gameState.currentPlayer === this.currentPlayer.id;
-        return result;
-    }
-
-    onRemovePlayer(): void {
-        this.remove.emit(this.player.id);
-    }
-    abandon() {
-        if (!this.gameState || !this.currentPlayer) {
-            this.router.navigate(['/home'], { replaceUrl: true });
-        }
-        const isAnimated = this.gameState.animation || false;
-        if (isAnimated) {
-            return;
-        }
-        if (this.lobbyId && this.currentPlayer) {
-            this.lobbyService.disconnect();
-            this.router.navigate(['/home'], { replaceUrl: true });
-        }
+    ngOnDestroy() {
+        this.gameListener.ngOnDestroy();
+        this.playerService.ngOnDestroy();
     }
     onInfoSent(details: string) {
         console.log(details);
