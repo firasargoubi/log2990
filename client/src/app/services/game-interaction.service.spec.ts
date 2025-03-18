@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
@@ -61,6 +62,7 @@ describe('GameInteractionService', () => {
             spawnPoints: [],
             currentPlayerMovementPoints: 3,
             currentPlayerActionPoints: 1,
+            debug: false,
         };
         const mockPlayer: Player = { id: 'p1', name: 'Test', life: 100, maxLife: 100, speed: 3 } as Player;
 
@@ -108,6 +110,7 @@ describe('GameInteractionService', () => {
             spawnPoints: [],
             currentPlayerMovementPoints: 3,
             currentPlayerActionPoints: 1,
+            debug: false,
         };
         const mockPlayer: Player = { id: 'p1', name: 'Test', life: 100, maxLife: 100, speed: 3 } as Player;
         actionServiceSpy.getActionType.and.returnValue('battle');
@@ -149,6 +152,7 @@ describe('GameInteractionService', () => {
             spawnPoints: [],
             currentPlayerMovementPoints: 3,
             currentPlayerActionPoints: 1,
+            debug: false,
         };
         const mockPlayer: Player = { id: 'p1', name: 'Test', life: 100, maxLife: 100, speed: 3 } as Player;
         actionServiceSpy.getActionType.and.returnValue('move');
