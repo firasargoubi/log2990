@@ -12,7 +12,7 @@
             }
 
             <p>
-                Code d'accès : <strong>{{ lobby.id }}</strong>
+                Code d'accès : <strong>{{ lobby?.id }}</strong>
             </p>
 
             @if (lobby.players.length >= 2 && currentPlayer.isHost) {
@@ -26,7 +26,7 @@
             <button
                 mat-icon-button
                 (click)="lockRoom()"
-                [disabled]="lobby.isLocked"
+                [disabled]="lobby?.isLocked"
                 class="action promote"
                 matTooltip="Promouvoir"
                 matTooltipPosition="below"

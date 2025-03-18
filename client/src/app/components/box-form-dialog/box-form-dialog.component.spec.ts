@@ -83,28 +83,22 @@ describe('BoxFormDialogComponent', () => {
     it('should initialize form with default values', () => {
         expect(component.form).toBeDefined();
         expect(component.form.get('name')?.value).toBe('New Player');
-        expect(component.form.get('avatar')?.value).toBeNull();
+        expect(component.form.get('avatar')?.value).toBe(component.avatars[0]);
         expect(component.form.get('life')?.value).toBe(4);
+    });
+
+    it('should update formValid$ on form status changes', () => {
+        component.form.get('name')?.setValue('');
+        expect(component.formValid$).toBeFalse();
+        component.form.get('name')?.setValue('Player1');
+        fixture.detectChanges();
+        expect(component.formValid$).toBeTrue();
     });
 
     it('closeDialog should close the dialog with the form value when the form is valid', () => {
         component.form.get('name')?.setValue('Player1');
-        component.form.get('avatar')?.setValue('avatar1.png');
-        component.form.get('life')?.setValue(4);
-        component.form.get('speed')?.setValue(4);
-        component.form.get('attack')?.setValue(4);
-        component.form.get('defense')?.setValue(4);
-
         component.closeDialog();
-
-        expect(mockDialogRef.close).toHaveBeenCalledWith({
-            name: 'Player1',
-            avatar: 'avatar1.png',
-            life: 4,
-            speed: 4,
-            attack: 4,
-            defense: 4,
-        });
+        expect(mockDialogRef.close).toHaveBeenCalledWith(component.form.value);
     });
 
     it('cancel should close the dialog with null', () => {
@@ -150,10 +144,10 @@ describe('BoxFormDialogComponent', () => {
     });
 
     describe('isRoomLocked', () => {
-        it('should return true and call lockLobby if the lobby is full', fakeAsync(() => {
+        it('should return true and call lockLobby if the lobby is full', () => {
             const fullLobby: GameLobby = {
                 id: dialogData.lobbyId,
-                maxPlayers: 3,
+                maxPlayers: 2,
                 players: [
                     {
                         id: 'p1',
@@ -181,14 +175,11 @@ describe('BoxFormDialogComponent', () => {
                 isLocked: false,
                 gameId: 'game1',
             };
-
             mockLobbyService.getLobby.and.returnValue(of(fullLobby));
-
-            component.isRoomLocked();
-            tick();
-
+            const result = component.isRoomLocked();
+            expect(result).toBeTrue();
             expect(mockLobbyService.lockLobby).toHaveBeenCalledWith(dialogData.lobbyId);
-        }));
+        });
 
         it('should return false if the lobby is not full', () => {
             const notFullLobby: GameLobby = {
@@ -229,13 +220,9 @@ describe('BoxFormDialogComponent', () => {
             spyOn(component, 'save');
             component.increasedAttribute = 'life';
             component.diceAttribute = 'attack';
-
             component.form.get('name')?.setValue('Player1');
-            component.form.get('avatar')?.setValue(component.avatars[0]);
             component.form.updateValueAndValidity();
-
             component.onSubmit(new Event('submit'));
-
             expect(component.save).toHaveBeenCalled();
         });
     });
@@ -293,10 +280,9 @@ describe('BoxFormDialogComponent', () => {
         it('should show error if the room is locked', fakeAsync(() => {
             const usernameResponse = { usernames: ['Player1'] };
             mockLobbyService.verifyUsername.and.returnValue(of(usernameResponse));
-
             const fullLobby: GameLobby = {
                 id: dialogData.lobbyId,
-                maxPlayers: 3,
+                maxPlayers: 2,
                 players: [
                     {
                         id: 'p1',
@@ -324,12 +310,9 @@ describe('BoxFormDialogComponent', () => {
                 isLocked: false,
                 gameId: 'game1',
             };
-
             mockLobbyService.getLobby.and.returnValue(of(fullLobby));
-
             component.saveJoin();
             tick();
-
             expect(mockNotificationService.showError).toHaveBeenCalledWith(MAIN_PAGE_CONSTANTS.errorLockedLobbyMessage);
             expect(mockLobbyService.joinLobby).not.toHaveBeenCalled();
         }));

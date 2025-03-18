@@ -13,9 +13,4 @@ export enum GameEvents {
     FleeFailure = 'fleeFailure',
     AttackEnd = 'attackEnd',
     ChangedSpawn = 'changedSpawnPoint',
-    StartCombat = 'startCombat',
-    CombatEnded = 'combatEnded',
-    AttackResult = 'attackResult',
-    CombatUpdate = 'combatUpdate',
-    CombatPlayersUpdate = 'combatPlayersUpdate',
 }

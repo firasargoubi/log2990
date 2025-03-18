@@ -23,9 +23,8 @@ import { Observable, Subscription } from 'rxjs';
 export class CreatePageComponent implements OnInit {
     @Input() games$: Observable<Game[]> = new Observable<Game[]>();
     games: Game[] = [];
-    currentGame: Game;
+    currentGame: Game | null = null;
     lobbyId: string = '';
-
     private notificationService = inject(NotificationService);
     private dialog = inject(MatDialog);
     private gameService = inject(GameService);
@@ -38,30 +37,29 @@ export class CreatePageComponent implements OnInit {
 
     onBoxClick(game: Game): void {
         this.currentGame = game;
-
+        console.log('GAme', this.currentGame.name);
         this.gameService.verifyGameAccessible(this.currentGame.id).subscribe({
             next: (isAccessible) => {
-                if (!isAccessible) {
+                if (isAccessible) {
+                    if (!this.lobbyId) {
+                        this.lobbyService.createLobby(this.currentGame || game);
+                        this.subscriptions.push(
+                            this.lobbyService.onLobbyCreated().subscribe({
+                                next: (data) => {
+                                    this.lobbyId = data.lobby.id;
+                                    this.openBoxFormDialog(this.currentGame || game);
+                                },
+                                error: (err) => {
+                                    this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorLobbyCreation + ' ' + err);
+                                },
+                            }),
+                        );
+                    } else {
+                        this.openBoxFormDialog(this.currentGame || game);
+                    }
+                } else {
                     this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorGameDeleted);
                     this.loadGames();
-                    return;
-                }
-
-                if (!this.lobbyId) {
-                    this.lobbyService.createLobby(this.currentGame);
-                    this.subscriptions.push(
-                        this.lobbyService.onLobbyCreated().subscribe({
-                            next: (data) => {
-                                this.lobbyId = data.lobby.id;
-                                this.openBoxFormDialog(this.currentGame);
-                            },
-                            error: (err) => {
-                                this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorLobbyCreation + ' ' + err);
-                            },
-                        }),
-                    );
-                } else {
-                    this.openBoxFormDialog(this.currentGame);
                 }
             },
             error: () => {
@@ -89,6 +87,7 @@ export class CreatePageComponent implements OnInit {
                 if (result) {
                     this.loadGames();
                 }
+                this.currentGame = null;
             },
         });
     }
@@ -101,10 +100,6 @@ export class CreatePageComponent implements OnInit {
                     mode: this.translateMode(game.mode),
                     mapSize: this.translateSize(game.mapSize),
                 }));
-
-                if (this.games.length > 0) {
-                    this.currentGame = this.games[0];
-                }
             },
             error: () => this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorLoadingGames),
         });
