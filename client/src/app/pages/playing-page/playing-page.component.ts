@@ -7,8 +7,7 @@ import { GameBoardComponent } from '@app/components/game-board/game-board.compon
 import { GameInfoComponent } from '@app/components/game-info/game-info.component';
 import { InventoryComponent } from '@app/components/inventory/inventory.component';
 import { MessagesComponent } from '@app/components/messages/messages.component';
-import { PlayerListComponent } from '@app/components/player-list/player-list.component';
-import { MapSize } from '@app/Consts/app.constants';
+import { DELAY_COUNTDOWN, MAP_SIZES, MapSize, PLAYING_PAGE, PLAYING_PAGE_DESCRIPTION } from '@app/Consts/app.constants';
 import { PageUrl } from '@app/Consts/route-constants';
 import { ActionService } from '@app/services/action.service';
 import { LobbyService } from '@app/services/lobby.service';
@@ -22,16 +21,7 @@ import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-playing-page',
-    imports: [
-        CommonModule,
-        CountdownPlayerComponent,
-        InventoryComponent,
-        GameInfoComponent,
-        MessagesComponent,
-        GameBoardComponent,
-        CombatComponent,
-        PlayerListComponent,
-    ],
+    imports: [CommonModule, CountdownPlayerComponent, InventoryComponent, GameInfoComponent, MessagesComponent, GameBoardComponent, CombatComponent],
     standalone: true,
     templateUrl: './playing-page.component.html',
     styleUrls: ['./playing-page.component.scss'],
@@ -50,7 +40,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     combatSubscription: Subscription | null = null;
     lobby: GameLobby;
     interval: number | null = null;
-    private remainingTime: number = 0;
+    remainingTime: number = 0;
     private debug: boolean = false;
     private lobbyService = inject(LobbyService);
     private actionService = inject(ActionService);
@@ -65,7 +55,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
     @HostListener('document:keydown', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
-        if (event.key === 'd' && this.currentPlayer.isHost) {
+        if (event.key === PLAYING_PAGE.debugKey && this.currentPlayer.isHost) {
             this.setDebugMode();
         }
     }
@@ -79,7 +69,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
                 this.getCurrentPlayer();
             } else {
-                this.router.navigate(['/home', { replaceUrl: true }]);
+                this.router.navigate([PageUrl.Home, { replaceUrl: true }]);
             }
         });
         this.lobbyService.onTileUpdate().subscribe({
@@ -117,14 +107,13 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.gameState.currentPlayerActionPoints = 1;
         }
     }
+
     onActionRequest(tile: Tile) {
-        if (!this.gameState || !this.currentPlayer) {
-            return;
-        }
-        if (this.gameState.currentPlayer !== this.currentPlayer.id) {
-            return;
-        }
-        if (this.gameState.animation) {
+        const isInvalidState = !this.gameState || !this.currentPlayer;
+        const isNotCurrentPlayerTurn = this.gameState.currentPlayer !== this.currentPlayer.id;
+        const isAnimationActive = this.gameState.animation;
+
+        if (isInvalidState || isNotCurrentPlayerTurn || isAnimationActive) {
             return;
         }
 
@@ -170,22 +159,110 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                         clearInterval(this.interval);
                     }
                 }
-            }, 1000);
+            }, DELAY_COUNTDOWN);
         }
     }
-
-    updateTimerForAllPlayers(): void {
-        if (this.currentPlayer) {
-            this.lobbyService.updateCombatTime(this.remainingTime);
-        }
+    updateTimerForAllPlayers() {
+        throw new Error('Method not implemented.');
     }
-
     ngOnDestroy() {
         this.abandon();
         this.subscriptions.forEach((sub) => sub.unsubscribe());
     }
 
-    setupGameListeners() {
+    getCurrentPlayer() {
+        const currentPlayer = this.lobbyService.getCurrentPlayer();
+
+        if (!currentPlayer) {
+            this.router.navigate([PageUrl.Home], { replaceUrl: true });
+            return;
+        }
+        this.currentPlayer = currentPlayer;
+        const socketId = this.lobbyService.getSocketId();
+        if (this.currentPlayer.id !== socketId) {
+            this.currentPlayer.id = socketId;
+        }
+
+        return;
+    }
+
+    onMoveRequest(coordinates: Coordinates[]) {
+        if (!this.gameState || !this.currentPlayer) {
+            return;
+        }
+
+        if (this.gameState.currentPlayer !== this.currentPlayer.id) {
+            return;
+        }
+
+        this.lobbyService.requestMovement(this.lobbyId, coordinates);
+    }
+
+    onEndTurn() {
+        if (!this.gameState || !this.currentPlayer) {
+            return;
+        }
+
+        if (this.gameState.currentPlayer !== this.currentPlayer.id) {
+            return;
+        }
+
+        this.lobbyService.requestEndTurn(this.lobbyId);
+    }
+
+    getGameName(): string {
+        return PLAYING_PAGE_DESCRIPTION.gameName;
+    }
+
+    getMapSize(): string {
+        if (!this.gameState) return 'Unknown';
+        const size = this.gameState.board.length;
+        if (size <= MapSize.SMALL) return MAP_SIZES.small;
+        if (size <= MapSize.MEDIUM) return MAP_SIZES.medium;
+        return MAP_SIZES.large;
+    }
+
+    getPlayerCount(): number {
+        return this.gameState?.players.length || 0;
+    }
+
+    getActivePlayer(): string {
+        if (!this.gameState) return 'Unknown';
+        const player = this.gameState.players.find((p) => p.id === this.gameState?.currentPlayer);
+        return player?.name || 'Unknown';
+    }
+
+    getPlayers(): Player[] {
+        return this.gameState?.players || [];
+    }
+
+    isCurrentPlayerTurn(): boolean {
+        if (!this.gameState || !this.currentPlayer) {
+            return false;
+        }
+
+        const result = this.gameState.currentPlayer === this.currentPlayer.id;
+        return result;
+    }
+
+    onRemovePlayer(): void {
+        this.remove.emit(this.player.id);
+    }
+    abandon() {
+        if (!this.gameState || !this.currentPlayer) {
+            this.router.navigate([PageUrl.Home], { replaceUrl: true });
+        }
+        const isAnimated = this.gameState.animation || false;
+        if (isAnimated) {
+            return;
+        }
+        if (this.lobbyId && this.currentPlayer) {
+            this.lobbyService.disconnect();
+            this.router.navigate([PageUrl.Home], { replaceUrl: true });
+        }
+    }
+
+    private setupGameListeners() {
         this.subscriptions.push(
             this.lobbyService.onGameStarted().subscribe((data) => {
                 this.gameState = data.gameState;
@@ -247,97 +324,18 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         );
     }
 
-    notifyPlayerTurn(playerId: string) {
+    private notifyPlayerTurn(playerId: string) {
         if (this.currentPlayer && playerId === this.currentPlayer.id) {
-            this.notificationService.showSuccess("C'est votre tour!");
+            this.notificationService.showSuccess(PLAYING_PAGE_DESCRIPTION.yourTurn);
         } else {
             const player = this.gameState?.players.find((p) => p.id === playerId);
             if (player) {
-                this.notificationService.showInfo(`C'est le tour de ${player.name}`);
+                this.notificationService.showInfo(`${PLAYING_PAGE_DESCRIPTION.turnOff}${player.name}`);
             }
         }
     }
 
-    onMoveRequest(coordinates: Coordinates[]) {
-        if (!this.gameState || !this.currentPlayer) {
-            return;
-        }
-
-        if (this.gameState.currentPlayer !== this.currentPlayer.id) {
-            return;
-        }
-
-        this.lobbyService.requestMovement(this.lobbyId, coordinates);
-    }
-
-    onEndTurn() {
-        if (!this.gameState || !this.currentPlayer) {
-            return;
-        }
-
-        if (this.gameState.currentPlayer !== this.currentPlayer.id) {
-            return;
-        }
-
-        this.lobbyService.requestEndTurn(this.lobbyId);
-    }
-
-    getGameName(): string {
-        return 'Forest Adventure';
-    }
-
-    getMapSize(): string {
-        if (!this.gameState) return 'Unknown';
-        const size = this.gameState.board.length;
-        if (size <= MapSize.SMALL) return 'Small';
-        if (size <= MapSize.MEDIUM) return 'Medium';
-        return 'Large';
-    }
-
-    getPlayerCount(): number {
-        return this.gameState?.players.length || 0;
-    }
-
-    getActivePlayer(): string {
-        if (!this.gameState) return 'Unknown';
-        const player = this.gameState.players.find((p) => p.id === this.gameState?.currentPlayer);
-        return player?.name || 'Unknown';
-    }
-
-    getPlayers(): Player[] {
-        return this.gameState?.players || [];
-    }
-
-    isCurrentPlayerTurn(): boolean {
-        if (!this.gameState || !this.currentPlayer) {
-            return false;
-        }
-
-        const result = this.gameState.currentPlayer === this.currentPlayer.id;
-        return result;
-    }
-
-    onRemovePlayer(): void {
-        this.remove.emit(this.player.id);
-    }
-    abandon() {
-        if (!this.gameState || !this.currentPlayer) {
-            this.router.navigate(['/home'], { replaceUrl: true });
-        }
-        const isAnimated = this.gameState.animation || false;
-        if (isAnimated) {
-            return;
-        }
-        if (this.lobbyId && this.currentPlayer) {
-            this.lobbyService.disconnect();
-            this.router.navigate(['/home'], { replaceUrl: true });
-        }
-    }
-    onInfoSent(details: string) {
-        console.log(details);
-    }
-
-    setDebugMode() {
+    private setDebugMode() {
         this.debug = !this.debug;
         this.lobbyService.setDebug(this.lobbyId, this.debug);
     }

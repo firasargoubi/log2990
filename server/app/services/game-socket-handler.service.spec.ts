@@ -8,11 +8,12 @@ import { BoardService } from '@app/services/board.service';
 import { GameSocketHandlerService, isTileValid, isWithinBounds } from '@app/services/game-socket-handler.service';
 import { LobbySocketHandlerService } from '@app/services/lobby-socket-handler.service';
 import { GameLobby } from '@common/game-lobby';
+import { GameEvents } from '@common/events'; // Ensure this path is correct
 import { GameState } from '@common/game-state';
 import { TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { expect } from 'chai';
-import { createSandbox, SinonFakeTimers, SinonSandbox, SinonStub, useFakeTimers } from 'sinon';
+import { createSandbox, match, SinonFakeTimers, SinonSandbox, SinonStub, useFakeTimers } from 'sinon';
 
 describe('GameSocketHandlerService', () => {
     let sandbox: SinonSandbox;
@@ -820,5 +821,221 @@ describe('GameSocketHandlerService', () => {
     it('should return false in isWithinBounds if tile is out of bounds', () => {
         const result = isWithinBounds({ x: 5, y: 0 }, [[0]]);
         expect(result).to.be.false;
+    });
+    it('should emit error if gameState not found in handleTeleport', () => {
+        service.handleTeleport(socket, 'unknownLobby', { x: 1, y: 1 });
+        expect(emitStub.calledWith('error', 'Game not found.')).to.be.true;
+    });
+
+    it('should handle teleport and emit boardModified', () => {
+        const gameState: GameState = {
+            board: [[TileTypes.Floor]],
+        } as any;
+        gameStates.set('lobby1', gameState);
+
+        const updatedGameState: GameState = {
+            board: [[TileTypes.Floor]],
+        } as any;
+        (boardService.handleTeleport as any).returns(updatedGameState);
+
+        service.handleTeleport(socket, 'lobby1', { x: 1, y: 1 });
+
+        expect(gameStates.get('lobby1')).to.deep.equal(updatedGameState);
+        expect(ioToStub.calledWith('lobby1')).to.be.true;
+        const emit = ioToStub.returnValues[0].emit;
+        expect(emit.calledWith('boardModified', { gameState: updatedGameState })).to.be.true;
+    });
+
+    it('should emit error if handleTeleport throws an error', () => {
+        const gameState: GameState = {
+            board: [[TileTypes.Floor]],
+        } as any;
+        gameStates.set('lobby1', gameState);
+
+        (boardService.handleTeleport as any).throws(new Error('Teleport error'));
+
+        service.handleTeleport(socket, 'lobby1', { x: 1, y: 1 });
+
+        expect(emitStub.calledWith('error', 'Teleport error: Teleport error')).to.be.true;
+    });
+    it('should set debug mode to true and emit boardModified', () => {
+        const gameState: GameState = { debug: false } as any;
+        gameStates.set('lobby1', gameState);
+
+        service.handleSetDebug(socket, 'lobby1', true);
+
+        const updatedGameState = gameStates.get('lobby1');
+        expect(updatedGameState!.debug).to.equal(true);
+        expect(ioToStub.calledWith('lobby1')).to.be.true;
+        const emit = ioToStub.returnValues[0].emit;
+        expect(emit.calledWith('boardModified', { gameState: updatedGameState })).to.be.true;
+    });
+
+    it('should set debug mode to false and emit boardModified', () => {
+        const gameState: GameState = { debug: true } as any;
+        gameStates.set('lobby1', gameState);
+
+        service.handleSetDebug(socket, 'lobby1', false);
+
+        const updatedGameState = gameStates.get('lobby1');
+        expect(updatedGameState!.debug).to.equal(false);
+        expect(ioToStub.calledWith('lobby1')).to.be.true;
+        const emit = ioToStub.returnValues[0].emit;
+        expect(emit.calledWith('boardModified', { gameState: updatedGameState })).to.be.true;
+    });
+
+    it('should emit error if gameState not found in handleSetDebug', () => {
+        service.handleSetDebug(socket, 'unknownLobby', true);
+        expect(emitStub.calledWith('error', 'Game not found.')).to.be.true;
+    });
+    it('should not proceed if attacker is not found in gameState', () => {
+        const attacker = { id: 'p1', life: 10, attack: 5 } as Player;
+        const defender = { id: 'p2', life: 10, defense: 3 } as Player;
+        gameStates.set('lobby1', { players: [defender], debug: false } as GameState);
+
+        service.handleAttackAction('lobby1', attacker, defender);
+
+        expect(ioToStub.calledWith('lobby1')).to.be.false;
+    });
+
+    it('should not proceed if defender is not found in gameState', () => {
+        const attacker = { id: 'p1', life: 10, attack: 5 } as Player;
+        const defender = { id: 'p2', life: 10, defense: 3 } as Player;
+        gameStates.set('lobby1', { players: [attacker], debug: false } as GameState);
+
+        service.handleAttackAction('lobby1', attacker, defender);
+
+        expect(ioToStub.calledWith('lobby1')).to.be.false;
+    });
+
+    it('should calculate damage and reduce defender life', () => {
+        const attacker = { id: 'p1', life: 10, attack: 5 } as Player;
+        const defender = { id: 'p2', life: 10, defense: 3 } as Player;
+        const gameState = { players: [attacker, defender], debug: false } as GameState;
+        gameStates.set('lobby1', gameState);
+
+        sandbox.stub(Math, 'random').returns(0.5);
+
+        service.handleAttackAction('lobby1', attacker, defender);
+
+        expect(defender.life).to.be.lessThan(10);
+        expect(ioToStub.calledWith('lobby1')).to.be.true;
+        const emit = ioToStub.returnValues[0].emit;
+        expect(emit.calledWith('attackResult')).to.be.true;
+    });
+
+    it('should handle defeat if defender life is reduced to 0 or below', () => {
+        const attacker = { id: 'p1', life: 10, attack: 5 } as Player;
+        const defender = { id: 'p2', life: 1, defense: 0 } as Player;
+        const gameState = { players: [attacker, defender], debug: false } as GameState;
+        gameStates.set('lobby1', gameState);
+
+        sandbox.stub(Math, 'random').returns(1);
+        const handleDefeatSpy = sandbox.spy(service, 'handleDefeat');
+
+        service.handleAttackAction('lobby1', attacker, defender);
+
+        expect(handleDefeatSpy.calledOnceWith(defender, 'lobby1')).to.be.true;
+    });
+
+    it('should apply debug mode and use fixed attack and defense values', () => {
+        const attacker = { id: 'p1', life: 10, attack: 5 } as Player;
+        const defender = { id: 'p2', life: 10, defense: 3 } as Player;
+        const gameState = { players: [attacker, defender], debug: true } as GameState;
+        gameStates.set('lobby1', gameState);
+
+        service.handleAttackAction('lobby1', attacker, defender);
+
+        const emit = ioToStub.returnValues[0].emit;
+        expect(
+            emit.calledWith(
+                'attackResult',
+                match({
+                    attackRoll: 5,
+                    defenseRoll: 3,
+                    damage: 2,
+                }),
+            ),
+        ).to.be.true;
+    });
+
+    it('should not reduce defender life if damage is 0', () => {
+        const attacker = { id: 'p1', life: 10, attack: 1 } as Player;
+        const defender = { id: 'p2', life: 10, defense: 5 } as Player;
+        const gameState = { players: [attacker, defender], debug: false } as GameState;
+        gameStates.set('lobby1', gameState);
+
+        sandbox.stub(Math, 'random').returns(0);
+
+        service.handleAttackAction('lobby1', attacker, defender);
+
+        expect(defender.life).to.equal(10);
+        const emit = ioToStub.returnValues[0].emit;
+        expect(emit.calledWith('attackResult')).to.be.true;
+    });
+    it('should emit FleeFailure if amountEscape is greater than or equal to 2', () => {
+        const player = { id: 'p1', amountEscape: 2 } as Player;
+        const gameState = { players: [player] } as GameState;
+        gameStates.set('lobby1', gameState);
+
+        service.handleFlee('lobby1', player);
+
+        expect(ioToStub.calledWith('lobby1')).to.be.true;
+        const emit = ioToStub.returnValues[0].emit;
+        expect(emit.calledWith(GameEvents.FleeFailure, { fleeingPlayer: player })).to.be.true;
+    });
+    it('should increment amountEscape and emit FleeFailure if flee fails', () => {
+        const player = { id: 'p1', amountEscape: 1 } as Player;
+        const gameState = { players: [player] } as GameState;
+        gameStates.set('lobby1', gameState);
+
+        sandbox.stub(Math, 'random').returns(0.1); // Ensure failure
+        service.handleFlee('lobby1', player);
+
+        expect(player.amountEscape).to.equal(2);
+        expect(ioToStub.calledWith('lobby1')).to.be.true;
+        const emit = ioToStub.returnValues[0].emit;
+        expect(emit.calledWith(GameEvents.FleeFailure, { fleeingPlayer: player })).to.be.true;
+    });
+
+    it('should emit FleeSuccess and update gameState if flee succeeds', () => {
+        const player = { id: 'p1', amountEscape: 0 } as Player;
+        const gameState = {
+            players: [player],
+            currentPlayerActionPoints: 1,
+        } as GameState;
+        gameStates.set('lobby1', gameState);
+
+        sandbox.stub(Math, 'random').returns(0.01); // Ensure success
+        service.handleFlee('lobby1', player);
+
+        expect(player.amountEscape).to.equal(1);
+        expect(gameState.currentPlayerActionPoints).to.equal(0);
+        expect(ioToStub.calledWith('lobby1')).to.be.true;
+        const emit = ioToStub.returnValues[0].emit;
+        expect(emit.calledWith(GameEvents.FleeSuccess, { fleeingPlayer: player, isSuccessful: true })).to.be.true;
+        expect(emit.calledWith(GameEvents.BoardModified, { gameState })).to.be.true;
+    });
+
+    it('should initialize amountEscape to 0 if undefined and emit FleeFailure on failure', () => {
+        const player = { id: 'p1' } as Player;
+        const gameState = { players: [player] } as GameState;
+        gameStates.set('lobby1', gameState);
+
+        sandbox.stub(Math, 'random').returns(0.1); // Ensure failure
+        service.handleFlee('lobby1', player);
+
+        expect(player.amountEscape).to.equal(1);
+        expect(ioToStub.calledWith('lobby1')).to.be.true;
+        const emit = ioToStub.returnValues[0].emit;
+        expect(emit.calledWith(GameEvents.FleeFailure, { fleeingPlayer: player })).to.be.true;
+    });
+
+    it('should not proceed if gameState is not found', () => {
+        const player = { id: 'p1', amountEscape: 0 } as Player;
+
+        service.handleFlee('unknownLobby', player);
+
+        expect(ioToStub.called).to.be.false;
     });
 });
