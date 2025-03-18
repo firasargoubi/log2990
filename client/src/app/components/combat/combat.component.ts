@@ -20,6 +20,7 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
     playerTurn: string = '';
     countDown: number = 0;
     canAct: boolean = false;
+    canEscape: boolean = true;
     isFleeSuccess: boolean = false;
     combatEnded: boolean = false;
     attackDice: number;
@@ -101,15 +102,18 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
     onFlee() {
         if (!this.gameState || !this.canAct) return;
 
-        // Initialize amountEscape if undefined
-        if (this.currentPlayer.amountEscape === undefined) {
-            this.currentPlayer.amountEscape = 0;
+        this.currentPlayer.amountEscape = this.currentPlayer.amountEscape ?? 0;
+
+        if (this.currentPlayer.amountEscape >= 2) {
+            this.canEscape = false;
         }
 
         if (this.currentPlayer.amountEscape >= 2) {
             this.notificationService.showInfo('Vous avez déjà tenté de fuir 2 fois, vous ne pouvez plus fuir.');
             return;
         }
+
+        // Arrêter le compte à rebours et tenter de fuir
         this.stopCombatCountdown();
         this.lobbyService.flee(this.gameState.id, this.currentPlayer, false);
     }
@@ -137,6 +141,8 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
         );
         this.subscriptions.push(
             this.lobbyService.onStartCombat().subscribe((data) => {
+                this.currentPlayer.amountEscape = 0;
+                this.canEscape = true;
                 if (this.currentPlayer.id !== data.firstPlayer.id) {
                     this.playerTurn = data.firstPlayer.id;
                     this.isPlayerTurn = false;
@@ -148,7 +154,7 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
         );
         this.subscriptions.push(
             this.lobbyService.onGameEnded().subscribe(() => {
-                this.notificationService.showInfo(`La partie est terminée!`);
+                this.notificationService.showInfo('La partie est terminée!');
             }),
         );
 
@@ -156,6 +162,7 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
             this.lobbyService.onFleeFailure().subscribe((data) => {
                 if (this.currentPlayer.id === data.fleeingPlayer.id) {
                     this.currentPlayer.amountEscape = data.fleeingPlayer.amountEscape;
+                    this.canEscape = (this.currentPlayer.amountEscape ?? 0) < 2;
                 }
                 this.countDown = 5;
                 this.canAct = data.fleeingPlayer.id !== this.currentPlayer.id;

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, inject, HostListener } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CombatComponent } from '@app/components/combat/combat.component';
 import { CountdownPlayerComponent } from '@app/components/countdown-player/countdown-player.component';
@@ -61,7 +61,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     private notificationService = inject(NotificationService);
     private subscriptions: Subscription[] = [];
 
-
     get isAnimated(): boolean {
         return this.gameState.animation || false;
     }
@@ -70,7 +69,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     handleKeyboardEvent(event: KeyboardEvent) {
         if (event.key === 'd' && this.currentPlayer.isHost) {
             this.setDebugMode();
-            console.log("DEBUG YIPEE");
         }
     }
 
@@ -104,7 +102,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
         this.lobbyService.onInteraction().subscribe((data) => {
             this.isInCombat = data.isInCombat;
-            console.log('combat?', this.isInCombat);
             this.lobbyService.updateCombatStatus(this.isInCombat);
         });
 
@@ -117,7 +114,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.lobbyService.onGameEnded().subscribe((data) => {
             this.isInCombat = false;
             this.lobbyService.updateCombatStatus(this.isInCombat);
-            console.log('Winner: ', data.winner);
         });
 
         if (this.gameState) {
@@ -212,7 +208,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.lobbyService.onTurnStarted().subscribe((data) => {
                 this.gameState = data.gameState;
                 this.syncCurrentPlayerWithGameState();
-                console.log('onGameStarted', this.gameState);
                 this.notifyPlayerTurn(data.currentPlayer);
             }),
 
@@ -243,7 +238,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
             this.lobbyService.onBoardChanged().subscribe((data) => {
                 this.gameState = data.gameState;
-                console.log('onBoardChanged', this.gameState);
             }),
 
             this.lobbyService.onFleeSuccess().subscribe((data) => {
@@ -381,13 +375,13 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.router.navigate(['/home'], { replaceUrl: true });
         }
     }
-    onInfoSent(details: string) {
-        console.log(details);
-    }
-
 
     setDebugMode() {
         this.debug = !this.debug;
         this.lobbyService.setDebug(this.lobbyId, this.debug);
+    }
+
+    onInfoSent(details: string) {
+        console.log(details);
     }
 }

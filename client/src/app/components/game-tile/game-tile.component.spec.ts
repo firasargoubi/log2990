@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { GAME_IMAGES, ObjectsTypes, TileTypes } from '@app/Consts/app.constants';
+import { GAME_IMAGES } from '@app/Consts/app.constants';
+import { ObjectsTypes, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
 import { GameTileComponent } from './game-tile.component';
@@ -17,7 +18,6 @@ describe('GameTileComponent', () => {
         fixture = TestBed.createComponent(GameTileComponent);
         component = fixture.componentInstance;
 
-        // Set basic tile properties
         component.tile = {
             type: TileTypes.Grass,
             object: 0,
@@ -41,7 +41,7 @@ describe('GameTileComponent', () => {
             { type: TileTypes.DoorClosed, expectedImage: GAME_IMAGES.doorClosed },
             { type: TileTypes.DoorOpen, expectedImage: GAME_IMAGES.doorOpen },
             { type: TileTypes.Wall, expectedImage: GAME_IMAGES.wall },
-            { type: 999, expectedImage: GAME_IMAGES.default }, // Invalid type should show default
+            { type: 999, expectedImage: GAME_IMAGES.default },
         ];
 
         testCases.forEach((testCase) => {
@@ -56,7 +56,6 @@ describe('GameTileComponent', () => {
     });
 
     it('should render the correct object image based on object type', () => {
-        // First test with no object (should return null)
         component.tile = { ...component.tile, object: 0 };
         fixture.detectChanges();
         expect(component.getObjectImage()).toBeNull();
@@ -70,18 +69,16 @@ describe('GameTileComponent', () => {
             { object: ObjectsTypes.JUICE, expectedImage: GAME_IMAGES.berryJuice },
             { object: ObjectsTypes.SPAWN, expectedImage: GAME_IMAGES.vortex },
             { object: ObjectsTypes.RANDOM, expectedImage: GAME_IMAGES.gnome },
-            { object: 999, expectedImage: GAME_IMAGES.undefined }, // Invalid type should show undefined
+            { object: 999, expectedImage: GAME_IMAGES.undefined },
         ];
 
         testCases.forEach((testCase) => {
             if (testCase.object > 0) {
-                // Skip no object case as we tested it above
                 component.tile = { ...component.tile, object: testCase.object };
                 fixture.detectChanges();
 
                 expect(component.getObjectImage()).toBe(testCase.expectedImage);
 
-                // Check if object image exists
                 const objectImgElement = fixture.debugElement.query(By.css('.object-image'));
                 expect(objectImgElement).toBeTruthy();
                 expect(objectImgElement.nativeElement.src).toContain(testCase.expectedImage.replace('assets/', ''));
@@ -131,11 +128,9 @@ describe('GameTileComponent', () => {
 
         fixture.detectChanges();
 
-        // Should now have a player marker
         const playerMarker = fixture.debugElement.query(By.css('.player-marker'));
         expect(playerMarker).toBeTruthy();
 
-        // Should have the correct avatar
         const avatarImg = playerMarker.query(By.css('.avatar-image'));
         expect(avatarImg.nativeElement.src).toContain(mockPlayer.avatar.replace('assets/', ''));
     });
@@ -147,7 +142,6 @@ describe('GameTileComponent', () => {
             avatar: 'assets/avatar/1.jpg',
         } as Player;
 
-        // Test current player
         component.player = {
             player: mockPlayer,
             isCurrentPlayer: true,
@@ -168,7 +162,6 @@ describe('GameTileComponent', () => {
             avatar: 'assets/avatar/1.jpg',
         } as Player;
 
-        // Test local player
         component.player = {
             player: mockPlayer,
             isCurrentPlayer: false,
@@ -189,7 +182,6 @@ describe('GameTileComponent', () => {
             avatar: 'assets/avatar/1.jpg',
         } as Player;
 
-        // Test player who is both current and local
         component.player = {
             player: mockPlayer,
             isCurrentPlayer: true,
@@ -204,19 +196,16 @@ describe('GameTileComponent', () => {
     });
 
     it('should handle undefined tile gracefully', () => {
-        // Setting tile to undefined should not cause errors
         component.tile = undefined as unknown as Tile;
         fixture.detectChanges();
 
         expect(component.getTileImage()).toBe(GAME_IMAGES.default);
         expect(component.getObjectImage()).toBeNull();
 
-        // Should still be able to click
         const spy = spyOn(component.tileClick, 'emit');
         const tileElement = fixture.debugElement.query(By.css('.board-tile'));
         tileElement.triggerEventHandler('click', null);
 
-        // Will emit undefined but should not throw
         expect(spy).toHaveBeenCalled();
     });
 

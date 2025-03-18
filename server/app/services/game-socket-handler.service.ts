@@ -172,10 +172,20 @@ export class GameSocketHandlerService {
     startBattle(lobbyId: string, currentPlayer: Player, opponent: Player, time: number) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
-        this.combatTimes.set(lobbyId, time);
-        const currentIndex = gameState.players.findIndex((p) => p.id === currentPlayer.id);
+
+        currentPlayer.amountEscape = 0;
+        opponent.amountEscape = 0;
+        const currentPlayerIndex = gameState.players.findIndex((p) => p.id === currentPlayer.id);
         const opponentIndex = gameState.players.findIndex((p) => p.id === opponent.id);
-        const playerTurn = currentIndex < opponentIndex ? currentIndex : opponentIndex;
+        if (currentPlayerIndex !== -1) {
+            gameState.players[currentPlayerIndex].amountEscape = 0;
+        }
+        if (opponentIndex !== -1) {
+            gameState.players[opponentIndex].amountEscape = 0;
+        }
+
+        this.combatTimes.set(lobbyId, time);
+        const playerTurn = currentPlayerIndex < opponentIndex ? currentPlayerIndex : opponentIndex;
         const firstPlayer = gameState.players[playerTurn];
         this.io.to(currentPlayer.id).to(opponent.id).emit('startCombat', { firstPlayer });
     }
@@ -360,6 +370,12 @@ export class GameSocketHandlerService {
         }
 
         fleeingPlayer.amountEscape++;
+
+        const playerIndex = gameState.players.findIndex((p) => p.id === fleeingPlayer.id);
+        if (playerIndex !== -1) {
+            gameState.players[playerIndex].amountEscape = fleeingPlayer.amountEscape;
+        }
+
         const FLEE_RATE = 30;
         const fleeingChance = Math.random() * 100;
 
@@ -369,14 +385,12 @@ export class GameSocketHandlerService {
             return;
         }
 
-        const playerIndex = gameState.players.findIndex((p) => p.id === fleeingPlayer.id);
-        if (playerIndex !== -1) {
-            gameState.players[playerIndex] = fleeingPlayer;
-        }
         gameState.currentPlayerActionPoints = 0;
         this.gameStates.set(lobbyId, gameState);
         this.io.to(lobbyId).emit(GameEvents.FleeSuccess, { fleeingPlayer, isSuccessful });
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState });
+
+        this.updateCombatPlayers(lobbyId);
     }
 
     handleTerminateAttack(lobbyId: string) {

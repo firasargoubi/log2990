@@ -131,6 +131,7 @@ describe('CombatService', () => {
                 spawnPoints: [],
                 currentPlayerMovementPoints: 0,
                 currentPlayerActionPoints: 0,
+                debug: false,
             };
             const result = service.isOnIce(player, gameState);
             expect(result).toBeTrue();
@@ -174,6 +175,7 @@ describe('CombatService', () => {
                 spawnPoints: [],
                 currentPlayerMovementPoints: 0,
                 currentPlayerActionPoints: 0,
+                debug: false,
             };
             const result = service.isOnIce(player, gameState);
             expect(result).toBeFalse();
