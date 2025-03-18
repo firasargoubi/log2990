@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, Input, OnChanges, OnInit, OnDestroy } from '@angular/core';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { GameState } from '@common/game-state';
@@ -6,7 +6,6 @@ import { Player } from '@common/player';
 import { Subscription } from 'rxjs';
 
 const TO_SECONDS = 1000;
-
 @Component({
     selector: 'app-combat',
     templateUrl: './combat.component.html',
@@ -17,24 +16,24 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
     @Input() lobbyId!: string;
     @Input() gameState: GameState | null = null;
     @Input() opponent!: Player;
-
     isPlayerTurn: boolean = false;
     playerTurn: string = '';
     countDown: number = 0;
     canAct: boolean = false;
-    canEscape: boolean = true;
     isFleeSuccess: boolean = false;
     combatEnded: boolean = false;
+    attackDice: number;
+    defenceDice: number;
     attackDisplay: string = '';
     defenceDisplay: string = '';
-    damage: number = 0;
+    damage: number;
     isAttacker: boolean = false;
     combatState: 'waiting' | 'attacking' | 'defending' | 'ended' = 'waiting';
-
-    private readonly lobbyService = inject(LobbyService);
-    private readonly notificationService = inject(NotificationService);
+    private lobbyService = inject(LobbyService);
     private subscriptions: Subscription[] = [];
+
     private countDownInterval: ReturnType<typeof setInterval> | null = null;
+    private notificationService = inject(NotificationService);
 
     ngOnInit() {
         if (this.gameState) {
@@ -59,12 +58,15 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     startCountdown() {
-        this.stopCombatCountdown();
+        this.stopCombatCountdown(); // Always clear existing timer first
+
         this.countDownInterval = setInterval(() => {
             if (this.countDown > 0) {
                 this.countDown--;
+                // Emit current time to server to keep clients in sync
                 this.lobbyService.updateCombatTime(this.countDown);
             } else {
+                // Auto-attack or end turn when time runs out
                 if (this.canAct) {
                     this.onAttack();
                 }
@@ -84,14 +86,13 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
         if (this.gameState) {
             this.onAttack();
         }
-        this.stopCombatCountdown();
+        if (this.countDownInterval !== null) {
+            clearInterval(this.countDownInterval);
+            this.countDownInterval = null;
+        }
     }
 
     onAttack() {
-        this.currentPlayer.amountEscape = this.currentPlayer.amountEscape ?? 0;
-        if (this.currentPlayer.amountEscape >= 2) {
-            this.canEscape = false;
-        }
         if (!this.gameState || !this.canAct) return;
         this.stopCombatCountdown();
         this.lobbyService.attack(this.lobbyId, this.currentPlayer, this.opponent);
@@ -100,24 +101,24 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
     onFlee() {
         if (!this.gameState || !this.canAct) return;
 
-        this.currentPlayer.amountEscape = this.currentPlayer.amountEscape ?? 0;
-
-        if (this.currentPlayer.amountEscape >= 2) {
-            this.canEscape = false;
+        // Initialize amountEscape if undefined
+        if (this.currentPlayer.amountEscape === undefined) {
+            this.currentPlayer.amountEscape = 0;
         }
-        console.log('États des données actuelles (CurrentPLayer, canAct, canEscape): ', this.currentPlayer, this.canAct, this.canEscape);
 
         if (this.currentPlayer.amountEscape >= 2) {
             this.notificationService.showInfo('Vous avez déjà tenté de fuir 2 fois, vous ne pouvez plus fuir.');
             return;
         }
         this.stopCombatCountdown();
-        this.lobbyService.flee(this.gameState.id, this.currentPlayer, this.opponent);
+        this.lobbyService.flee(this.gameState.id, this.currentPlayer, false);
     }
 
     private setupSubscriptions() {
         this.subscriptions.push(
             this.lobbyService.onAttackResult().subscribe((data) => {
+                this.attackDice = data.attackRoll;
+                this.defenceDice = data.defenseRoll;
                 this.attackDisplay = `Résultat du dé d'attaque: ${data.attackRoll}`;
                 this.defenceDisplay = `Résultat du dé de défense: ${data.defenseRoll}`;
                 this.damage = data.damage;
@@ -134,7 +135,6 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
                 this.startCountdown();
             }),
         );
-
         this.subscriptions.push(
             this.lobbyService.onStartCombat().subscribe((data) => {
                 if (this.currentPlayer.id !== data.firstPlayer.id) {
@@ -146,10 +146,9 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
                 this.startCountdown();
             }),
         );
-
         this.subscriptions.push(
-            this.lobbyService.onCombatEnded().subscribe(() => {
-                this.notificationService.showInfo('Le combat est terminé!');
+            this.lobbyService.onGameEnded().subscribe(() => {
+                this.notificationService.showInfo(`La partie est terminée!`);
             }),
         );
 

@@ -336,25 +336,25 @@ export class LobbyService {
         });
     }
 
-    // getCombatUpdate(): Observable<{ players: Player[] }> {
-    //     return new Observable((observer) => {
-    //         this.socket.on('combatPlayersUpdate', (data) => {
-    //             observer.next(data); // Sends the updated player states
-    //         });
-    //     });
-    // }
+    getCombatUpdate(): Observable<{ players: Player[] }> {
+        return new Observable((observer) => {
+            this.socket.on('combatPlayersUpdate', (data) => {
+                observer.next(data); // Sends the updated player states
+            });
+        });
+    }
 
     performAttack(lobbyId: string, attackerId: string, defenderId: string): void {
         this.socket.emit('performAttack', { lobbyId, attackerId, defenderId });
     }
 
-    // getAttackResult(): Observable<unknown> {
-    //     return new Observable((observer) => {
-    //         this.socket.on('attackResult', (data: unknown) => {
-    //             observer.next(data);
-    //         });
-    //     });
-    // }
+    getAttackResult(): Observable<unknown> {
+        return new Observable((observer) => {
+            this.socket.on('attackResult', (data: unknown) => {
+                observer.next(data);
+            });
+        });
+    }
 
     updateCombatTime(timeLeft: number): void {
         this.socket.emit('combatUpdate', { timeLeft });
@@ -368,11 +368,13 @@ export class LobbyService {
         this.socket.emit('attack', { lobbyId, attacker, defender });
     }
 
-    flee(lobbyId: string, player: Player, opponent: Player): void {
-        this.socket.emit('flee', { lobbyId, player, opponent });
+    flee(lobbyId: string, player: Player, success: boolean): void {
+        this.socket.emit('flee', { lobbyId, player, success });
     }
 
     onAttackResult(): Observable<{
+        attackDice: number;
+        defenseDice: number;
         attackRoll: number;
         defenseRoll: number;
         attackerHP: number;
@@ -388,9 +390,9 @@ export class LobbyService {
         });
     }
 
-    // startCombat(lobbyId: string, currentPlayer: Player, opponent: Player, time: number): void {
-    //     this.socket.emit('startBattle', { lobbyId, currentPlayer, opponent, time });
-    // }
+    startCombat(lobbyId: string, currentPlayer: Player, opponent: Player, time: number): void {
+        this.socket.emit('startBattle', { lobbyId, currentPlayer, opponent, time });
+    }
 
     onStartCombat(): Observable<{ firstPlayer: Player }> {
         return new Observable((observer) => {
@@ -400,7 +402,7 @@ export class LobbyService {
         });
     }
 
-    onCombatEnded(): Observable<{ winner: Player }> {
+    onGameEnded(): Observable<{ winner: Player }> {
         return new Observable((observer) => {
             this.socket.on('combatEnded', (data) => {
                 observer.next(data);
@@ -408,6 +410,7 @@ export class LobbyService {
         });
     }
 
+    // Listen for successful flee events
     onFleeSuccess(): Observable<{ fleeingPlayer: Player }> {
         return new Observable((observer) => {
             this.socket.on('fleeSuccess', (data) => {
@@ -416,6 +419,7 @@ export class LobbyService {
         });
     }
 
+    // Listen for failed flee attempts
     onFleeFailure(): Observable<{ fleeingPlayer: Player }> {
         return new Observable((observer) => {
             this.socket.on('fleeFailure', (data) => {
