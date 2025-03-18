@@ -1,4 +1,4 @@
-import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-constants';
+import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
 import { Coordinates } from '@common/coordinates';
 import { GameEvents } from '@common/events';
 import { GameLobby } from '@common/game-lobby';
@@ -185,8 +185,7 @@ export class GameSocketHandlerService {
         }
 
         this.combatTimes.set(lobbyId, time);
-        const currentIndex = gameState.players.findIndex((p) => p.id === currentPlayer.id);
-        const playerTurn = currentIndex < opponentIndex ? currentIndex : opponentIndex;
+        const playerTurn = currentPlayerIndex < opponentIndex ? currentPlayerIndex : opponentIndex;
         const firstPlayer = gameState.players[playerTurn];
         this.io.to(currentPlayer.id).to(opponent.id).emit('startCombat', { firstPlayer });
     }
@@ -385,6 +384,7 @@ export class GameSocketHandlerService {
             this.io.to(lobbyId).emit('fleeFailure', { fleeingPlayer });
             return;
         }
+
         gameState.currentPlayerActionPoints = 0;
         this.gameStates.set(lobbyId, gameState);
         this.io.to(lobbyId).emit(GameEvents.FleeSuccess, { fleeingPlayer, isSuccessful });
