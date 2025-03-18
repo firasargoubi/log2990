@@ -626,12 +626,13 @@ describe('SocketService', () => {
 
         const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'startBattle')?.args[1];
         const data = {
+            lobbyId: 'lobby1',
             currentPlayer: { id: 'p1' },
             opponent: { id: 'p2' },
-            gameState: {} as any,
+            time: 5,
         };
         handler(data);
-        expect(gameHandler.startBattle.calledWith(socketMock, data.currentPlayer, data.opponent, data.gameState)).to.be.equal(true);
+        expect(gameHandler.startBattle.calledWith(data.lobbyId, data.currentPlayer, data.opponent, data.time)).to.be.equal(true);
     });
 
     it('should call handleChangeTurnEnd when changeTurnEndTimer event is received', () => {

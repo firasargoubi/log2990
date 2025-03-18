@@ -16,7 +16,7 @@ export enum ObjectsTypes {
     RANDOM = 7,
 }
 
-export { GameType, GameSize };
+export { GameSize, GameType };
 
 export enum TileTypes {
     Grass = 1,
@@ -53,6 +53,7 @@ export const WANTED_TILE_PERCENTAGE = 0.5;
 export const OBJECT_MULTIPLIER = 10;
 export const RIGHT_CLICK = 2;
 export const TIMEOUT_START_COMBAT = 1000;
+export const TURN_START_TIME = 30;
 
 export const GAME_CARD_CONSTANTS = {
     successDeleteMessage: 'Jeu supprimé avec succès',
@@ -188,3 +189,23 @@ export const OBJECTS_DESCRIPTION = {
     gnome: 'Ce petit gnome farceur a un cadeau pour vous. À vos risque et périls...',
     undefined: 'Objet inconnu',
 };
+
+export const PLAYING_PAGE = {
+    debugKey: 'd',
+    lobbyIdParam: 'id',
+    homeRoute: '/home',
+    defaultActionPoints: 1,
+};
+
+export const PLAYING_PAGE_DESCRIPTION = {
+    combatFlee: 'Vous avez fuit le combat.',
+    endCombat: 'a fini son combat',
+    gameName: 'Forest Adventure',
+    yourTurn: "C'est votre tour!",
+    turnOff: "C'est le tour de",
+    fleeYou: 'Vous avez fui le combat.',
+    hasFled: 'a fui le combat.',
+    hasFinishedCombat: 'a fini son combat',
+};
+
+export const DELAY_COUNTDOWN = 1000;
