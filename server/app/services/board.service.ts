@@ -141,6 +141,7 @@ export class BoardService {
 
         return this.handleTurn(gameState);
     }
+
     private updatePlayerMoves(gameState: GameState, playerIndex: number): GameState {
         const playerPosition = gameState.playerPositions[playerIndex];
         gameState.availableMoves = [];
