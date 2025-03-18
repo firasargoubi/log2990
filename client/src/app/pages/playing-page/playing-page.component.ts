@@ -376,18 +376,12 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         }
     }
 
-    isCurrentPlayerTurn(): boolean {
-        if (!this.gameState || !this.currentPlayer) {
-            return false;
-        }
-
-        const result = this.gameState.currentPlayer === this.currentPlayer.id;
-
-        return result;
-    }
-
     setDebugMode() {
         this.debug = !this.debug;
         this.lobbyService.setDebug(this.lobbyId, this.debug);
+    }
+
+    onInfoSent(details: string) {
+        console.log(details);
     }
 }

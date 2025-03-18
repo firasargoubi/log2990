@@ -185,9 +185,7 @@ export class GameSocketHandlerService {
         }
 
         this.combatTimes.set(lobbyId, time);
-        const currentIndex = gameState.players.findIndex((p) => p.id === currentPlayer.id);
-        const opponentIndex = gameState.players.findIndex((p) => p.id === opponent.id);
-        const playerTurn = currentIndex < opponentIndex ? currentIndex : opponentIndex;
+        const playerTurn = currentPlayerIndex < opponentIndex ? currentPlayerIndex : opponentIndex;
         const firstPlayer = gameState.players[playerTurn];
         this.io.to(currentPlayer.id).to(opponent.id).emit('startCombat', { firstPlayer });
     }
@@ -387,11 +385,6 @@ export class GameSocketHandlerService {
             return;
         }
 
-
-        const playerIndex = gameState.players.findIndex((p) => p.id === fleeingPlayer.id);
-        if (playerIndex !== -1) {
-            gameState.players[playerIndex] = fleeingPlayer;
-        }
         gameState.currentPlayerActionPoints = 0;
         this.gameStates.set(lobbyId, gameState);
         this.io.to(lobbyId).emit(GameEvents.FleeSuccess, { fleeingPlayer, isSuccessful });
