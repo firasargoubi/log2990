@@ -103,10 +103,10 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
         if (!this.gameState || !this.canAct) return;
 
         this.currentPlayer.amountEscape = this.currentPlayer.amountEscape ?? 0;
-
         if (this.currentPlayer.amountEscape >= 2) {
             this.canEscape = false;
             this.notificationService.showInfo('Vous avez déjà tenté de fuir 2 fois, vous ne pouvez plus fuir.');
+            this.countDown = 3;
             return;
         }
 
@@ -131,22 +131,24 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
                     this.opponent = data.attacker;
                     this.canAct = true;
                 }
-                this.countDown = 5;
+                this.countDown = 3;
+                if (this.canEscape) this.countDown = 5;
                 this.startCountdown();
             }),
 
             this.lobbyService.onStartCombat().subscribe((data) => {
-                // Réinitialiser le compteur de fuites pour le joueur actuel
                 this.currentPlayer.amountEscape = 0;
-                this.canEscape = true; // Réactiver le bouton "Fuire"
+                this.canEscape = true;
 
-                // Mettre à jour le tour du joueur
                 if (this.currentPlayer.id !== data.firstPlayer.id) {
                     this.playerTurn = data.firstPlayer.id;
                     this.isPlayerTurn = false;
+                    this.canAct = false;
+                } else {
+                    this.canAct = true;
                 }
+
                 this.countDown = 5;
-                this.canAct = data.firstPlayer.id === this.currentPlayer.id;
                 this.startCountdown();
             }),
 
@@ -158,10 +160,22 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
                 if (this.currentPlayer.id === data.fleeingPlayer.id) {
                     this.currentPlayer.amountEscape = data.fleeingPlayer.amountEscape;
                     this.canEscape = (this.currentPlayer.amountEscape ?? 0) < 2;
+
+                    if (!this.canEscape) {
+                        this.notificationService.showInfo('Vous avez déjà tenté de fuir 2 fois, vous ne pouvez plus fuir.');
+                    }
+
+                    this.canAct = false;
+                } else {
+                    this.canAct = true;
                 }
-                this.countDown = 5;
-                this.canAct = data.fleeingPlayer.id !== this.currentPlayer.id;
+                if (this.canEscape) {
+                    this.countDown = 5;
+                } else {
+                    this.countDown = 3;
+                }
                 this.startCountdown();
+
                 this.notificationService.showInfo(`${data.fleeingPlayer.name} n'a pas réussi à fuir le combat.`);
             }),
 
@@ -175,6 +189,9 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
                 }
                 if (updatedOpponent) {
                     this.opponent.amountEscape = updatedOpponent.amountEscape;
+                    if (this.gameState) {
+                        this.gameState.players = this.gameState.players.map((p) => (p.id === updatedOpponent.id ? updatedOpponent : p));
+                    }
                 }
             }),
         );

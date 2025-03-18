@@ -170,22 +170,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.subscriptions.forEach((sub) => sub.unsubscribe());
     }
 
-    getCurrentPlayer() {
-        const currentPlayer = this.lobbyService.getCurrentPlayer();
-
-        if (!currentPlayer) {
-            this.router.navigate([PageUrl.Home], { replaceUrl: true });
-            return;
-        }
-        this.currentPlayer = currentPlayer;
-        const socketId = this.lobbyService.getSocketId();
-        if (this.currentPlayer.id !== socketId) {
-            this.currentPlayer.id = socketId;
-        }
-
-        return;
-    }
-
     onMoveRequest(coordinates: Coordinates[]) {
         if (!this.gameState || !this.currentPlayer) {
             return;
@@ -312,10 +296,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 this.lobbyService.updateCombatStatus(this.isInCombat);
                 this.currentPlayer.life = this.currentPlayer.maxLife;
                 if (this.currentPlayer.name === data.fleeingPlayer.name) {
-                    this.notificationService.showInfo(PLAYING_PAGE_DESCRIPTION.combatFlee);
+                    this.notificationService.showInfo('Vous avez fuit le combat.');
                     return;
                 }
-                this.notificationService.showInfo(`${data.fleeingPlayer.name} a réussi à fuir le combat.`);
+                this.notificationService.showInfo(`${data.fleeingPlayer.name} a fui le combat.`);
             }),
 
             this.lobbyService.onAttackEnd().subscribe((data) => {
@@ -343,7 +327,23 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.lobbyService.setDebug(this.lobbyId, this.debug);
     }
 
-    private syncCurrentPlayerWithGameState() {
+    getCurrentPlayer() {
+        const currentPlayer = this.lobbyService.getCurrentPlayer();
+
+        if (!currentPlayer) {
+            this.router.navigate(['/home'], { replaceUrl: true });
+            return;
+        }
+        this.currentPlayer = currentPlayer;
+        const socketId = this.lobbyService.getSocketId();
+        if (this.currentPlayer.id !== socketId) {
+            this.currentPlayer.id = socketId;
+        }
+
+        return;
+    }
+
+    syncCurrentPlayerWithGameState() {
         if (!this.gameState || !this.currentPlayer) return;
 
         const playerInGameState = this.gameState.players.find((p) => p.id === this.currentPlayer?.id);

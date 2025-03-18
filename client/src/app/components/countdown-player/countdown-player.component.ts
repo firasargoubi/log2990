@@ -1,9 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { TIMEOUT_START_COMBAT, TURN_START_TIME } from '@app/Consts/app.constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { Subscription } from 'rxjs/internal/Subscription';
-
-const delay = 1000;
 
 @Component({
     selector: 'app-countdown-player',
@@ -12,16 +11,15 @@ const delay = 1000;
     imports: [CommonModule],
 })
 export class CountdownPlayerComponent implements OnInit, OnDestroy {
-    @Input() countdown: number = 60;
+    @Input() countdown: number = TURN_START_TIME;
     @Input() isPlayerTurn: boolean = false;
     @Input() isTransitioning: boolean = false;
     @Input() lobbyId: string = '';
     @Input() isInCombat: boolean = false;
     @Input() isAnimated: boolean = false;
 
-    remainingTime: number;
-    message: string = '--';
-    interval: number | null = null;
+    private remainingTime: number;
+    private interval: number | null = null;
     private combatStatusSubscription: Subscription | null = null;
 
     constructor(private lobbyService: LobbyService) {}
@@ -48,7 +46,11 @@ export class CountdownPlayerComponent implements OnInit, OnDestroy {
         }
     }
 
-    startCountdown(countdown: number): void {
+    getDisplayTime(): string {
+        return this.remainingTime > 0 ? `${this.remainingTime}s` : 'Temps écoulé';
+    }
+
+    private startCountdown(countdown: number): void {
         if (this.interval !== null) {
             clearInterval(this.interval);
         }
@@ -64,27 +66,14 @@ export class CountdownPlayerComponent implements OnInit, OnDestroy {
                     this.lobbyService.requestEndTurn(this.lobbyId);
                 }
             }
-        }, delay);
+        }, TIMEOUT_START_COMBAT);
     }
 
-    pauseCountdown(): void {
+    private pauseCountdown(): void {
         if (this.interval !== null) {
             clearInterval(this.interval);
             this.interval = null;
         }
         this.lobbyService.updateCombatTime(this.remainingTime);
-    }
-
-    resumeCountdown(): void {
-        this.lobbyService.onCombatUpdate().subscribe((data) => {
-            this.remainingTime = data.timeLeft;
-        });
-        if (this.interval === null) {
-            this.startCountdown(this.remainingTime);
-        }
-    }
-
-    getDisplayTime(): string {
-        return this.remainingTime > 0 ? `${this.remainingTime}s` : 'Temps écoulé';
     }
 }
