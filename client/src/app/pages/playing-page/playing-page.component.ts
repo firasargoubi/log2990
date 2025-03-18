@@ -7,7 +7,6 @@ import { GameBoardComponent } from '@app/components/game-board/game-board.compon
 import { GameInfoComponent } from '@app/components/game-info/game-info.component';
 import { InventoryComponent } from '@app/components/inventory/inventory.component';
 import { MessagesComponent } from '@app/components/messages/messages.component';
-import { PlayerListComponent } from '@app/components/player-list/player-list.component';
 import { MapSize } from '@app/Consts/app.constants';
 import { PageUrl } from '@app/Consts/route-constants';
 import { ActionService } from '@app/services/action.service';
@@ -22,16 +21,7 @@ import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-playing-page',
-    imports: [
-        CommonModule,
-        CountdownPlayerComponent,
-        InventoryComponent,
-        GameInfoComponent,
-        MessagesComponent,
-        GameBoardComponent,
-        CombatComponent,
-        PlayerListComponent,
-    ],
+    imports: [CommonModule, CountdownPlayerComponent, InventoryComponent, GameInfoComponent, MessagesComponent, GameBoardComponent, CombatComponent],
     standalone: true,
     templateUrl: './playing-page.component.html',
     styleUrls: ['./playing-page.component.scss'],
@@ -173,13 +163,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             }, 1000);
         }
     }
-
-    updateTimerForAllPlayers(): void {
-        if (this.currentPlayer) {
-            this.lobbyService.updateCombatTime(this.remainingTime);
-        }
-    }
-
     ngOnDestroy() {
         this.abandon();
         this.subscriptions.forEach((sub) => sub.unsubscribe());
