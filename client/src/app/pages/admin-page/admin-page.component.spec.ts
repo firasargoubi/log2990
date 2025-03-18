@@ -5,7 +5,7 @@ import { of, throwError } from 'rxjs';
 import SpyObj = jasmine.SpyObj;
 import { AdminPageComponent } from './admin-page.component';
 import { GameService } from '@app/services/game.service';
-import { Game } from '@app/interfaces/game.model';
+import { Game, GameSize, GameType } from '@common/game.interface';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { NotificationService } from '@app/services/notification.service';
 
@@ -23,8 +23,8 @@ describe('AdminPageComponent', () => {
                 {
                     id: '1',
                     name: 'Test Game',
-                    mapSize: '',
-                    mode: '',
+                    mapSize: GameSize.small,
+                    mode: GameType.capture,
                     previewImage: '',
                     description: '',
                     lastModified: new Date(),
@@ -54,8 +54,8 @@ describe('AdminPageComponent', () => {
             {
                 id: '1',
                 name: 'Test Game',
-                mapSize: 'Petite',
-                mode: 'Capture',
+                mapSize: GameSize.small,
+                mode: GameType.capture,
                 previewImage: '',
                 description: '',
                 lastModified: new Date(),

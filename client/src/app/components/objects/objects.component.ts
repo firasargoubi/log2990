@@ -4,7 +4,8 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { ItemComponent } from '@app/components/item/item.component';
-import { ObjectsTypes } from '@app/Consts/app.constants';
+import { MAX_OBJECTS, ObjectsTypes } from '@app/Consts/app.constants';
+import { ItemModel } from '@app/interfaces/item.model';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -18,18 +19,20 @@ import { filter } from 'rxjs/operators';
 export class ObjectsComponent implements OnInit, OnDestroy {
     @Input() mapSize: string;
     range: number[] = [];
-    items: ItemComponent[] = [];
+    items: ItemModel[] = [];
     private subscriptions: Subscription[] = [];
 
     constructor(
         private counterService: ObjectCounterService,
         private router: Router,
     ) {
-        const MAX_OBJECTS = 7;
         this.range = this.generateRange(0, MAX_OBJECTS);
         this.counterService.spawnCounter$.pipe(takeUntilDestroyed()).subscribe((value) => {
             if (value === 0) {
-                this.items[ObjectsTypes.SPAWN].isPlaced = true;
+                const spawnItem = this.items.find((item) => item.type === ObjectsTypes.SPAWN);
+                if (spawnItem) {
+                    spawnItem.isPlaced = true;
+                }
             }
         });
     }
@@ -47,29 +50,28 @@ export class ObjectsComponent implements OnInit, OnDestroy {
         this.subscriptions.forEach((sub) => sub.unsubscribe());
     }
 
-    resetComponent(): void {
-        this.items = [];
-        for (const type of this.range) {
-            const newItem = new ItemComponent(this.counterService);
-            newItem.type = type;
-            this.items.push(newItem);
-        }
-    }
-
-    generateRange(start: number, end: number): number[] {
-        return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-    }
-
-    incrementCounter(item: ItemComponent) {
-        this.counterService.incrementCounter(item.type);
-    }
-
-    drop(event: CdkDragDrop<ItemComponent[]>) {
+    drop(event: CdkDragDrop<ItemModel[]>): void {
         const draggedItem = event.previousContainer.data[event.previousIndex];
         if (event.previousContainer !== event.container) {
             draggedItem.isPlaced = false;
             event.previousContainer.data.splice(event.previousIndex, 1);
             this.incrementCounter(draggedItem);
         }
+    }
+
+    private resetComponent(): void {
+        this.items = [];
+        for (const type of this.range) {
+            const newItem = new ItemModel(type);
+            this.items.push(newItem);
+        }
+    }
+
+    private generateRange(start: number, end: number): number[] {
+        return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    }
+
+    private incrementCounter(item: ItemModel): void {
+        this.counterService.incrementCounter(item.type);
     }
 }

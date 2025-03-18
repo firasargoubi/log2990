@@ -69,7 +69,6 @@ export class TileComponent implements OnInit {
             this.objectID = id;
             const item = new ItemComponent(this.counterService);
             item.type = objectData.id;
-            item.tooltipText = objectData.description;
             return item;
         }
         return null;
@@ -92,9 +91,8 @@ export class TileComponent implements OnInit {
         const draggedItem = event.previousContainer.data[event.previousIndex];
 
         if (this.type === TileTypes.DoorClosed || this.type === TileTypes.DoorOpen || this.type === TileTypes.Wall) {
-            return; // No changes if dragged to an illegal place
+            return;
         }
-        // If swapped with an empty tile, empty the old one and place the new one
         if (event.previousContainer.id !== 'objects-container' && !this.placedItem.length) {
             this.placedItem.push(draggedItem);
             event.previousContainer.data.splice(event.previousIndex, 1);

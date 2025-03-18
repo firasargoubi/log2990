@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { TileService } from './tile.service';
-import { Tile } from '@app/interfaces/tile';
+import { Tile } from '@common/tile';
 import { TileTypes } from '@app/interfaces/tile-types';
 
 describe('TileService', () => {
@@ -31,6 +31,22 @@ describe('TileService', () => {
     it('should set tile type to the copied tool if it is not a door', () => {
         const tile: Tile = { type: TileTypes.Wall, x: 3, y: 3, id: '3-3', object: 0 };
         service.modifyTile(tile);
+    });
+
+    it('should modify tile type when current tool is valid non-door type', () => {
+        service.copyTileTool(TileTypes.Wall);
+
+        const tile: Tile = {
+            type: TileTypes.Grass,
+            x: 5,
+            y: 5,
+            id: '5-5',
+            object: 0,
+        };
+
+        service.modifyTile(tile);
+
+        expect(tile.type).toEqual(TileTypes.Wall);
     });
 
     it('should copy the tile tool', () => {
@@ -71,21 +87,116 @@ describe('TileService', () => {
     });
 
     it('should modify currentTool if it has a tool saved', () => {
-        service.toolSaved = 1;
-
+        service.currentTool = 1;
+        service.saveTool();
+        service.currentTool = 0;
         service.getToolSaved();
 
-        expect(service.toolSaved).toEqual(0);
         expect(service.currentTool).toEqual(1);
     });
 
     it('should not modify currentTool if it has a tool saved', () => {
-        service.toolSaved = 0;
+        service.currentTool = 0;
+        service.saveTool();
         service.currentTool = 1;
-
         service.getToolSaved();
 
-        expect(service.toolSaved).toEqual(0);
         expect(service.currentTool).toEqual(1);
+    });
+    describe('Tool Management', () => {
+        it('should handle multiple tool save and restore operations', () => {
+            service.currentTool = TileTypes.Water;
+            service.saveTool();
+
+            service.currentTool = TileTypes.Wall;
+            service.getToolSaved();
+
+            expect(service.currentTool).toBe(TileTypes.Water);
+        });
+
+        it('should reset tool completely', () => {
+            service.currentTool = TileTypes.Water;
+            service.saveTool();
+            service.resetTool();
+
+            expect(service.currentTool).toBe(-1);
+            expect(service.toolSaved).toBe(0);
+        });
+
+        it('should delete tool setting it to 0', () => {
+            service.currentTool = TileTypes.Water;
+            service.deleteTool();
+
+            expect(service.currentTool).toBe(0);
+        });
+    });
+
+    describe('Tile Modification Edge Cases', () => {
+        it('should not modify tile with an object when tool is not door', () => {
+            const tile: Tile = {
+                type: TileTypes.Grass,
+                x: 1,
+                y: 1,
+                id: '1-1',
+                object: 1,
+            };
+            const originalTile = { ...tile };
+
+            service.currentTool = TileTypes.Wall;
+            service.modifyTile(tile);
+
+            expect(tile).toEqual(originalTile);
+        });
+
+        it('should allow door state toggle for door tiles without objects', () => {
+            const tile: Tile = {
+                type: TileTypes.DoorClosed,
+                x: 1,
+                y: 1,
+                id: '1-1',
+                object: 0,
+            };
+
+            service.currentTool = TileTypes.DoorClosed;
+            service.modifyTile(tile);
+
+            expect(tile.type).toBe(TileTypes.DoorOpen);
+
+            service.modifyTile(tile);
+
+            expect(tile.type).toBe(TileTypes.DoorClosed);
+        });
+
+        it('should not toggle door state if tile has an object', () => {
+            const tile: Tile = {
+                type: TileTypes.DoorClosed,
+                x: 1,
+                y: 1,
+                id: '1-1',
+                object: 1,
+            };
+            const originalTile = { ...tile };
+
+            service.currentTool = TileTypes.DoorClosed;
+            service.modifyTile(tile);
+
+            expect(tile).toEqual(originalTile);
+        });
+
+        it('should ignore tool operations when currentTool is -1', () => {
+            const tile: Tile = {
+                type: TileTypes.Grass,
+                x: 1,
+                y: 1,
+                id: '1-1',
+                object: 0,
+            };
+            const originalTile = { ...tile };
+
+            service.currentTool = -1;
+            service.modifyTile(tile);
+
+            expect(tile).toEqual(originalTile);
+        });
     });
 });
