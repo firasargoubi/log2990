@@ -30,7 +30,6 @@ export class SocketService {
         });
         this.lobbyHandler.setServer(this.io);
         this.gameSocketHandlerService.setServer(this.io);
-        this.disconnectHandlerService.setServer(this.io);
     }
 
     init(): void {

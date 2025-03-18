@@ -49,7 +49,7 @@
         <!-- Countdown for the active player or others -->
 
         @if (isCurrentPlayerTurn()) {
-        <app-countdown-player [countdown]="60" [isPlayerTurn]="true" [isInCombat]="false" [lobbyId]="lobbyId" [isTransitioning]="false">
+        <app-countdown-player [countdown]="60" [isPlayerTurn]="true" [isInCombat]="false" [lobbyId]="lobbyId" [isTransitioning]="false" [isAnimated]="isAnimated">
         </app-countdown-player>
         } @else {
         <app-countdown-player [countdown]="60" [isPlayerTurn]="false" [isInCombat]="false" [isTransitioning]="false"> </app-countdown-player>

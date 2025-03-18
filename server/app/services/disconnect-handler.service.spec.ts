@@ -7,7 +7,6 @@ import { GameState } from '@common/game-state';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { createSandbox, SinonSandbox, SinonSpy, SinonStub } from 'sinon';
-import { Server } from 'socket.io';
 
 describe('DisconnectHandlerService', () => {
     let sandbox: SinonSandbox;
@@ -28,7 +27,7 @@ describe('DisconnectHandlerService', () => {
         boardService = { handleEndTurn: sandbox.stub() } as any;
 
         const lobbySocketHandler = { updateLobby: sandbox.stub() } as any;
-        service = new DisconnectHandlerService(lobbies, gameStates, gameSocketHandler, lobbySocketHandler, boardService);
+        service = new DisconnectHandlerService(lobbies, lobbySocketHandler);
 
         emitSpy = sandbox.spy();
         ioToStub = sandbox.stub().returns({ emit: emitSpy });
@@ -124,10 +123,5 @@ describe('DisconnectHandlerService', () => {
         lobbies.set('lobby1', { id: 'lobby1', players: [], isLocked: false, maxPlayers: 4, gameId: 'g1' });
         (service as any).updateLobby('lobby1');
         expect(emitSpy.calledWithMatch('lobbyUpdated')).to.equal(true);
-    });
-    it('should set the server instance in setServer()', () => {
-        const mockServer = {} as unknown as Server;
-        service.setServer(mockServer);
-        expect((service as any).io).to.equal(mockServer);
     });
 });

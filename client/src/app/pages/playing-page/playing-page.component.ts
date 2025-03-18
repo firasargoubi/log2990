@@ -41,7 +41,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     @Output() currentPlayer: Player;
     @Output() lobbyId: string = '';
     @Output() opponent: Player | null = null;
-    @Output() gameState: GameState | null = null;
+    @Output() gameState: GameState;
     @Output() remove = new EventEmitter<string>();
     @Input() player!: Player;
     debug: boolean = true;
@@ -58,6 +58,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     private route = inject(ActivatedRoute);
     private notificationService = inject(NotificationService);
     private subscriptions: Subscription[] = [];
+
+    get isAnimated(): boolean {
+        return this.gameState.animation || false;
+    }
 
     ngOnInit() {
         this.route.params.subscribe((params) => {
@@ -84,7 +88,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         });
         this.combatSubscription = this.lobbyService.onCombatUpdate().subscribe((data) => {
             if (data && data.timeLeft !== undefined) {
-                this.remainingTime = data.timeLeft; // Mettez à jour le temps restant
+                this.remainingTime = data.timeLeft;
             }
         });
 
@@ -102,6 +106,9 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         }
         if (this.gameState.currentPlayer !== this.currentPlayer.id) {
             console.error('Cannot perform action: not your turn');
+            return;
+        }
+        if (this.gameState.animation) {
             return;
         }
 
@@ -167,6 +174,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
+        this.abandon();
         this.subscriptions.forEach((sub) => sub.unsubscribe());
     }
 
@@ -180,6 +188,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.lobbyService.onTurnStarted().subscribe((data) => {
                 this.gameState = data.gameState;
                 this.syncCurrentPlayerWithGameState();
+                console.log('onGameStarted', this.gameState);
                 this.notifyPlayerTurn(data.currentPlayer);
             }),
 
@@ -210,6 +219,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
             this.lobbyService.onBoardChanged().subscribe((data) => {
                 this.gameState = data.gameState;
+                console.log('onBoardChanged', this.gameState);
             }),
 
             this.lobbyService.onFleeSuccess().subscribe((data) => {
@@ -235,10 +245,13 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         const currentPlayer = this.lobbyService.getCurrentPlayer();
 
         if (!currentPlayer) {
+            this.router.navigate(['/home']);
             return;
         }
         this.currentPlayer = currentPlayer;
         const socketId = this.lobbyService.getSocketId();
+        console.log('getCurrentPlayer', this.currentPlayer);
+        console.log('socketId', socketId);
         if (this.currentPlayer.id !== socketId) {
             this.currentPlayer.id = socketId;
         }
@@ -334,9 +347,16 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.remove.emit(this.player.id);
     }
     abandon() {
+        if (!this.gameState || !this.currentPlayer) {
+            this.router.navigate(['/home'], { replaceUrl: true });
+        }
+        const isAnimated = this.gameState.animation || false;
+        if (isAnimated) {
+            return;
+        }
         if (this.lobbyId && this.currentPlayer) {
             this.lobbyService.leaveLobby(this.lobbyId, this.currentPlayer.name);
-            this.router.navigate(['/home']);
+            this.router.navigate(['/home'], { replaceUrl: true });
         }
     }
 }

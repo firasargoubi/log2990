@@ -41,7 +41,7 @@ export class Server {
         const lobbyHandler = new LobbySocketHandlerService(lobbyMap);
         const gameHandler = new GameSocketHandlerService(lobbyMap, gameStateMap, boardService, lobbyHandler);
         const validationHandler = new ValidationSocketHandlerService(lobbyMap);
-        const disconnectHandler = new DisconnectHandlerService(lobbyMap, gameStateMap, gameHandler, lobbyHandler, boardService);
+        const disconnectHandler = new DisconnectHandlerService(lobbyMap, lobbyHandler);
         this.socketManager = new SocketService(this.server, lobbyHandler, gameHandler, validationHandler, disconnectHandler);
         this.socketManager.init();
 

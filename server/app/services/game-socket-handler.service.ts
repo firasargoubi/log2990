@@ -84,17 +84,24 @@ export class GameSocketHandlerService {
 
         try {
             let updatedGameState = gameState;
-            for (const coordinate of coordinates) {
-                updatedGameState = this.boardService.handleMovement(gameState, coordinate);
+            updatedGameState.animation = true;
+            for (const [idx, coordinate] of coordinates.entries()) {
+                setTimeout(() => {
+                    updatedGameState = this.boardService.handleMovement(updatedGameState, coordinate);
+                    if (idx === coordinates.length - 1) {
+                        updatedGameState.animation = false;
+                    }
+                    this.io.to(lobbyId).emit('movementProcessed', { gameState: updatedGameState });
+                    if (updatedGameState.availableMoves.length === 0) {
+                        this.handleEndTurn(socket, lobbyId);
+                    }
+                }, 150);
             }
-
+            updatedGameState.animation = false;
             this.gameStates.set(lobbyId, updatedGameState);
 
-            this.io.to(lobbyId).emit('movementProcessed', { gameState });
+            this.io.to(lobbyId).emit('movementProcessed', { gameState: updatedGameState });
 
-            if (updatedGameState.availableMoves.length === 0) {
-                this.handleEndTurn(socket, lobbyId);
-            }
         } catch (error) {
             socket.emit('error', `Movement error: ${error.message}`);
         }

@@ -104,6 +104,8 @@ export class BoardService {
 
         gameState.shortestMoves = this.calculateShortestMoves(gameState, playerPosition, availableMoves);
 
+        console.log(gameState);
+
         return gameState;
     }
 
@@ -254,10 +256,7 @@ export class BoardService {
         for (const move of availableMoves) {
             const path = this.pathfindingService.findShortestPath(gameState, playerPosition, move, gameState.currentPlayerMovementPoints);
 
-            if (path && path.length > 0) {
-                const nextStep = path.length > 1 ? path[1] : path[0];
-                shortestMoves.push([move, nextStep]);
-            }
+            shortestMoves.push(path);
         }
 
         return shortestMoves;

@@ -23,7 +23,7 @@ import { Observable, Subscription } from 'rxjs';
 export class CreatePageComponent implements OnInit {
     @Input() games$: Observable<Game[]> = new Observable<Game[]>();
     games: Game[] = [];
-
+    currentGame: Game | null = null;
     lobbyId: string = '';
     private notificationService = inject(NotificationService);
     private dialog = inject(MatDialog);
@@ -36,16 +36,18 @@ export class CreatePageComponent implements OnInit {
     }
 
     onBoxClick(game: Game): void {
-        this.gameService.verifyGameAccessible(game.id).subscribe({
+        this.currentGame = game;
+        console.log('GAme', this.currentGame.name);
+        this.gameService.verifyGameAccessible(this.currentGame.id).subscribe({
             next: (isAccessible) => {
                 if (isAccessible) {
                     if (!this.lobbyId) {
-                        this.lobbyService.createLobby(game);
+                        this.lobbyService.createLobby(this.currentGame || game);
                         this.subscriptions.push(
                             this.lobbyService.onLobbyCreated().subscribe({
                                 next: (data) => {
                                     this.lobbyId = data.lobby.id;
-                                    this.openBoxFormDialog(game);
+                                    this.openBoxFormDialog(this.currentGame || game);
                                 },
                                 error: (err) => {
                                     this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorLobbyCreation + ' ' + err);
@@ -53,7 +55,7 @@ export class CreatePageComponent implements OnInit {
                             }),
                         );
                     } else {
-                        this.openBoxFormDialog(game);
+                        this.openBoxFormDialog(this.currentGame || game);
                     }
                 } else {
                     this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorGameDeleted);
@@ -85,6 +87,7 @@ export class CreatePageComponent implements OnInit {
                 if (result) {
                     this.loadGames();
                 }
+                this.currentGame = null;
             },
         });
     }

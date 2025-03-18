@@ -16,6 +16,7 @@ export class CountdownPlayerComponent implements OnInit, OnDestroy {
     @Input() isInCombat: boolean = false; // Détermine si le joueur est dans un combat
     @Input() isTransitioning: boolean = false; // Détermine si le jeu est en transition de tours
     @Input() lobbyId: string = ''; // ID de la salle
+    @Input() isAnimated: boolean = false;
 
     remainingTime: number;
     message: string = '--'; // Message à afficher lorsque le joueur n'est pas impliqué
@@ -55,6 +56,7 @@ export class CountdownPlayerComponent implements OnInit, OnDestroy {
                 if (this.interval !== null) {
                     clearInterval(this.interval); // Arrêter l'intervalle quand le temps est écoulé
                     this.interval = null;
+                    while (this.isAnimated);
                     this.lobbyService.requestEndTurn(this.lobbyId); // Appeler la méthode onTurnEnded du service
                 }
             }
