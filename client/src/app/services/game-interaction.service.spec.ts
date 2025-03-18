@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
@@ -61,6 +62,7 @@ describe('GameInteractionService', () => {
             spawnPoints: [],
             currentPlayerMovementPoints: 3,
             currentPlayerActionPoints: 1,
+            debug: false,
         };
         const mockPlayer: Player = { id: 'p1', name: 'Test', life: 100, maxLife: 100, speed: 3 } as Player;
 
@@ -108,6 +110,7 @@ describe('GameInteractionService', () => {
             spawnPoints: [],
             currentPlayerMovementPoints: 3,
             currentPlayerActionPoints: 1,
+            debug: false,
         };
         const mockPlayer: Player = { id: 'p1', name: 'Test', life: 100, maxLife: 100, speed: 3 } as Player;
         actionServiceSpy.getActionType.and.returnValue('battle');
@@ -149,6 +152,7 @@ describe('GameInteractionService', () => {
             spawnPoints: [],
             currentPlayerMovementPoints: 3,
             currentPlayerActionPoints: 1,
+            debug: false,
         };
         const mockPlayer: Player = { id: 'p1', name: 'Test', life: 100, maxLife: 100, speed: 3 } as Player;
         actionServiceSpy.getActionType.and.returnValue('move');
@@ -174,5 +178,88 @@ describe('GameInteractionService', () => {
     it('handleAction should toggle state', () => {
         expect(service.handleAction(true)).toBeFalse();
         expect(service.handleAction(false)).toBeTrue();
+    });
+    it('should exit early if action is not found', () => {
+        const mockGameState: GameState = {
+            id: '1',
+            board: [],
+            turnCounter: 0,
+            players: [],
+            currentPlayer: 'p1',
+            availableMoves: [],
+            shortestMoves: [],
+            playerPositions: [],
+            spawnPoints: [],
+            currentPlayerMovementPoints: 3,
+            currentPlayerActionPoints: 1,
+            debug: false,
+        };
+        const mockPlayer: Player = { id: 'p1', name: 'Test', life: 100, maxLife: 100, speed: 3 } as Player;
+
+        actionServiceSpy.getActionType.and.returnValue(undefined);
+        const handleActionSpy = jasmine.createSpy('handleAction');
+
+        service.performActionRequest({
+            gameState: mockGameState,
+            currentPlayer: mockPlayer,
+            tile: {} as Tile,
+            lobbyId: '1',
+            handleAction: handleActionSpy,
+            updateBoard: () => {},
+            updateOpponent: () => {},
+            updateCombatState: () => {},
+            actionService: actionServiceSpy,
+            lobbyService: lobbyServiceSpy,
+            notificationService: notificationServiceSpy,
+        });
+
+        expect(handleActionSpy).toHaveBeenCalled();
+        expect(lobbyServiceSpy.executeAction).not.toHaveBeenCalled();
+        expect(notificationServiceSpy.showError).not.toHaveBeenCalled();
+    });
+    it('should set opponent to null when not found and not initialize battle', () => {
+        const mockGameState: GameState = {
+            id: '1',
+            board: [],
+            turnCounter: 0,
+            players: [],
+            currentPlayer: 'p1',
+            availableMoves: [],
+            shortestMoves: [],
+            playerPositions: [],
+            spawnPoints: [],
+            currentPlayerMovementPoints: 3,
+            currentPlayerActionPoints: 1,
+            debug: false,
+        };
+        const mockPlayer: Player = { id: 'p1', name: 'Test', life: 100, maxLife: 100, speed: 3 } as Player;
+        const mockTile = {} as Tile;
+
+        actionServiceSpy.getActionType.and.returnValue('battle');
+        actionServiceSpy.findOpponent.and.returnValue(undefined);
+        lobbyServiceSpy.executeAction.and.returnValue(of({ newGameBoard: [] }));
+
+        const updateOpponentSpy = jasmine.createSpy('updateOpponent');
+        const handleActionSpy = jasmine.createSpy('handleAction');
+        const updateCombatStateSpy = jasmine.createSpy('updateCombatState');
+
+        service.performActionRequest({
+            gameState: mockGameState,
+            currentPlayer: mockPlayer,
+            tile: mockTile,
+            lobbyId: '1',
+            handleAction: handleActionSpy,
+            updateBoard: () => {},
+            updateOpponent: updateOpponentSpy,
+            updateCombatState: updateCombatStateSpy,
+            actionService: actionServiceSpy,
+            lobbyService: lobbyServiceSpy,
+            notificationService: notificationServiceSpy,
+        });
+
+        expect(handleActionSpy).toHaveBeenCalled();
+        expect(updateOpponentSpy).toHaveBeenCalledWith(null);
+        expect(lobbyServiceSpy.initializeBattle).not.toHaveBeenCalled();
+        expect(updateCombatStateSpy).not.toHaveBeenCalled();
     });
 });
