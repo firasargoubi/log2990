@@ -16,7 +16,6 @@ export class LobbyFormComponent {
     lobbyId: string = '';
     errorMessage: string = '';
     isLoading: boolean = false;
-    gameExists: boolean = false;
 
     constructor(
         private dialogRef: MatDialogRef<LobbyFormComponent>,
@@ -43,7 +42,15 @@ export class LobbyFormComponent {
         });
     }
 
-    openBoxFormDialog(): void {
+    closeDialog(): void {
+        this.dialogRef.close();
+    }
+
+    resetError(): void {
+        this.errorMessage = '';
+    }
+
+    private openBoxFormDialog(): void {
         this.lobbyService.getLobby(this.lobbyId).subscribe({
             next: (response) => {
                 const dialogRef = this.dialog.open(BoxFormDialogComponent, {
@@ -62,13 +69,5 @@ export class LobbyFormComponent {
                 });
             },
         });
-    }
-
-    closeDialog(): void {
-        this.dialogRef.close();
-    }
-
-    resetError(): void {
-        this.errorMessage = '';
     }
 }
