@@ -84,7 +84,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                     };
                 }
             },
-            error: (err) => console.error('Erreur réception mise à jour tuile:', err),
         });
         this.combatSubscription = this.lobbyService.onCombatUpdate().subscribe((data) => {
             if (data && data.timeLeft !== undefined) {
@@ -101,11 +100,9 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
     onActionRequest(tile: Tile) {
         if (!this.gameState || !this.currentPlayer) {
-            console.error('Cannot perform action: game state or current player is missing');
             return;
         }
         if (this.gameState.currentPlayer !== this.currentPlayer.id) {
-            console.error('Cannot perform action: not your turn');
             return;
         }
         if (this.gameState.animation) {
@@ -125,8 +122,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 this.lobbyService.onInteraction().subscribe((data) => {
                     this.isInCombat = data.isInCombat;
                 });
-            } else {
-                console.error('Opponent not found for battle initialization');
             }
         }
         this.lobbyService.executeAction(action, tile, this.lobbyId).subscribe({
@@ -138,7 +133,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                     };
                 }
             },
-            error: (err) => console.error('Error processing tile update:', err),
         });
     }
 
@@ -233,7 +227,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             }),
 
             this.lobbyService.onAttackEnd().subscribe((data) => {
-                console.log('on rentre dans playing-page-component?');
                 this.isInCombat = data.isInCombat;
                 this.currentPlayer.life = this.currentPlayer.maxLife;
                 this.notificationService.showInfo(`${this.currentPlayer.name} a fini son combat`);

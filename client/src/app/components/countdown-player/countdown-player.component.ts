@@ -35,6 +35,7 @@ export class CountdownPlayerComponent implements OnInit, OnDestroy {
         this.timerSyncService.playerTimerPaused$.subscribe((remainingTime) => {
             if (remainingTime !== null) {
                 this.pauseCountdown();
+                this.remainingTime = remainingTime; // Mettre à jour le temps restant
             } else {
                 this.resumeCountdown();
             }

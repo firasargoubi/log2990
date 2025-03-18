@@ -51,7 +51,7 @@ describe('DisconnectHandlerService', () => {
         service.handleDisconnect(mockSocket);
 
         expect(mockSocket.leave.calledWith('lobby1')).to.equal(true);
-        expect(emitSpy.calledWith('playerLeft', { lobbyId: 'lobby1', playerName: 'Alice' })).to.equal(true);
+        expect((service['lobbySocketHandler'].updateLobby as SinonStub).calledWith('lobby1')).to.equal(true);
     });
 
     it('should emit hostDisconnected and delete lobby if host leaves', () => {

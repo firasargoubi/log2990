@@ -168,7 +168,17 @@ describe('CreatePageComponent', () => {
     it('should create a new lobby if none exists and open the dialog', fakeAsync(() => {
         gameServiceSpy.verifyGameAccessible.and.returnValue(of(true));
         const createLobbySpy = spyOn(component['lobbyService'], 'createLobby').and.callThrough();
-        const onLobbyCreatedSpy = spyOn(component['lobbyService'], 'onLobbyCreated').and.returnValue(of({ lobbyId: '123' }));
+        const onLobbyCreatedSpy = spyOn(component['lobbyService'], 'onLobbyCreated').and.returnValue(
+            of({
+                lobby: {
+                    id: '123',
+                    players: [],
+                    isLocked: false,
+                    maxPlayers: 4,
+                    gameId: 'game-123',
+                },
+            }),
+        );
 
         component.onBoxClick(component.games[0]);
 

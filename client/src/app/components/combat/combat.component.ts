@@ -1,4 +1,5 @@
 import { Component, inject, Input, OnChanges, OnInit } from '@angular/core';
+import { CombatService } from '@app/services/combat.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { GameState } from '@common/game-state';
@@ -22,9 +23,15 @@ export class CombatComponent implements OnInit, OnChanges {
     canAct: boolean = false;
     isFleeSuccess: boolean = false;
     combatEnded: boolean = false;
+    attackDice: number;
+    defenceDice: number;
+    attackDisplay: string = '';
+    defenceDisplay: string = '';
+    damage: number;
     private lobbyService = inject(LobbyService);
     private countDownInterval: ReturnType<typeof setInterval> | null = null;
     private notificationService = inject(NotificationService);
+    private combatService = inject(CombatService);
 
     ngOnInit() {
         if (this.gameState) {
@@ -70,24 +77,28 @@ export class CombatComponent implements OnInit, OnChanges {
 
     onAttack() {
         if (!this.gameState) return;
-        const attackRoll = this.rollDice(this.currentPlayer, 'attack') + this.currentPlayer.attack;
-        const defenseRoll = this.rollDice(this.opponent, 'defense') + this.opponent.defense;
-        if (this.isOnIce(this.currentPlayer)) {
+        this.attackDice = this.combatService.rollDice(this.currentPlayer, 'attack');
+        this.defenceDice = this.combatService.rollDice(this.opponent, 'defense');
+        const attackRoll = this.attackDice + this.currentPlayer.attack;
+        const defenseRoll = this.defenceDice + this.opponent.defense;
+        this.attackDisplay = `Résultat du dé d'attaque: ${this.attackDice}`;
+        this.defenceDisplay = `Résultat du dé de défense: ${this.defenceDice}`;
+        if (this.combatService.isOnIce(this.currentPlayer, this.gameState)) {
             this.currentPlayer.attack -= 2;
             this.currentPlayer.defense -= 2;
         }
-        if (this.isOnIce(this.opponent)) {
+        if (this.combatService.isOnIce(this.opponent, this.gameState)) {
             this.opponent.attack -= 2;
             this.opponent.defense -= 2;
         }
-        const damage = attackRoll - defenseRoll;
-        if (damage > 0) {
-            this.opponent.life -= damage;
+        this.damage = attackRoll - defenseRoll;
+        if (this.damage > 0) {
+            this.opponent.life -= this.damage;
             if (this.opponent.life <= 0) {
                 this.handleDefeat(this.opponent);
             }
         }
-        this.lobbyService.attackAction(this.lobbyId, this.opponent, damage, this.opponent.life);
+        this.lobbyService.attackAction(this.lobbyId, this.opponent, this.damage, this.opponent.life);
         this.lobbyService.changeTurnEnd(this.currentPlayer, this.opponent, this.playerTurn, this.gameState);
         this.subscribeChangeAttributes();
         this.subscribeToPlayerSwitch();
@@ -115,26 +126,6 @@ export class CombatComponent implements OnInit, OnChanges {
             this.lobbyService.fleeCombat(this.gameState.id, this.currentPlayer, this.isFleeSuccess);
             this.lobbyService.changeTurnEnd(this.currentPlayer, this.opponent, this.playerTurn, this.gameState);
         }
-    }
-
-    private rollDice(player: Player, type: 'attack' | 'defense'): number {
-        const diceType = player.bonus?.[type] === 'D4' ? 4 : 6;
-        return Math.floor(Math.random() * diceType) + 1;
-    }
-
-    private isOnIce(player: Player): boolean {
-        let tileType;
-        const currentPlayerIndex = this.gameState?.players.findIndex((p) => p.id === player.id);
-        if (currentPlayerIndex !== undefined && currentPlayerIndex !== -1) {
-            const currentPlayerPositon = this.gameState?.playerPositions[currentPlayerIndex];
-            if (this.gameState && currentPlayerPositon) {
-                tileType = this.gameState.board[currentPlayerPositon.x][currentPlayerPositon.y] % 10;
-            }
-        }
-        if (tileType === 3) {
-            return true;
-        }
-        return false;
     }
 
     private handleDefeat(player: Player) {

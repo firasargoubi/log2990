@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-import { Service } from 'typedi';
-import { GameState } from '@common/game-state';
 import { Coordinates } from '@common/coordinates';
+import { GameState } from '@common/game-state';
 import { TileTypes } from '@common/game.interface';
+import { Service } from 'typedi';
 
 interface Node {
     x: number;
@@ -37,15 +37,11 @@ export class PathfindingService {
             return Infinity;
         }
 
-        try {
-            const tileValue = gameState.board[x][y];
-            const tileType = tileValue % 10;
-            const cost = this.getTileCost(tileType);
+        const tileValue = gameState.board[x][y];
+        const tileType = tileValue % 10;
+        const cost = this.getTileCost(tileType);
 
-            return cost;
-        } catch (error) {
-            return Infinity;
-        }
+        return cost;
     }
 
     isPositionInBounds(gameState: GameState, position: Coordinates): boolean {
