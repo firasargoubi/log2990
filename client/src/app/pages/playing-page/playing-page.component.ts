@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, inject, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CombatComponent } from '@app/components/combat/combat.component';
 import { CountdownPlayerComponent } from '@app/components/countdown-player/countdown-player.component';
@@ -9,6 +9,7 @@ import { InventoryComponent } from '@app/components/inventory/inventory.componen
 import { MessagesComponent } from '@app/components/messages/messages.component';
 import { ActionService } from '@app/services/action.service';
 
+import { PlayerListComponent } from '@app/components/player-list/player-list.component';
 import { PageUrl } from '@app/Consts/route-constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
@@ -21,7 +22,16 @@ import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-playing-page',
-    imports: [CommonModule, CountdownPlayerComponent, InventoryComponent, GameInfoComponent, MessagesComponent, GameBoardComponent, CombatComponent],
+    imports: [
+        CommonModule,
+        CountdownPlayerComponent,
+        InventoryComponent,
+        GameInfoComponent,
+        MessagesComponent,
+        GameBoardComponent,
+        CombatComponent,
+        PlayerListComponent,
+    ],
     standalone: true,
     templateUrl: './playing-page.component.html',
     styleUrls: ['./playing-page.component.scss'],
@@ -34,12 +44,14 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     @Output() gameState: GameState;
     @Output() remove = new EventEmitter<string>();
     @Input() player!: Player;
-    debug: boolean = true;
+
+    debug: boolean = false;
     isInCombat: boolean = false;
     remainingTime: number = 0;
     isPlayerTurn: boolean = false; // Indique si c'est le tour du joueur
     combatSubscription: Subscription | null = null;
     turnSubscription: Subscription | null = null;
+
     lobby: GameLobby;
     private interval: number | null = null;
     private lobbyService = inject(LobbyService);
@@ -51,6 +63,14 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
     get isAnimated(): boolean {
         return this.gameState.animation || false;
+    }
+
+    @HostListener('document:keydown', ['$event'])
+    handleKeyboardEvent(event: KeyboardEvent) {
+        if (event.key === 'd' && this.currentPlayer.isHost) {
+            this.setDebugMode();
+            console.log('DEBUG YIPEE');
+        }
     }
 
     ngOnInit() {
@@ -341,7 +361,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         }
 
         const result = this.gameState.currentPlayer === this.currentPlayer.id;
-
         return result;
     }
 
@@ -360,5 +379,20 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.lobbyService.disconnect();
             this.router.navigate(['/home'], { replaceUrl: true });
         }
+    }
+
+    isCurrentPlayerTurn(): boolean {
+        if (!this.gameState || !this.currentPlayer) {
+            return false;
+        }
+
+        const result = this.gameState.currentPlayer === this.currentPlayer.id;
+
+        return result;
+    }
+
+    setDebugMode() {
+        this.debug = !this.debug;
+        this.lobbyService.setDebug(this.lobbyId, this.debug);
     }
 }

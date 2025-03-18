@@ -1,3 +1,4 @@
+import { BoardSocketConstants, ERROR_MESSAGES } from '@app/constants/board-const';
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
@@ -6,11 +7,6 @@ import { Player } from '@common/player';
 import { Service } from 'typedi';
 import { GameService } from './game.service';
 import { PathfindingService } from './pathfinding.service';
-import { ERROR_MESSAGES } from '@app/constants/boardConst';
-
-const DEFAULT_MOVEMENT_POINTS = 0;
-const DEFAULT_ACTION_POINTS = 1;
-const TILE_DIVISOR = 10;
 
 @Service()
 export class BoardService {
@@ -23,7 +19,7 @@ export class BoardService {
         try {
             const game = await this.gameService.getGameById(gameId);
             if (!game) {
-                throw new Error(ERROR_MESSAGES.gameNotFound);
+                throw new Error(`${ERROR_MESSAGES.gameNotFound}`);
             }
             return game;
         } catch (error) {
@@ -44,8 +40,8 @@ export class BoardService {
             shortestMoves: [],
             spawnPoints: [],
             board: gameData.board,
-            currentPlayerMovementPoints: DEFAULT_MOVEMENT_POINTS,
-            currentPlayerActionPoints: DEFAULT_ACTION_POINTS,
+            currentPlayerMovementPoints: BoardSocketConstants.DefaultMovementPoints,
+            currentPlayerActionPoints: BoardSocketConstants.DefaultActionPoints,
             debug: false,
         };
 
@@ -223,7 +219,7 @@ export class BoardService {
 
         for (let x = 0; x < boardSize; x++) {
             for (let y = 0; y < boardSize; y++) {
-                if (Math.floor(gameState.board[x][y] / TILE_DIVISOR) === ObjectsTypes.SPAWN) {
+                if (Math.floor(gameState.board[x][y] / BoardSocketConstants.TileDivisor) === ObjectsTypes.SPAWN) {
                     spawnPoints.push({ x, y });
                 }
             }
@@ -242,7 +238,7 @@ export class BoardService {
         if (spawnPoints.length > gameState.players.length) {
             for (let i = gameState.players.length; i < spawnPoints.length; i++) {
                 const { x, y } = spawnPoints[i];
-                gameState.board[x][y] = gameState.board[x][y] % TILE_DIVISOR;
+                gameState.board[x][y] = gameState.board[x][y] % BoardSocketConstants.TileDivisor;
             }
         }
     }

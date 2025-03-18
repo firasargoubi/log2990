@@ -115,14 +115,17 @@ export class BoxFormDialogComponent implements OnDestroy {
     }
 
     inputName(event: Event): void {
-        const inputName = (event.target as HTMLInputElement).value.trim();
+        const inputName = (event.target as HTMLInputElement).value.trim(); // Trim pour supprimer les espaces autour du nom
 
         if (inputName.length === 0) {
-            this.form.get('name')?.setErrors({ whitespace: true });
+            // Si le nom est vide ou composé uniquement d'espaces
+            this.form.get('name')?.setErrors({ whitespace: true }); // Définir une erreur de validation personnalisée
         } else {
-            this.form.get('name')?.setErrors(null);
+            // Sinon, réinitialiser les erreurs si le nom est valide
+            this.form.get('name')?.setErrors(null); // Effacer les erreurs
         }
 
+        // Mettre à jour la valeur du champ 'name' dans le formulaire
         this.form.get('name')?.setValue(inputName);
     }
 
@@ -130,10 +133,14 @@ export class BoxFormDialogComponent implements OnDestroy {
         if (!this.attributeClicked$) {
             this.attributeClicked$ = true;
             this.increasedAttribute = attribute;
+
+            // Récupérer la valeur actuelle de l'attribut
             const currentValue = this.form.get(attribute)?.value;
+
+            // Si l'attribut est 'life' ou 'speed', augmenter de 2
             if (currentValue !== undefined) {
-                const newValue = currentValue + 2;
-                this.form.get(attribute)?.setValue(newValue);
+                const newValue = currentValue + 2; // Ajouter 2 au bonus
+                this.form.get(attribute)?.setValue(newValue); // Mettre à jour la valeur dans le formulaire
             }
         }
     }
@@ -143,9 +150,11 @@ export class BoxFormDialogComponent implements OnDestroy {
         this.diceAttribute = attribute;
 
         const currentValue = this.form.get(attribute)?.value;
+
+        // Si l'attribut est 'life' ou 'speed', augmenter de 2
         if (currentValue !== undefined) {
-            const newValue = currentValue + 2;
-            this.form.get(attribute)?.setValue(newValue);
+            const newValue = currentValue + 2; // Ajouter 2 au bonus
+            this.form.get(attribute)?.setValue(newValue); // Mettre à jour la valeur dans le formulaire
         }
     }
 

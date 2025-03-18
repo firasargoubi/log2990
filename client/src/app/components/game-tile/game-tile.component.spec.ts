@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { GAME_IMAGES, ObjectsTypes, TileTypes } from '@app/Consts/app.constants';
+import { GAME_IMAGES } from '@app/Consts/app.constants';
+import { ObjectsTypes, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
 import { GameTileComponent } from './game-tile.component';

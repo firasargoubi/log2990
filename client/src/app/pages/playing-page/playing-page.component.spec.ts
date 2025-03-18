@@ -427,6 +427,7 @@ import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { Coordinates } from '@common/coordinates';
 import { GameState } from '@common/game-state';
+import { Tile } from '@common/game.interface';
 import { Player } from '@common/player';
 import { of, Subject, Subscription } from 'rxjs';
 import { PlayingPageComponent } from './playing-page.component';
@@ -493,7 +494,6 @@ describe('PlayingPageComponent', () => {
             spawnPoints: [],
             currentPlayerMovementPoints: 5,
             currentPlayerActionPoints: 1,
-            debug: false,
         };
     });
 
@@ -556,6 +556,11 @@ describe('PlayingPageComponent', () => {
         expect(component.getMapSize()).toBe('Large');
     });
 
+    it('should return Unknown if gameState is null', () => {
+        component.gameState = null;
+        expect(component.getMapSize()).toBe('Unknown');
+    });
+
     it('should return correct player count', () => {
         expect(component.getPlayerCount()).toBe(1);
     });
@@ -600,7 +605,25 @@ describe('PlayingPageComponent', () => {
         expect(sub1.unsubscribe).toHaveBeenCalled();
         expect(sub2.unsubscribe).toHaveBeenCalled();
     });
+    it('should call performActionRequest with correct context', () => {
+        const mockTile = {} as Tile;
+        const performSpy = spyOn(component['interactionService'], 'performActionRequest');
 
+        component.onActionRequest(mockTile);
+
+        expect(performSpy).toHaveBeenCalled();
+    });
+    it('should start combat and countdown when attacking', () => {
+        const startCombatSpy = spyOn(component['lobbyService'], 'startCombat');
+        const startCountdownSpy = spyOn(component['turnTimerService'], 'startCountdown');
+
+        component.currentPlayer = { id: 'p1' } as Player;
+        component.onAttackClick('enemy1', 'lobby123');
+
+        expect(startCombatSpy).toHaveBeenCalledWith('enemy1', 'lobby123');
+        expect(component.isInCombat).toBeTrue();
+        expect(startCountdownSpy).toHaveBeenCalled();
+    });
     it('should return players list from gameState', () => {
         const players = [{ id: 'p1', name: 'A' }] as Player[];
         component.gameState = { players } as GameState;
