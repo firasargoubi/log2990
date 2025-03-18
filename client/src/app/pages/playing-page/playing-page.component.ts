@@ -108,7 +108,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.lobbyService.onStartCombat().subscribe((data) => {
             this.isInCombat = true;
             this.isPlayerTurn = data.firstPlayer.id === this.currentPlayer.id;
-            console.log(this.isPlayerTurn);
         });
 
         this.lobbyService.onGameEnded().subscribe((data) => {
@@ -160,16 +159,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
     handleAction() {
         this.action = !this.action;
-    }
-
-    onAttackClick(playerId: string, lobbyId: string): void {
-        const opponent = this.gameState.players.find((p) => p.id === playerId);
-        if (!opponent) {
-            return;
-        }
-        this.lobbyService.startCombat(lobbyId, this.currentPlayer, opponent, 50);
-        this.isInCombat = true;
-        this.remainingTime = 30;
     }
 
     startTurnCountdown(): void {
@@ -241,14 +230,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             }),
 
             this.lobbyService.onFleeSuccess().subscribe((data) => {
-                this.isInCombat = false;
-                this.lobbyService.updateCombatStatus(this.isInCombat);
-                this.currentPlayer.life = this.currentPlayer.maxLife;
-                if (this.currentPlayer.name === data.fleeingPlayer.name) {
-                    this.notificationService.showInfo('Vous avez fuit le combat.');
-                    return;
+                if (this.currentPlayer.id === data.fleeingPlayer.id) {
+                    this.currentPlayer.amountEscape = data.fleeingPlayer.amountEscape; // Mise à jour côté client
                 }
-                this.notificationService.showInfo(`${data.fleeingPlayer.name} a fui le combat.`);
+                this.notificationService.showInfo(`${data.fleeingPlayer.name} a réussi à fuir le combat.`);
             }),
 
             this.lobbyService.onAttackEnd().subscribe((data) => {
