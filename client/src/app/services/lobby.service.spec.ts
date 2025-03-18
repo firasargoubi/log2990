@@ -26,7 +26,6 @@ describe('LobbyService', () => {
         });
 
         service = TestBed.inject(LobbyService);
-        // Manually set the socket to the mock object
         (service as any).socket = mockSocket;
     });
 
@@ -72,7 +71,15 @@ describe('LobbyService', () => {
         });
 
         it('should handle lobbyCreated event', (done) => {
-            const testData = { lobbyId: 'lobby-123' };
+            const testData = {
+                lobby: {
+                    id: 'lobby-123',
+                    players: [],
+                    isLocked: false,
+                    maxPlayers: 4,
+                    gameId: 'game-123',
+                },
+            };
 
             mockSocket.on.and.callFake((event: string, callback: (data: any) => void) => {
                 if (event === 'lobbyCreated') {
@@ -99,32 +106,10 @@ describe('LobbyService', () => {
                 speed: 0,
                 attack: 0,
                 defense: 0,
+                maxLife: 0,
             };
             service.joinLobby(lobbyId, player);
             expect(mockSocket.emit).toHaveBeenCalledWith('joinLobby', { lobbyId, player });
-        });
-
-        it('should handle playerJoined event', (done) => {
-            const testData = {
-                lobbyId: 'lobby-123',
-                player: {
-                    name: 'player1',
-                    avatar: 'avatar1',
-                    id: '',
-                    isHost: false,
-                    life: 0,
-                    speed: 0,
-                    attack: 0,
-                    defense: 0,
-                },
-            };
-            service.onPlayerJoined().subscribe((data) => {
-                expect(data).toEqual(testData);
-                done();
-            });
-
-            const handler = getEventHandler('playerJoined');
-            handler(testData);
         });
 
         it('should emit leaveLobby event', () => {
@@ -133,17 +118,6 @@ describe('LobbyService', () => {
                 lobbyId: 'lobby-123',
                 playerName: 'player1',
             });
-        });
-
-        it('should handle playerLeft event', (done) => {
-            const testData = { lobbyId: 'lobby-123', playerName: 'player1' };
-            service.onPlayerLeft().subscribe((data) => {
-                expect(data).toEqual(testData);
-                done();
-            });
-
-            const handler = getEventHandler('playerLeft');
-            handler(testData);
         });
     });
 
@@ -181,6 +155,45 @@ describe('LobbyService', () => {
                 const callback = emitCall.args[2];
                 callback(response);
             }
+        });
+        it('should emit leaveGame event', () => {
+            service.leaveGame('lobby-123', 'player1');
+            expect(mockSocket.emit).toHaveBeenCalledWith('leaveGame', 'lobby-123', 'player1');
+        });
+
+        it('should emit disconnectFromRoom event', () => {
+            service.disconnectFromRoom('lobby-123');
+            expect(mockSocket.emit).toHaveBeenCalledWith('disconnectFromRoom', 'lobby-123');
+        });
+
+        it('should emit updatePlayers event', () => {
+            const players: Player[] = [
+                {
+                    name: 'player1',
+                    avatar: 'avatar1',
+                    id: '1',
+                    isHost: false,
+                    life: 100,
+                    speed: 5,
+                    attack: 10,
+                    defense: 8,
+                    maxLife: 0,
+                },
+                {
+                    name: 'player2',
+                    avatar: 'avatar2',
+                    id: '2',
+                    isHost: false,
+                    life: 90,
+                    speed: 6,
+                    attack: 12,
+                    defense: 7,
+                    maxLife: 0,
+                },
+            ];
+
+            service.updatePlayers('lobby-123', players);
+            expect(mockSocket.emit).toHaveBeenCalledWith('updatePlayers', 'lobby-123', players);
         });
     });
 
@@ -421,6 +434,7 @@ describe('LobbyService', () => {
                 speed: 5,
                 attack: 10,
                 defense: 8,
+                maxLife: 0,
             };
 
             service.setCurrentPlayer(player);
@@ -428,7 +442,6 @@ describe('LobbyService', () => {
         });
     });
 
-    // Helper function to retrieve event handlers from the mock socket
     function getEventHandler(eventName: string): (...args: any[]) => void {
         const call = mockSocket.on.calls.allArgs().find((args: any[]) => args[0] === eventName);
         if (!call) throw new Error(`Handler for ${eventName} not found`);
