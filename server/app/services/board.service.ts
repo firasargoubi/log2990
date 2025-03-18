@@ -6,6 +6,7 @@ import { Player } from '@common/player';
 import { Service } from 'typedi';
 import { GameService } from './game.service';
 import { PathfindingService } from './pathfinding.service';
+import { ERROR_MESSAGES } from '@app/constants/boardConst';
 
 const DEFAULT_MOVEMENT_POINTS = 0;
 const DEFAULT_ACTION_POINTS = 1;
@@ -22,11 +23,11 @@ export class BoardService {
         try {
             const game = await this.gameService.getGameById(gameId);
             if (!game) {
-                throw new Error('Game not found');
+                throw new Error(ERROR_MESSAGES.gameNotFound);
             }
             return game;
         } catch (error) {
-            throw new Error(`Error fetching game: ${error.message}`);
+            throw new Error(`${ERROR_MESSAGES.fetchGameErrorPrefix} ${error.message}`);
         }
     }
 
