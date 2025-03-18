@@ -1,4 +1,5 @@
-import { Component, inject, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, Input, OnChanges, OnInit } from '@angular/core';
+import { CombatService } from '@app/services/combat.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { TimerSyncService } from '@app/services/timer-sync.service'; // Inject TimerSyncService
@@ -33,6 +34,7 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
 
     private countDownInterval: ReturnType<typeof setInterval> | null = null;
     private notificationService = inject(NotificationService);
+    private combatService = inject(CombatService);
 
     ngOnInit() {
         if (this.gameState) {
@@ -102,17 +104,17 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
     onAttack() {
         console.log('ON EST DANS ONATTACK() CLIENT');
         if (!this.gameState) return;
-        this.attackDice = this.rollDice(this.currentPlayer, 'attack');
-        this.defenceDice = this.rollDice(this.opponent, 'defense');
+        this.attackDice = this.combatService.rollDice(this.currentPlayer, 'attack');
+        this.defenceDice = this.combatService.rollDice(this.opponent, 'defense');
         const attackRoll = this.attackDice + this.currentPlayer.attack;
         const defenseRoll = this.defenceDice + this.opponent.defense;
         this.attackDisplay = `Résultat du dé d'attaque: ${this.attackDice}`;
         this.defenceDisplay = `Résultat du dé de défense: ${this.defenceDice}`;
-        if (this.isOnIce(this.currentPlayer)) {
+        if (this.combatService.isOnIce(this.currentPlayer, this.gameState)) {
             this.currentPlayer.attack -= 2;
             this.currentPlayer.defense -= 2;
         }
-        if (this.isOnIce(this.opponent)) {
+        if (this.combatService.isOnIce(this.opponent, this.gameState)) {
             this.opponent.attack -= 2;
             this.opponent.defense -= 2;
         }
@@ -151,31 +153,6 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
             this.lobbyService.fleeCombat(this.gameState.id, this.currentPlayer, this.isFleeSuccess);
             this.lobbyService.changeTurnEnd(this.currentPlayer, this.opponent, this.playerTurn, this.gameState);
         }
-    }
-
-    ngOnDestroy() {
-        if (this.countDownInterval !== null) {
-            clearInterval(this.countDownInterval);
-        }
-    }
-
-    private rollDice(player: Player, type: 'attack' | 'defense'): number {
-        const diceType = player.bonus?.[type] === 'D4' ? 4 : 6;
-        return Math.floor(Math.random() * diceType) + 1;
-    }
-    private isOnIce(player: Player): boolean {
-        let tileType;
-        const currentPlayerIndex = this.gameState?.players.findIndex((p) => p.id === player.id);
-        if (currentPlayerIndex !== undefined && currentPlayerIndex !== -1) {
-            const currentPlayerPositon = this.gameState?.playerPositions[currentPlayerIndex];
-            if (this.gameState && currentPlayerPositon) {
-                tileType = this.gameState.board[currentPlayerPositon.x][currentPlayerPositon.y] % 10;
-            }
-        }
-        if (tileType === 3) {
-            return true;
-        }
-        return false;
     }
 
     private handleDefeat(player: Player) {

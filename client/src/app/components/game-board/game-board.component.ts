@@ -182,7 +182,7 @@ export class GameBoardComponent implements OnInit, OnChanges {
 
     private updateAvailableMoves() {
         if (this.gameState && this.gameState.availableMoves) {
-            this.availableMoves = this.gameState.availableMoves || [];
+            this.availableMoves = this.gameState.availableMoves;
         } else {
             this.availableMoves = [];
         }

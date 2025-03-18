@@ -41,7 +41,7 @@ describe('LobbyFormComponent', () => {
     it('should create', () => {
         expect(component).toBeTruthy();
     });
-    it('should call lockLobby when lobby is full', fakeAsync(() => {
+    it('should open BoxFormDialog when lobby exists and is full but not locked', fakeAsync(() => {
         const mockPlayer: Player = {
             id: 'p1',
             name: 'Player 1',
@@ -51,6 +51,7 @@ describe('LobbyFormComponent', () => {
             speed: 5,
             attack: 10,
             defense: 8,
+            maxLife: 0,
         };
         const mockLobby: GameLobby = {
             id: '123',
@@ -71,7 +72,11 @@ describe('LobbyFormComponent', () => {
         component.validateGameId();
         tick();
 
-        expect(mockLobbyService.lockLobby).toHaveBeenCalledWith('123');
+        expect(mockMatDialog.open).toHaveBeenCalledWith(BoxFormDialogComponent, {
+            width: '400px',
+            data: { lobbyId: '123', boxId: 'game1', isJoining: true },
+        });
+        expect(mockDialogRef.close).toHaveBeenCalledWith('123');
     }));
 
     it('should open BoxFormDialog and close current dialog when lobby exists', fakeAsync(() => {
@@ -84,6 +89,7 @@ describe('LobbyFormComponent', () => {
             speed: 5,
             attack: 10,
             defense: 8,
+            maxLife: 0,
         };
         const mockLobby: GameLobby = {
             id: '123',
@@ -133,6 +139,7 @@ describe('LobbyFormComponent', () => {
             speed: 5,
             attack: 10,
             defense: 8,
+            maxLife: 0,
         };
         const mockLobby: GameLobby = {
             id: '123',
@@ -163,6 +170,7 @@ describe('LobbyFormComponent', () => {
             speed: 5,
             attack: 10,
             defense: 8,
+            maxLife: 0,
         };
         const mockLobby: GameLobby = {
             id: '123',
@@ -196,6 +204,7 @@ describe('LobbyFormComponent', () => {
             speed: 5,
             attack: 10,
             defense: 8,
+            maxLife: 0,
         };
         const mockLobby: GameLobby = {
             id: '123',

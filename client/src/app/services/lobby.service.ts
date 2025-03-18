@@ -5,7 +5,7 @@ import { GameState } from '@common/game-state';
 import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
-import { Observable, Subject } from 'rxjs';
+import { Observable } from 'rxjs';
 import { shareReplay as rxjsShareReplay } from 'rxjs/operators';
 import { io, Socket } from 'socket.io-client';
 import { environment } from 'src/environments/environment';
@@ -16,27 +16,10 @@ import { environment } from 'src/environments/environment';
 export class LobbyService {
     private socket: Socket;
     private currentPlayer: Player | null = null;
-    private playerSwitchSubject = new Subject<{ newPlayerTurn: string; countDown: number }>();
 
     constructor() {
         this.socket = io(environment.serverUrl, {
             transports: ['websocket', 'polling'],
-        });
-
-        this.socket.on('connect', () => {
-            console.log('Socket connected with ID:', this.socket.id);
-        });
-
-        this.socket.on('disconnect', (reason) => {
-            console.log('Socket disconnected: ', reason);
-        });
-
-        this.socket.on('connect_error', (error) => {
-            console.error('Socket connection error:', error);
-        });
-
-        this.socket.on('PlayerSwitch', (data: { newPlayerTurn: string; countDown: number }) => {
-            this.playerSwitchSubject.next(data);
         });
     }
 
@@ -163,7 +146,6 @@ export class LobbyService {
     onBoardChanged(): Observable<{ gameState: GameState }> {
         return new Observable((observer) => {
             this.socket.on('boardModified', (data: { gameState: GameState }) => {
-                console.log(data.gameState);
                 observer.next(data);
             });
         });
@@ -270,7 +252,11 @@ export class LobbyService {
     }
 
     getPlayerSwitch(): Observable<{ newPlayerTurn: string; countDown: number }> {
-        return this.playerSwitchSubject.asObservable();
+        return new Observable((observer) => {
+            this.socket.on('PlayerSwitch', (data: { newPlayerTurn: string; countDown: number }) => {
+                observer.next(data);
+            });
+        });
     }
 
     changeTurnEnd(currentPlayer: Player, opponent: Player, playerTurn: string, gameState: GameState) {
