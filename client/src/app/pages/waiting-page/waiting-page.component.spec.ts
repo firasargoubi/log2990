@@ -33,6 +33,7 @@ describe('WaitingPageComponent', () => {
                 attack: 5,
                 defense: 5,
                 maxLife: 0,
+                winCount: 0,
             },
             {
                 id: mockPlayerId,
@@ -44,6 +45,7 @@ describe('WaitingPageComponent', () => {
                 attack: 5,
                 defense: 5,
                 maxLife: 0,
+                winCount: 0,
             },
         ],
         maxPlayers: 0,
