@@ -42,6 +42,7 @@ export class LobbyService {
     disconnect(): void {
         if (this.socket) {
             this.socket.disconnect();
+            window.location.reload();
         }
     }
 

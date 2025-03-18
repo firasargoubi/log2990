@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, inject, HostListener } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CombatComponent } from '@app/components/combat/combat.component';
 import { CountdownPlayerComponent } from '@app/components/countdown-player/countdown-player.component';
@@ -60,7 +60,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     private route = inject(ActivatedRoute);
     private notificationService = inject(NotificationService);
     private subscriptions: Subscription[] = [];
-
 
     get isAnimated(): boolean {
         return this.gameState.animation || false;
@@ -376,10 +375,16 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.router.navigate(['/home'], { replaceUrl: true });
         }
     }
-    onInfoSent(details: string) {
-        console.log(details);
-    }
 
+    isCurrentPlayerTurn(): boolean {
+        if (!this.gameState || !this.currentPlayer) {
+            return false;
+        }
+
+        const result = this.gameState.currentPlayer === this.currentPlayer.id;
+
+        return result;
+    }
 
     setDebugMode() {
         this.debug = !this.debug;
