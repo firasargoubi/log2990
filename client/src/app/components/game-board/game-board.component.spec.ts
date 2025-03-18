@@ -90,15 +90,15 @@ describe('GameBoardComponent', () => {
     it('should initialize board and available moves on ngOnInit', () => {
         fixture.detectChanges();
         expect(component.tiles.length).toEqual(getDummyGameState().board.length);
-        expect(component.availableMoves).toEqual(getDummyGameState().availableMoves);
+        expect(component['availableMoves']).toEqual(getDummyGameState().availableMoves);
     });
 
     it('should update available moves and clear path on lobbyService turn started event', () => {
         fixture.detectChanges();
-        component.highlightedPath = [{ x: 1, y: 1 }];
+        component['highlightedPath'] = [{ x: 1, y: 1 }];
         turnStartedSubject.next({ gameState: { availableMoves: [{ x: 0, y: 1 }] } });
-        expect(component.availableMoves).toEqual([{ x: 0, y: 1 }]);
-        expect(component.highlightedPath).toEqual([]);
+        expect(component['availableMoves']).toEqual([{ x: 0, y: 1 }]);
+        expect(component['highlightedPath']).toEqual([]);
     });
 
     it('should reinitialize board on ngOnChanges when gameState changes', () => {
@@ -114,18 +114,18 @@ describe('GameBoardComponent', () => {
             gameState: new SimpleChange(getDummyGameState(), newGameState, false),
         });
         expect(component.tiles[0][0].type).toEqual(newGameState.board[0][0] % OBJECT_MULTIPLIER);
-        expect(component.availableMoves).toEqual(newGameState.availableMoves);
-        expect(component.highlightedPath).toEqual([]);
+        expect(component['availableMoves']).toEqual(newGameState.availableMoves);
+        expect(component['highlightedPath']).toEqual([]);
     });
 
     it('should return true for an available move', () => {
-        component.availableMoves = [{ x: 0, y: 1 }];
+        component['availableMoves'] = [{ x: 0, y: 1 }];
         expect(component.isAvailableMove(0, 1)).toBeTrue();
         expect(component.isAvailableMove(1, 1)).toBeFalse();
     });
 
     it('should return true when position is on the highlighted path', () => {
-        component.highlightedPath = [{ x: 1, y: 1 }];
+        component['highlightedPath'] = [{ x: 1, y: 1 }];
         expect(component.isOnHighlightedPath(1, 1)).toBeTrue();
         expect(component.isOnHighlightedPath(0, 0)).toBeFalse();
     });
@@ -145,21 +145,21 @@ describe('GameBoardComponent', () => {
 
     it('should emit tileClicked on onTileClick when it is my turn and the tile is available', () => {
         spyOn(component.tileClicked, 'emit');
-        component.availableMoves = [{ x: 0, y: 1 }];
-        component.highlightedPath = [
+        component['availableMoves'] = [{ x: 0, y: 1 }];
+        component['highlightedPath'] = [
             { x: 0, y: 1 },
             { x: 0, y: 0 },
         ];
         component.currentPlayerId = 'player1';
         component.gameState.currentPlayer = 'player1';
         component.onTileClick({ x: 0, y: 1, type: 1, object: 0, id: '0-1' });
-        expect(component.tileClicked.emit).toHaveBeenCalledWith(component.highlightedPath);
+        expect(component.tileClicked.emit).toHaveBeenCalledWith(component['highlightedPath']);
     });
 
     it('should not emit tileClicked on onTileClick when it is not my turn', () => {
         spyOn(component.tileClicked, 'emit');
-        component.availableMoves = [{ x: 0, y: 1 }];
-        component.highlightedPath = [
+        component['availableMoves'] = [{ x: 0, y: 1 }];
+        component['highlightedPath'] = [
             { x: 0, y: 1 },
             { x: 0, y: 0 },
         ];
@@ -194,7 +194,7 @@ describe('GameBoardComponent', () => {
 
         component.onTileHover({ x: 0, y: 1, type: 1, object: 0, id: '0-1' });
 
-        expect(component.highlightedPath).toEqual([
+        expect(component['highlightedPath']).toEqual([
             { x: 0, y: 1 },
             { x: 0, y: 0 },
         ]);
@@ -202,20 +202,20 @@ describe('GameBoardComponent', () => {
 
     it('should clear highlightedPath on onTileHover when in action mode', () => {
         component.action = true;
-        component.highlightedPath = [{ x: 1, y: 1 }];
+        component['highlightedPath'] = [{ x: 1, y: 1 }];
         component.onTileHover({ x: 0, y: 1, type: 1, object: 0, id: '0-1' });
-        expect(component.highlightedPath).toEqual([]);
+        expect(component['highlightedPath']).toEqual([]);
     });
 
     it('should clear highlightedPath on onTileLeave', () => {
-        component.highlightedPath = [{ x: 1, y: 1 }];
+        component['highlightedPath'] = [{ x: 1, y: 1 }];
         component.onTileLeave();
-        expect(component.highlightedPath).toEqual([]);
+        expect(component['highlightedPath']).toEqual([]);
     });
 
     it('should correctly compute path in showPathToTile', () => {
         const testState = getDummyGameState();
-        testState.availableMoves = [
+        testState['availableMoves'] = [
             { x: 0, y: 1 },
             { x: 1, y: 0 },
         ];
@@ -254,15 +254,15 @@ describe('GameBoardComponent', () => {
     });
 
     it('should update available moves correctly with updateAvailableMoves', () => {
-        component.gameState.availableMoves = [{ x: 1, y: 1 }];
+        component.gameState['availableMoves'] = [{ x: 1, y: 1 }];
         (component as any).updateAvailableMoves();
-        expect(component.availableMoves).toEqual([{ x: 1, y: 1 }]);
+        expect(component['availableMoves']).toEqual([{ x: 1, y: 1 }]);
     });
 
     it('should clear path highlights with clearPathHighlights', () => {
-        component.highlightedPath = [{ x: 1, y: 1 }];
+        component['highlightedPath'] = [{ x: 1, y: 1 }];
         (component as any).clearPathHighlights();
-        expect(component.highlightedPath).toEqual([]);
+        expect(component['highlightedPath']).toEqual([]);
     });
 
     it('should throw an error when gameState is undefined', () => {
@@ -282,14 +282,14 @@ describe('GameBoardComponent', () => {
     });
 
     it('should return empty array when destination is not in available moves', () => {
-        component.gameState.availableMoves = [{ x: 1, y: 0 }];
+        component.gameState['availableMoves'] = [{ x: 1, y: 0 }];
         const path = (component as any).showPathToTile({ x: 0, y: 1 });
         expect(path).toEqual([]);
     });
 
     it('should handle undefined availableMoves in turn started event', () => {
         fixture.detectChanges();
-        component.highlightedPath = [{ x: 1, y: 1 }];
+        component['highlightedPath'] = [{ x: 1, y: 1 }];
 
         turnStartedSubject.next({
             gameState: {
@@ -297,8 +297,8 @@ describe('GameBoardComponent', () => {
             },
         });
 
-        expect(component.availableMoves).toEqual([]);
-        expect(component.highlightedPath).toEqual([]);
+        expect(component['availableMoves']).toEqual([]);
+        expect(component['highlightedPath']).toEqual([]);
     });
 
     it('should return null when gameState is undefined for getPlayerAtPosition', () => {
@@ -354,22 +354,22 @@ describe('GameBoardComponent', () => {
 
     it('should not update highlightedPath on onTileHover when gameState.animation is true', () => {
         component.gameState.animation = true;
-        component.highlightedPath = [{ x: 5, y: 5 }];
-        const initialPath = [...component.highlightedPath];
+        component['highlightedPath'] = [{ x: 5, y: 5 }];
+        const initialPath = [...component['highlightedPath']];
 
         component.onTileHover({ x: 0, y: 1, type: 1, object: 0, id: '0-1' });
 
-        expect(component.highlightedPath).toEqual(initialPath);
+        expect(component['highlightedPath']).toEqual(initialPath);
     });
 
     it('should not update highlightedPath on onTileHover when inCombat is true', () => {
         component.inCombat = true;
-        component.highlightedPath = [{ x: 5, y: 5 }];
-        const initialPath = [...component.highlightedPath];
+        component['highlightedPath'] = [{ x: 5, y: 5 }];
+        const initialPath = [...component['highlightedPath']];
 
         component.onTileHover({ x: 0, y: 1, type: 1, object: 0, id: '0-1' });
 
-        expect(component.highlightedPath).toEqual(initialPath);
+        expect(component['highlightedPath']).toEqual(initialPath);
     });
     it('should call lobbyService.requestTeleport and not emit infoSent on onTileRightClick when gameState.debug is true', () => {
         component.gameState.debug = true;
@@ -415,15 +415,15 @@ describe('GameBoardComponent', () => {
         expect(info).toContain('Tile Type: 1');
     });
     it('should set availableMoves to an empty array when gameState.availableMoves is undefined', () => {
-        component.gameState.availableMoves = undefined as unknown as any;
+        component.gameState['availableMoves'] = undefined as unknown as any;
         (component as any).updateAvailableMoves();
-        expect(component.availableMoves).toEqual([]);
+        expect(component['availableMoves']).toEqual([]);
     });
 
     it('should set availableMoves to an empty array when gameState is undefined', () => {
         component.gameState = undefined as unknown as GameState;
         (component as any).updateAvailableMoves();
-        expect(component.availableMoves).toEqual([]);
+        expect(component['availableMoves']).toEqual([]);
     });
     it('should return empty array from showPathToTile if currentPlayer is not found (playerIndex === -1)', () => {
         component.currentPlayerId = 'nonexistent';
