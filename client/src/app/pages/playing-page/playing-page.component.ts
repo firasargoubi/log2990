@@ -261,6 +261,9 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.router.navigate([PageUrl.Home], { replaceUrl: true });
         }
     }
+    onInfoSent(details: string) {
+        console.log(details);
+    }
 
     private setupGameListeners() {
         this.subscriptions.push(
@@ -339,12 +342,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.debug = !this.debug;
         this.lobbyService.setDebug(this.lobbyId, this.debug);
     }
-
-    // private updateTimerForAllPlayers(): void {
-    //     if (this.currentPlayer) {
-    //         this.lobbyService.updateCombatTime(this.remainingTime);
-    //     }
-    // }
 
     private syncCurrentPlayerWithGameState() {
         if (!this.gameState || !this.currentPlayer) return;
