@@ -30,6 +30,7 @@
             [currentPlayerId]="currentPlayer?.id || ''"
             [lobbyId]="lobbyId"
             [action]="action"
+            [inCombat]="isInCombat"
             (tileClicked)="onMoveRequest($event)"
             (actionClicked)="onActionRequest($event)"
         >

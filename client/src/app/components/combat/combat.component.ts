@@ -1,18 +1,17 @@
-import { Component, inject, Input, OnChanges, OnInit } from '@angular/core';
-import { CombatService } from '@app/services/combat.service';
+import { Component, inject, Input, OnChanges, OnInit, OnDestroy } from '@angular/core';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
+import { Subscription } from 'rxjs';
 
 const TO_SECONDS = 1000;
-const FLEE_RATE = 30;
 @Component({
     selector: 'app-combat',
     templateUrl: './combat.component.html',
     styleUrls: ['./combat.component.scss'],
 })
-export class CombatComponent implements OnInit, OnChanges {
+export class CombatComponent implements OnInit, OnChanges, OnDestroy {
     @Input() currentPlayer!: Player;
     @Input() lobbyId!: string;
     @Input() gameState: GameState | null = null;
@@ -28,25 +27,22 @@ export class CombatComponent implements OnInit, OnChanges {
     attackDisplay: string = '';
     defenceDisplay: string = '';
     damage: number;
+    isAttacker: boolean = false;
+    combatState: 'waiting' | 'attacking' | 'defending' | 'ended' = 'waiting';
     private lobbyService = inject(LobbyService);
+    private subscriptions: Subscription[] = [];
 
     private countDownInterval: ReturnType<typeof setInterval> | null = null;
     private notificationService = inject(NotificationService);
-    private combatService = inject(CombatService);
 
     ngOnInit() {
         if (this.gameState) {
             this.lobbyService.handleAttack(this.currentPlayer, this.opponent, this.lobbyId, this.gameState);
         }
-        this.subscribeToPlayerTurn();
-        this.subscribeToPlayerSwitch();
-        this.subscribeToNewSpawnPoints();
-        this.subscribeToFleeFailure();
-        this.startCountdown();
+        this.setupSubscriptions();
     }
 
     ngOnChanges() {
-        this.subscribeToPlayerSwitch();
         if (!this.currentPlayer) {
             this.currentPlayer = this.gameState?.players.find((p) => p.id === this.playerTurn) ?? this.currentPlayer;
         }
@@ -56,12 +52,25 @@ export class CombatComponent implements OnInit, OnChanges {
         }
     }
 
+    ngOnDestroy() {
+        this.stopCombatCountdown();
+        this.subscriptions.forEach((sub) => sub.unsubscribe());
+    }
+
     startCountdown() {
+        this.stopCombatCountdown(); // Always clear existing timer first
+
         this.countDownInterval = setInterval(() => {
             if (this.countDown > 0) {
                 this.countDown--;
+                // Emit current time to server to keep clients in sync
+                this.lobbyService.updateCombatTime(this.countDown);
             } else {
-                this.endTimer();
+                // Auto-attack or end turn when time runs out
+                if (this.canAct) {
+                    this.onAttack();
+                }
+                this.stopCombatCountdown();
             }
         }, TO_SECONDS);
     }
@@ -75,48 +84,24 @@ export class CombatComponent implements OnInit, OnChanges {
 
     endTimer() {
         if (this.gameState) {
-            this.lobbyService.changeTurnEnd(this.currentPlayer, this.opponent, this.playerTurn, this.gameState);
+            this.onAttack();
         }
         if (this.countDownInterval !== null) {
             clearInterval(this.countDownInterval);
             this.countDownInterval = null;
         }
-        this.onAttack();
     }
 
     onAttack() {
-        console.log('ON EST DANS ONATTACK() CLIENT');
-        if (!this.gameState) return;
-        this.attackDice = this.combatService.rollDice(this.currentPlayer, 'attack');
-        this.defenceDice = this.combatService.rollDice(this.opponent, 'defense');
-        const attackRoll = this.attackDice + this.currentPlayer.attack;
-        const defenseRoll = this.defenceDice + this.opponent.defense;
-        this.attackDisplay = `Résultat du dé d'attaque: ${this.attackDice}`;
-        this.defenceDisplay = `Résultat du dé de défense: ${this.defenceDice}`;
-        if (this.combatService.isOnIce(this.currentPlayer, this.gameState)) {
-            this.currentPlayer.attack -= 2;
-            this.currentPlayer.defense -= 2;
-        }
-        if (this.combatService.isOnIce(this.opponent, this.gameState)) {
-            this.opponent.attack -= 2;
-            this.opponent.defense -= 2;
-        }
-        this.damage = attackRoll - defenseRoll;
-        if (this.damage > 0) {
-            this.opponent.life -= this.damage;
-            if (this.opponent.life <= 0) {
-                this.handleDefeat(this.opponent);
-            }
-        }
-        this.lobbyService.attackAction(this.lobbyId, this.opponent, this.damage, this.opponent.life);
-        this.lobbyService.changeTurnEnd(this.currentPlayer, this.opponent, this.playerTurn, this.gameState);
-        this.subscribeChangeAttributes();
-        this.subscribeToPlayerSwitch();
+        if (!this.gameState || !this.canAct) return;
+        this.stopCombatCountdown();
+        this.lobbyService.attack(this.lobbyId, this.currentPlayer, this.opponent);
     }
 
     onFlee() {
-        if (!this.gameState) return;
+        if (!this.gameState || !this.canAct) return;
 
+        // Initialize amountEscape if undefined
         if (this.currentPlayer.amountEscape === undefined) {
             this.currentPlayer.amountEscape = 0;
         }
@@ -125,68 +110,55 @@ export class CombatComponent implements OnInit, OnChanges {
             this.notificationService.showInfo('Vous avez déjà tenté de fuir 2 fois, vous ne pouvez plus fuir.');
             return;
         }
-
-        const fleeingChance = Math.random();
-
-        if (fleeingChance <= FLEE_RATE) {
-            this.isFleeSuccess = true;
-            this.lobbyService.fleeCombat(this.gameState.id, this.currentPlayer, this.isFleeSuccess);
-        } else {
-            this.isFleeSuccess = false;
-            this.lobbyService.fleeCombat(this.gameState.id, this.currentPlayer, this.isFleeSuccess);
-            this.lobbyService.changeTurnEnd(this.currentPlayer, this.opponent, this.playerTurn, this.gameState);
-        }
+        this.stopCombatCountdown();
+        this.lobbyService.flee(this.gameState.id, this.currentPlayer, true);
     }
 
-    private handleDefeat(player: Player) {
-        if (this.gameState) {
-            this.lobbyService.handleDefeat(player, this.lobbyId);
-        }
-        this.subscribeToNewSpawnPoints();
-    }
+    private setupSubscriptions() {
+        this.subscriptions.push(
+            this.lobbyService.onAttackResult().subscribe((data) => {
+                this.attackDice = data.attackRoll;
+                this.defenceDice = data.defenseRoll;
+                this.attackDisplay = `Résultat du dé d'attaque: ${data.attackRoll}`;
+                this.defenceDisplay = `Résultat du dé de défense: ${data.defenseRoll}`;
+                this.damage = data.damage;
+                if (this.currentPlayer.id === data.attacker.id) {
+                    this.currentPlayer = data.attacker;
+                    this.opponent = data.defender;
+                    this.canAct = false;
+                } else {
+                    this.currentPlayer = data.defender;
+                    this.opponent = data.attacker;
+                    this.canAct = true;
+                }
+                this.countDown = 5;
+                this.startCountdown();
+            }),
+        );
+        this.subscriptions.push(
+            this.lobbyService.onStartCombat().subscribe((data) => {
+                if (this.currentPlayer.id !== data.firstPlayer.id) {
+                    this.playerTurn = data.firstPlayer.id;
+                    this.isPlayerTurn = false;
+                }
+                this.countDown = 5;
+                this.canAct = data.firstPlayer.id === this.currentPlayer.id;
+                this.startCountdown();
+            }),
+        );
+        this.subscriptions.push(
+            this.lobbyService.onGameEnded().subscribe(() => {
+                this.notificationService.showInfo(`La partie est terminée!`);
+            }),
+        );
 
-    private subscribeToPlayerTurn() {
-        this.lobbyService.getPlayerTurn().subscribe((data) => {
-            this.playerTurn = data.playerTurn;
-            this.countDown = data.countDown;
-            this.canAct = this.currentPlayer.id === this.playerTurn;
-        });
-    }
-
-    private subscribeToPlayerSwitch() {
-        this.lobbyService.getPlayerSwitch().subscribe((data) => {
-            this.playerTurn = data.newPlayerTurn;
-            this.countDown = data.countDown;
-            this.canAct = this.currentPlayer.id === this.playerTurn;
-        });
-    }
-
-    private subscribeToNewSpawnPoints() {
-        this.lobbyService.newSpawnPoints().subscribe((data) => {
-            const playerIndex = this.gameState?.players.findIndex((p) => p.id === data.player.id) ?? -1;
-            if (playerIndex === -1) return;
-            if (this.gameState && this.gameState.playerPositions) {
-                this.gameState.playerPositions[playerIndex] = data.newSpawn;
-                this.currentPlayer.life = this.currentPlayer.maxLife;
-            }
-        });
-    }
-
-    private subscribeChangeAttributes() {
-        this.lobbyService.updateHealth().subscribe((data) => {
-            const opponent = this.gameState?.players.find((p) => p.id === data.player.id);
-            if (opponent) {
-                opponent.life = data.remainingHealth;
-            }
-        });
-    }
-
-    private subscribeToFleeFailure() {
-        this.lobbyService.onFleeFailure().subscribe((data) => {
-            if (this.currentPlayer.id === data.fleeingPlayer.id) {
-                this.currentPlayer.amountEscape = data.fleeingPlayer.amountEscape;
-            }
-            this.notificationService.showInfo(`${data.fleeingPlayer.name} n'a pas réussi à fuir le combat.`);
-        });
+        this.subscriptions.push(
+            this.lobbyService.onFleeFailure().subscribe((data) => {
+                if (this.currentPlayer.id === data.fleeingPlayer.id) {
+                    this.currentPlayer.amountEscape = data.fleeingPlayer.amountEscape;
+                }
+                this.notificationService.showInfo(`${data.fleeingPlayer.name} n'a pas réussi à fuir le combat.`);
+            }),
+        );
     }
 }
