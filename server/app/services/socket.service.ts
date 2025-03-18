@@ -64,14 +64,14 @@ export class SocketService {
 
         socket.on('playerDefeated', (data: { player: Player; lobbyId: string }) => this.handleDefeat(data.player, data.lobbyId));
 
-        socket.on('attackAction', (data: { lobbyId: string; opponent: Player; damage: number; opponentLife: number }) =>
-            this.handleAttackAction(data.lobbyId, data.opponent, data.damage),
+        socket.on('attackAction', (data: { lobbyId: string; attacker: Player; defender: Player }) =>
+            this.handleAttackAction(data.lobbyId, data.attacker, data.defender),
         );
         socket.on('initializeBattle', (data: { currentPlayer: Player; opponent: Player; lobbyId: string }) =>
             this.handleBattleInitialization(socket, data.currentPlayer, data.opponent),
         );
-        socket.on('startBattle', (data: { currentPlayer: Player; opponent: Player; gameState: GameState }) =>
-            this.handleStartBattle(socket, data.currentPlayer, data.opponent, data.gameState),
+        socket.on('startBattle', (data: { lobbyId: string; currentPlayer: Player; opponent: Player; time: number }) =>
+            this.handleStartBattle(data.lobbyId, data.currentPlayer, data.opponent, data.time),
         );
 
         socket.on('changeTurnEndTimer', (data: { currentPlayer: Player; opponent: Player; playerTurn: string; gameState: GameState }) =>
@@ -84,6 +84,18 @@ export class SocketService {
 
         socket.on('terminateAttack', (data: { lobbyId: string }) => {
             this.terminateAttack(data.lobbyId);
+        });
+
+        socket.on('attack', (data: { lobbyId: string; attacker: Player; defender: Player }) => {
+            this.handleAttackAction(data.lobbyId, data.attacker, data.defender);
+        });
+
+        socket.on('flee', (data: { lobbyId: string; player: Player; success: boolean }) => {
+            this.handleFlee(data.lobbyId, data.player, data.success);
+        });
+
+        socket.on('updateCombatTime', (data: { lobbyId: string; timeLeft: number }) => {
+            this.gameSocketHandlerService.updateCombatTime(data.lobbyId, data.timeLeft);
         });
     }
 
@@ -243,8 +255,8 @@ export class SocketService {
         this.gameSocketHandlerService.initializeBattle(socket, currentPlayer, opponent);
     }
 
-    private handleStartBattle(socket: Socket, currentPlayer: Player, opponent: Player, gameState: GameState): void {
-        this.gameSocketHandlerService.startBattle(socket, currentPlayer, opponent, gameState);
+    private handleStartBattle(lobbyId: string, currentPlayer: Player, opponent: Player, time: number): void {
+        this.gameSocketHandlerService.startBattle(lobbyId, currentPlayer, opponent, time);
     }
 
     private handleChangeTurnEnd(currentPlayer: Player, opponent: Player, playerTurn: string, gameState: GameState): void {
@@ -255,8 +267,8 @@ export class SocketService {
         this.gameSocketHandlerService.handleDefeat(player, lobbyId);
     }
 
-    private handleAttackAction(lobbyId: string, opponent: Player, damage: number) {
-        this.gameSocketHandlerService.handleAttackAction(lobbyId, opponent, damage);
+    private handleAttackAction(lobbyId: string, attacker: Player, defender: Player) {
+        this.gameSocketHandlerService.handleAttackAction(lobbyId, attacker, defender);
     }
 
     private handleFlee(lobbyId: string, player: Player, success: boolean) {

@@ -96,6 +96,19 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             console.log('combat?', this.isInCombat);
             this.lobbyService.updateCombatStatus(this.isInCombat);
         });
+
+        this.lobbyService.onStartCombat().subscribe((data) => {
+            this.isInCombat = true;
+            this.isPlayerTurn = data.firstPlayer.id === this.currentPlayer.id;
+            console.log(this.isPlayerTurn);
+        });
+
+        this.lobbyService.onGameEnded().subscribe((data) => {
+            this.isInCombat = false;
+            this.lobbyService.updateCombatStatus(this.isInCombat);
+            console.log("Winner: ",data.winner);
+        });
+
         if (this.gameState) {
             this.gameState.currentPlayerActionPoints = 1;
         }
@@ -143,7 +156,11 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     onAttackClick(playerId: string, lobbyId: string): void {
-        this.lobbyService.startCombat(playerId, lobbyId);
+        const opponent = this.gameState.players.find((p) => p.id === playerId);
+        if (!opponent) {
+            return;
+        }
+        this.lobbyService.startCombat(lobbyId, this.currentPlayer, opponent, 50);
         this.isInCombat = true;
         this.remainingTime = 30;
     }

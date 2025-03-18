@@ -12,6 +12,7 @@ import { LobbySocketHandlerService } from './lobby-socket-handler.service';
 @Service()
 export class GameSocketHandlerService {
     private io: Server;
+    private combatTimes: Map<string, number> = new Map<string, number>();
     constructor(
         private lobbies: Map<string, GameLobby>,
         private gameStates: Map<string, GameState>,
@@ -153,13 +154,15 @@ export class GameSocketHandlerService {
         this.io.to(currentPlayer.id).to(opponent.id).emit(GameEvents.PlayersBattling, { isInCombat: true });
     }
 
-    startBattle(socket: Socket, currentPlayer: Player, opponent: Player, gameState: GameState) {
+    startBattle(lobbyId: string, currentPlayer: Player, opponent: Player, time: number) {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) return;
+        this.combatTimes.set(lobbyId, time);
         const currentIndex = gameState.players.findIndex((p) => p.id === currentPlayer.id);
         const opponentIndex = gameState.players.findIndex((p) => p.id === opponent.id);
-        const playerTurn = currentIndex < opponentIndex ? currentPlayer.id : opponent.id;
-        const player = gameState.players.find((p) => p.id === playerTurn);
-        const countDown = player.amountEscape === 2 ? GameSocketConstants.EscapeCountdown : GameSocketConstants.DefaultCountdown;
-        this.io.to(currentPlayer.id).to(opponent.id).emit(GameEvents.PlayerTurn, { playerTurn, countDown });
+        const playerTurn = currentIndex < opponentIndex ? currentIndex : opponentIndex;
+        const firstPlayer = gameState.players[playerTurn];
+        this.io.to(currentPlayer.id).to(opponent.id).emit('startCombat', { firstPlayer });
     }
 
     changeTurnEnd(currentPlayer: Player, opponent: Player, playerTurn: string, gameState: GameState) {
@@ -167,7 +170,14 @@ export class GameSocketHandlerService {
         const newPlayerTurn = player.id === currentPlayer.id ? opponent.id : currentPlayer.id;
         const newPlayer = gameState.players.find((p) => p.id === newPlayerTurn);
         const countDown = newPlayer.amountEscape === 2 ? GameSocketConstants.EscapeCountdown : GameSocketConstants.DefaultCountdown;
-        this.io.to(currentPlayer.id).to(opponent.id).emit(GameEvents.PlayerSwitch, { newPlayerTurn, countDown });
+
+        // Emit turn switch with roles information
+        this.io.to(currentPlayer.id).to(opponent.id).emit(GameEvents.PlayerSwitch, {
+            newPlayerTurn,
+            countDown,
+            attackerId: newPlayerTurn, // Add attacker role
+            defenderId: playerTurn, // Add defender role
+        });
     }
 
     handlePlayersUpdate(socket: Socket, lobbyId: string, players: Player[]) {
@@ -201,6 +211,7 @@ export class GameSocketHandlerService {
     handleDefeat(player: Player, lobbyId: string) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
+        console.log('GameState when Won', gameState);
         const playerIndex = gameState.players.findIndex((p) => p.id === player.id);
         if (playerIndex === -1) return;
         const originalSpawn = gameState.spawnPoints[playerIndex];
@@ -248,32 +259,95 @@ export class GameSocketHandlerService {
         }
 
         gameState.playerPositions[playerIndex] = newSpawn;
-        this.io.to(lobbyId).emit(GameEvents.ChangedSpawn, { player, newSpawn });
+
+        this.io.to(lobbyId).emit('combatEnded', { winner: player });
+        if (player.id === gameState.currentPlayer) {
+            this.handleEndTurnInternally(gameState);
+        }
+        this.gameStates.set(lobbyId, gameState);
+        this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState });
     }
 
-    handleAttackAction(lobbyId: string, opponent: Player, damage: number) {
+    handleAttackAction(lobbyId: string, attacker: Player, defender: Player) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
-        const opponentGame = gameState.players.find((p) => p.id === opponent.id);
-        if (!opponentGame) return;
-        if (damage > 0) {
-            opponentGame.life -= damage;
+
+        // Calculate attack and defense rolls on the server
+        const attackDice = Math.floor(Math.random() * attacker.attack) + 1;
+        const defenseDice = Math.floor(Math.random() * defender.defense) + 1;
+
+        let attackRoll = attackDice + attacker.attack;
+        let defenseRoll = defenseDice + defender.defense;
+
+        // Apply ice tile effects if needed
+        if (this.isPlayerOnIceTile(gameState, attacker)) {
+            attackRoll -= 2;
         }
-        this.io.to(lobbyId).emit(GameEvents.UpdateHealth, { player: opponentGame, remainingHealth: opponentGame.life });
+
+        if (this.isPlayerOnIceTile(gameState, defender)) {
+            defenseRoll -= 2;
+        }
+
+        // Calculate damage
+        const damage = Math.max(0, attackRoll - defenseRoll);
+
+        // Apply damage to defender
+        if (damage > 0) {
+            defender.life -= damage;
+        }
+
+        if (defender.life <= 0) {
+            console.log('Defender defeated', defender);
+            this.handleDefeat(defender, lobbyId);
+
+            return;
+        }
+        this.io.to(lobbyId).emit('attackResult', {
+            attackRoll,
+            defenseRoll,
+            attackerHP: attacker.life,
+            defenderHP: defender.life,
+            damage,
+            attacker,
+            defender,
+        });
     }
 
-    handleFlee(lobbyId: string, fleeingPlayer: Player, success: boolean) {
-        if (success) {
-            this.io.to(lobbyId).emit('fleeSuccess', { fleeingPlayer });
-            this.handleTerminateAttack(lobbyId);
-        } else {
-            const player = this.gameStates.get(lobbyId).players.find((p) => p.id === fleeingPlayer.id);
-            if (isNaN(player.amountEscape)) {
-                player.amountEscape = 0;
-            }
-            player.amountEscape++;
-            this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer: player });
+    handleFlee(lobbyId: string, fleeingPlayer: Player, forceSuccess: boolean = false) {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) return;
+
+        // Initialize amountEscape if not set
+        if (fleeingPlayer.amountEscape === undefined) {
+            fleeingPlayer.amountEscape = 0;
         }
+
+        // Limit flee attempts
+        if (fleeingPlayer.amountEscape >= 2 && !forceSuccess) {
+            this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
+            return;
+        }
+
+        fleeingPlayer.amountEscape++;
+
+        // Determine flee success (or use forced success)
+        const FLEE_RATE = 30; // 30% chance
+        const fleeingChance = Math.random() * 100;
+        const isSuccessful = forceSuccess || fleeingChance <= FLEE_RATE;
+
+        if (!isSuccessful) {
+            this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
+        }
+
+        // Update player in gameState
+        const playerIndex = gameState.players.findIndex((p) => p.id === fleeingPlayer.id);
+        if (playerIndex !== -1) {
+            gameState.players[playerIndex] = fleeingPlayer;
+        }
+
+        this.gameStates.set(lobbyId, gameState);
+        this.io.to(lobbyId).emit(GameEvents.FleeSuccess, { fleeingPlayer, isSuccessful });
+        this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState });
     }
 
     handleTerminateAttack(lobbyId: string) {
@@ -285,6 +359,16 @@ export class GameSocketHandlerService {
         // Diffuse l'événement à tous les clients du lobby avec le temps restant
         this.io.to(lobbyId).emit('combatUpdate', { timeLeft });
     }
+
+    updateCombatPlayers(lobbyId: string): void {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) return;
+
+        // Send current player states to all clients
+        this.io.to(lobbyId).emit('combatPlayersUpdate', {
+            players: gameState.players,
+        });
+    }
     private getGameStateOrEmitError(socket: Socket, lobbyId: string): GameState | null {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) {
@@ -292,6 +376,15 @@ export class GameSocketHandlerService {
             return null;
         }
         return gameState;
+    }
+
+    private isPlayerOnIceTile(gameState: GameState, player: Player): boolean {
+        const playerIndex = gameState.players.findIndex((p) => p.id === player.id);
+        const position = gameState.playerPositions[playerIndex];
+        if (!position) return false;
+
+        const tile = gameState.board[position.x][position.y];
+        return tile === TileTypes.Ice;
     }
 }
 

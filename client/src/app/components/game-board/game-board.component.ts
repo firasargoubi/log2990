@@ -20,7 +20,7 @@ export class GameBoardComponent implements OnInit, OnChanges {
     @Input() currentPlayerId: string = '';
     @Input() lobbyId: string = '';
     @Input() action: boolean = false;
-    @Input() isInCombat: boolean = false;
+    @Input() inCombat: boolean = false;
     @Output() tileClicked = new EventEmitter<Coordinates[]>();
     @Output() actionClicked = new EventEmitter<Tile>();
 
@@ -82,7 +82,7 @@ export class GameBoardComponent implements OnInit, OnChanges {
         if (this.gameState.animation) {
             return;
         }
-        if (this.isInCombat) {
+        if (this.inCombat) {
             return;
         }
         if (this.action) {
@@ -98,7 +98,7 @@ export class GameBoardComponent implements OnInit, OnChanges {
         if (this.gameState.animation) {
             return;
         }
-        if (this.isInCombat) {
+        if (this.inCombat) {
             return;
         }
         if (this.action) {

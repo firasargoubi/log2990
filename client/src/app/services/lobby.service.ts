@@ -1,3 +1,5 @@
+/* eslint-disable max-lines */
+/* eslint-disable no-dupe-class-members */
 import { Injectable } from '@angular/core';
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
@@ -277,10 +279,6 @@ export class LobbyService {
         });
     }
 
-    startCombat(playerId: string, lobbyId: string): void {
-        this.socket.emit('startCombat', { playerId, lobbyId });
-    }
-
     updateCountdown(time: number): void {
         this.socket.emit('updateCountdown(time)', { time }); // Calls the updateCountdown method in SocketService
     }
@@ -310,26 +308,6 @@ export class LobbyService {
         });
     }
 
-    fleeCombat(lobbyId: string, player: Player, success: boolean) {
-        this.socket.emit('fleeCombat', { player, lobbyId, success });
-    }
-
-    onFleeSuccess(): Observable<{ fleeingPlayer: Player }> {
-        return new Observable((observer) => {
-            this.socket.on('fleeSuccess', (data: { fleeingPlayer: Player }) => {
-                observer.next(data);
-            });
-        });
-    }
-
-    onFleeFailure(): Observable<{ fleeingPlayer: Player }> {
-        return new Observable((observer) => {
-            this.socket.on('fleeFailure', (data: { fleeingPlayer: Player }) => {
-                observer.next(data);
-            });
-        });
-    }
-
     terminateAttack(lobbyId: string) {
         this.socket.emit('terminateAttack', { lobbyId });
     }
@@ -350,12 +328,96 @@ export class LobbyService {
         });
     }
 
+    getCombatUpdate(): Observable<{ players: Player[] }> {
+        return new Observable((observer) => {
+            this.socket.on('combatPlayersUpdate', (data) => {
+                observer.next(data); // Sends the updated player states
+            });
+        });
+    }
+
+    performAttack(lobbyId: string, attackerId: string, defenderId: string): void {
+        this.socket.emit('performAttack', { lobbyId, attackerId, defenderId });
+    }
+
+    getAttackResult(): Observable<any> {
+        return new Observable((observer) => {
+            this.socket.on('attackResult', (data: any) => {
+                observer.next(data);
+            });
+        });
+    }
+
     updateCombatTime(timeLeft: number): void {
         this.socket.emit('combatUpdate', { timeLeft });
     }
 
     updateCombatStatus(isInCombat: boolean): void {
         this.isInCombatSubject.next(isInCombat);
+    }
+
+    attack(lobbyId: string, attacker: Player, defender: Player): void {
+        this.socket.emit('attack', { lobbyId, attacker, defender });
+    }
+
+    flee(lobbyId: string, player: Player, success: boolean): void {
+        this.socket.emit('flee', { lobbyId, player, success });
+    }
+
+    onAttackResult(): Observable<{
+        attackDice: number;
+        defenseDice: number;
+        attackRoll: number;
+        defenseRoll: number;
+        attackerHP: number;
+        defenderHP: number;
+        damage: number;
+        attacker: Player;
+        defender: Player;
+    }> {
+        return new Observable((observer) => {
+            this.socket.on('attackResult', (data) => {
+                observer.next(data);
+            });
+        });
+    }
+
+    startCombat(lobbyId: string, currentPlayer: Player, opponent: Player, time: number): void {
+        this.socket.emit('startBattle', { lobbyId, currentPlayer, opponent, time });
+    }
+
+    onStartCombat(): Observable<{ firstPlayer: Player }> {
+        return new Observable((observer) => {
+            this.socket.on('startCombat', (data) => {
+                observer.next(data);
+            });
+        });
+    }
+
+    onGameEnded(): Observable<{ winner: Player }> {
+        return new Observable((observer) => {
+            this.socket.on('combatEnded', (data) => {
+                observer.next(data);
+            });
+        });
+    }
+
+    // Listen for successful flee events
+    onFleeSuccess(): Observable<{ fleeingPlayer: Player }> {
+        return new Observable((observer) => {
+            this.socket.on('fleeSuccess', (data) => {
+                observer.next(data);
+            });
+        });
+    }
+
+    // Listen for failed flee attempts
+    onFleeFailure(): Observable<{ fleeingPlayer: Player }> {
+        return new Observable((observer) => {
+            this.socket.on('fleeFailure', (data) => {
+                observer.next(data);
+            });
+        });
     }
 }
 function shareReplay<T>(bufferSize: number): import('rxjs').OperatorFunction<T, T> {
