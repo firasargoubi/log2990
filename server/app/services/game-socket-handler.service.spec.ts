@@ -233,8 +233,7 @@ describe('GameSocketHandlerService', () => {
 
         service.startTurn('lobby1');
         expect(ioToStub.calledWith('lobby1')).to.equal(true);
-        const emit = ioToStub.returnValues[0].emit;
-        expect(emit.calledWith('error', 'Turn error: Turn error')).to.equal(true);
+        expect(emitStub.calledWith('error', 'Turn error:Turn error')).to.equal(true);
     });
     it('should emit error if gameState not found in closeDoor', () => {
         service.closeDoor(socket, { x: 0, y: 0 } as any, 'lobbyX');
@@ -571,5 +570,53 @@ describe('GameSocketHandlerService', () => {
     it('should not proceed if no gameState in handleAttackAction', () => {
         service.handleAttackAction('notFoundLobby', { id: 'op', life: 5 } as Player, 5);
         expect(ioToStub.calledWith('notFoundLobby')).to.be.false;
+    });
+    it('should not reduce life if damage is 0 in handleAttackAction', () => {
+        const opponent = { id: 'p2', life: 10 } as Player;
+        const gameState = { players: [opponent] } as GameState;
+        gameStates.set('lobby1', gameState);
+
+        service.handleAttackAction('lobby1', opponent, 0);
+
+        expect(opponent.life).to.equal(10);
+        expect(ioToStub.calledWith('lobby1')).to.be.true;
+        const emit = ioToStub.returnValues[0].emit;
+        expect(emit.calledWith('update-health', { player: opponent, remainingHealth: 10 })).to.be.true;
+    });
+    it('should emit PlayerTurn with correct playerTurn when opponent has first index in startBattle', () => {
+        const currentPlayer = { id: 'p1', amountEscape: 0 } as Player;
+        const opponent = { id: 'p2', amountEscape: 0 } as Player;
+        const gameState = { players: [opponent, currentPlayer] } as GameState;
+
+        service.startBattle(socket, currentPlayer, opponent, gameState);
+
+        expect(ioToStub.calledWith('p1')).to.be.true;
+        const emit = ioToStub.returnValues[0].emit;
+        expect(emit.calledWith('PlayerTurn', { playerTurn: 'p2', countDown: 5 })).to.be.true;
+    });
+    it('should emit PlayerSwitch with currentPlayer when player.id is not currentPlayer.id', () => {
+        const currentPlayer = { id: 'p1', amountEscape: 0 } as Player;
+        const opponent = { id: 'p2', amountEscape: 0 } as Player;
+        const gameState = { players: [currentPlayer, opponent] } as GameState;
+
+        service.changeTurnEnd(currentPlayer, opponent, 'p2', gameState);
+
+        expect(ioToStub.calledWith('p1')).to.be.true;
+        const emit = ioToStub.returnValues[0].emit;
+        expect(emit.calledWith('PlayerSwitch', { newPlayerTurn: 'p1', countDown: 5 })).to.be.true;
+    });
+    it('should not emit anything if player not found in handleDefeat', () => {
+        const player = { id: 'pX' } as Player;
+        const gameState: GameState = {
+            players: [{ id: 'p1' }],
+            spawnPoints: [],
+            playerPositions: [],
+        } as GameState;
+
+        gameStates.set('lobby1', gameState);
+
+        service.handleDefeat(player, 'lobby1');
+
+        expect(ioToStub.called).to.be.false;
     });
 });
