@@ -75,13 +75,12 @@ export class CombatComponent implements OnInit, OnChanges {
 
     endTimer() {
         if (this.gameState) {
-            this.lobbyService.changeTurnEnd(this.currentPlayer, this.opponent, this.playerTurn, this.gameState);
+            this.onAttack();
         }
         if (this.countDownInterval !== null) {
             clearInterval(this.countDownInterval);
             this.countDownInterval = null;
         }
-        this.onAttack();
     }
 
     onAttack() {
@@ -167,7 +166,7 @@ export class CombatComponent implements OnInit, OnChanges {
             if (playerIndex === -1) return;
             if (this.gameState && this.gameState.playerPositions) {
                 this.gameState.playerPositions[playerIndex] = data.newSpawn;
-                this.currentPlayer.life = this.currentPlayer.maxLife;
+                this.lobbyService.terminateAttack(this.lobbyId);
             }
         });
     }

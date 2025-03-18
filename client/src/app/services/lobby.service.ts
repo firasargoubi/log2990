@@ -350,7 +350,6 @@ export class LobbyService {
         });
     }
 
-    // Cette méthode peut être utilisée pour émettre un changement de temps
     updateCombatTime(timeLeft: number): void {
         this.socket.emit('combatUpdate', { timeLeft });
     }

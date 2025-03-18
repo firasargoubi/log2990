@@ -247,8 +247,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         }
         this.currentPlayer = currentPlayer;
         const socketId = this.lobbyService.getSocketId();
-        console.log('getCurrentPlayer', this.currentPlayer);
-        console.log('socketId', socketId);
         if (this.currentPlayer.id !== socketId) {
             this.currentPlayer.id = socketId;
         }

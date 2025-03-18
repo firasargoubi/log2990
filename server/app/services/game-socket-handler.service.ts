@@ -89,16 +89,13 @@ export class GameSocketHandlerService {
                     if (idx === coordinates.length - 1) {
                         updatedGameState.animation = false;
                     }
+                    this.gameStates.set(lobbyId, updatedGameState);
                     this.io.to(lobbyId).emit('movementProcessed', { gameState: updatedGameState });
                     if (updatedGameState.availableMoves.length === 0) {
                         this.handleEndTurn(socket, lobbyId);
                     }
                 }, 150);
             }
-            updatedGameState.animation = false;
-            this.gameStates.set(lobbyId, updatedGameState);
-
-            this.io.to(lobbyId).emit(GameEvents.MovementProcessed, { gameState });
         } catch (error) {
             socket.emit(GameEvents.Error, `${gameSocketMessages.movementError}${error.message}`);
         }

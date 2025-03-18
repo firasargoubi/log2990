@@ -30,7 +30,6 @@ export class CountdownPlayerComponent implements OnInit, OnDestroy {
         this.remainingTime = this.countdown;
         this.combatStatusSubscription = this.lobbyService.isInCombat$.subscribe((status) => {
             this.isInCombat = status;
-            console.log('combat?????', this.isInCombat);
             if (this.isInCombat) {
                 this.pauseCountdown();
             } else {
