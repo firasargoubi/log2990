@@ -111,7 +111,6 @@ export class GameSocketHandlerService {
         try {
             const updatedGameState = this.boardService.handleTeleport(gameState, coordinates);
             this.gameStates.set(lobbyId, updatedGameState);
-            console.log(updatedGameState);
             this.io.to(lobbyId).emit('boardModified', { gameState: updatedGameState });
         } catch (error) {
             socket.emit('error', `Teleport error: ${error.message}`);
@@ -187,12 +186,11 @@ export class GameSocketHandlerService {
         const newPlayer = gameState.players.find((p) => p.id === newPlayerTurn);
         const countDown = newPlayer.amountEscape === 2 ? GameSocketConstants.EscapeCountdown : GameSocketConstants.DefaultCountdown;
 
-        // Emit turn switch with roles information
         this.io.to(currentPlayer.id).to(opponent.id).emit(GameEvents.PlayerSwitch, {
             newPlayerTurn,
             countDown,
-            attackerId: newPlayerTurn, // Add attacker role
-            defenderId: playerTurn, // Add defender role
+            attackerId: newPlayerTurn,
+            defenderId: playerTurn,
         });
     }
 
@@ -305,12 +303,15 @@ export class GameSocketHandlerService {
     handleAttackAction(lobbyId: string, attacker: Player, defender: Player) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
-
+        const attackerIndex = gameState.players.findIndex((p) => p.id === attacker.id);
+        const defenderIndex = gameState.players.findIndex((p) => p.id === defender.id);
+        if (attackerIndex === -1 || defenderIndex === -1) {
+            return;
+        }
         let attackDice;
         let defenseDice;
 
         if (gameState.debug) {
-            console.log('MAX STATS');
             attackDice = attacker.attack;
             defenseDice = defender.defense;
         } else {
@@ -318,7 +319,6 @@ export class GameSocketHandlerService {
             defenseDice = Math.floor(Math.random() * defender.defense) + 1;
         }
 
-        // Apply ice tile effects if needed
         if (this.isPlayerOnIceTile(gameState, attacker)) {
             attackDice -= 2;
         }
@@ -326,11 +326,8 @@ export class GameSocketHandlerService {
         if (this.isPlayerOnIceTile(gameState, defender)) {
             defenseDice -= 2;
         }
-
-        // Calculate damage
         const damage = Math.max(0, attackDice - defenseDice);
 
-        // Apply damage to defender
         if (damage > 0) {
             defender.life -= damage;
         }
@@ -354,31 +351,24 @@ export class GameSocketHandlerService {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
 
-        // Initialize amountEscape if not set
         if (fleeingPlayer.amountEscape === undefined) {
             fleeingPlayer.amountEscape = 0;
         }
-
-        // Limit flee attempts
         if (fleeingPlayer.amountEscape >= 2 && !forceSuccess) {
             this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
             return;
         }
 
         fleeingPlayer.amountEscape++;
-
-        // Determine flee success (or use forced success)
-        const FLEE_RATE = 30; // 30% chance
+        const FLEE_RATE = 30;
         const fleeingChance = Math.random() * 100;
 
         const isSuccessful = forceSuccess || fleeingChance <= FLEE_RATE;
-        console.log('Fleeing Chance :', fleeingChance, isSuccessful);
         if (!isSuccessful) {
             this.io.to(lobbyId).emit('fleeFailure', { fleeingPlayer });
             return;
         }
 
-        // Update player in gameState
         const playerIndex = gameState.players.findIndex((p) => p.id === fleeingPlayer.id);
         if (playerIndex !== -1) {
             gameState.players[playerIndex] = fleeingPlayer;
@@ -395,7 +385,6 @@ export class GameSocketHandlerService {
     }
 
     updateCombatTime(lobbyId: string, timeLeft: number): void {
-        // Diffuse l'événement à tous les clients du lobby avec le temps restant
         this.io.to(lobbyId).emit('combatUpdate', { timeLeft });
     }
 
@@ -403,7 +392,6 @@ export class GameSocketHandlerService {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
 
-        // Send current player states to all clients
         this.io.to(lobbyId).emit('combatPlayersUpdate', {
             players: gameState.players,
         });
@@ -416,9 +404,9 @@ export class GameSocketHandlerService {
         }
         return gameState;
     }
-
     private isPlayerOnIceTile(gameState: GameState, player: Player): boolean {
         const playerIndex = gameState.players.findIndex((p) => p.id === player.id);
+        if (playerIndex === -1) return false;
         const position = gameState.playerPositions[playerIndex];
         if (!position) return false;
 
@@ -426,19 +414,12 @@ export class GameSocketHandlerService {
         return tile === TileTypes.Ice;
     }
 }
-
-function isTileValid(tile: Coordinates, gameState: GameState, occupiedPositions: Set<string>): boolean {
+export function isTileValid(tile: Coordinates, gameState: GameState, occupiedPositions: Set<string>): boolean {
     const isOccupiedByPlayer = occupiedPositions.has(JSON.stringify(tile));
     const isGrassTile = gameState.board[tile.x]?.[tile.y] === 0;
     return !isOccupiedByPlayer && isGrassTile;
 }
-
-// Calculer la distance entre deux points (Manhattan)
-// function getDistance(a: Coordinates, b: Coordinates): number {
-//     return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-// }
-
-function isWithinBounds(tile: Coordinates, board: number[][]): boolean {
+export function isWithinBounds(tile: Coordinates, board: number[][]): boolean {
     if (tile.y < 0 || tile.y >= board.length) return false;
     const row = board[tile.y];
     return tile.x >= 0 && tile.x < row.length;
