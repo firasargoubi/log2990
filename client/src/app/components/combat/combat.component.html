@@ -1,7 +1,7 @@
 <div>
     <p>Temps Restant: {{ countDown }} secondes</p>
     <button (click)="onAttack()" [disabled]="!canAct">Attaquer</button>
-    <button [disabled]="!canAct" (click)="onFlee()">Fuire</button>
+    <button [disabled]="!canAct || (canAct && !canEscape)" (click)="onFlee()">Fuire</button>
     <p [textContent]="attackDisplay"></p>
     <p [textContent]="defenceDisplay"></p>
     <p>PV restant de votre adversaire: {{ this.opponent.life }}</p>

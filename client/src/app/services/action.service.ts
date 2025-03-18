@@ -53,7 +53,8 @@ export class ActionService {
         }
         this.gameState = gameState;
         if (this.isTileNextToPlayer(tile)) {
-            if (this.isPlayerOnTile(tile)) {
+            const opponent = this.findOpponent(tile);
+            if (opponent && opponent.id !== gameState.currentPlayer) {
                 this.gameState.currentPlayerActionPoints--;
                 return 'battle';
             }
@@ -67,11 +68,5 @@ export class ActionService {
             }
         }
         return;
-    }
-
-    incrementActionCounter() {
-        if (this.gameState) {
-            this.gameState.currentPlayerActionPoints++;
-        }
     }
 }

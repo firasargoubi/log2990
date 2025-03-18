@@ -173,11 +173,13 @@ export class GameSocketHandlerService {
     startBattle(lobbyId: string, currentPlayer: Player, opponent: Player, time: number) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
+
         this.combatTimes.set(lobbyId, time);
-        const currentIndex = gameState.players.findIndex((p) => p.id === currentPlayer.id);
-        const opponentIndex = gameState.players.findIndex((p) => p.id === opponent.id);
-        const playerTurn = currentIndex < opponentIndex ? currentIndex : opponentIndex;
-        const firstPlayer = gameState.players[playerTurn];
+
+        let firstPlayer = currentPlayer;
+        if (opponent.speed > currentPlayer.speed) {
+            firstPlayer = opponent;
+        }
         this.io.to(currentPlayer.id).to(opponent.id).emit('startCombat', { firstPlayer });
     }
 
@@ -187,12 +189,11 @@ export class GameSocketHandlerService {
         const newPlayer = gameState.players.find((p) => p.id === newPlayerTurn);
         const countDown = newPlayer.amountEscape === 2 ? GameSocketConstants.EscapeCountdown : GameSocketConstants.DefaultCountdown;
 
-        // Emit turn switch with roles information
         this.io.to(currentPlayer.id).to(opponent.id).emit(GameEvents.PlayerSwitch, {
             newPlayerTurn,
             countDown,
-            attackerId: newPlayerTurn, // Add attacker role
-            defenderId: playerTurn, // Add defender role
+            attackerId: newPlayerTurn,
+            defenderId: playerTurn,
         });
     }
 
@@ -350,43 +351,37 @@ export class GameSocketHandlerService {
         });
     }
 
-    handleFlee(lobbyId: string, fleeingPlayer: Player, forceSuccess: boolean = false) {
+    handleFlee(lobbyId: string, fleeingPlayer: Player, opponent: Player) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
 
-        // Initialize amountEscape if not set
-        if (fleeingPlayer.amountEscape === undefined) {
-            fleeingPlayer.amountEscape = 0;
-        }
+        fleeingPlayer.amountEscape = fleeingPlayer.amountEscape ?? 0;
 
-        // Limit flee attempts
-        if (fleeingPlayer.amountEscape >= 2 && !forceSuccess) {
+        if (fleeingPlayer.amountEscape >= 2) {
             this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
             return;
         }
 
         fleeingPlayer.amountEscape++;
 
-        // Determine flee success (or use forced success)
-        const FLEE_RATE = 30; // 30% chance
+        const FLEE_RATE = 5;
         const fleeingChance = Math.random() * 100;
+        const isSuccessful = fleeingChance <= FLEE_RATE;
 
-        const isSuccessful = forceSuccess || fleeingChance <= FLEE_RATE;
-        console.log('Fleeing Chance :', fleeingChance, isSuccessful);
         if (!isSuccessful) {
-            this.io.to(lobbyId).emit('fleeFailure', { fleeingPlayer });
+            this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
             return;
         }
 
-        // Update player in gameState
         const playerIndex = gameState.players.findIndex((p) => p.id === fleeingPlayer.id);
         if (playerIndex !== -1) {
-            gameState.players[playerIndex] = fleeingPlayer;
+            gameState.players[playerIndex].amountEscape = fleeingPlayer.amountEscape;
         }
+
         gameState.currentPlayerActionPoints = 0;
         this.gameStates.set(lobbyId, gameState);
+
         this.io.to(lobbyId).emit(GameEvents.FleeSuccess, { fleeingPlayer, isSuccessful });
-        this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState });
     }
 
     handleTerminateAttack(lobbyId: string) {
@@ -432,11 +427,6 @@ function isTileValid(tile: Coordinates, gameState: GameState, occupiedPositions:
     const isGrassTile = gameState.board[tile.x]?.[tile.y] === 0;
     return !isOccupiedByPlayer && isGrassTile;
 }
-
-// Calculer la distance entre deux points (Manhattan)
-// function getDistance(a: Coordinates, b: Coordinates): number {
-//     return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-// }
 
 function isWithinBounds(tile: Coordinates, board: number[][]): boolean {
     if (tile.y < 0 || tile.y >= board.length) return false;

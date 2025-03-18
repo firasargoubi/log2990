@@ -73,16 +73,16 @@ export class SocketService {
             this.handleBattleInitialization(socket, data.currentPlayer, data.opponent),
         );
         socket.on('startBattle', (data: { lobbyId: string; currentPlayer: Player; opponent: Player; time: number }) =>
-            this.handleStartBattle(data.lobbyId, data.currentPlayer, data.opponent, data.time),
+            this.handleStartBattle(data.lobbyId, data.currentPlayer, data.opponent, data.time)
         );
 
         socket.on('changeTurnEndTimer', (data: { currentPlayer: Player; opponent: Player; playerTurn: string; gameState: GameState }) =>
             this.handleChangeTurnEnd(data.currentPlayer, data.opponent, data.playerTurn, data.gameState),
         );
 
-        socket.on('fleeCombat', (data: { lobbyId: string; player: Player; success: boolean }) => {
-            this.handleFlee(data.lobbyId, data.player, data.success);
-        });
+        // socket.on('fleeCombat', (data: { lobbyId: string; player: Player; opponent: Player }) => {
+        //     this.handleFlee(data.lobbyId, data.player, data.opponent);
+        // });
 
         socket.on('terminateAttack', (data: { lobbyId: string }) => {
             this.terminateAttack(data.lobbyId);
@@ -92,8 +92,8 @@ export class SocketService {
             this.handleAttackAction(data.lobbyId, data.attacker, data.defender);
         });
 
-        socket.on('flee', (data: { lobbyId: string; player: Player; success: boolean }) => {
-            this.handleFlee(data.lobbyId, data.player, data.success);
+        socket.on('flee', (data: { lobbyId: string; player: Player; opponent: Player }) => {
+            this.handleFlee(data.lobbyId, data.player, data.opponent);
         });
 
         socket.on('updateCombatTime', (data: { lobbyId: string; timeLeft: number }) => {
@@ -281,8 +281,8 @@ export class SocketService {
         this.gameSocketHandlerService.handleAttackAction(lobbyId, attacker, defender);
     }
 
-    private handleFlee(lobbyId: string, player: Player, success: boolean) {
-        this.gameSocketHandlerService.handleFlee(lobbyId, player, success);
+    private handleFlee(lobbyId: string, player: Player, opponent: Player) {
+        this.gameSocketHandlerService.handleFlee(lobbyId, player, opponent);
     }
 
     private terminateAttack(lobbyId: string) {

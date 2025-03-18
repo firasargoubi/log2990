@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, inject, HostListener } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CombatComponent } from '@app/components/combat/combat.component';
 import { CountdownPlayerComponent } from '@app/components/countdown-player/countdown-player.component';
@@ -61,7 +61,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     private notificationService = inject(NotificationService);
     private subscriptions: Subscription[] = [];
 
-
     get isAnimated(): boolean {
         return this.gameState.animation || false;
     }
@@ -70,7 +69,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     handleKeyboardEvent(event: KeyboardEvent) {
         if (event.key === 'd' && this.currentPlayer.isHost) {
             this.setDebugMode();
-            console.log("DEBUG YIPEE");
+            console.log('DEBUG YIPEE');
         }
     }
 
@@ -111,10 +110,9 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.lobbyService.onStartCombat().subscribe((data) => {
             this.isInCombat = true;
             this.isPlayerTurn = data.firstPlayer.id === this.currentPlayer.id;
-            console.log(this.isPlayerTurn);
         });
 
-        this.lobbyService.onGameEnded().subscribe((data) => {
+        this.lobbyService.onCombatEnded().subscribe((data) => {
             this.isInCombat = false;
             this.lobbyService.updateCombatStatus(this.isInCombat);
             console.log('Winner: ', data.winner);
@@ -166,15 +164,15 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.action = !this.action;
     }
 
-    onAttackClick(playerId: string, lobbyId: string): void {
-        const opponent = this.gameState.players.find((p) => p.id === playerId);
-        if (!opponent) {
-            return;
-        }
-        this.lobbyService.startCombat(lobbyId, this.currentPlayer, opponent, 50);
-        this.isInCombat = true;
-        this.remainingTime = 30;
-    }
+    // // onAttackClick(playerId: string, lobbyId: string): void {
+    // //     const opponent = this.gameState.players.find((p) => p.id === playerId);
+    // //     if (!opponent) {
+    // //         return;
+    // //     }
+    // //     this.lobbyService.startCombat(lobbyId, this.currentPlayer, opponent, 50);
+    // //     this.isInCombat = true;
+    // //     this.remainingTime = 30;
+    // // }
 
     startTurnCountdown(): void {
         if (this.remainingTime > 0) {
@@ -250,11 +248,18 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 this.isInCombat = false;
                 this.lobbyService.updateCombatStatus(this.isInCombat);
                 this.currentPlayer.life = this.currentPlayer.maxLife;
-                if (this.currentPlayer.name === data.fleeingPlayer.name) {
-                    this.notificationService.showInfo('Vous avez fuit le combat.');
+
+                if (this.currentPlayer.id === data.fleeingPlayer.id) {
+                    this.notificationService.showInfo('Vous avez fui le combat.');
                     return;
                 }
                 this.notificationService.showInfo(`${data.fleeingPlayer.name} a fui le combat.`);
+
+                if (!this.isInCombat) {
+                    this.gameState.players.forEach((p) => {
+                        p.amountEscape = 0;
+                    });
+                }
             }),
 
             this.lobbyService.onAttackEnd().subscribe((data) => {
@@ -384,7 +389,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     onInfoSent(details: string) {
         console.log(details);
     }
-
 
     setDebugMode() {
         this.debug = !this.debug;
