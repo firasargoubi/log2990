@@ -65,6 +65,7 @@ describe('GameBoardComponent', () => {
         spawnPoints: [],
         currentPlayerMovementPoints: 0,
         currentPlayerActionPoints: 0,
+        debug: false,
     });
 
     beforeEach(async () => {
