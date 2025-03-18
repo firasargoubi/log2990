@@ -77,7 +77,6 @@ export class LobbySocketHandlerService {
         lobby.players.splice(playerIndex, 1);
         if (lobby.players.length === 1) {
             const player = lobby.players[0];
-            console.log('Player', player);
             this.leaveGame(socket, lobbyId, player.name);
         }
         this.updateLobby(lobbyId);

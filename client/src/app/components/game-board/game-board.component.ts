@@ -98,7 +98,6 @@ export class GameBoardComponent implements OnInit, OnChanges {
     onTileRightClick(event: MouseEvent, tile: Tile) {
         event.preventDefault();
         if (this.gameState.debug) {
-            console.log(tile);
             this.lobbyService.requestTeleport(this.lobbyId, { x: tile.x, y: tile.y });
         } else {
             this.infoSent.emit(this.generateTileInfo(tile));
