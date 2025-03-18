@@ -66,7 +66,7 @@ describe('CombatService', () => {
                 speed: 10,
                 attack: 10,
                 defense: 10,
-                bonus: { attack: 'D4' },
+                bonus: { defense: 'D4' },
             };
             const result = service.rollDice(player, 'defense');
             expect(result).toBeGreaterThanOrEqual(1);
