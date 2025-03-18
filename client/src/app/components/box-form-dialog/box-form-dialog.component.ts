@@ -62,7 +62,7 @@ export class BoxFormDialogComponent implements OnDestroy {
 
         this.form = new FormGroup({
             name: new FormControl('New Player', [Validators.required]),
-            avatar: new FormControl(this.avatars[0], [Validators.required]),
+            avatar: new FormControl(null, [Validators.required]),
             life: new FormControl(DEFAULT_STAT_VALUE, [Validators.min(0)]),
             speed: new FormControl(DEFAULT_STAT_VALUE, [Validators.min(0)]),
             attack: new FormControl(DEFAULT_STAT_VALUE, [Validators.min(0)]),
@@ -161,7 +161,7 @@ export class BoxFormDialogComponent implements OnDestroy {
     isRoomLocked(): boolean {
         let isLocked = false;
         this.lobbyService.getLobby(this.data.lobbyId).subscribe((lobby) => {
-            if (lobby.maxPlayers === lobby.players.length) {
+            if (lobby.maxPlayers - 1 === lobby.players.length) {
                 this.lobbyService.lockLobby(this.data.lobbyId);
                 isLocked = true;
             }
