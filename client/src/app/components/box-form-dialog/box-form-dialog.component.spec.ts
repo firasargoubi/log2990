@@ -6,7 +6,7 @@ import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testin
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
-import { CREATE_PAGE_CONSTANTS, GAME_IMAGES } from '@app/Consts/app.constants';
+import { CREATE_PAGE_CONSTANTS, GAME_IMAGES, MAIN_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 import { PageUrl } from '@app/Consts/route-constants';
 import { GameService } from '@app/services/game.service';
 import { LobbyService } from '@app/services/lobby.service';
@@ -83,44 +83,23 @@ describe('BoxFormDialogComponent', () => {
     it('should initialize form with default values', () => {
         expect(component.form).toBeDefined();
         expect(component.form.get('name')?.value).toBe('New Player');
-        expect(component.form.get('avatar')?.value).toBeNull(); // Avatar est null par défaut
+        expect(component.form.get('avatar')?.value).toBeNull();
         expect(component.form.get('life')?.value).toBe(4);
     });
 
-    // it('should update formValid$ on form status changes', fakeAsync(() => {
-    //     // Initially set the name field to an empty value (invalid)
-    //     component.form.get('name')?.setValue('');
-    //     component.form.updateValueAndValidity(); // Force form validation
-    //     tick(); // Ensure Angular processes the form status change
-
-    //     // At this point, the form should be invalid
-    //     expect(component.formValid$).toBeFalse();
-
-    //     // Set a valid name (Player1)
-    //     component.form.get('name')?.setValue('Player1');
-    //     component.form.updateValueAndValidity(); // Revalidate the form
-    //     tick(); // Ensure Angular processes the form status change
-
-    //     // Now, the form should be valid
-    //     expect(component.formValid$).toBeTrue();
-    // }));
-
     it('closeDialog should close the dialog with the form value when the form is valid', () => {
-        // Set values for all required fields in the form
         component.form.get('name')?.setValue('Player1');
-        component.form.get('avatar')?.setValue('avatar1.png'); // Set avatar value
-        component.form.get('life')?.setValue(4); // Ensure all form values are valid
+        component.form.get('avatar')?.setValue('avatar1.png');
+        component.form.get('life')?.setValue(4);
         component.form.get('speed')?.setValue(4);
         component.form.get('attack')?.setValue(4);
         component.form.get('defense')?.setValue(4);
 
-        // Call the method that should trigger the closing of the dialog
         component.closeDialog();
 
-        // Check that the dialog was closed with the expected form value
         expect(mockDialogRef.close).toHaveBeenCalledWith({
             name: 'Player1',
-            avatar: 'avatar1.png', // Ensure avatar is included in the value
+            avatar: 'avatar1.png',
             life: 4,
             speed: 4,
             attack: 4,
@@ -174,7 +153,7 @@ describe('BoxFormDialogComponent', () => {
         it('should return true and call lockLobby if the lobby is full', fakeAsync(() => {
             const fullLobby: GameLobby = {
                 id: dialogData.lobbyId,
-                maxPlayers: 3, // MODIFIÉ : Maintenant 3 - 1 = 2 (ce qui est players.length)
+                maxPlayers: 3,
                 players: [
                     {
                         id: 'p1',
@@ -205,8 +184,8 @@ describe('BoxFormDialogComponent', () => {
 
             mockLobbyService.getLobby.and.returnValue(of(fullLobby));
 
-            component.isRoomLocked(); // Appelle la fonction
-            tick(); // Force l'exécution du subscribe()
+            component.isRoomLocked();
+            tick();
 
             expect(mockLobbyService.lockLobby).toHaveBeenCalledWith(dialogData.lobbyId);
         }));
@@ -252,8 +231,8 @@ describe('BoxFormDialogComponent', () => {
             component.diceAttribute = 'attack';
 
             component.form.get('name')?.setValue('Player1');
-            component.form.get('avatar')?.setValue(component.avatars[0]); // Ajoute un avatar valide
-            component.form.updateValueAndValidity(); // Revalide le formulaire
+            component.form.get('avatar')?.setValue(component.avatars[0]);
+            component.form.updateValueAndValidity();
 
             component.onSubmit(new Event('submit'));
 
@@ -317,7 +296,7 @@ describe('BoxFormDialogComponent', () => {
 
             const fullLobby: GameLobby = {
                 id: dialogData.lobbyId,
-                maxPlayers: 2,
+                maxPlayers: 3,
                 players: [
                     {
                         id: 'p1',
@@ -342,25 +321,16 @@ describe('BoxFormDialogComponent', () => {
                         maxLife: 0,
                     },
                 ],
-                isLocked: true, // Lobby is locked
+                isLocked: false,
                 gameId: 'game1',
             };
 
-            // Simulate the lobby service returning the locked lobby state
             mockLobbyService.getLobby.and.returnValue(of(fullLobby));
 
-            // Trigger the saveJoin method
             component.saveJoin();
-
-            // Make sure all asynchronous operations are complete
             tick();
 
-            // Flush any remaining asynchronous tasks
-
-            // Verify that the error message for a locked lobby is shown
-            expect(mockNotificationService.showError).toHaveBeenCalledWith('La salle est verrouillée');
-
-            // Ensure that the joinLobby method is not called if the lobby is locked
+            expect(mockNotificationService.showError).toHaveBeenCalledWith(MAIN_PAGE_CONSTANTS.errorLockedLobbyMessage);
             expect(mockLobbyService.joinLobby).not.toHaveBeenCalled();
         }));
     });
