@@ -9,6 +9,7 @@ import { Player } from '@common/player';
 import { Tile } from '@common/tile';
 import { environment } from 'src/environments/environment';
 import { LobbyService } from './lobby.service';
+import { Coordinates } from '@common/coordinates';
 
 describe('LobbyService', () => {
     let service: LobbyService;
@@ -847,6 +848,213 @@ describe('LobbyService', () => {
                 expect(status).toBe(expectedValue);
                 done();
             });
+        });
+    });
+    describe('Combat Updates and Attack Handling', () => {
+        it('should handle combatPlayersUpdate events', (done) => {
+            const testPlayers: Player[] = [
+                {
+                    name: 'Warrior',
+                    avatar: 'avatar',
+                    id: '1',
+                    isHost: false,
+                    life: 80,
+                    speed: 5,
+                    attack: 12,
+                    defense: 8,
+                    maxLife: 100,
+                },
+                {
+                    name: 'Mage',
+                    avatar: 'avatar2',
+                    id: '2',
+                    isHost: false,
+                    life: 60,
+                    speed: 3,
+                    attack: 15,
+                    defense: 5,
+                    maxLife: 80,
+                },
+            ];
+
+            service.getCombatUpdate().subscribe({
+                next: (data) => {
+                    expect(data.players).toEqual(testPlayers);
+                    done();
+                },
+                error: done.fail,
+            });
+
+            const handler = getEventHandler('combatPlayersUpdate');
+            handler({ players: testPlayers });
+        });
+
+        it('should emit performAttack event with correct parameters', () => {
+            const lobbyId = 'battle-lobby';
+            const attackerId = 'player-1';
+            const defenderId = 'player-2';
+
+            service.performAttack(lobbyId, attackerId, defenderId);
+            expect(mockSocket.emit).toHaveBeenCalledWith('performAttack', {
+                lobbyId,
+                attackerId,
+                defenderId,
+            });
+        });
+
+        it('should handle attackResult events', (done) => {
+            const testResult = {
+                attacker: 'player-1',
+                defender: 'player-2',
+                damage: 15,
+            };
+
+            service.getAttackResult().subscribe({
+                next: (data) => {
+                    expect(data).toEqual(testResult);
+                    done();
+                },
+                error: done.fail,
+            });
+
+            const handler = getEventHandler('attackResult');
+            handler(testResult);
+        });
+    });
+    describe('Additional Methods Coverage', () => {
+        it('should emit teleport event with coordinates', () => {
+            const lobbyId = 'lobby-123';
+            const coordinates: Coordinates = { x: 5, y: 10 };
+            service.requestTeleport(lobbyId, coordinates);
+            expect(mockSocket.emit).toHaveBeenCalledWith('teleport', { lobbyId, coordinates });
+        });
+
+        it('should emit setDebug event with debug flag', () => {
+            const lobbyId = 'lobby-123';
+            const debug = true;
+            service.setDebug(lobbyId, debug);
+            expect(mockSocket.emit).toHaveBeenCalledWith('setDebug', { lobbyId, debug });
+        });
+
+        it('should emit attack event with attacker and defender', () => {
+            const lobbyId = 'lobby-123';
+            const attacker: Player = {
+                name: 'Attacker',
+                avatar: 'avatar1',
+                id: '1',
+                isHost: true,
+                life: 100,
+                speed: 5,
+                attack: 20,
+                defense: 10,
+                maxLife: 100,
+            };
+            const defender: Player = {
+                name: 'Defender',
+                avatar: 'avatar2',
+                id: '2',
+                isHost: false,
+                life: 90,
+                speed: 4,
+                attack: 15,
+                defense: 8,
+                maxLife: 90,
+            };
+            service.attack(lobbyId, attacker, defender);
+            expect(mockSocket.emit).toHaveBeenCalledWith('attack', { lobbyId, attacker, defender });
+        });
+
+        it('should emit flee event with success status', () => {
+            const lobbyId = 'lobby-123';
+            const player: Player = {
+                name: 'FleeingPlayer',
+                avatar: 'avatar3',
+                id: '3',
+                isHost: false,
+                life: 50,
+                speed: 6,
+                attack: 10,
+                defense: 5,
+                maxLife: 50,
+            };
+            const success = true;
+            service.flee(lobbyId, player, success);
+            expect(mockSocket.emit).toHaveBeenCalledWith('flee', { lobbyId, player, success });
+        });
+
+        it('should handle attackResult event with detailed data', (done) => {
+            const testData = {
+                attackDice: 3,
+                defenseDice: 2,
+                attackRoll: 15,
+                defenseRoll: 8,
+                attackerHP: 80,
+                defenderHP: 70,
+                damage: 10,
+                attacker: { name: 'Attacker' } as Player,
+                defender: { name: 'Defender' } as Player,
+            };
+
+            service.onAttackResult().subscribe((data) => {
+                expect(data).toEqual(testData);
+                done();
+            });
+
+            const handler = getEventHandler('attackResult');
+            handler(testData);
+        });
+
+        it('should emit startBattle event with time parameter', () => {
+            const lobbyId = 'lobby-123';
+            const currentPlayer: Player = {
+                name: 'Current',
+                avatar: 'avatar1',
+                id: '1',
+                isHost: true,
+                life: 100,
+                speed: 5,
+                attack: 20,
+                defense: 10,
+                maxLife: 100,
+            };
+            const opponent: Player = {
+                name: 'Opponent',
+                avatar: 'avatar2',
+                id: '2',
+                isHost: false,
+                life: 90,
+                speed: 4,
+                attack: 15,
+                defense: 8,
+                maxLife: 90,
+            };
+            const time = 30;
+            service.startCombat(lobbyId, currentPlayer, opponent, time);
+            expect(mockSocket.emit).toHaveBeenCalledWith('startBattle', { lobbyId, currentPlayer, opponent, time });
+        });
+
+        it('should handle startCombat event', (done) => {
+            const testData = {
+                firstPlayer: { name: 'FirstPlayer' } as Player,
+            };
+            service.onStartCombat().subscribe((data) => {
+                expect(data).toEqual(testData);
+                done();
+            });
+            const handler = getEventHandler('startCombat');
+            handler(testData);
+        });
+
+        it('should handle combatEnded event with winner', (done) => {
+            const testData = {
+                winner: { name: 'Winner' } as Player,
+            };
+            service.onGameEnded().subscribe((data) => {
+                expect(data).toEqual(testData);
+                done();
+            });
+            const handler = getEventHandler('combatEnded');
+            handler(testData);
         });
     });
 
