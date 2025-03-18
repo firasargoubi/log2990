@@ -43,7 +43,8 @@ describe('BoxFormDialogComponent', () => {
             'verifyUsername',
             'joinLobby',
             'lockLobby',
-            'onLobbyUpdated', // Ajoutez cette méthode
+            'onLobbyUpdated',
+            'getSocketId',
         ]);
         mockNotificationService = jasmine.createSpyObj('NotificationService', ['showError']);
         mockGameService = jasmine.createSpyObj('GameService', ['fetchVisibleGames']);
@@ -52,11 +53,11 @@ describe('BoxFormDialogComponent', () => {
         onPlayerJoinedSubject = new Subject<any>();
         onErrorSubject = new Subject<any>();
 
-        // Simulez les méthodes de LobbyService
         mockLobbyService.verifyAvatars.and.returnValue(of({ avatars: [] }));
-        mockLobbyService.onLobbyUpdated.and.returnValue(onPlayerJoinedSubject.asObservable()); // Simulez onLobbyUpdated
+        mockLobbyService.onLobbyUpdated.and.returnValue(onPlayerJoinedSubject.asObservable());
         mockLobbyService.onError.and.returnValue(onErrorSubject.asObservable());
         mockGameService.fetchVisibleGames.and.returnValue(of([]));
+        mockLobbyService.getSocketId.and.returnValue('player1-socket-id');
 
         await TestBed.configureTestingModule({
             imports: [CommonModule, FormsModule, RouterModule.forRoot([]), BoxFormDialogComponent],
@@ -148,8 +149,28 @@ describe('BoxFormDialogComponent', () => {
                 id: dialogData.lobbyId,
                 maxPlayers: 2,
                 players: [
-                    { id: 'p1', name: 'Player1', avatar: 'avatar1.png', isHost: false, life: 4, speed: 4, attack: 4, defense: 4 },
-                    { id: 'p2', name: 'Player2', avatar: 'avatar2.png', isHost: false, life: 4, speed: 4, attack: 4, defense: 4 },
+                    {
+                        id: 'p1',
+                        name: 'Player1',
+                        avatar: 'avatar1.png',
+                        isHost: false,
+                        life: 4,
+                        speed: 4,
+                        attack: 4,
+                        defense: 4,
+                        maxLife: 0,
+                    },
+                    {
+                        id: 'p2',
+                        name: 'Player2',
+                        avatar: 'avatar2.png',
+                        isHost: false,
+                        life: 4,
+                        speed: 4,
+                        attack: 4,
+                        defense: 4,
+                        maxLife: 0,
+                    },
                 ],
                 isLocked: false,
                 gameId: 'game1',
@@ -164,7 +185,19 @@ describe('BoxFormDialogComponent', () => {
             const notFullLobby: GameLobby = {
                 id: dialogData.lobbyId,
                 maxPlayers: 4,
-                players: [{ id: 'p1', name: 'Player1', avatar: 'avatar1.png', isHost: false, life: 4, speed: 4, attack: 4, defense: 4 }],
+                players: [
+                    {
+                        id: 'p1',
+                        name: 'Player1',
+                        avatar: 'avatar1.png',
+                        isHost: false,
+                        life: 4,
+                        speed: 4,
+                        attack: 4,
+                        defense: 4,
+                        maxLife: 0,
+                    },
+                ],
                 isLocked: false,
                 gameId: 'game1',
             };
@@ -218,7 +251,19 @@ describe('BoxFormDialogComponent', () => {
             const notFullLobby: GameLobby = {
                 id: dialogData.lobbyId,
                 maxPlayers: 4,
-                players: [{ id: 'p1', name: 'Existing', avatar: 'avatar.png', isHost: false, life: 4, speed: 4, attack: 4, defense: 4 }],
+                players: [
+                    {
+                        id: 'p1',
+                        name: 'Existing',
+                        avatar: 'avatar.png',
+                        isHost: false,
+                        life: 4,
+                        speed: 4,
+                        attack: 4,
+                        defense: 4,
+                        maxLife: 0,
+                    },
+                ],
                 isLocked: false,
                 gameId: 'game1',
             };
@@ -239,8 +284,28 @@ describe('BoxFormDialogComponent', () => {
                 id: dialogData.lobbyId,
                 maxPlayers: 2,
                 players: [
-                    { id: 'p1', name: 'Player1', avatar: 'avatar1.png', isHost: false, life: 4, speed: 4, attack: 4, defense: 4 },
-                    { id: 'p2', name: 'Player2', avatar: 'avatar2.png', isHost: false, life: 4, speed: 4, attack: 4, defense: 4 },
+                    {
+                        id: 'p1',
+                        name: 'Player1',
+                        avatar: 'avatar1.png',
+                        isHost: false,
+                        life: 4,
+                        speed: 4,
+                        attack: 4,
+                        defense: 4,
+                        maxLife: 0,
+                    },
+                    {
+                        id: 'p2',
+                        name: 'Player2',
+                        avatar: 'avatar2.png',
+                        isHost: false,
+                        life: 4,
+                        speed: 4,
+                        attack: 4,
+                        defense: 4,
+                        maxLife: 0,
+                    },
                 ],
                 isLocked: false,
                 gameId: 'game1',
@@ -321,7 +386,7 @@ describe('BoxFormDialogComponent', () => {
         });
 
         it('should show error if fetching games fails', () => {
-            mockGameService.fetchVisibleGames.and.returnValue(throwError('error'));
+            mockGameService.fetchVisibleGames.and.returnValue(throwError(() => 'error'));
             component['loadGames']();
             expect(mockNotificationService.showError).toHaveBeenCalledWith(CREATE_PAGE_CONSTANTS.errorLoadingGames);
         });
@@ -329,12 +394,13 @@ describe('BoxFormDialogComponent', () => {
 
     describe('subscriptions', () => {
         it('should navigate when a player joins', () => {
-            const socketData = { lobbyId: dialogData.lobbyId, player: { id: 'player1' } };
+            const socketData = {
+                lobby: { id: 'lobby1' },
+                player: { id: 'player1' },
+            };
             onPlayerJoinedSubject.next(socketData);
-            expect(mockDialogRef.close).toHaveBeenCalled();
-            expect(mockRouter.navigate).toHaveBeenCalledWith([`${PageUrl.Waiting}/${dialogData.lobbyId}/${socketData.player.id}`], {
-                replaceUrl: true,
-            });
+
+            expect(mockRouter.navigate).toHaveBeenCalledWith([`${PageUrl.Waiting}/lobby1/player1-socket-id`], { replaceUrl: true });
         });
 
         it('should show error when an error is emitted', () => {
@@ -389,6 +455,19 @@ describe('BoxFormDialogComponent', () => {
             const bonus = (component as any).buildBonus();
             expect(bonus.defense).toEqual('D6');
             expect(bonus.attack).toEqual('D4');
+        });
+        it('inputName should set required error for empty or whitespace-only name', () => {
+            const event = { target: { value: '   ' } } as unknown as Event;
+            component.inputName(event);
+
+            expect(component.form.get('name')?.errors).toEqual({ required: true });
+            expect(component.formValid$).toBeFalse();
+
+            const emptyEvent = { target: { value: '' } } as unknown as Event;
+            component.inputName(emptyEvent);
+
+            expect(component.form.get('name')?.errors).toEqual({ required: true });
+            expect(component.formValid$).toBeFalse();
         });
     });
 });

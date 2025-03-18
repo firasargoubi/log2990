@@ -98,27 +98,25 @@ describe('GameTileComponent', () => {
         expect(spy).toHaveBeenCalledWith(component.tile);
     });
 
-    it('should apply available-move class when isAvailableMove is true', () => {
+    it('should apply overlay-available-move class to tile-overlay when isAvailableMove is true', () => {
         component.isAvailableMove = true;
         fixture.detectChanges();
 
-        const tileElement = fixture.debugElement.query(By.css('.board-tile'));
-        expect(tileElement.classes['available-move']).toBeTrue();
+        const overlayElement = fixture.debugElement.query(By.css('.tile-overlay'));
+        expect(overlayElement.classes['overlay-available-move']).toBeTrue();
     });
 
-    it('should apply path-highlighted class when isPathHighlighted is true', () => {
+    it('should apply overlay-path-highlighted class to tile-overlay when isPathHighlighted is true', () => {
         component.isPathHighlighted = true;
         fixture.detectChanges();
 
-        const tileElement = fixture.debugElement.query(By.css('.board-tile'));
-        expect(tileElement.classes['path-highlighted']).toBeTrue();
+        const overlayElement = fixture.debugElement.query(By.css('.tile-overlay'));
+        expect(overlayElement.classes['overlay-path-highlighted']).toBeTrue();
     });
 
     it('should display player marker when player is provided', () => {
-        // First test with no player
         expect(fixture.debugElement.query(By.css('.player-marker'))).toBeNull();
 
-        // Then add a player
         const mockPlayer: Player = {
             id: 'player1',
             name: 'Test Player',

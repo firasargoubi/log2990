@@ -1,370 +1,410 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+/* eslint-disable max-lines */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-magic-numbers */
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { SimpleChange } from '@angular/core';
+import { Subject } from 'rxjs';
 import { GameBoardComponent } from './game-board.component';
 import { LobbyService } from '@app/services/lobby.service';
+import { OBJECT_MULTIPLIER } from '@app/Consts/app.constants';
 import { GameState } from '@common/game-state';
 import { Coordinates } from '@common/coordinates';
-import { Player } from '@common/player';
-import { OBJECT_MULTIPLIER, TileTypes, ObjectsTypes } from '@app/Consts/app.constants';
-import { Tile } from '@app/interfaces/tile';
-import { GameTileComponent } from '../game-tile/game-tile.component';
-import { Subject } from 'rxjs';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('GameBoardComponent', () => {
     let component: GameBoardComponent;
     let fixture: ComponentFixture<GameBoardComponent>;
     let lobbyServiceSpy: jasmine.SpyObj<LobbyService>;
+    let turnStartedSubject: Subject<any>;
 
-    const pathCalculatedSubject = new Subject<{
-        destination: Coordinates;
-        path: Coordinates[];
-        valid: boolean;
-    }>();
-
-    const turnStartedSubject = new Subject<{
-        gameState: GameState;
-        currentPlayer: string;
-        availableMoves: Coordinates[];
-    }>();
-
-    const movementProcessedSubject = new Subject<{
-        gameState: GameState;
-        playerMoved: string;
-        newPosition: Coordinates;
-    }>();
-
-    const mockGameState: GameState = {
-        id: 'game1',
+    const getDummyGameState = (): GameState => ({
         board: [
-            [1, 1, 1],
-            [1, 1, 1],
-            [1, 1, 1],
+            [0, 1],
+            [2, 3],
         ],
         players: [
-            { id: 'player1', name: 'Player 1', avatar: 'avatar1.jpg' } as Player,
-            { id: 'player2', name: 'Player 2', avatar: 'avatar2.jpg' } as Player,
+            {
+                id: 'player1',
+                name: 'Player One',
+                avatar: '',
+                isHost: false,
+                life: 0,
+                speed: 0,
+                attack: 0,
+                defense: 0,
+                maxLife: 0,
+            },
+            {
+                id: 'player2',
+                name: 'Player Two',
+                avatar: '',
+                isHost: false,
+                life: 0,
+                speed: 0,
+                attack: 0,
+                defense: 0,
+                maxLife: 0,
+            },
+        ],
+        playerPositions: [
+            { x: 0, y: 0 },
+            { x: 1, y: 1 },
         ],
         currentPlayer: 'player1',
-        playerPositions: new Map<string, Coordinates>([
-            ['player1', { x: 0, y: 0 }],
-            ['player2', { x: 2, y: 2 }],
-        ]),
         availableMoves: [
             { x: 0, y: 1 },
             { x: 1, y: 0 },
         ],
+        shortestMoves: [
+            [
+                { x: 0, y: 1 },
+                { x: 0, y: 0 },
+            ],
+        ],
+        id: '',
         turnCounter: 0,
+        spawnPoints: [],
         currentPlayerMovementPoints: 0,
-    };
+        currentPlayerActionPoints: 0,
+    });
 
     beforeEach(async () => {
-        const lobbyServiceSpyObj = jasmine.createSpyObj('LobbyService', ['onPathCalculated', 'onTurnStarted', 'onMovementProcessed', 'requestPath']);
-
-        lobbyServiceSpyObj.onPathCalculated.and.returnValue(pathCalculatedSubject.asObservable());
-        lobbyServiceSpyObj.onTurnStarted.and.returnValue(turnStartedSubject.asObservable());
-        lobbyServiceSpyObj.onMovementProcessed.and.returnValue(movementProcessedSubject.asObservable());
+        turnStartedSubject = new Subject<any>();
+        lobbyServiceSpy = jasmine.createSpyObj('LobbyService', ['onTurnStarted']);
+        lobbyServiceSpy.onTurnStarted.and.returnValue(turnStartedSubject.asObservable());
 
         await TestBed.configureTestingModule({
-            imports: [GameBoardComponent, GameTileComponent],
-            providers: [{ provide: LobbyService, useValue: lobbyServiceSpyObj }],
-            schemas: [NO_ERRORS_SCHEMA], // To avoid having to import all child components
+            imports: [GameBoardComponent],
+            providers: [{ provide: LobbyService, useValue: lobbyServiceSpy }],
         }).compileComponents();
-
-        lobbyServiceSpy = TestBed.inject(LobbyService) as jasmine.SpyObj<LobbyService>;
 
         fixture = TestBed.createComponent(GameBoardComponent);
         component = fixture.componentInstance;
-
-        // Set up input properties
-        component.gameState = { ...mockGameState };
         component.currentPlayerId = 'player1';
+        component.gameState = getDummyGameState();
         component.lobbyId = 'lobby1';
     });
 
-    it('should create', () => {
+    it('should initialize board and available moves on ngOnInit', () => {
         fixture.detectChanges();
-        expect(component).toBeTruthy();
+        expect(component.tiles.length).toEqual(getDummyGameState().board.length);
+        expect(component.availableMoves).toEqual(getDummyGameState().availableMoves);
     });
 
-    it('should initialize the board with correct size', () => {
+    it('should update available moves and clear path on lobbyService turn started event', () => {
         fixture.detectChanges();
-        expect(component.tiles.length).toBe(3); // Based on the mock game state
-        expect(component.tiles[0].length).toBe(3);
+        component.highlightedPath = [{ x: 1, y: 1 }];
+        turnStartedSubject.next({ gameState: { availableMoves: [{ x: 0, y: 1 }] } });
+        expect(component.availableMoves).toEqual([{ x: 0, y: 1 }]);
+        expect(component.highlightedPath).toEqual([]);
     });
 
-    it('should initialize available moves correctly', () => {
-        fixture.detectChanges();
-        expect(component.availableMoves.length).toBe(2);
-        expect(component.availableMoves).toEqual([
-            { x: 0, y: 1 },
-            { x: 1, y: 0 },
-        ]);
-    });
-
-    it('should correctly identify available moves', () => {
-        fixture.detectChanges();
-        expect(component.isAvailableMove(0, 1)).toBeTrue();
-        expect(component.isAvailableMove(1, 0)).toBeTrue();
-        expect(component.isAvailableMove(0, 0)).toBeFalse();
-    });
-
-    it('should correctly identify a player at a position', () => {
-        fixture.detectChanges();
-
-        const playerAtStart = component.getPlayerAtPosition(0, 0);
-        expect(playerAtStart).toBeTruthy();
-        expect(playerAtStart?.player.id).toBe('player1');
-        expect(playerAtStart?.isCurrentPlayer).toBeTrue();
-        expect(playerAtStart?.isLocalPlayer).toBeTrue();
-
-        const playerAtEnd = component.getPlayerAtPosition(2, 2);
-        expect(playerAtEnd).toBeTruthy();
-        expect(playerAtEnd?.player.id).toBe('player2');
-        expect(playerAtEnd?.isCurrentPlayer).toBeFalse();
-        expect(playerAtEnd?.isLocalPlayer).toBeFalse();
-
-        const emptyPosition = component.getPlayerAtPosition(1, 1);
-        expect(emptyPosition).toBeNull();
-    });
-
-    it('should respond to changes in game state', () => {
-        fixture.detectChanges();
-
-        const updatedGameState: GameState = {
-            ...mockGameState,
+    it('should reinitialize board on ngOnChanges when gameState changes', () => {
+        const newGameState = {
+            ...getDummyGameState(),
             board: [
-                [1, 1, 1, 1],
-                [1, 1, 1, 1],
-                [1, 1, 1, 1],
-                [1, 1, 1, 1],
+                [3, 2],
+                [1, 0],
             ],
+        };
+        component.gameState = newGameState;
+        component.ngOnChanges({
+            gameState: new SimpleChange(getDummyGameState(), newGameState, false),
+        });
+        expect(component.tiles[0][0].type).toEqual(newGameState.board[0][0] % OBJECT_MULTIPLIER);
+        expect(component.availableMoves).toEqual(newGameState.availableMoves);
+        expect(component.highlightedPath).toEqual([]);
+    });
+
+    it('should return true for an available move', () => {
+        component.availableMoves = [{ x: 0, y: 1 }];
+        expect(component.isAvailableMove(0, 1)).toBeTrue();
+        expect(component.isAvailableMove(1, 1)).toBeFalse();
+    });
+
+    it('should return true when position is on the highlighted path', () => {
+        component.highlightedPath = [{ x: 1, y: 1 }];
+        expect(component.isOnHighlightedPath(1, 1)).toBeTrue();
+        expect(component.isOnHighlightedPath(0, 0)).toBeFalse();
+    });
+
+    it('should return player info at a given position', () => {
+        const info = component.getPlayerAtPosition(0, 0);
+        expect(info).not.toBeNull();
+        expect(info?.player.id).toEqual('player1');
+        expect(info?.isCurrentPlayer).toBeTrue();
+        expect(info?.isLocalPlayer).toBeTrue();
+    });
+
+    it('should return null if no player is at the given position', () => {
+        const info = component.getPlayerAtPosition(1, 0);
+        expect(info).toBeNull();
+    });
+
+    it('should emit tileClicked on onTileClick when it is my turn and the tile is available', () => {
+        spyOn(component.tileClicked, 'emit');
+        component.availableMoves = [{ x: 0, y: 1 }];
+        component.highlightedPath = [
+            { x: 0, y: 0 },
+            { x: 0, y: 1 },
+        ];
+        component.currentPlayerId = 'player1';
+        component.gameState.currentPlayer = 'player1';
+        component.onTileClick({ x: 0, y: 1, type: 1, object: 0, id: '0-1' });
+        expect(component.tileClicked.emit).toHaveBeenCalledWith(component.highlightedPath);
+    });
+
+    it('should not emit tileClicked on onTileClick when it is not my turn', () => {
+        spyOn(component.tileClicked, 'emit');
+        component.availableMoves = [{ x: 0, y: 1 }];
+        component.highlightedPath = [
+            { x: 0, y: 0 },
+            { x: 0, y: 1 },
+        ];
+        component.currentPlayerId = 'player2';
+        component.gameState.currentPlayer = 'player1';
+        component.onTileClick({ x: 0, y: 1, type: 1, object: 0, id: '0-1' });
+        expect(component.tileClicked.emit).not.toHaveBeenCalled();
+    });
+
+    it('should update highlightedPath on onTileHover when not in action mode and move is available', () => {
+        component.action = false;
+        component.currentPlayerId = 'player1';
+
+        const newGameState = {
+            ...getDummyGameState(),
             availableMoves: [
                 { x: 0, y: 1 },
                 { x: 1, y: 0 },
-                { x: 1, y: 1 },
+            ],
+            shortestMoves: [
+                [
+                    { x: 0, y: 1 },
+                    { x: 0, y: 0 },
+                ],
             ],
         };
 
-        component.gameState = updatedGameState;
-
-        // Trigger OnChanges lifecycle
+        component.gameState = newGameState;
         component.ngOnChanges({
+            gameState: new SimpleChange(getDummyGameState(), newGameState, false),
+        });
+
+        component.onTileHover({ x: 0, y: 1, type: 1, object: 0, id: '0-1' });
+
+        expect(component.highlightedPath).toEqual([
+            { x: 0, y: 0 },
+            { x: 0, y: 1 },
+        ]);
+    });
+    it('should clear highlightedPath on onTileHover when in action mode', () => {
+        component.action = true;
+        component.highlightedPath = [{ x: 1, y: 1 }];
+        component.onTileHover({ x: 0, y: 1, type: 1, object: 0, id: '0-1' });
+        expect(component.highlightedPath).toEqual([]);
+    });
+
+    it('should clear highlightedPath on onTileLeave', () => {
+        component.highlightedPath = [{ x: 1, y: 1 }];
+        component.onTileLeave();
+        expect(component.highlightedPath).toEqual([]);
+    });
+
+    it('should correctly compute path in showPathToTile', () => {
+        const testState = getDummyGameState();
+        testState.availableMoves = [
+            { x: 0, y: 1 },
+            { x: 1, y: 0 },
+        ];
+        testState.shortestMoves = [
+            [
+                { x: 0, y: 1 },
+                { x: 0, y: 0 },
+            ],
+        ];
+        component.gameState = testState;
+        const path = component['showPathToTile']({ x: 0, y: 1 });
+        expect(path).toEqual([
+            { x: 0, y: 0 },
+            { x: 0, y: 1 },
+        ]);
+    });
+
+    it('should correctly determine if it is my turn', () => {
+        component.gameState = getDummyGameState();
+        component.currentPlayerId = 'player1';
+        expect(component['isMyTurn']()).toBeTrue();
+        component.currentPlayerId = 'player2';
+        expect(component['isMyTurn']()).toBeFalse();
+    });
+
+    it('should initialize board correctly based on the gameState board', () => {
+        component['initializeBoard']();
+        expect(component.tiles.length).toEqual(getDummyGameState().board.length);
+        expect(component.tiles[0].length).toEqual(getDummyGameState().board[0].length);
+        const tile = component.tiles[0][1];
+        expect(tile.x).toEqual(0);
+        expect(tile.y).toEqual(1);
+        expect(tile.id).toEqual('0-1');
+        expect(tile.type).toEqual(getDummyGameState().board[0][1] % OBJECT_MULTIPLIER);
+        expect(tile.object).toEqual(Math.floor(getDummyGameState().board[0][1] / OBJECT_MULTIPLIER));
+    });
+
+    it('should update available moves correctly with updateAvailableMoves', () => {
+        component.gameState.availableMoves = [{ x: 1, y: 1 }];
+        component['updateAvailableMoves']();
+        expect(component.availableMoves).toEqual([{ x: 1, y: 1 }]);
+    });
+
+    it('should clear path highlights with clearPathHighlights', () => {
+        component.highlightedPath = [{ x: 1, y: 1 }];
+        component['clearPathHighlights']();
+        expect(component.highlightedPath).toEqual([]);
+    });
+    it('should return empty array when gameState is undefined', () => {
+        component.gameState = undefined as unknown as GameState;
+        const path = component['showPathToTile']({ x: 0, y: 1 });
+        expect(path).toEqual([]);
+    });
+
+    it('should return empty array when current player is not found', () => {
+        component.gameState.currentPlayer = 'invalid-player-id';
+        const path = component['showPathToTile']({ x: 0, y: 1 });
+        expect(path).toEqual([]);
+    });
+
+    it('should return empty array when player position is undefined', () => {
+        component.gameState.playerPositions = [];
+        const path = component['showPathToTile']({ x: 0, y: 1 });
+        expect(path).toEqual([]);
+    });
+
+    it('should return empty array when destination is not in available moves', () => {
+        component.gameState.availableMoves = [{ x: 1, y: 0 }];
+        const path = component['showPathToTile']({ x: 0, y: 1 });
+        expect(path).toEqual([]);
+    });
+
+    it('should handle broken paths when shortestMovesMap has missing steps', () => {
+        component.gameState.availableMoves = [{ x: 0, y: 2 }];
+        component.gameState.shortestMoves = [];
+        component['transformShortestMovesToMap'](component.gameState);
+        const path = component['showPathToTile']({ x: 0, y: 2 });
+        expect(path).toEqual([{ x: 0, y: 2 }]);
+    });
+
+    it('should build multi-step paths correctly', () => {
+        component.gameState.availableMoves = [{ x: 0, y: 2 }];
+        component.gameState.shortestMoves = [
+            [
+                { x: 0, y: 2 },
+                { x: 0, y: 1 },
+            ],
+            [
+                { x: 0, y: 1 },
+                { x: 0, y: 0 },
+            ],
+        ];
+
+        component['transformShortestMovesToMap'](component.gameState);
+        const path = component['showPathToTile']({ x: 0, y: 2 });
+
+        expect(path).toEqual([
+            { x: 0, y: 0 },
+            { x: 0, y: 1 },
+            { x: 0, y: 2 },
+        ]);
+    });
+    it('should handle undefined gameState in transformShortestMovesToMap', () => {
+        component.gameState = undefined as unknown as GameState;
+        component['transformShortestMovesToMap'](component.gameState);
+        expect(component['shortestMovesMap'].size).toBe(0);
+    });
+
+    it('should handle missing shortestMoves in transformShortestMovesToMap', () => {
+        const testState = getDummyGameState();
+        testState.shortestMoves = undefined as unknown as Coordinates[][];
+        component['transformShortestMovesToMap'](testState);
+        expect(component['shortestMovesMap'].size).toBe(0);
+    });
+
+    it('should update availableMoves correctly when gameState is null', () => {
+        component.gameState = null as unknown as GameState;
+        component['updateAvailableMoves']();
+        expect(component.availableMoves).toEqual([]);
+    });
+
+    it('should update availableMoves correctly when availableMoves is undefined', () => {
+        const testState = getDummyGameState();
+        testState.availableMoves = undefined as unknown as Coordinates[];
+        component.gameState = testState;
+        component['updateAvailableMoves']();
+        expect(component.availableMoves).toEqual([]);
+    });
+
+    it('should update availableMoves with valid data', () => {
+        const testState = getDummyGameState();
+        testState.availableMoves = [{ x: 2, y: 2 }];
+        component.gameState = testState;
+        component['updateAvailableMoves']();
+        expect(component.availableMoves).toEqual([{ x: 2, y: 2 }]);
+    });
+
+    it('should handle undefined availableMoves in turn started event', () => {
+        fixture.detectChanges();
+        component.highlightedPath = [{ x: 1, y: 1 }];
+
+        turnStartedSubject.next({
             gameState: {
-                currentValue: updatedGameState,
-                previousValue: mockGameState,
-                firstChange: false,
-                isFirstChange: () => false,
+                availableMoves: undefined,
             },
         });
 
-        fixture.detectChanges();
-
-        // The board should now be 4x4
-        expect(component.tiles.length).toBe(4);
-        expect(component.tiles[0].length).toBe(4);
-
-        // Should have 3 available moves
-        expect(component.availableMoves.length).toBe(3);
+        expect(component.availableMoves).toEqual([]);
+        expect(component.highlightedPath).toEqual([]);
+    });
+    it('should detect horizontal adjacency (yDiff === 0)', () => {
+        const pos1: Coordinates = { x: 0, y: 0 };
+        const pos2: Coordinates = { x: 1, y: 0 };
+        expect(component['isAdjacent'](pos1, pos2)).toBeTrue();
     });
 
-    it('should emit move request when clicking an available move', () => {
-        fixture.detectChanges();
-
-        const moveRequestSpy = spyOn(component.moveRequest, 'emit');
-
-        // Get coordinates at position 0,1 (which is an available move)
-        const tile: Tile = {
-            type: TileTypes.Grass,
-            object: 0,
-            x: 0,
-            y: 1,
-            id: '0-1',
-        };
-
-        component.onTileClick(tile);
-
-        expect(moveRequestSpy).toHaveBeenCalledWith({ x: 0, y: 1 });
+    it('should detect vertical adjacency (xDiff === 0)', () => {
+        const pos1: Coordinates = { x: 0, y: 0 };
+        const pos2: Coordinates = { x: 0, y: 1 };
+        expect(component['isAdjacent'](pos1, pos2)).toBeTrue();
     });
 
-    it('should not emit move request when clicking an unavailable move', () => {
-        fixture.detectChanges();
-
-        const moveRequestSpy = spyOn(component.moveRequest, 'emit');
-
-        // Get coordinates at position 1,1 (which is not an available move)
-        const tile: Tile = {
-            type: TileTypes.Grass,
-            object: 0,
-            x: 1,
-            y: 1,
-            id: '1-1',
-        };
-
-        component.onTileClick(tile);
-
-        expect(moveRequestSpy).not.toHaveBeenCalled();
+    it('should reject diagonal non-adjacency', () => {
+        const pos1: Coordinates = { x: 0, y: 0 };
+        const pos2: Coordinates = { x: 1, y: 1 };
+        expect(component['isAdjacent'](pos1, pos2)).toBeFalse();
     });
 
-    it('should calculate and highlight path on hover', fakeAsync(() => {
-        fixture.detectChanges();
-
-        const tile: Tile = {
-            type: TileTypes.Grass,
-            object: 0,
-            x: 0,
-            y: 1,
-            id: '0-1',
-        };
-
-        // There is no cached path yet
-        expect(component.highlightedPath.length).toBe(0);
-
-        component.onTileHover(tile);
-
-        // Should request a path
-        expect(lobbyServiceSpy.requestPath).toHaveBeenCalledWith('lobby1', { x: 0, y: 1 });
-
-        // Simulate path calculation response
-        const path: Coordinates[] = [
-            { x: 0, y: 0 },
-            { x: 0, y: 1 },
-        ];
-
-        pathCalculatedSubject.next({
-            destination: { x: 0, y: 1 },
-            path: path,
-            valid: true,
-        });
-
-        tick();
-
-        // Path should be highlighted
-        expect(component.highlightedPath).toEqual(path);
-
-        // When hovering again, it should use the cached path
-        component.onTileHover(tile);
-
-        // Should not request path again
-        expect(lobbyServiceSpy.requestPath).toHaveBeenCalledTimes(1);
-
-        // Path should still be highlighted
-        expect(component.highlightedPath).toEqual(path);
-    }));
-
-    it('should clear path highlights on tile leave', () => {
-        fixture.detectChanges();
-
-        // Set a mock path
-        component.highlightedPath = [
-            { x: 0, y: 0 },
-            { x: 0, y: 1 },
-        ];
-
-        component.onTileLeave();
-
-        expect(component.highlightedPath.length).toBe(0);
+    it('should return null when gameState is undefined', () => {
+        component.gameState = undefined as unknown as GameState;
+        const result = component.getPlayerAtPosition(0, 0);
+        expect(result).toBeNull();
     });
 
-    it('should correctly identify tiles on highlighted path', () => {
-        fixture.detectChanges();
-
-        // Set a mock path
-        component.highlightedPath = [
-            { x: 0, y: 0 },
-            { x: 0, y: 1 },
-        ];
-
-        expect(component.isOnHighlightedPath(0, 0)).toBeTrue();
-        expect(component.isOnHighlightedPath(0, 1)).toBeTrue();
-        expect(component.isOnHighlightedPath(1, 0)).toBeFalse();
+    it('should return null when playerPositions is empty', () => {
+        const testState = getDummyGameState();
+        testState.playerPositions = [];
+        component.gameState = testState;
+        const result = component.getPlayerAtPosition(0, 0);
+        expect(result).toBeNull();
     });
+    it('should emit actionClicked and exit early when action is true in onTileClick', () => {
+        spyOn(component.actionClicked, 'emit');
+        spyOn(component.tileClicked, 'emit');
 
-    it('should update available moves when turn starts', fakeAsync(() => {
-        fixture.detectChanges();
+        component.action = true;
 
-        const newMoves: Coordinates[] = [
-            { x: 1, y: 1 },
-            { x: 1, y: 2 },
-        ];
+        const sampleTile = { x: 0, y: 1, type: 1, object: 0, id: '0-1' };
 
-        turnStartedSubject.next({
-            gameState: mockGameState,
-            currentPlayer: 'player1',
-            availableMoves: newMoves,
-        });
+        component.onTileClick(sampleTile);
 
-        tick();
+        expect(component.actionClicked.emit).toHaveBeenCalledWith(sampleTile);
 
-        expect(component.availableMoves).toEqual(newMoves);
-        expect(component.highlightedPath.length).toBe(0); // Path should be cleared
-    }));
-
-    it('should clear path highlights when movement is processed', fakeAsync(() => {
-        fixture.detectChanges();
-
-        // Set a mock path
-        component.highlightedPath = [
-            { x: 0, y: 0 },
-            { x: 0, y: 1 },
-        ];
-
-        movementProcessedSubject.next({
-            gameState: mockGameState,
-            playerMoved: 'player1',
-            newPosition: { x: 0, y: 1 },
-        });
-
-        tick();
-
-        expect(component.highlightedPath.length).toBe(0);
-    }));
-
-    it("should correctly determine if it is the current player's turn", () => {
-        component.gameState = mockGameState;
-        component.currentPlayerId = 'player1';
-        fixture.detectChanges();
-
-        // The private method isMyTurn() is tested indirectly through onTileClick
-        const availableTile: Tile = {
-            type: TileTypes.Grass,
-            object: 0,
-            x: 0,
-            y: 1,
-            id: '0-1',
-        };
-
-        const moveRequestSpy = spyOn(component.moveRequest, 'emit');
-
-        component.onTileClick(availableTile);
-        expect(moveRequestSpy).toHaveBeenCalled(); // Should emit because it's our turn
-
-        // Change the current player
-        component.gameState = {
-            ...mockGameState,
-            currentPlayer: 'player2',
-        };
-
-        moveRequestSpy.calls.reset();
-        component.onTileClick(availableTile);
-        expect(moveRequestSpy).not.toHaveBeenCalled(); // Should not emit because it's not our turn
-    });
-
-    it('should properly initialize the board with objects', () => {
-        const boardWithObjects = [
-            [1, 1 + OBJECT_MULTIPLIER * ObjectsTypes.BOOTS, 1],
-            [1, 1, 1 + OBJECT_MULTIPLIER * ObjectsTypes.SWORD],
-            [1, 1 + OBJECT_MULTIPLIER * ObjectsTypes.POTION, 1],
-        ];
-
-        component.gameState = {
-            ...mockGameState,
-            board: boardWithObjects,
-        };
-
-        fixture.detectChanges();
-
-        expect(component.tiles[0][1].object).toBe(ObjectsTypes.BOOTS);
-        expect(component.tiles[1][2].object).toBe(ObjectsTypes.SWORD);
-        expect(component.tiles[2][1].object).toBe(ObjectsTypes.POTION);
+        expect(component.tileClicked.emit).not.toHaveBeenCalled();
     });
 });

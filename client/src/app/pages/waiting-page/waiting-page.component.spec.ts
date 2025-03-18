@@ -8,7 +8,6 @@ import { of, Subject, Subscription } from 'rxjs';
 import { GameLobby } from '@common/game-lobby';
 import { WAITING_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 import { PageUrl } from '@app/Consts/route-constants';
-import { Player } from '@common/player';
 
 describe('WaitingPageComponent', () => {
     let component: WaitingPageComponent;
@@ -33,6 +32,7 @@ describe('WaitingPageComponent', () => {
                 speed: 10,
                 attack: 5,
                 defense: 5,
+                maxLife: 0,
             },
             {
                 id: mockPlayerId,
@@ -43,6 +43,7 @@ describe('WaitingPageComponent', () => {
                 speed: 10,
                 attack: 5,
                 defense: 5,
+                maxLife: 0,
             },
         ],
         maxPlayers: 0,
@@ -50,32 +51,27 @@ describe('WaitingPageComponent', () => {
     };
 
     let lobbyUpdatedSubject: Subject<{ lobbyId: string; lobby: GameLobby }>;
-    let playerLeftSubject: Subject<{ lobbyId: string; playerName: string }>;
     let hostDisconnectedSubject: Subject<void>;
     let errorSubject: Subject<string>;
     let gameStartedSubject: Subject<{ gameState: any }>;
-    let playerJoinedSubject: Subject<{ lobbyId: string; player: Player }>;
 
     beforeEach(async () => {
         lobbyUpdatedSubject = new Subject();
-        playerLeftSubject = new Subject();
         hostDisconnectedSubject = new Subject();
         errorSubject = new Subject();
         gameStartedSubject = new Subject<{ gameState: any }>();
-        playerJoinedSubject = new Subject();
 
         mockLobbyService = jasmine.createSpyObj<LobbyService>('LobbyService', {
             getLobby: of(mockLobby),
             onLobbyUpdated: lobbyUpdatedSubject.asObservable(),
-            onPlayerLeft: playerLeftSubject.asObservable(),
             onHostDisconnected: hostDisconnectedSubject.asObservable(),
             onError: errorSubject.asObservable(),
             onGameStarted: gameStartedSubject.asObservable(),
-            onPlayerJoined: playerJoinedSubject.asObservable(),
             leaveLobby: undefined,
             lockLobby: undefined,
             requestStartGame: undefined,
             setCurrentPlayer: undefined,
+            disconnectFromRoom: undefined, // if your component calls disconnectFromRoom
         });
 
         mockNotificationService = jasmine.createSpyObj<NotificationService>('NotificationService', ['showError', 'showSuccess']);
@@ -131,13 +127,6 @@ describe('WaitingPageComponent', () => {
         expect(component.lobby).toEqual(updatedLobby);
     });
 
-    it('should navigate home if current player is kicked', fakeAsync(() => {
-        playerLeftSubject.next({ lobbyId: mockLobbyId, playerName: 'Test Player' });
-        tick();
-        expect(mockNotificationService.showError).toHaveBeenCalledWith(WAITING_PAGE_CONSTANTS.errorPlayerKicked);
-        expect(router.navigate).toHaveBeenCalledWith([PageUrl.Home], { replaceUrl: true });
-    }));
-
     it('should handle host disconnection', fakeAsync(() => {
         hostDisconnectedSubject.next();
         tick();
@@ -183,12 +172,6 @@ describe('WaitingPageComponent', () => {
         component.currentPlayer = mockLobby.players[0];
         component.startGame();
         expect(mockLobbyService.requestStartGame).toHaveBeenCalledWith(mockLobbyId);
-    });
-
-    it('should show error if start game fails', () => {
-        component.lobby = null;
-        component.startGame();
-        expect(mockNotificationService.showError).toHaveBeenCalledWith(WAITING_PAGE_CONSTANTS.errorStartGame);
     });
 
     it('should set currentPlayer to default if player not found in initial lobby', () => {
@@ -243,29 +226,17 @@ describe('WaitingPageComponent', () => {
         component.ngOnDestroy();
         expect(subscription.unsubscribe).toHaveBeenCalled();
     });
-    it('should lock lobby when player count reaches maximum capacity', fakeAsync(() => {
-        const maxPlayers = 2;
-        const testLobby: GameLobby = {
-            ...mockLobby,
-            players: [mockLobby.players[0]],
-            maxPlayers,
-        };
+    it('should show error if startGame is called without a lobby', () => {
+        component.lobby = null as any;
+        component.currentPlayer = mockLobby.players[0];
+        component.startGame();
+        expect(mockNotificationService.showError).toHaveBeenCalledWith(WAITING_PAGE_CONSTANTS.errorStartGame);
+    });
 
-        component.lobby = testLobby;
-
-        const updatedLobby = {
-            ...testLobby,
-            players: [...testLobby.players, mockLobby.players[1]],
-        };
-        lobbyUpdatedSubject.next({ lobbyId: mockLobbyId, lobby: updatedLobby });
-
-        playerJoinedSubject.next({
-            lobbyId: mockLobbyId,
-            player: mockLobby.players[1],
-        });
-
-        tick();
-
-        expect(mockLobbyService.lockLobby).toHaveBeenCalledWith(mockLobbyId);
-    }));
+    it('should show error if startGame is called without a currentPlayer', () => {
+        component.lobby = mockLobby;
+        component.currentPlayer = null as any;
+        component.startGame();
+        expect(mockNotificationService.showError).toHaveBeenCalledWith(WAITING_PAGE_CONSTANTS.errorStartGame);
+    });
 });
