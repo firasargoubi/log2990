@@ -148,4 +148,18 @@ describe('DisconnectHandlerService', () => {
         service.setServer(mockServer);
         expect((service as any).io).to.equal(mockServer);
     });
+    it('should call socket.leave with correct lobbyId in handleDisconnectFromRoom', () => {
+        const socket = { leave: sandbox.spy() } as any;
+        const lobbyId = 'lobby123';
+
+        service.handleDisconnectFromRoom(socket, lobbyId);
+
+        expect(socket.leave.calledWith(lobbyId)).to.equal(true);
+    });
+    it('should return early in handlePlayerLeaveGame if gameState does not exist', () => {
+        const spy = sandbox.spy(service as any, 'handlePlayerLeaveGame');
+        service['gameStates'].delete('lobby1');
+        service['handlePlayerLeaveGame']('lobby1', 'socket1');
+        expect(spy.called).to.equal(true);
+    });
 });
