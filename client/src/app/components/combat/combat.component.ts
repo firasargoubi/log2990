@@ -1,7 +1,7 @@
-import { Component, inject, Input, OnChanges, OnInit } from '@angular/core';
+import { Component, inject, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
-import { TimerSyncService } from '@app/services/timer-sync.service'; // Importez le service
+import { TimerSyncService } from '@app/services/timer-sync.service'; // Inject TimerSyncService
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
 
@@ -12,7 +12,7 @@ const FLEE_RATE = 30;
     templateUrl: './combat.component.html',
     styleUrls: ['./combat.component.scss'],
 })
-export class CombatComponent implements OnInit, OnChanges {
+export class CombatComponent implements OnInit, OnChanges, OnDestroy {
     @Input() currentPlayer!: Player;
     @Input() lobbyId!: string;
     @Input() gameState: GameState | null = null;
@@ -22,11 +22,11 @@ export class CombatComponent implements OnInit, OnChanges {
     countDown: number = 0;
     canAct: boolean = false;
     isFleeSuccess: boolean = false;
-    combatEnded: boolean = false;
     private lobbyService = inject(LobbyService);
+    private timerSyncService = inject(TimerSyncService);
+
     private countDownInterval: ReturnType<typeof setInterval> | null = null;
     private notificationService = inject(NotificationService);
-    private timerSyncService = inject(TimerSyncService);
 
     ngOnInit() {
         if (this.gameState) {
@@ -36,6 +36,7 @@ export class CombatComponent implements OnInit, OnChanges {
         this.subscribeToPlayerSwitch();
         this.subscribeToNewSpawnPoints();
         this.subscribeToFleeFailure();
+        this.startCountdown();
     }
 
     ngOnChanges() {
@@ -47,17 +48,42 @@ export class CombatComponent implements OnInit, OnChanges {
         if (!this.opponent) {
             this.opponent = this.gameState?.players.find((p) => p.id !== this.currentPlayer.id) ?? this.opponent;
         }
-        this.timerSyncService.pausePlayerTimer(this.countDown);
+        if (this.currentPlayer && this.opponent) {
+            this.startCountdown();
+        }
     }
 
-    startCountdown() {
+    startCombatCountdown() {
+        this.timerSyncService.pausePlayerTimer(this.countDown); // Pause player timer
+        this.countDown = 30; // Combat timer set to 30 seconds
         this.countDownInterval = setInterval(() => {
             if (this.countDown > 0) {
                 this.countDown--;
             } else {
-                this.endTimer();
+                this.stopCombatCountdown();
             }
         }, TO_SECONDS);
+    }
+
+    stopCombatCountdown() {
+        if (this.countDownInterval !== null) {
+            clearInterval(this.countDownInterval);
+            this.countDownInterval = null;
+        }
+        this.timerSyncService.resumePlayerTimer(); // Resume player timer once combat is done
+    }
+
+    startCountdown() {
+        // Initialize countdown for player when the combat countdown isn't active
+        if (!this.countDownInterval) {
+            this.countDownInterval = setInterval(() => {
+                if (this.countDown > 0) {
+                    this.countDown--;
+                } else {
+                    this.stopCombatCountdown();
+                }
+            }, TO_SECONDS);
+        }
     }
 
     endTimer() {
@@ -66,12 +92,13 @@ export class CombatComponent implements OnInit, OnChanges {
         }
         if (this.countDownInterval !== null) {
             clearInterval(this.countDownInterval);
+            this.countDownInterval = null;
         }
-        this.onAttack();
-        this.timerSyncService.resumePlayerTimer();
+        this.subscribeToPlayerSwitch();
     }
 
     onAttack() {
+        console.log('ON EST DANS ONATTACK() CLIENT');
         if (!this.gameState) return;
         const attackRoll = this.rollDice(this.currentPlayer, 'attack') + this.currentPlayer.attack;
         const defenseRoll = this.rollDice(this.opponent, 'defense') + this.opponent.defense;
@@ -120,11 +147,16 @@ export class CombatComponent implements OnInit, OnChanges {
         }
     }
 
+    ngOnDestroy() {
+        if (this.countDownInterval !== null) {
+            clearInterval(this.countDownInterval);
+        }
+    }
+
     private rollDice(player: Player, type: 'attack' | 'defense'): number {
         const diceType = player.bonus?.[type] === 'D4' ? 4 : 6;
         return Math.floor(Math.random() * diceType) + 1;
     }
-
     private isOnIce(player: Player): boolean {
         let tileType;
         const currentPlayerIndex = this.gameState?.players.findIndex((p) => p.id === player.id);
@@ -169,7 +201,7 @@ export class CombatComponent implements OnInit, OnChanges {
             if (playerIndex === -1) return;
             if (this.gameState && this.gameState.playerPositions) {
                 this.gameState.playerPositions[playerIndex] = data.newSpawn;
-                this.lobbyService.terminateAttack(this.lobbyId);
+                this.currentPlayer.life = this.currentPlayer.maxLife;
             }
         });
     }

@@ -1,9 +1,7 @@
-// countdown-player.component.ts
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { LobbyService } from '@app/services/lobby.service';
 import { TimerSyncService } from '@app/services/timer-sync.service';
 
-const delay = 1000; // 1 seconde
+const delay = 1000; // 1 second
 
 @Component({
     selector: 'app-countdown-player',
@@ -11,68 +9,68 @@ const delay = 1000; // 1 seconde
     styleUrls: ['./countdown-player.component.scss'],
 })
 export class CountdownPlayerComponent implements OnInit, OnDestroy {
-    @Input() countdown: number = 60; // Durée initiale du compte à rebours
-    @Input() isPlayerTurn: boolean = false; // Détermine si c'est le tour du joueur courant
-    @Input() isInCombat: boolean = false; // Détermine si le joueur est dans un combat
-    @Input() isTransitioning: boolean = false; // Détermine si le jeu est en transition de tours
-    @Input() lobbyId: string = ''; // ID de la salle
+    @Input() countdown: number = 60; // Initial countdown duration
+    @Input() isPlayerTurn: boolean = false; // Indicates if it’s the current player’s turn
+    @Input() isInCombat: boolean = false; // Indicates if the player is in combat
+    @Input() isTransitioning: boolean = false; // Indicates if the game is transitioning turns
+    @Input() lobbyId: string = ''; // Lobby ID
 
     remainingTime: number;
-    message: string = '--'; // Message à afficher lorsque le joueur n'est pas impliqué
-    interval: number | null = null; // Typage avec number pour le setInterval
+    message: string = '--'; // Message to display when the player is not involved
+    interval: number | null = null; // Typing for setInterval
 
-    constructor(
-        private lobbyService: LobbyService,
-        private timerSyncService: TimerSyncService,
-    ) {}
+    constructor(private timerSyncService: TimerSyncService) {}
 
     ngOnInit(): void {
         this.remainingTime = this.countdown;
         this.startCountdown();
 
-        // S'abonner aux changements de pause/reprise du timer
-        this.timerSyncService.playerTimerPaused$.subscribe((remainingTime) => {
-            if (remainingTime !== null) {
-                this.pauseCountdown();
-                this.remainingTime = remainingTime; // Mettre à jour le temps restant
-            } else {
-                this.resumeCountdown();
-            }
-        });
+        // Check if the timer has been paused and resume it
+        const pausedTime = this.timerSyncService.getPausedTime();
+        if (pausedTime !== null) {
+            this.pauseCountdown();
+            this.remainingTime = pausedTime; // Set the remaining time to the paused value
+        }
     }
 
     ngOnDestroy(): void {
         if (this.interval !== null) {
-            clearInterval(this.interval); // Arrêter le compte à rebours quand le composant est détruit
-            this.interval = null; // Nettoyer la référence de l'intervalle
+            clearInterval(this.interval); // Clear the interval when the component is destroyed
+            this.interval = null; // Clean the interval reference
         }
     }
 
     startCountdown(): void {
-        this.interval = window.setInterval(() => {
-            if (this.remainingTime > 0) {
-                this.remainingTime--;
-            } else {
-                if (this.interval !== null) {
-                    clearInterval(this.interval); // Arrêter l'intervalle quand le temps est écoulé
-                    this.interval = null;
-                    this.lobbyService.requestEndTurn(this.lobbyId); // Appeler la méthode onTurnEnded du service
+        // Start the countdown if the timer is not paused
+        if (this.remainingTime > 0) {
+            this.interval = window.setInterval(() => {
+                if (this.remainingTime > 0) {
+                    this.remainingTime--;
+                } else {
+                    if (this.interval !== null) {
+                        clearInterval(this.interval); // Stop the interval when the time is up
+                        this.interval = null;
+                    }
                 }
-            }
-        }, delay);
+            }, delay);
+        }
     }
 
     pauseCountdown(): void {
+        // Pause the countdown and store the remaining time
         if (this.interval !== null) {
             clearInterval(this.interval);
             this.interval = null;
         }
+        this.timerSyncService.pausePlayerTimer(this.remainingTime); // Pause the player timer in the service
     }
 
     resumeCountdown(): void {
+        // Resume the countdown if the timer was paused
         if (this.interval === null) {
             this.startCountdown();
         }
+        this.timerSyncService.resumePlayerTimer(); // Let the service know the timer has resumed
     }
 
     getDisplayTime(): string {
@@ -80,9 +78,10 @@ export class CountdownPlayerComponent implements OnInit, OnDestroy {
     }
 
     resetCountdown(): void {
+        // Reset the countdown
         this.remainingTime = this.countdown;
         if (this.interval !== null) {
-            clearInterval(this.interval); // Arrêter l'intervalle en cours
+            clearInterval(this.interval); // Stop the ongoing interval
             this.interval = null;
         }
         this.startCountdown();
