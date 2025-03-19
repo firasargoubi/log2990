@@ -243,9 +243,9 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.router.navigate([PageUrl.Home], { replaceUrl: true });
         }
     }
-    // onInfoSent(details: string) {
-    //     console.log(details);
-    // }
+    onInfoSent(details: string) {
+        console.log(details);
+    }
 
     private setupGameListeners() {
         this.subscriptions.push(
