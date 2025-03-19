@@ -12,7 +12,7 @@ import { LobbySocketHandlerService } from './lobby-socket-handler.service';
 @Service()
 export class GameSocketHandlerService {
     private io: Server;
-    private combatTimes: Map<string, number> = new Map<string, number>();
+    // private combatTimes: Map<string, number> = new Map<string, number>();
     constructor(
         private lobbies: Map<string, GameLobby>,
         private gameStates: Map<string, GameState>,
@@ -181,22 +181,21 @@ export class GameSocketHandlerService {
 
         currentPlayer.amountEscape = 0;
         opponent.amountEscape = 0;
+
         const currentPlayerIndex = gameState.players.findIndex((p) => p.id === currentPlayer.id);
         const opponentIndex = gameState.players.findIndex((p) => p.id === opponent.id);
-        if (currentPlayerIndex !== -1) {
-            gameState.players[currentPlayerIndex].amountEscape = 0;
-        }
-        if (opponentIndex !== -1) {
-            gameState.players[opponentIndex].amountEscape = 0;
+
+        if (currentPlayerIndex !== -1) gameState.players[currentPlayerIndex].amountEscape = 0;
+        if (opponentIndex !== -1) gameState.players[opponentIndex].amountEscape = 0;
+
+        let firstPlayer = currentPlayer;
+        if (opponent.speed > currentPlayer.speed) {
+            firstPlayer = opponent;
+        } else if (opponent.speed === currentPlayer.speed) {
+            firstPlayer = currentPlayer;
         }
 
-        console.log('Start Battle');
-        console.log(currentPlayer);
-        console.log(opponent);
-
-        this.combatTimes.set(lobbyId, time);
-        const playerTurn = currentPlayerIndex < opponentIndex ? currentPlayerIndex : opponentIndex;
-        const firstPlayer = gameState.players[playerTurn];
+        this.io.to(lobbyId).emit('combatPlayersUpdate', { players: gameState.players });
         this.io.to(currentPlayer.id).to(opponent.id).emit('startCombat', { firstPlayer });
     }
 
@@ -383,14 +382,13 @@ export class GameSocketHandlerService {
         });
     }
 
-    handleFlee(lobbyId: string, fleeingPlayer: Player, forceSuccess: boolean = false) {
+    handleFlee(lobbyId: string, fleeingPlayer: Player) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
 
-        if (fleeingPlayer.amountEscape === undefined) {
-            fleeingPlayer.amountEscape = 0;
-        }
-        if (fleeingPlayer.amountEscape >= 2 && !forceSuccess) {
+        fleeingPlayer.amountEscape = fleeingPlayer.amountEscape ?? 0;
+
+        if (fleeingPlayer.amountEscape >= 2) {
             this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
             return;
         }
@@ -403,20 +401,20 @@ export class GameSocketHandlerService {
         }
 
         const FLEE_RATE = 30;
-        const fleeingChance = Math.random() * 100;
+        const isSuccessful = Math.random() * 100 <= FLEE_RATE;
 
-        const isSuccessful = forceSuccess || fleeingChance <= FLEE_RATE;
-        if (!isSuccessful) {
-            this.io.to(lobbyId).emit('fleeFailure', { fleeingPlayer });
-            return;
+        const opponent = gameState.players.find((p) => p.id !== fleeingPlayer.id);
+        if (opponent) {
+            gameState.currentPlayer = opponent.id;
         }
 
-        gameState.currentPlayerActionPoints = 0;
-        gameState.players[playerIndex].currentAP = 0;
-        this.gameStates.set(lobbyId, gameState);
-        this.io.to(lobbyId).emit(GameEvents.FleeSuccess, { fleeingPlayer, isSuccessful });
-        this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState });
+        if (isSuccessful) {
+            this.io.to(lobbyId).emit(GameEvents.FleeSuccess, { fleeingPlayer, isSuccessful });
+        } else {
+            this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
+        }
 
+        this.gameStates.set(lobbyId, gameState);
         this.updateCombatPlayers(lobbyId);
     }
 

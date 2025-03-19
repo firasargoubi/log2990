@@ -9,6 +9,7 @@
                 [activePlayer]="getActivePlayer()"
                 [players]="getPlayers()"
             >
+                >
             </app-game-info>
             <ul>
                 <li><strong>Name:</strong> {{ currentPlayer?.name }}</li>
@@ -27,7 +28,7 @@
         @if (gameState) {
         <app-game-board
             [gameState]="gameState"
-            [currentPlayerId]="currentPlayer?.id || ''"
+            [currentPlayerId]="currentPlayer.id || ''"
             [lobbyId]="lobbyId"
             [action]="action"
             [inCombat]="isInCombat"

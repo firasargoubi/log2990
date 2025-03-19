@@ -998,9 +998,8 @@ describe('LobbyService', () => {
                 maxLife: 50,
                 winCount: 0,
             };
-            const success = true;
-            service.flee(lobbyId, player, success);
-            expect(mockSocket.emit).toHaveBeenCalledWith('flee', { lobbyId, player, success });
+            service.flee(lobbyId, player);
+            expect(mockSocket.emit).toHaveBeenCalledWith('flee', { lobbyId, player });
         });
 
         it('should handle attackResult event with detailed data', (done) => {

@@ -368,8 +368,8 @@ export class LobbyService {
         this.socket.emit('attack', { lobbyId, attacker, defender });
     }
 
-    flee(lobbyId: string, player: Player, success: boolean): void {
-        this.socket.emit('flee', { lobbyId, player, success });
+    flee(lobbyId: string, player: Player): void {
+        this.socket.emit('flee', { lobbyId, player });
     }
 
     onAttackResult(): Observable<{
@@ -418,7 +418,6 @@ export class LobbyService {
         });
     }
 
-    // Listen for successful flee events
     onFleeSuccess(): Observable<{ fleeingPlayer: Player }> {
         return new Observable((observer) => {
             this.socket.on('fleeSuccess', (data) => {
