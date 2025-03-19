@@ -231,13 +231,11 @@ export class LobbyService {
 
     executeAction(action: string, tile: Tile, lobbyId: string): Observable<{ newGameBoard: number[][] }> {
         return new Observable<{ newGameBoard: number[][] }>((observer) => {
-            // Attente de la mise à jour de la tuile
             this.socket.once('tileUpdated', (data: { newGameBoard: number[][] }) => {
                 observer.next(data);
                 observer.complete();
             });
 
-            // Émission de l'action au serveur
             this.socket.emit(action, { tile, lobbyId });
         });
     }
@@ -288,7 +286,7 @@ export class LobbyService {
     }
 
     updateCountdown(time: number): void {
-        this.socket.emit('updateCountdown(time)', { time }); // Calls the updateCountdown method in SocketService
+        this.socket.emit('updateCountdown(time)', { time });
     }
 
     handleDefeat(player: Player, lobbyId: string) {
@@ -331,7 +329,7 @@ export class LobbyService {
     onCombatUpdate(): Observable<{ timeLeft: number }> {
         return new Observable((observer) => {
             this.socket.on('combatUpdate', (data) => {
-                observer.next(data); // Envoie le temps restant
+                observer.next(data);
             });
         });
     }
@@ -339,7 +337,7 @@ export class LobbyService {
     getCombatUpdate(): Observable<{ players: Player[] }> {
         return new Observable((observer) => {
             this.socket.on('combatPlayersUpdate', (data) => {
-                observer.next(data); // Sends the updated player states
+                observer.next(data);
             });
         });
     }
@@ -426,7 +424,6 @@ export class LobbyService {
         });
     }
 
-    // Listen for failed flee attempts
     onFleeFailure(): Observable<{ fleeingPlayer: Player }> {
         return new Observable((observer) => {
             this.socket.on('fleeFailure', (data) => {

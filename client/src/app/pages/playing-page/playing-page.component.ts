@@ -240,8 +240,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         }
     }
 
-    // Définition des types de tuiles
-
     onInfoSent(details: string) {
         this.notificationService.showInfo(details);
     }

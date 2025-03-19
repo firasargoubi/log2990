@@ -61,19 +61,6 @@ describe('ActionService', () => {
         expect(isOnTile).toBeTrue();
     });
 
-    // it('should find opponent on tile', () => {
-    //     service.gameState = {
-    //         players: [{ id: 'player1' }],
-    //         playerPositions: [{ x: 1, y: 2 }],
-    //         currentPlayer: 'player1',
-    //         currentPlayerActionPoints: 1,
-    //     } as GameState;
-
-    //     const tile: Tile = { x: 1, y: 2, type: TileTypes.Grass, id: 'tile1', object: 0 };
-    //     const opponent = service.findOpponent(tile);
-    //     expect(opponent).toEqual({ id: 'player1' });
-    // });
-
     it('should check if tile is next to player', () => {
         service.gameState = {
             players: [{ id: 'player1' }],

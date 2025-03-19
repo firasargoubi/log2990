@@ -844,7 +844,6 @@ describe('LobbyService', () => {
         });
 
         it('should update combat status and emit correct value', (done) => {
-            // Initializing the spy to monitor the emitted values
             const expectedValue = true;
 
             service.updateCombatStatus(expectedValue);

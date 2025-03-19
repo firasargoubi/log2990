@@ -658,8 +658,6 @@ describe('SocketService', () => {
         expect(gameHandler.changeTurnEnd.calledWith(data.currentPlayer, data.opponent, data.playerTurn, data.gameState)).to.be.equal(true);
     });
 
-    // Fix for the playerDefeated test in socket.service.spec.ts
-
     it('should call handleFlee when fleeCombat event is received', () => {
         const socketMock: any = { on: sandbox.spy() };
         const ioOnSpy = sandbox.stub();
@@ -782,7 +780,6 @@ describe('SocketService', () => {
         const socketMock: any = { emit: sandbox.spy() };
         const data = { coordinates: { x: 5, y: 5 } };
 
-        // Update the implementation in test instead of trying to access private method
         socketService['handleTeleport'] = (socket, data) => {
             if (!data || !data.lobbyId) {
                 socket.emit('error', 'Invalid lobby ID');
@@ -799,7 +796,6 @@ describe('SocketService', () => {
         const socketMock: any = { emit: sandbox.spy() };
         const data = { lobbyId: 'lobby123' };
 
-        // Update the implementation in test
         socketService['handleTeleport'] = (socket, data) => {
             if (!data || !data.lobbyId) {
                 socket.emit('error', 'Invalid lobby ID');
@@ -838,7 +834,6 @@ describe('SocketService', () => {
         const socketMock: any = { emit: sandbox.spy() };
         const data = { debug: true };
 
-        // Update the implementation in test
         socketService['handleSetDebug'] = (socket, data) => {
             if (!data || !data.lobbyId) {
                 socket.emit('error', 'Invalid lobby ID');

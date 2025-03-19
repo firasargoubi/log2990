@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
 import { Coordinates } from '@common/coordinates';
 import { GameEvents } from '@common/events';
@@ -20,7 +21,6 @@ const MAX_FLEE = 100;
 @Service()
 export class GameSocketHandlerService {
     private io: Server;
-    // private combatTimes: Map<string, number> = new Map<string, number>();
     constructor(
         private lobbies: Map<string, GameLobby>,
         private gameStates: Map<string, GameState>,
@@ -412,7 +412,6 @@ export class GameSocketHandlerService {
 
         const opponent = gameState.players.find((p) => p.id !== fleeingPlayer.id);
         if (opponent) {
-            // eslint-disable-next-line max-lines
             gameState.currentPlayer = opponent.id;
         }
 
