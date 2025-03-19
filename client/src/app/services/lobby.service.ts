@@ -402,9 +402,17 @@ export class LobbyService {
         });
     }
 
-    onGameEnded(): Observable<{ winner: Player }> {
+    onCombatEnded(): Observable<{ loser: Player }> {
         return new Observable((observer) => {
             this.socket.on('combatEnded', (data) => {
+                observer.next(data);
+            });
+        });
+    }
+
+    onGameOver(): Observable<{ winner: string }> {
+        return new Observable((observer) => {
+            this.socket.on('gameOver', (data) => {
                 observer.next(data);
             });
         });
