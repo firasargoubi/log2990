@@ -38,8 +38,6 @@ describe('CountdownPlayerComponent', () => {
         component.isInCombat = false;
         component.isAnimated = false;
         mockIsInCombat$.next(false);
-        // spyOn(component, 'startCountdown').and.callThrough();
-        // spyOn(component, 'pauseCountdown').and.callThrough();
         if (component['interval'] !== null) {
             clearInterval(component['interval']);
             component['interval'] = null;
@@ -124,4 +122,16 @@ describe('CountdownPlayerComponent', () => {
         tick(1000);
         expect(component['remainingTime']).toBe(0);
     }));
+    it('should pause countdown when entering combat', () => {
+        fixture.detectChanges();
+        component['remainingTime'] = 30;
+        component['startCountdown'](component['remainingTime']);
+
+        expect(component['interval']).not.toBeNull();
+
+        mockIsInCombat$.next(true);
+
+        expect(component['interval']).toBeNull();
+        expect(lobbyServiceSpy.updateCombatTime).toHaveBeenCalledWith(30);
+    });
 });
