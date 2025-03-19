@@ -241,6 +241,8 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         }
     }
 
+    // Définition des types de tuiles
+
     onInfoSent(details: string) {
         if (!details) {
             this.notificationService.showError('Aucune information disponible pour cette tuile.');
