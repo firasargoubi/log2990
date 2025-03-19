@@ -26,8 +26,8 @@ export class GameBoardComponent implements OnInit, OnChanges {
     @Output() infoSent = new EventEmitter<string>();
 
     tiles: Tile[][] = [];
-    private availableMoves: Coordinates[] = [];
-    private highlightedPath: Coordinates[] = [];
+    availableMoves: Coordinates[] = [];
+    highlightedPath: Coordinates[] = [];
 
     constructor(private lobbyService: LobbyService) {}
 

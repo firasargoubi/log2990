@@ -34,7 +34,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     @Output() gameState: GameState;
     @Output() remove = new EventEmitter<string>();
     @Input() player!: Player;
-
+    @Input() tileInfo: Tile;
     isInCombat: boolean = false;
     isPlayerTurn: boolean = false;
     combatSubscription: Subscription | null = null;
@@ -238,8 +238,9 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.router.navigate([PageUrl.Home], { replaceUrl: true });
         }
     }
+
     onInfoSent(details: string) {
-        console.log(details);
+        this.notificationService.showInfo(details);
     }
 
     getCurrentPlayer() {
@@ -281,7 +282,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.lobbyService.onStartCombat().subscribe((data) => {
                 this.isInCombat = true;
                 this.isPlayerTurn = data.firstPlayer.id === this.currentPlayer.id;
-                console.log(this.isPlayerTurn);
             }),
 
             this.lobbyService.onTurnStarted().subscribe((data) => {
@@ -318,12 +318,8 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
             this.lobbyService.onBoardChanged().subscribe((data) => {
                 this.gameState = data.gameState;
-                for (const player of data.gameState.players) {
-                    console.log('Player ', player.name);
-                    console.log(player);
-                }
+
                 this.currentPlayer = data.gameState.players.find((p) => p.id === this.currentPlayer.id) || this.currentPlayer;
-                console.log('CurrentPlayer', this.currentPlayer);
             }),
 
             this.lobbyService.onFleeSuccess().subscribe((data) => {
