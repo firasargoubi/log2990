@@ -16,5 +16,6 @@ export interface Player {
         defense?: 'D4' | 'D6';
     };
     currentMP?: number;
+    currentAP?: number;
     winCount: number;
 }

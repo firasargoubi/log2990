@@ -452,7 +452,7 @@ describe('GameSocketHandlerService', () => {
 
         gameStates.set('lobby1', gameState);
 
-        service.handleDefeat(player, 'lobby1');
+        service.handleDefeat('lobby1', player, { id: 'opponent' } as Player);
 
         expect(ioToStub.calledWith('lobby1')).to.be.true;
         const emit = ioToStub.returnValues[0].emit;
@@ -676,7 +676,7 @@ describe('GameSocketHandlerService', () => {
 
         gameStates.set('lobby1', gameState);
 
-        service.handleDefeat(player, 'lobby1');
+        service.handleDefeat('lobby1', player, { id: 'opponent' } as Player);
 
         expect(ioToStub.called).to.be.false;
     });
@@ -715,7 +715,7 @@ describe('GameSocketHandlerService', () => {
 
         gameStates.set('lobby1', gameState);
 
-        service.handleDefeat(player, 'lobby1');
+        service.handleDefeat('lobby1', player, { id: 'opponent' } as Player);
         expect(ioToStub.calledWith('lobby1')).to.be.true;
     });
 
@@ -935,7 +935,7 @@ describe('GameSocketHandlerService', () => {
 
         service.handleAttackAction('lobby1', attacker, defender);
 
-        expect(handleDefeatSpy.calledOnceWith(defender, 'lobby1')).to.be.true;
+        expect(handleDefeatSpy.calledOnceWith('lobby1', attacker, defender)).to.be.true;
     });
 
     it('should apply debug mode and use fixed attack and defense values', () => {

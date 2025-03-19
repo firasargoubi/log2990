@@ -192,6 +192,27 @@ describe('PlayingPageComponent', () => {
     });
 
     describe('Initialization', () => {
+        describe('Combat Status Updates', () => {
+            it('should update isInCombat from interaction listener', fakeAsync(() => {
+                lobbyService.interactionSubject.next({ isInCombat: true });
+                tick();
+                expect(component.isInCombat).toBeFalse();
+
+                lobbyService.interactionSubject.next({ isInCombat: false });
+                tick();
+                expect(component.isInCombat).toBeFalse();
+            }));
+
+            it('should update isInCombat from attack-end listener', fakeAsync(() => {
+                lobbyService.attackEndSubject.next({ isInCombat: true });
+                tick();
+                expect(component.isInCombat).toBeFalse();
+
+                lobbyService.attackEndSubject.next({ isInCombat: false });
+                tick();
+                expect(component.isInCombat).toBeFalse();
+            }));
+        });
         it('should set lobbyId from route params and initialize', fakeAsync(() => {
             fixture.detectChanges();
             tick();
@@ -257,6 +278,53 @@ describe('PlayingPageComponent', () => {
                 currentPlayer: 'player1',
                 players: [{ ...defaultPlayer }, { ...defaultPlayer, id: 'player2', name: 'Player Two' }],
             };
+        });
+        describe('Opponent Assignment', () => {
+            it('should update isInCombat when interaction events occur after battle initiation', () => {
+                const mockTile: Tile = { type: TileTypes.Grass, x: 0, y: 0, id: '', object: 0 };
+                const expectedOpponent = {
+                    ...defaultPlayer,
+                    id: 'player2',
+                    name: 'Player Two',
+                };
+
+                actionService.getActionType.and.returnValue('battle');
+                actionService.findOpponent.and.returnValue(expectedOpponent);
+
+                component.onActionRequest(mockTile);
+
+                lobbyService.interactionSubject.next({ isInCombat: true });
+                expect(component.isInCombat).toBeTrue();
+
+                lobbyService.interactionSubject.next({ isInCombat: false });
+                expect(component.isInCombat).toBeFalse();
+            });
+            it('should set opponent to null when findOpponent returns null', () => {
+                const mockTile: Tile = { type: TileTypes.Grass, x: 0, y: 0, id: '', object: 0 };
+                actionService.getActionType.and.returnValue('battle');
+                actionService.findOpponent.and.returnValue(null);
+
+                component.onActionRequest(mockTile);
+
+                expect(component.opponent).toBeNull();
+                expect(lobbyService.initializeBattle).not.toHaveBeenCalled();
+            });
+
+            it('should set opponent when findOpponent returns a player', () => {
+                const mockTile: Tile = { type: TileTypes.Grass, x: 0, y: 0, id: '', object: 0 };
+                const expectedOpponent = {
+                    ...defaultPlayer,
+                    id: 'player2',
+                    name: 'Player Two',
+                };
+                actionService.getActionType.and.returnValue('battle');
+                actionService.findOpponent.and.returnValue(expectedOpponent);
+
+                component.onActionRequest(mockTile);
+
+                expect(component.opponent).toEqual(expectedOpponent);
+                expect(lobbyService.initializeBattle).toHaveBeenCalledWith(component.currentPlayer, expectedOpponent, '');
+            });
         });
 
         it('should execute action when conditions are met', () => {
@@ -472,14 +540,378 @@ describe('PlayingPageComponent', () => {
         });
     });
 
-    it('should not execute action when action type is null', () => {
+    it('should exit early and not execute action when action type is null', () => {
+        component.currentPlayer = {
+            id: 'player1',
+            name: 'Player One',
+            isHost: true,
+            life: 100,
+            maxLife: 100,
+            avatar: '',
+            speed: 0,
+            attack: 0,
+            defense: 0,
+            winCount: 0,
+            amountEscape: 0,
+        };
+        component.gameState = {
+            board: [[]],
+            currentPlayer: 'player1',
+            animation: false,
+            players: [component.currentPlayer],
+            id: 'game123',
+            turnCounter: 0,
+            availableMoves: [],
+            shortestMoves: [],
+            playerPositions: [],
+            spawnPoints: [],
+            currentPlayerMovementPoints: 0,
+            currentPlayerActionPoints: 1,
+            debug: false,
+        };
         const mockTile: Tile = { type: TileTypes.Grass, x: 0, y: 0, id: '', object: 0 };
         actionService.getActionType.and.returnValue(null);
         fixture.detectChanges();
 
         component.onActionRequest(mockTile);
 
-        expect(component.action).toBe(false);
         expect(lobbyService.executeAction).not.toHaveBeenCalled();
+    });
+    describe('Move Request Validation', () => {
+        it('should not request movement if gameState is null', () => {
+            component.gameState = null as unknown as GameState;
+            component.currentPlayer = defaultPlayer;
+
+            component.onMoveRequest([{ x: 1, y: 1 }]);
+
+            expect(lobbyService.requestMovement).not.toHaveBeenCalled();
+        });
+
+        it('should not request movement if currentPlayer is null', () => {
+            component.gameState = minimalGameState;
+            component.currentPlayer = null as unknown as Player;
+
+            component.onMoveRequest([{ x: 1, y: 1 }]);
+
+            expect(lobbyService.requestMovement).not.toHaveBeenCalled();
+        });
+
+        it('should not request movement if not current player turn', () => {
+            component.gameState = { ...minimalGameState, currentPlayer: 'player999' };
+            component.currentPlayer = defaultPlayer;
+
+            component.onMoveRequest([{ x: 1, y: 1 }]);
+
+            expect(lobbyService.requestMovement).not.toHaveBeenCalled();
+        });
+
+        it('should request movement when all conditions are met', () => {
+            component.gameState = { ...minimalGameState, currentPlayer: 'player1' };
+            component.currentPlayer = defaultPlayer;
+
+            component.onMoveRequest([{ x: 1, y: 1 }]);
+
+            expect(lobbyService.requestMovement).toHaveBeenCalledWith('', [{ x: 1, y: 1 }]);
+        });
+    });
+
+    describe('End Turn Validation', () => {
+        it('should not request end turn if gameState is null', () => {
+            component.gameState = null as unknown as GameState;
+            component.currentPlayer = defaultPlayer;
+
+            component.onEndTurn();
+
+            expect(lobbyService.requestEndTurn).not.toHaveBeenCalled();
+        });
+
+        it('should not request end turn if currentPlayer is null', () => {
+            component.gameState = minimalGameState;
+            component.currentPlayer = null as unknown as Player;
+
+            component.onEndTurn();
+
+            expect(lobbyService.requestEndTurn).not.toHaveBeenCalled();
+        });
+
+        it('should not request end turn if not current player turn', () => {
+            component.gameState = { ...minimalGameState, currentPlayer: 'player999' };
+            component.currentPlayer = defaultPlayer;
+
+            component.onEndTurn();
+
+            expect(lobbyService.requestEndTurn).not.toHaveBeenCalled();
+        });
+
+        it('should request end turn when all conditions are met', () => {
+            component.gameState = { ...minimalGameState, currentPlayer: 'player1' };
+            component.currentPlayer = defaultPlayer;
+
+            component.onEndTurn();
+
+            expect(lobbyService.requestEndTurn).toHaveBeenCalledWith('');
+        });
+    });
+
+    describe('getMapSize', () => {
+        it('should return "Unknown" if gameState is undefined', () => {
+            component.gameState = null as unknown as GameState;
+            expect(component.getMapSize()).toBe('Unknown');
+        });
+
+        it('should return "small" for small maps (size <= 10)', () => {
+            component.gameState = { ...minimalGameState, board: Array(10).fill([]) };
+            expect(component.getMapSize()).toBe('small');
+        });
+
+        it('should return "large" when size is exactly 20', () => {
+            component.gameState = { ...minimalGameState, board: Array(20).fill([]) };
+            expect(component.getMapSize()).toBe('large');
+        });
+        it('should return "medium" when size is exactly 15', () => {
+            component.gameState = { ...minimalGameState, board: Array(15).fill([]) };
+            expect(component.getMapSize()).toBe('medium');
+        });
+
+        it('should return "large" for large maps (size > 20)', () => {
+            component.gameState = { ...minimalGameState, board: Array(21).fill([]) };
+            expect(component.getMapSize()).toBe('large');
+        });
+    });
+    describe('getActivePlayer', () => {
+        it('should return "Unknown" if gameState is undefined', () => {
+            component.gameState = null as unknown as GameState;
+            expect(component.getActivePlayer()).toBe('Unknown');
+        });
+
+        it('should return "Unknown" if currentPlayer is not found in players', () => {
+            component.gameState = {
+                ...minimalGameState,
+                currentPlayer: 'invalidPlayerId',
+                players: [{ ...defaultPlayer, id: 'player1' }],
+            };
+            expect(component.getActivePlayer()).toBe('Unknown');
+        });
+
+        it('should return the player name when currentPlayer exists', () => {
+            const expectedName = 'Active Player';
+            component.gameState = {
+                ...minimalGameState,
+                currentPlayer: 'player1',
+                players: [{ ...defaultPlayer, id: 'player1', name: expectedName }],
+            };
+            expect(component.getActivePlayer()).toBe(expectedName);
+        });
+    });
+
+    describe('isCurrentPlayerTurn', () => {
+        it('should return false when gameState is null', () => {
+            component.gameState = null as unknown as GameState;
+            component.currentPlayer = defaultPlayer;
+            expect(component.isCurrentPlayerTurn()).toBeFalse();
+        });
+
+        it('should return false when currentPlayer is null', () => {
+            component.gameState = minimalGameState;
+            component.currentPlayer = null as unknown as Player;
+            expect(component.isCurrentPlayerTurn()).toBeFalse();
+        });
+
+        it('should return false when gameState.currentPlayer does NOT match currentPlayer.id', () => {
+            component.gameState = { ...minimalGameState, currentPlayer: 'player2' };
+            component.currentPlayer = { ...defaultPlayer, id: 'player1' };
+            expect(component.isCurrentPlayerTurn()).toBeFalse();
+        });
+
+        it('should return true when gameState.currentPlayer matches currentPlayer.id', () => {
+            component.gameState = { ...minimalGameState, currentPlayer: 'player1' };
+            component.currentPlayer = { ...defaultPlayer, id: 'player1' };
+            expect(component.isCurrentPlayerTurn()).toBeTrue();
+        });
+    });
+
+    describe('getPlayers', () => {
+        it('should return empty array when gameState is undefined', () => {
+            component.gameState = null as unknown as GameState;
+            expect(component.getPlayers()).toEqual([]);
+        });
+
+        it('should return empty array when gameState.players is empty', () => {
+            component.gameState = { ...minimalGameState, players: [] };
+            expect(component.getPlayers()).toEqual([]);
+        });
+
+        it('should return players array when gameState has players', () => {
+            const players = [{ ...defaultPlayer }, { ...defaultPlayer, id: 'player2' }];
+            component.gameState = { ...minimalGameState, players };
+            expect(component.getPlayers()).toEqual(players);
+        });
+    });
+    describe('setupGameListeners', () => {
+        beforeEach(() => {
+            component.lobbyId = 'lobby123';
+            component.currentPlayer = { ...defaultPlayer, id: 'player1' };
+            component['setupGameListeners']();
+        });
+
+        it('should handle game started event', () => {
+            const mockGameState = { ...minimalGameState, id: 'newGame' };
+            spyOn(component, 'getCurrentPlayer');
+
+            lobbyService.gameStartedSubject.next({ gameState: mockGameState });
+
+            expect(component.gameState).toEqual(mockGameState);
+            expect(component.getCurrentPlayer).toHaveBeenCalled();
+        });
+
+        it('should handle turn started event', () => {
+            const mockGameState = { ...minimalGameState, currentPlayer: 'player1' };
+            spyOn(component as any, 'notifyPlayerTurn');
+
+            lobbyService.turnStartedSubject.next({
+                gameState: mockGameState,
+                currentPlayer: 'player1',
+            });
+
+            expect(component.gameState).toEqual(mockGameState);
+            expect(component['notifyPlayerTurn']).toHaveBeenCalledWith('player1');
+        });
+
+        it('should handle error event', () => {
+            const errorMsg = 'Test error';
+            lobbyService.errorSubject.next(errorMsg);
+            expect(notificationService.showError).toHaveBeenCalledWith(errorMsg);
+        });
+
+        describe('onLobbyUpdated', () => {
+            it('should handle lobby update with matching ID and missing player', () => {
+                const mockLobby = {
+                    id: 'lobby123',
+                    players: [{ id: 'player2' }],
+                };
+
+                lobbyService.lobbyUpdatedSubject.next({ lobby: mockLobby });
+
+                expect(lobbyService.disconnectFromRoom).toHaveBeenCalledWith('lobby123');
+                expect(router.navigate).toHaveBeenCalledWith(['/home'], { replaceUrl: true });
+            });
+
+            it('should handle lobby update with matching ID and existing player', () => {
+                const mockLobby = {
+                    id: 'lobby123',
+                    players: [{ id: 'player1' }],
+                };
+
+                lobbyService.lobbyUpdatedSubject.next({ lobby: mockLobby });
+
+                expect(lobbyService.updatePlayers).toHaveBeenCalledWith('lobby123', mockLobby.players);
+            });
+        });
+
+        describe('onFleeSuccess', () => {
+            it('should handle current player fleeing', () => {
+                const fleeingPlayer = { ...defaultPlayer, name: 'Player One' };
+
+                lobbyService.fleeSuccessSubject.next({ fleeingPlayer });
+
+                expect(component.isInCombat).toBeFalse();
+                expect(notificationService.showInfo).toHaveBeenCalledWith('Vous avez fuit le combat.');
+            });
+
+            it('should handle other player fleeing', () => {
+                const fleeingPlayer = { ...defaultPlayer, name: 'Player Two' };
+
+                lobbyService.fleeSuccessSubject.next({ fleeingPlayer });
+
+                expect(notificationService.showInfo).toHaveBeenCalledWith('Player Two a fui le combat.');
+            });
+        });
+
+        it('should handle attack end event', () => {
+            lobbyService.attackEndSubject.next({ isInCombat: false });
+
+            expect(component.isInCombat).toBeFalse();
+            expect(notificationService.showInfo).toHaveBeenCalledWith('Player One a fini son combat');
+        });
+
+        // Test remaining listeners
+        it('should handle turn ended event', () => {
+            const mockGameState = { ...minimalGameState, turnCounter: 1 };
+            lobbyService.turnEndedSubject.next({ gameState: mockGameState });
+            expect(component.gameState).toEqual(mockGameState);
+        });
+
+        it('should handle movement processed event', () => {
+            const mockGameState = { ...minimalGameState, playerPositions: [] };
+            lobbyService.movementProcessedSubject.next({ gameState: mockGameState });
+            expect(component.gameState).toEqual(mockGameState);
+        });
+
+        it('should handle board changed event', () => {
+            const mockGameState = { ...minimalGameState, board: [[TileTypes.Grass]] };
+            lobbyService.boardChangedSubject.next({ gameState: mockGameState });
+            expect(component.gameState).toEqual(mockGameState);
+        });
+    });
+
+    describe('getCurrentPlayer', () => {
+        it('should navigate to home if currentPlayer is null', fakeAsync(() => {
+            component.currentPlayer = {
+                id: 'player1',
+                name: 'Player One',
+                isHost: true,
+                life: 100,
+                maxLife: 100,
+                avatar: '',
+                speed: 0,
+                attack: 0,
+                defense: 0,
+                winCount: 0,
+                amountEscape: 0,
+            };
+
+            lobbyService.getCurrentPlayer.and.returnValue(null);
+
+            fixture.detectChanges();
+
+            tick();
+
+            expect(router.navigate).toHaveBeenCalledWith(['/home'], { replaceUrl: true });
+        }));
+
+        it('should update currentPlayer id to match socketId when different', () => {
+            const mockPlayer = { ...defaultPlayer, id: 'oldId' };
+            lobbyService.getCurrentPlayer.and.returnValue(mockPlayer);
+            lobbyService.getSocketId.and.returnValue('newSocketId');
+            component.getCurrentPlayer();
+            expect(component.currentPlayer.id).toBe('newSocketId');
+        });
+
+        it('should not change currentPlayer id if matches socketId', () => {
+            const mockPlayer = { ...defaultPlayer, id: 'socketId123' };
+            lobbyService.getCurrentPlayer.and.returnValue(mockPlayer);
+            lobbyService.getSocketId.and.returnValue('socketId123');
+            component.getCurrentPlayer();
+            expect(component.currentPlayer.id).toBe('socketId123');
+        });
+    });
+    describe('syncCurrentPlayerWithGameState', () => {
+        it('should exit early if gameState is null', () => {
+            component.gameState = null as unknown as GameState;
+            component.currentPlayer = { ...defaultPlayer };
+
+            component['syncCurrentPlayerWithGameState']();
+
+            expect(lobbyService.setCurrentPlayer).not.toHaveBeenCalled();
+        });
+
+        it('should exit early if currentPlayer is null', () => {
+            component.gameState = { ...minimalGameState };
+            component.currentPlayer = null as unknown as Player;
+
+            component['syncCurrentPlayerWithGameState']();
+
+            expect(lobbyService.setCurrentPlayer).not.toHaveBeenCalled();
+        });
     });
 });

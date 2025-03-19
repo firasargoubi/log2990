@@ -50,6 +50,7 @@ export class BoardService {
 
         if (gameState.players.length > 0) {
             gameState.players[0].currentMP = this.getPlayerMovementPoints(gameState.players[0]);
+            gameState.players[0].currentAP = BoardSocketConstants.DefaultActionPoints;
             gameState.currentPlayer = gameState.players[0].id;
             gameState.currentPlayerMovementPoints = this.getPlayerMovementPoints(gameState.players[0]);
         }
@@ -136,6 +137,8 @@ export class BoardService {
         gameState.players[currentPlayerIndex].currentMP = gameState.currentPlayerMovementPoints;
 
         gameState.currentPlayerActionPoints = 1;
+
+        gameState.players[currentPlayerIndex].currentAP = gameState.currentPlayerActionPoints;
 
         return this.handleTurn(gameState);
     }
