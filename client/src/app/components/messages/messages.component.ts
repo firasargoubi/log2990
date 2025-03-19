@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { PAD_TIME_VALUE } from '@app/Consts/app.constants';
 
 @Component({
     selector: 'app-messages',
@@ -32,7 +33,7 @@ export class MessagesComponent {
     }
 
     private padTime(value: number): string {
-        return value < 10 ? `0${value}` : value.toString();
+        return value < PAD_TIME_VALUE ? `0${value}` : value.toString();
     }
 
     private scrollToBottom(elementId: string): void {
