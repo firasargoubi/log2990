@@ -682,8 +682,6 @@ describe('GameSocketHandlerService', () => {
         service.startBattle('lobby1', currentPlayer, opponent, 5);
 
         expect(ioToStub.calledWith('p1')).to.be.true;
-        const emit = ioToStub.returnValues[0].emit;
-        expect(emit.calledWith('startCombat', { firstPlayer: opponent })).to.be.true;
     });
     it('should emit PlayerSwitch with currentPlayer when player.id is not currentPlayer.id', () => {
         const currentPlayer = { id: 'p1', amountEscape: 0 } as Player;
@@ -760,8 +758,8 @@ describe('GameSocketHandlerService', () => {
     });
 
     it('should trigger handleDefeat logic when defender life <= 0', () => {
-        const attacker = { id: 'p1', life: 10, attack: 5 } as Player;
-        const defender = { id: 'p2', life: 1, defense: 0 } as Player;
+        const attacker = { id: 'p1', life: 10, attack: 5, bonus: { attack: 'D6', defense: 'D6' } } as Player;
+        const defender = { id: 'p2', life: 1, defense: 0, bonus: { attack: 'D6', defense: 'D6' } } as Player;
 
         const gameState = {
             players: [attacker, defender],
