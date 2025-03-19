@@ -243,33 +243,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     // Définition des types de tuiles
 
     onInfoSent(details: string) {
-        let info = '';
-
-        // Supposons que 'details' soit une chaîne contenant l'ID de l'objet
-        const objectId = parseInt(details, 10);
-
-        // Récupération de la description de l'objet
-        const item = itemDescriptions[objectId];
-        if (item) {
-            info += `Objet: ${item.name}\n`;
-            info += `Description: ${item.description}\n`;
-        } else {
-            info += `Objet inconnu (ID: ${objectId})\n`;
-        }
-
-        // Supposons que vous ayez une variable 'tileTypeId' contenant l'ID du type de tuile
-        const tileTypeId = 1; // Remplacez par la logique appropriée pour obtenir l'ID du type de tuile
-
-        // Récupération du type de tuile
-        const tileType = tileTypes[tileTypeId];
-        if (tileType) {
-            info += `Type de tuile: ${tileType}\n`;
-        } else {
-            info += `Type de tuile inconnu (ID: ${tileTypeId})\n`;
-        }
-
-        // Affichage des informations
-        this.notificationService.showInfo(info);
+        this.notificationService.showInfo(details);
     }
 
     getCurrentPlayer() {
