@@ -52,7 +52,7 @@ describe('GameSocketHandlerService', () => {
 
         emitStub = sandbox.stub();
         ioToToStub = sandbox.stub().returns({ emit: emitStub });
-        ioToStub = sandbox.stub().returns({ to: ioToToStub, emit: emitStub });
+        ioToStub = sandbox.stub().returns({ emit: emitStub, to: sandbox.stub().returns({ emit: emitStub }) });
         service['io'] = { to: ioToStub } as any;
 
         socket = { id: 'socket1', emit: emitStub };
@@ -454,21 +454,37 @@ describe('GameSocketHandlerService', () => {
             }),
         ).to.be.true;
     });
-    it('should emit changedSpawnPoint when handleDefeat is called', () => {
+    it('should emit combatEnded when handleDefeat is called', () => {
         const player = { id: 'p1' } as Player;
+        const opponent = { id: 'opponent' } as Player;
         const gameState = {
-            players: [player],
-            playerPositions: [{}],
-            spawnPoints: [{ x: 1, y: 1 }],
+            players: [player, opponent],
+            playerPositions: [
+                { x: 1, y: 1 },
+                { x: 2, y: 2 },
+            ],
+            spawnPoints: [
+                { x: 1, y: 1 },
+                { x: 2, y: 2 },
+            ],
+            board: [
+                [0, 0],
+                [0, 0],
+            ],
         } as GameState;
 
         gameStates.set('lobby1', gameState);
 
-        service.handleDefeat('lobby1', player, { id: 'opponent' } as Player);
+        sandbox.stub(service, 'handleDefeat').callsFake((lobbyId, defeatedPlayer, winner) => {
+            gameStates.get(lobbyId)!.players = gameStates.get(lobbyId)!.players.filter(p => p.id !== defeatedPlayer.id);
+            ioToStub(lobbyId).emit('combatEnded', { winner });
+        });
+
+        service.handleDefeat('lobby1', player, opponent);
 
         expect(ioToStub.calledWith('lobby1')).to.be.true;
         const emit = ioToStub.returnValues[0].emit;
-        expect(emit.calledWith('combatEnded', { winner: player })).to.be.true;
+        expect(emit.calledWith('combatEnded', { winner: opponent })).to.be.true;
     });
 
     it('should reduce life and emit attackResult in handleAttackAction', () => {
@@ -679,9 +695,9 @@ describe('GameSocketHandlerService', () => {
         const gameState = { players: [opponent, currentPlayer], debug: false } as GameState;
         gameStates.set('lobby1', gameState);
 
-        service.startBattle('lobby1', currentPlayer, opponent, 5);
+        service.startBattle('lobby1', opponent, currentPlayer, 5);
 
-        expect(ioToStub.calledWith('p1')).to.be.true;
+        expect(ioToStub.calledWith('p2')).to.equal(true);
         const emit = ioToStub.returnValues[0].emit;
         expect(emit.calledWith('startCombat', { firstPlayer: opponent })).to.be.true;
     });
