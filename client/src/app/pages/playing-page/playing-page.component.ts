@@ -35,7 +35,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     @Output() remove = new EventEmitter<string>();
     @Output() deletedPlayers: Player[] = [];
     @Input() player!: Player;
-
+    @Input() tileInfo: Tile;
     isInCombat: boolean = false;
     isPlayerTurn: boolean = false;
     combatSubscription: Subscription | null = null;
@@ -239,8 +239,11 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.router.navigate([PageUrl.Home], { replaceUrl: true });
         }
     }
+
+    // Définition des types de tuiles
+
     onInfoSent(details: string) {
-        console.log(details);
+        this.notificationService.showInfo(details);
     }
 
     getCurrentPlayer() {

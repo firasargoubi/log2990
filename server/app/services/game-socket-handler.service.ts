@@ -9,6 +9,14 @@ import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
 import { BoardService } from './board.service';
 import { LobbySocketHandlerService } from './lobby-socket-handler.service';
+
+const ANIMATION_DELAY_MS = 150;
+const MAX_WIN_COUNT = 3;
+const FLEE_RATE_PERCENT = 30;
+const D4_VALUE = 4;
+const D6_VALUE = 6;
+const MAX_ESCAPE_ATTEMPTS = 2;
+const MAX_FLEE = 100;
 @Service()
 export class GameSocketHandlerService {
     private io: Server;
@@ -95,7 +103,7 @@ export class GameSocketHandlerService {
                     if (updatedGameState.availableMoves.length === 0) {
                         this.handleEndTurn(socket, lobbyId);
                     }
-                }, 150);
+                }, ANIMATION_DELAY_MS);
             }
         } catch (error) {
             socket.emit(GameEvents.Error, `${gameSocketMessages.movementError}${error.message}`);
@@ -175,6 +183,7 @@ export class GameSocketHandlerService {
         this.io.to(currentPlayer.id).to(opponent.id).emit(GameEvents.PlayersBattling, { isInCombat: true });
     }
 
+    // eslint-disable-next-line no-unused-vars
     startBattle(lobbyId: string, currentPlayer: Player, opponent: Player, time: number) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
@@ -203,7 +212,7 @@ export class GameSocketHandlerService {
         const player = gameState.players.find((p) => p.id === playerTurn);
         const newPlayerTurn = player.id === currentPlayer.id ? opponent.id : currentPlayer.id;
         const newPlayer = gameState.players.find((p) => p.id === newPlayerTurn);
-        const countDown = newPlayer.amountEscape === 2 ? GameSocketConstants.EscapeCountdown : GameSocketConstants.DefaultCountdown;
+        const countDown = newPlayer.amountEscape === MAX_ESCAPE_ATTEMPTS ? GameSocketConstants.EscapeCountdown : GameSocketConstants.DefaultCountdown;
 
         this.io.to(currentPlayer.id).to(opponent.id).emit(GameEvents.PlayerSwitch, {
             newPlayerTurn,
@@ -362,7 +371,7 @@ export class GameSocketHandlerService {
 
         if (defender.life <= 0) {
             attacker.winCount += 1;
-            if (attacker.winCount === 3) {
+            if (attacker.winCount === MAX_WIN_COUNT) {
                 this.io.to(lobbyId).emit('gameOver', { winner: attacker.name });
                 return;
             }
@@ -398,11 +407,12 @@ export class GameSocketHandlerService {
             gameState.players[playerIndex].amountEscape = fleeingPlayer.amountEscape;
         }
 
-        const FLEE_RATE = 30;
-        const isSuccessful = Math.random() * 100 <= FLEE_RATE;
+        const FLEE_RATE = FLEE_RATE_PERCENT;
+        const isSuccessful = Math.random() * MAX_FLEE <= FLEE_RATE;
 
         const opponent = gameState.players.find((p) => p.id !== fleeingPlayer.id);
         if (opponent) {
+            // eslint-disable-next-line max-lines
             gameState.currentPlayer = opponent.id;
         }
 
@@ -436,10 +446,10 @@ export class GameSocketHandlerService {
 
     private getDiceValue(playerDice: string): number {
         if (playerDice === 'D4') {
-            return 4;
+            return D4_VALUE;
         }
         if (playerDice === 'D6') {
-            return 6;
+            return D6_VALUE;
         }
         return 0;
     }
