@@ -73,7 +73,7 @@ describe('WaitingPageComponent', () => {
             lockLobby: undefined,
             requestStartGame: undefined,
             setCurrentPlayer: undefined,
-            disconnectFromRoom: undefined,
+            disconnectFromRoom: undefined, // if your component calls disconnectFromRoom
         });
 
         mockNotificationService = jasmine.createSpyObj<NotificationService>('NotificationService', ['showError', 'showSuccess']);
@@ -244,7 +244,7 @@ describe('WaitingPageComponent', () => {
     it('should navigate to Home if player is not found in lobby', fakeAsync(() => {
         const modifiedLobby = {
             ...mockLobby,
-            players: [mockLobby.players[0]],
+            players: [mockLobby.players[0]], // testPlayer absent
         };
 
         mockLobbyService.getLobby.and.returnValue(of(modifiedLobby));
