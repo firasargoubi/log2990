@@ -193,8 +193,8 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     getMapSize(): string {
         if (!this.gameState) return 'Unknown';
         const size = this.gameState.board.length;
-        if (size <= MapSize.SMALL) return MAP_SIZES.small;
-        if (size <= MapSize.MEDIUM) return MAP_SIZES.medium;
+        if (size === MapSize.SMALL) return MAP_SIZES.small;
+        if (size === MapSize.MEDIUM) return MAP_SIZES.medium;
         return MAP_SIZES.large;
     }
 
