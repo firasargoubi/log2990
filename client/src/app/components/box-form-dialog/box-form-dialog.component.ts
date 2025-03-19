@@ -76,9 +76,11 @@ export class BoxFormDialogComponent implements OnDestroy {
         this.subscriptions.push(
             this.lobbyService.onLobbyUpdated().subscribe({
                 next: (socketData) => {
-                    this.dialogRef.close();
-                    const playerId = this.lobbyService.getSocketId();
-                    this.router.navigate([`${PageUrl.Waiting}/${socketData.lobby.id}/${playerId}`], { replaceUrl: true });
+                    if (socketData.lobby.id === this.data.lobbyId) {
+                        this.dialogRef.close();
+                        const playerId = this.lobbyService.getSocketId();
+                        this.router.navigate([`${PageUrl.Waiting}/${socketData.lobby.id}/${playerId}`], { replaceUrl: true });
+                    }
                 },
             }),
         );
@@ -115,17 +117,13 @@ export class BoxFormDialogComponent implements OnDestroy {
     }
 
     inputName(event: Event): void {
-        const inputName = (event.target as HTMLInputElement).value.trim(); // Trim pour supprimer les espaces autour du nom
+        const inputName = (event.target as HTMLInputElement).value.trim();
 
         if (inputName.length === 0) {
-            // Si le nom est vide ou composé uniquement d'espaces
-            this.form.get('name')?.setErrors({ whitespace: true }); // Définir une erreur de validation personnalisée
+            this.form.get('name')?.setErrors({ whitespace: true });
         } else {
-            // Sinon, réinitialiser les erreurs si le nom est valide
-            this.form.get('name')?.setErrors(null); // Effacer les erreurs
+            this.form.get('name')?.setErrors(null);
         }
-
-        // Mettre à jour la valeur du champ 'name' dans le formulaire
         this.form.get('name')?.setValue(inputName);
     }
 
@@ -134,13 +132,11 @@ export class BoxFormDialogComponent implements OnDestroy {
             this.attributeClicked$ = true;
             this.increasedAttribute = attribute;
 
-            // Récupérer la valeur actuelle de l'attribut
             const currentValue = this.form.get(attribute)?.value;
 
-            // Si l'attribut est 'life' ou 'speed', augmenter de 2
             if (currentValue !== undefined) {
-                const newValue = currentValue + 2; // Ajouter 2 au bonus
-                this.form.get(attribute)?.setValue(newValue); // Mettre à jour la valeur dans le formulaire
+                const newValue = currentValue + 2;
+                this.form.get(attribute)?.setValue(newValue);
             }
         }
     }
@@ -151,10 +147,9 @@ export class BoxFormDialogComponent implements OnDestroy {
 
         const currentValue = this.form.get(attribute)?.value;
 
-        // Si l'attribut est 'life' ou 'speed', augmenter de 2
         if (currentValue !== undefined) {
-            const newValue = currentValue + 2; // Ajouter 2 au bonus
-            this.form.get(attribute)?.setValue(newValue); // Mettre à jour la valeur dans le formulaire
+            const newValue = currentValue + 2;
+            this.form.get(attribute)?.setValue(newValue);
         }
     }
 

@@ -80,7 +80,7 @@ describe('PlayingPageComponent', () => {
         const interactionSubject = new Subject<{ isInCombat: boolean }>();
         const startCombatSubject = new Subject<{ firstPlayer: Player }>();
         const tileUpdateSubject = new Subject<{ newGameBoard: Tile[][] }>();
-        const gameEndedSubject = new Subject<any>();
+        const combatEndedSubject = new Subject<any>();
         const gameStartedSubject = new Subject<{ gameState: GameState }>();
         const turnStartedSubject = new Subject<{ gameState: GameState; currentPlayer: string }>();
         const turnEndedSubject = new Subject<{ gameState: GameState }>();
@@ -99,7 +99,7 @@ describe('PlayingPageComponent', () => {
             onInteraction: () => interactionSubject.asObservable(),
             onStartCombat: () => startCombatSubject.asObservable(),
             onTileUpdate: () => tileUpdateSubject.asObservable(),
-            onGameEnded: () => gameEndedSubject.asObservable(),
+            onCombatEnded: () => combatEndedSubject.asObservable(),
             onTurnEnded: () => turnEndedSubject.asObservable(),
             onMovementProcessed: () => movementProcessedSubject.asObservable(),
             onError: () => errorSubject.asObservable(),
@@ -128,7 +128,7 @@ describe('PlayingPageComponent', () => {
             interactionSubject,
             startCombatSubject,
             tileUpdateSubject,
-            gameEndedSubject,
+            combatEndedSubject,
             turnEndedSubject,
             movementProcessedSubject,
             errorSubject,
