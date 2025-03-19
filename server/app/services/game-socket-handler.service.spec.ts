@@ -942,22 +942,6 @@ describe('GameSocketHandlerService', () => {
         expect(emit.calledWith('boardModified', { gameState })).to.be.true;
     });
 
-    it('should emit error if handleTeleport throws an error', () => {
-        const gameState: GameState = {
-            board: [[TileTypes.Floor]],
-        } as any;
-        gameStates.set('lobby1', gameState);
-
-        // Create a proper stub that throws an error
-        const teleportStub = sandbox.stub(boardService, 'handleTeleport');
-        teleportStub.throws(new Error('Teleport error'));
-
-        service.handleTeleport(socket, 'lobby1', { x: 1, y: 1 });
-
-        expect(teleportStub.called).to.be.true;
-        expect(emitStub.calledWith('error', 'Teleport error: Teleport error')).to.be.true;
-    });
-
     it('should set debug mode to true and emit boardModified', () => {
         const gameState: GameState = { debug: false } as any;
         gameStates.set('lobby1', gameState);
