@@ -2,15 +2,15 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { GameControlsComponent } from '@app/components/game-controls/game-controls.component';
+import { MessagesComponent } from '@app/components/messages/messages.component';
 import { PlayerListComponent } from '@app/components/player-list/player-list.component';
-import { GAME_IMAGES, WAITING_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { GAME_IMAGES, WAITING_PAGE, WAITING_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { PageUrl } from '@app/Consts/route-constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { GameLobby } from '@common/game-lobby';
 import { Player } from '@common/player';
 import { Subscription } from 'rxjs';
-import { PageUrl } from '@app/Consts/route-constants';
-import { MessagesComponent } from '@app/components/messages/messages.component';
 
 @Component({
     selector: 'app-waiting-page',
@@ -22,8 +22,8 @@ import { MessagesComponent } from '@app/components/messages/messages.component';
 export class WaitingPageComponent implements OnInit, OnDestroy {
     lobby: GameLobby;
     currentPlayer: Player = {
-        id: '0000',
-        name: 'Unknown',
+        id: WAITING_PAGE.defaultPlayerId,
+        name: WAITING_PAGE.defaultPlayerName,
         avatar: GAME_IMAGES.fawn,
         isHost: false,
         life: 0,
@@ -33,7 +33,7 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
         defense: 0,
         winCount: 0,
     };
-    hostId: string = '0000';
+    hostId: string = WAITING_PAGE.defaultPlayerId;
     private subscriptions: Subscription[] = [];
 
     private route = inject(ActivatedRoute);
@@ -42,14 +42,14 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
     private notificationService = inject(NotificationService);
 
     ngOnInit(): void {
-        const lobbyId = this.route.snapshot.paramMap.get('id');
-        const player = this.route.snapshot.paramMap.get('playerId');
+        const lobbyId = this.route.snapshot.paramMap.get(WAITING_PAGE.lobbyIdParam);
+        const player = this.route.snapshot.paramMap.get(WAITING_PAGE.playerIdParam);
 
         if (lobbyId && player) {
             this.lobbyService.getLobby(lobbyId).subscribe((lobby) => {
                 this.lobby = lobby;
                 this.currentPlayer = lobby.players.find((p) => p.id === player) || this.currentPlayer;
-                if (this.currentPlayer.id === '0000') {
+                if (this.currentPlayer.id === WAITING_PAGE.defaultHostId) {
                     this.router.navigate([PageUrl.Home], { replaceUrl: true });
                     return;
                 }

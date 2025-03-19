@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { WaitingPageComponent } from './waiting-page.component';
-import { LobbyService } from '@app/services/lobby.service';
-import { NotificationService } from '@app/services/notification.service';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
-import { of, Subject, Subscription } from 'rxjs';
-import { GameLobby } from '@common/game-lobby';
 import { WAITING_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 import { PageUrl } from '@app/Consts/route-constants';
+import { LobbyService } from '@app/services/lobby.service';
+import { NotificationService } from '@app/services/notification.service';
+import { GameLobby } from '@common/game-lobby';
+import { of, Subject, Subscription } from 'rxjs';
+import { WaitingPageComponent } from './waiting-page.component';
 
 describe('WaitingPageComponent', () => {
     let component: WaitingPageComponent;
@@ -241,4 +241,20 @@ describe('WaitingPageComponent', () => {
         component.startGame();
         expect(mockNotificationService.showError).toHaveBeenCalledWith(WAITING_PAGE_CONSTANTS.errorStartGame);
     });
+    it('should navigate to Home if player is not found in lobby', fakeAsync(() => {
+        const modifiedLobby = {
+            ...mockLobby,
+            players: [mockLobby.players[0]], // testPlayer absent
+        };
+
+        mockLobbyService.getLobby.and.returnValue(of(modifiedLobby));
+
+        fixture = TestBed.createComponent(WaitingPageComponent);
+        component = fixture.componentInstance;
+
+        tick();
+        fixture.detectChanges();
+
+        expect(router.navigate).toHaveBeenCalledWith([PageUrl.Home], { replaceUrl: true });
+    }));
 });
