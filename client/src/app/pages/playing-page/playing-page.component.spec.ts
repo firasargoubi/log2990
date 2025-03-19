@@ -11,7 +11,7 @@ import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { Coordinates } from '@common/coordinates';
 import { GameState } from '@common/game-state';
-import { TileTypes } from '@common/game.interface';
+import { ObjectsTypes, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
 import { of, Subject, Subscription } from 'rxjs';
@@ -949,5 +949,60 @@ describe('PlayingPageComponent', () => {
             expect(component.gameState).toEqual(mockGameState);
             expect(component.currentPlayer).toEqual(updatedPlayer);
         }));
+    });
+    describe('onInfoSent', () => {
+        it('should show an error if details is empty', () => {
+            component.onInfoSent('');
+            expect(notificationService.showError).toHaveBeenCalledWith('Aucune information disponible pour cette tuile.');
+            expect(notificationService.showInfo).not.toHaveBeenCalled();
+        });
+
+        it('should parse player information correctly', () => {
+            const details = 'Player: JohnDoe\n';
+            component.onInfoSent(details);
+            expect(notificationService.showInfo).toHaveBeenCalledWith('Joueur: JohnDoe\n');
+        });
+
+        it('should parse item information correctly for known items', () => {
+            const details = 'Item: 1\n';
+            component.onInfoSent(details);
+            expect(notificationService.showInfo).toHaveBeenCalledWith('Objet: Point de départ\n');
+        });
+
+        it('should parse item information correctly for unknown items', () => {
+            const details = 'Item: 999\n';
+            component.onInfoSent(details);
+            expect(notificationService.showInfo).toHaveBeenCalledWith('Objet inconnu (ID: 999)\n');
+        });
+
+        it('should parse tile type information correctly', () => {
+            const details = 'Tile Type: 5\n';
+            component.onInfoSent(details);
+            expect(notificationService.showInfo).toHaveBeenCalledWith('Type de tuile: 5\n');
+        });
+
+        it('should handle multiple lines of details', () => {
+            const details = 'Player: JohnDoe\nItem: 1\nTile Type: 5\n';
+            component.onInfoSent(details);
+            expect(notificationService.showInfo).toHaveBeenCalledWith('Joueur: JohnDoe\nObjet: Point de départ\nType de tuile: 5\n');
+        });
+
+        it('should show a default message if no relevant information is found', () => {
+            const details = 'Random: Info\n';
+            component.onInfoSent(details);
+            expect(notificationService.showInfo).toHaveBeenCalledWith('Aucune information pertinente pour cette tuile.');
+        });
+    });
+
+    describe('getItemDescription', () => {
+        it('should return the correct description for a known item', () => {
+            const description = component['getItemDescription'](ObjectsTypes.SPAWN);
+            expect(description).toBe('Point de départ');
+        });
+
+        it('should return "Vide" for an unknown item', () => {
+            const description = component['getItemDescription'](999);
+            expect(description).toBe('Vide');
+        });
     });
 });

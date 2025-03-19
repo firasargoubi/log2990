@@ -15,6 +15,7 @@ import { NotificationService } from '@app/services/notification.service';
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
+import { ObjectsTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
 import { Subscription } from 'rxjs';
@@ -241,7 +242,33 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     onInfoSent(details: string) {
-        this.notificationService.showInfo(details);
+        if (!details) {
+            this.notificationService.showError('Aucune information disponible pour cette tuile.');
+            return;
+        }
+
+        const lines = details.split('\n');
+        let info = '';
+
+        lines.forEach((line) => {
+            if (line.startsWith('Player:')) {
+                const playerName = line.replace('Player: ', '').trim();
+                info += `Joueur: ${playerName}\n`;
+            } else if (line.startsWith('Item:')) {
+                const itemId = parseInt(line.replace('Item: ', '').trim(), 10);
+                const itemDescription = this.getItemDescription(itemId);
+                info += itemDescription ? `Objet: ${itemDescription}\n` : `Objet inconnu (ID: ${itemId})\n`;
+            } else if (line.startsWith('Tile Type:')) {
+                const tileTypeId = parseInt(line.replace('Tile Type: ', '').trim(), 10);
+                info += `Type de tuile: ${tileTypeId}\n`;
+            }
+        });
+
+        if (!info) {
+            info = 'Aucune information pertinente pour cette tuile.';
+        }
+
+        this.notificationService.showInfo(info);
     }
 
     getCurrentPlayer() {
@@ -365,5 +392,13 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 this.notificationService.showInfo(`${PLAYING_PAGE_DESCRIPTION.turnOff} ${player.name}`);
             }
         }
+    }
+
+    private getItemDescription(itemId: number): string | null {
+        const itemDescriptions: Record<number, { name: string; description: string }> = {
+            [ObjectsTypes.SPAWN]: { name: 'Point de départ', description: 'Le point de départ du jeu' },
+        };
+
+        return itemDescriptions[itemId]?.name || 'Vide';
     }
 }
