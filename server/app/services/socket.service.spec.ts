@@ -670,11 +670,12 @@ describe('SocketService', () => {
 
         const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'playerDefeated')?.args[1];
         const data = {
-            player: { id: 'p1' },
+            winner: { id: 'p2' }, // Add the winner
+            loser: { id: 'p1' }, // Rename player to loser for clarity
             lobbyId: 'lobby123',
         };
         handler(data);
-        expect(gameHandler.handleDefeat.calledWith(data.player, data.lobbyId)).to.be.equal(true);
+        expect(gameHandler.handleDefeat.calledWith(data.lobbyId, data.winner, data.loser)).to.be.equal(true);
     });
 
     it('should call handleFlee when fleeCombat event is received', () => {

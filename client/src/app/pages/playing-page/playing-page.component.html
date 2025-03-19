@@ -12,14 +12,14 @@
                 >
             </app-game-info>
             <ul>
-                <li><strong>Name:</strong> {{ currentPlayer.name }}</li>
-                <li><strong>Avatar:</strong> <img [src]="currentPlayer.avatar" alt="Avatar" width="50" height="50" /></li>
-                <li><strong>Vie:</strong> {{ currentPlayer.life }}</li>
-                <li><strong>Rapidité:</strong> {{ currentPlayer.speed }}</li>
-                <li><strong>Attaque:</strong> D{{ currentPlayer.attack }}</li>
-                <li><strong>Défense:</strong> D{{ currentPlayer.defense }}</li>
-                <li><strong>Points de mouvement restants:</strong> {{ gameState.currentPlayerMovementPoints }}</li>
-                <li><strong>Points d'Actions restants:</strong> {{ gameState.currentPlayerActionPoints }}</li>
+                <li><strong>Name:</strong> {{ currentPlayer?.name }}</li>
+                <li><strong>Avatar:</strong> <img [src]="currentPlayer?.avatar" alt="Avatar" width="50" height="50" /></li>
+                <li><strong>Vie:</strong> {{ currentPlayer?.life }}</li>
+                <li><strong>Rapidité:</strong> {{ currentPlayer?.speed }}</li>
+                <li><strong>Attaque:</strong> D{{ currentPlayer?.attack }}</li>
+                <li><strong>Défense:</strong> D{{ currentPlayer?.defense }}</li>
+                <li><strong>Points de mouvement restants:</strong> {{ currentPlayer?.currentMP || currentPlayer?.speed }}</li>
+                <li><strong>Points d'Actions restants:</strong> {{ currentPlayer?.currentAP || 1 }}</li>
             </ul>
         </div>
     </div>
@@ -51,7 +51,7 @@
         <!-- Countdown for the active player or others -->
 
         @if (isCurrentPlayerTurn()) {
-        <app-countdown-player [countdown]="60" [isPlayerTurn]="true" [isInCombat]="isInCombat" [lobbyId]="lobbyId" [isTransitioning]="false">
+        <app-countdown-player [countdown]="60" [isPlayerTurn]="true" [isInCombat]="isInCombat" [lobbyId]="lobbyId" [isTransitioning]="false" [isAnimated]="isAnimated">
         </app-countdown-player>
         } @else {
         <app-countdown-player [countdown]="60" [isPlayerTurn]="false" [isInCombat]="isInCombat" [isTransitioning]="false"> </app-countdown-player>

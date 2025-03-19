@@ -93,12 +93,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.lobbyService.updateCombatStatus(this.isInCombat);
         });
 
-        this.lobbyService.onStartCombat().subscribe((data) => {
-            this.isInCombat = true;
-            this.isPlayerTurn = data.firstPlayer.id === this.currentPlayer.id;
-        });
-
-        this.lobbyService.onGameEnded().subscribe(() => {
+        this.lobbyService.onCombatEnded().subscribe((data) => {
             this.isInCombat = false;
             this.lobbyService.updateCombatStatus(this.isInCombat);
         });
@@ -198,8 +193,8 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     getMapSize(): string {
         if (!this.gameState) return 'Unknown';
         const size = this.gameState.board.length;
-        if (size <= MapSize.SMALL) return MAP_SIZES.small;
-        if (size <= MapSize.MEDIUM) return MAP_SIZES.medium;
+        if (size === MapSize.SMALL) return MAP_SIZES.small;
+        if (size === MapSize.MEDIUM) return MAP_SIZES.medium;
         return MAP_SIZES.large;
     }
 
@@ -247,84 +242,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         console.log(details);
     }
 
-    private setupGameListeners() {
-        this.subscriptions.push(
-            this.lobbyService.onGameStarted().subscribe((data) => {
-                this.gameState = data.gameState;
-                this.getCurrentPlayer();
-            }),
-
-            this.lobbyService.onTurnStarted().subscribe((data) => {
-                this.gameState = data.gameState;
-                this.syncCurrentPlayerWithGameState();
-                this.notifyPlayerTurn(data.currentPlayer);
-            }),
-
-            this.lobbyService.onTurnEnded().subscribe((data) => {
-                this.gameState = data.gameState;
-            }),
-
-            this.lobbyService.onMovementProcessed().subscribe((data) => {
-                this.gameState = data.gameState;
-            }),
-
-            this.lobbyService.onError().subscribe((error) => {
-                this.notificationService.showError(error);
-            }),
-
-            this.lobbyService.onLobbyUpdated().subscribe((data) => {
-                if (data.lobby.id === this.lobbyId) {
-                    this.lobby = data.lobby;
-                    const currentPlayer = this.lobby.players.find((p) => p.id === this.currentPlayer.id);
-                    if (!currentPlayer) {
-                        this.lobbyService.disconnectFromRoom(this.lobbyId);
-                        this.router.navigate([PageUrl.Home], { replaceUrl: true });
-                        return;
-                    }
-                    this.lobbyService.updatePlayers(this.lobby.id, this.lobby.players);
-                }
-            }),
-
-            this.lobbyService.onBoardChanged().subscribe((data) => {
-                this.gameState = data.gameState;
-            }),
-
-            this.lobbyService.onFleeSuccess().subscribe((data) => {
-                this.isInCombat = false;
-                this.lobbyService.updateCombatStatus(this.isInCombat);
-                this.currentPlayer.life = this.currentPlayer.maxLife;
-                if (this.currentPlayer.name === data.fleeingPlayer.name) {
-                    this.notificationService.showInfo('Vous avez fuit le combat.');
-                    return;
-                }
-                this.notificationService.showInfo(`${data.fleeingPlayer.name} a fui le combat.`);
-            }),
-
-            this.lobbyService.onAttackEnd().subscribe((data) => {
-                this.isInCombat = data.isInCombat;
-                this.lobbyService.updateCombatStatus(this.isInCombat);
-                this.currentPlayer.life = this.currentPlayer.maxLife;
-                this.notificationService.showInfo(`${this.currentPlayer.name} a fini son combat`);
-            }),
-        );
-    }
-
-    private notifyPlayerTurn(playerId: string) {
-        if (this.currentPlayer && playerId === this.currentPlayer.id) {
-            this.notificationService.showSuccess(PLAYING_PAGE_DESCRIPTION.yourTurn);
-        } else {
-            const player = this.gameState?.players.find((p) => p.id === playerId);
-            if (player) {
-                this.notificationService.showInfo(`${PLAYING_PAGE_DESCRIPTION.turnOff} ${player.name}`);
-            }
-        }
-    }
-
-    private setDebugMode() {
-        this.debug = !this.debug;
-        this.lobbyService.setDebug(this.lobbyId, this.debug);
-    }
-
     getCurrentPlayer() {
         const currentPlayer = this.lobbyService.getCurrentPlayer();
 
@@ -350,6 +267,102 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             if (JSON.stringify(playerInGameState) !== JSON.stringify(this.currentPlayer)) {
                 this.currentPlayer = playerInGameState;
                 this.lobbyService.setCurrentPlayer(this.currentPlayer);
+            }
+        }
+    }
+
+    private setupGameListeners() {
+        this.subscriptions.push(
+            this.lobbyService.onGameStarted().subscribe((data) => {
+                this.gameState = data.gameState;
+                this.getCurrentPlayer();
+            }),
+
+            this.lobbyService.onStartCombat().subscribe((data) => {
+                this.isInCombat = true;
+                this.isPlayerTurn = data.firstPlayer.id === this.currentPlayer.id;
+                console.log(this.isPlayerTurn);
+            }),
+
+            this.lobbyService.onTurnStarted().subscribe((data) => {
+                this.gameState = data.gameState;
+                this.syncCurrentPlayerWithGameState();
+                this.notifyPlayerTurn(data.currentPlayer);
+            }),
+
+            this.lobbyService.onTurnEnded().subscribe((data) => {
+                this.gameState = data.gameState;
+            }),
+
+            this.lobbyService.onMovementProcessed().subscribe((data) => {
+                this.gameState = data.gameState;
+                this.currentPlayer = data.gameState.players.find((p) => p.id === this.currentPlayer.id) || this.currentPlayer;
+            }),
+
+            this.lobbyService.onError().subscribe((error) => {
+                this.notificationService.showError(error);
+            }),
+
+            this.lobbyService.onLobbyUpdated().subscribe((data) => {
+                if (data.lobby.id === this.lobbyId) {
+                    this.lobby = data.lobby;
+                    const currentPlayer = this.lobby.players.find((p) => p.id === this.currentPlayer.id);
+                    if (!currentPlayer) {
+                        this.lobbyService.disconnectFromRoom(this.lobbyId);
+                        this.router.navigate([PageUrl.Home], { replaceUrl: true });
+                        return;
+                    }
+                    this.lobbyService.updatePlayers(this.lobby.id, this.lobby.players);
+                }
+            }),
+
+            this.lobbyService.onBoardChanged().subscribe((data) => {
+                this.gameState = data.gameState;
+                for (const player of data.gameState.players) {
+                    console.log('Player ', player.name);
+                    console.log(player);
+                }
+                this.currentPlayer = data.gameState.players.find((p) => p.id === this.currentPlayer.id) || this.currentPlayer;
+                console.log('CurrentPlayer', this.currentPlayer);
+            }),
+
+            this.lobbyService.onFleeSuccess().subscribe((data) => {
+                this.isInCombat = false;
+                this.lobbyService.updateCombatStatus(this.isInCombat);
+                this.currentPlayer.life = this.currentPlayer.maxLife;
+                if (this.currentPlayer.name === data.fleeingPlayer.name) {
+                    this.notificationService.showInfo('Vous avez fuit le combat.');
+                    return;
+                }
+                this.notificationService.showInfo(`${data.fleeingPlayer.name} a fui le combat.`);
+            }),
+
+            this.lobbyService.onAttackEnd().subscribe((data) => {
+                this.isInCombat = data.isInCombat;
+                this.lobbyService.updateCombatStatus(this.isInCombat);
+                this.currentPlayer.life = this.currentPlayer.maxLife;
+                this.notificationService.showInfo(`${this.currentPlayer.name} a fini son combat`);
+            }),
+
+            this.lobbyService.onGameOver().subscribe((data) => {
+                this.abandon();
+                this.notificationService.showInfo(`${data.winner} est vraiment le goat my god.`);
+            }),
+        );
+    }
+
+    private setDebugMode() {
+        this.debug = !this.debug;
+        this.lobbyService.setDebug(this.lobbyId, this.debug);
+    }
+
+    private notifyPlayerTurn(playerId: string) {
+        if (this.currentPlayer && playerId === this.currentPlayer.id) {
+            this.notificationService.showSuccess(PLAYING_PAGE_DESCRIPTION.yourTurn);
+        } else {
+            const player = this.gameState?.players.find((p) => p.id === playerId);
+            if (player) {
+                this.notificationService.showInfo(`${PLAYING_PAGE_DESCRIPTION.turnOff} ${player.name}`);
             }
         }
     }

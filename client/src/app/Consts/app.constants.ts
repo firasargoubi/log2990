@@ -210,3 +210,16 @@ export const PLAYING_PAGE_DESCRIPTION = {
 };
 
 export const DELAY_COUNTDOWN = 1000;
+
+export const WAITING_PAGE = {
+    lobbyIdParam: 'id',
+    playerIdParam: 'playerId',
+
+    defaultPlayerId: '0000',
+    defaultPlayerName: 'Unknown',
+    defaultHostId: '0000',
+
+    lobbyCancelled: "La partie a été annulée, l'hôte a quitté le lobby.",
+    gameLocked: 'La partie est désormais verrouillée.',
+    errorStartGame: 'Impossible de démarrer la partie. Veuillez réessayer.',
+};
