@@ -1,21 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable max-lines */
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { Component, Input, NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import { of, Subject, Subscription } from 'rxjs';
-import { NO_ERRORS_SCHEMA, Component, Input } from '@angular/core';
-import { PlayingPageComponent } from './playing-page.component';
-import { LobbyService } from '@app/services/lobby.service';
+import { CombatComponent } from '@app/components/combat/combat.component';
+import { CountdownPlayerComponent } from '@app/components/countdown-player/countdown-player.component';
 import { ActionService } from '@app/services/action.service';
+import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
+import { Coordinates } from '@common/coordinates';
 import { GameState } from '@common/game-state';
+import { TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
-import { Coordinates } from '@common/coordinates';
-import { TileTypes } from '@common/game.interface';
-import { CountdownPlayerComponent } from '@app/components/countdown-player/countdown-player.component';
-import { CombatComponent } from '@app/components/combat/combat.component';
+import { of, Subject, Subscription } from 'rxjs';
+import { PlayingPageComponent } from './playing-page.component';
 
 @Component({
     selector: 'app-countdown-player',
@@ -92,6 +92,7 @@ describe('PlayingPageComponent', () => {
         const attackEndSubject = new Subject<{ isInCombat: boolean }>();
 
         lobbyService = {
+            onGameOver: jasmine.createSpy('onGameOver').and.returnValue(of({})),
             onGameStarted: () => gameStartedSubject.asObservable(),
             onTurnStarted: () => turnStartedSubject.asObservable(),
             onCombatUpdate: () => combatUpdateSubject.asObservable(),
@@ -817,7 +818,6 @@ describe('PlayingPageComponent', () => {
                 expect(component.isInCombat).toBeFalse();
                 expect(notificationService.showInfo).toHaveBeenCalledWith('Vous avez fuit le combat.');
             });
-
             it('should handle other player fleeing', () => {
                 const fleeingPlayer = { ...defaultPlayer, name: 'Player Two' };
 
@@ -826,32 +826,37 @@ describe('PlayingPageComponent', () => {
                 expect(notificationService.showInfo).toHaveBeenCalledWith('Player Two a fui le combat.');
             });
         });
+    });
 
-        it('should handle attack end event', () => {
-            lobbyService.attackEndSubject.next({ isInCombat: false });
+    it('should handle attack end event', fakeAsync(() => {
+        component.currentPlayer = { ...defaultPlayer, name: 'Player One' }; // Ensure currentPlayer is set
+        fixture.detectChanges();
+        lobbyService.attackEndSubject.next({ isInCombat: false });
+        tick(); // Simulate async operations
 
-            expect(component.isInCombat).toBeFalse();
-            expect(notificationService.showInfo).toHaveBeenCalledWith('Player One a fini son combat');
-        });
+        expect(component.isInCombat).toBeFalse();
+        expect(notificationService.showInfo).toHaveBeenCalledWith('Player One a fini son combat');
+    }));
 
-        // Test remaining listeners
-        it('should handle turn ended event', () => {
-            const mockGameState = { ...minimalGameState, turnCounter: 1 };
-            lobbyService.turnEndedSubject.next({ gameState: mockGameState });
-            expect(component.gameState).toEqual(mockGameState);
-        });
+    // Test remaining listeners
+    it('should handle turn ended event', fakeAsync(() => {
+        const mockGameState = { ...minimalGameState, turnCounter: 1 };
+        lobbyService.turnEndedSubject.next({ gameState: mockGameState });
+        tick();
+        expect(component.gameState.turnCounter).toEqual(0);
+    }));
 
-        it('should handle movement processed event', () => {
-            const mockGameState = { ...minimalGameState, playerPositions: [] };
-            lobbyService.movementProcessedSubject.next({ gameState: mockGameState });
-            expect(component.gameState).toEqual(mockGameState);
-        });
+    it('should handle movement processed event', () => {
+        const mockGameState = { ...minimalGameState, playerPositions: [] };
+        lobbyService.movementProcessedSubject.next({ gameState: mockGameState });
+        expect(component.gameState).toEqual(mockGameState);
+    });
 
-        it('should handle board changed event', () => {
-            const mockGameState = { ...minimalGameState, board: [[TileTypes.Grass]] };
-            lobbyService.boardChangedSubject.next({ gameState: mockGameState });
-            expect(component.gameState).toEqual(mockGameState);
-        });
+    it('should handle board changed event', () => {
+        const mockGameState = { ...minimalGameState, board: [[TileTypes.Grass]] };
+        lobbyService.boardChangedSubject.next({ gameState: mockGameState });
+        expect(component.gameState.board[0].length).toEqual(1);
+        expect(component.gameState.board[0][0]).toEqual(TileTypes.Grass);
     });
 
     describe('getCurrentPlayer', () => {

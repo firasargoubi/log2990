@@ -16,10 +16,10 @@ import { environment } from 'src/environments/environment';
     providedIn: 'root',
 })
 export class LobbyService {
+    isInCombatSubject = new BehaviorSubject<boolean>(false);
+    isInCombat$ = this.isInCombatSubject.asObservable();
     private socket: Socket;
     private currentPlayer: Player | null = null;
-    private isInCombatSubject = new BehaviorSubject<boolean>(false);
-    isInCombat$ = this.isInCombatSubject.asObservable();
 
     constructor() {
         this.socket = io(environment.serverUrl, {
