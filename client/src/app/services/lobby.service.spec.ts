@@ -1079,6 +1079,17 @@ describe('LobbyService', () => {
             handler(testData);
         });
     });
+    it('should handle gameOver event', (done) => {
+        const testData = { winner: 'player1' };
+
+        service.onGameOver().subscribe((data) => {
+            expect(data).toEqual(testData);
+            done();
+        });
+
+        const handler = getEventHandler('gameOver');
+        handler(testData);
+    });
 
     function getEventHandler(eventName: string): (...args: any[]) => void {
         const call = mockSocket.on.calls.allArgs().find((args: any[]) => args[0] === eventName);
