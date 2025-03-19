@@ -787,4 +787,56 @@ describe('SocketService', () => {
         handler(data);
         expect(gameHandler.updateCombatTime.calledWith(data.lobbyId, data.timeLeft)).to.be.equal(true);
     });
+    it('should handle teleport and call gameSocketHandlerService.handleTeleport', () => {
+        const socketMock: any = { emit: sandbox.spy() };
+        const data = { lobbyId: 'lobby123', coordinates: { x: 5, y: 5 } };
+
+        socketService['handleTeleport'](socketMock, data);
+
+        expect(gameHandler.handleTeleport.calledWith(socketMock, data.lobbyId, data.coordinates)).to.be.equal(true);
+    });
+
+    it('should handle teleport with missing lobbyId and emit error', () => {
+        const socketMock: any = { emit: sandbox.spy() };
+        const data: { lobbyId: string | null; coordinates: { x: number; y: number } } = { lobbyId: null, coordinates: { x: 5, y: 5 } };
+
+        socketService['handleTeleport'](socketMock, data as any);
+
+        expect(socketMock.emit.calledWith('error', 'Invalid lobby ID')).to.be.equal(true);
+    });
+
+    it('should handle teleport with missing coordinates and emit error', () => {
+        const socketMock: any = { emit: sandbox.spy() };
+        const data: { lobbyId: string; coordinates: { x: number; y: number } | null } = { lobbyId: 'lobby123', coordinates: null };
+
+        socketService['handleTeleport'](socketMock, data as any);
+
+        expect(socketMock.emit.calledWith('error', 'Invalid coordinates')).to.be.equal(true);
+    });
+    it('should call handleSetDebug when setDebug event is received', () => {
+        const socketMock: any = { on: sandbox.spy(), emit: sandbox.spy() };
+        const ioOnSpy = sandbox.stub();
+        (socketService as any).io = { on: ioOnSpy };
+
+        ioOnSpy.callsFake((event: string, cb: any) => {
+            if (event === 'connection') cb(socketMock);
+        });
+
+        socketService.init();
+
+        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'setDebug')?.args[1];
+        const data = { lobbyId: 'lobby123', debug: true };
+
+        handler(data);
+        expect(gameHandler.handleSetDebug.calledWith(socketMock, data.lobbyId, data.debug)).to.be.equal(true);
+    });
+
+    it('should emit error if setDebug data.lobbyId is missing', () => {
+        const socketMock: any = { emit: sandbox.spy() };
+        const data: { lobbyId: string | null; debug: boolean } = { lobbyId: null, debug: true };
+
+        socketService['handleSetDebug'](socketMock, data as any);
+
+        expect(socketMock.emit.calledWith('error', 'Invalid lobby ID')).to.be.equal(true);
+    });
 });
