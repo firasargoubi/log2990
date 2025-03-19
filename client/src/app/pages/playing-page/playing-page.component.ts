@@ -33,6 +33,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     @Output() opponent: Player | null = null;
     @Output() gameState: GameState;
     @Output() remove = new EventEmitter<string>();
+    @Output() deletedPlayers: Player[] = [];
     @Input() player!: Player;
 
     isInCombat: boolean = false;
@@ -269,6 +270,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 this.lobbyService.setCurrentPlayer(this.currentPlayer);
             }
         }
+    }
+
+    getDeletedPlayers(): Player[] {
+        return this.gameState?.deletedPlayers || [];
     }
 
     private setupGameListeners() {

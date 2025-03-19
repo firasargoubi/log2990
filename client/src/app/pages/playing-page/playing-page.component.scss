@@ -4,6 +4,13 @@
     margin: 0;
     padding: 0;
 }
+.debug-indicator {
+    background-color: yellow;
+    color: black;
+    padding: 5px;
+    text-align: center;
+    font-weight: bold;
+}
 
 body {
     font-family: 'Arial', sans-serif;
