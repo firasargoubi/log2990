@@ -5,13 +5,19 @@
     <p><strong>Nombre de joueurs:</strong> {{ playerCount }}</p>
     <p><strong>Joueur Actif:</strong> {{ activePlayer }}</p>
 
+    <p><strong>Joueurs qui ont quittés:</strong></p>
+    <ul>
+        @for (player of deletedPlayers; track player) {
+        <li>
+            <del>{{ player.name }}</del>
+        </li>
+        }
+    </ul>
+
     <p><strong>Joueurs:</strong></p>
     <ul>
-        @for(player of players; track $index;) {
-
-        {{
-            player.name
-        }}
+        @for (player of players; track player.id) {
+        <li>{{ player.name }}</li>
         }
     </ul>
 </div>

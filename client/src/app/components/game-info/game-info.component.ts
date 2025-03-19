@@ -32,4 +32,8 @@ export class GameInfoComponent {
     @Input() playerCount: number = 0;
     @Input() activePlayer: string = '';
     @Input() players: Player[] = [];
+    @Input() deletedPlayers: Player[] = [];
+    getPlayersDeleted(): Player[] {
+        return this.deletedPlayers;
+    }
 }
