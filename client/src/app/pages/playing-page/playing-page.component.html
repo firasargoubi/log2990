@@ -1,5 +1,4 @@
 <div class="game-container">
-    <div class="header"></div>
     <div class="sidebar-left">
         <div class="component-box">
             <app-game-info
@@ -12,6 +11,12 @@
             >
                 >
             </app-game-info>
+            <div class="header">
+                @if (gameState && currentPlayer && currentPlayer.isHost && gameState.debug) {
+                <div class="debug-indicator">Mode Debug Activé</div>
+                }
+            </div>
+
             <ul>
                 <li><strong>Name:</strong> {{ currentPlayer.name }}</li>
                 <li><strong>Avatar:</strong> <img [src]="currentPlayer.avatar" alt="Avatar" width="50" height="50" /></li>
@@ -52,7 +57,14 @@
         <!-- Countdown for the active player or others -->
 
         @if (isCurrentPlayerTurn()) {
-        <app-countdown-player [countdown]="60" [isPlayerTurn]="true" [isInCombat]="isInCombat" [lobbyId]="lobbyId" [isTransitioning]="false" [isAnimated]="isAnimated">
+        <app-countdown-player
+            [countdown]="60"
+            [isPlayerTurn]="true"
+            [isInCombat]="isInCombat"
+            [lobbyId]="lobbyId"
+            [isTransitioning]="false"
+            [isAnimated]="isAnimated"
+        >
         </app-countdown-player>
         } @else {
         <app-countdown-player [countdown]="60" [isPlayerTurn]="false" [isInCombat]="isInCombat" [isTransitioning]="false"> </app-countdown-player>
