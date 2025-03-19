@@ -241,6 +241,35 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         console.log(details);
     }
 
+    getCurrentPlayer() {
+        const currentPlayer = this.lobbyService.getCurrentPlayer();
+
+        if (!currentPlayer) {
+            this.router.navigate(['/home'], { replaceUrl: true });
+            return;
+        }
+        this.currentPlayer = currentPlayer;
+        const socketId = this.lobbyService.getSocketId();
+        if (this.currentPlayer.id !== socketId) {
+            this.currentPlayer.id = socketId;
+        }
+
+        return;
+    }
+
+    syncCurrentPlayerWithGameState() {
+        if (!this.gameState || !this.currentPlayer) return;
+
+        const playerInGameState = this.gameState.players.find((p) => p.id === this.currentPlayer?.id);
+
+        if (playerInGameState) {
+            if (JSON.stringify(playerInGameState) !== JSON.stringify(this.currentPlayer)) {
+                this.currentPlayer = playerInGameState;
+                this.lobbyService.setCurrentPlayer(this.currentPlayer);
+            }
+        }
+    }
+
     private setupGameListeners() {
         this.subscriptions.push(
             this.lobbyService.onGameStarted().subscribe((data) => {
@@ -293,7 +322,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                     console.log(player);
                 }
                 this.currentPlayer = data.gameState.players.find((p) => p.id === this.currentPlayer.id) || this.currentPlayer;
-                console.log("CurrentPlayer",this.currentPlayer);
+                console.log('CurrentPlayer', this.currentPlayer);
             }),
 
             this.lobbyService.onFleeSuccess().subscribe((data) => {
@@ -321,7 +350,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         );
     }
 
-
     private setDebugMode() {
         this.debug = !this.debug;
         this.lobbyService.setDebug(this.lobbyId, this.debug);
@@ -334,40 +362,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             const player = this.gameState?.players.find((p) => p.id === playerId);
             if (player) {
                 this.notificationService.showInfo(`${PLAYING_PAGE_DESCRIPTION.turnOff} ${player.name}`);
-            }
-        }
-    }
-
-    private setDebugMode() {
-        this.debug = !this.debug;
-        this.lobbyService.setDebug(this.lobbyId, this.debug);
-    }
-
-    getCurrentPlayer() {
-        const currentPlayer = this.lobbyService.getCurrentPlayer();
-
-        if (!currentPlayer) {
-            this.router.navigate(['/home'], { replaceUrl: true });
-            return;
-        }
-        this.currentPlayer = currentPlayer;
-        const socketId = this.lobbyService.getSocketId();
-        if (this.currentPlayer.id !== socketId) {
-            this.currentPlayer.id = socketId;
-        }
-
-        return;
-    }
-
-    syncCurrentPlayerWithGameState() {
-        if (!this.gameState || !this.currentPlayer) return;
-
-        const playerInGameState = this.gameState.players.find((p) => p.id === this.currentPlayer?.id);
-
-        if (playerInGameState) {
-            if (JSON.stringify(playerInGameState) !== JSON.stringify(this.currentPlayer)) {
-                this.currentPlayer = playerInGameState;
-                this.lobbyService.setCurrentPlayer(this.currentPlayer);
             }
         }
     }
