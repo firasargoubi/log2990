@@ -225,7 +225,7 @@ describe('LobbyFormComponent', () => {
         mockMatDialog.open.and.returnValue(mockBoxDialogRef);
 
         component.lobbyId = '123';
-        component.openBoxFormDialog();
+        component['openBoxFormDialog']();
 
         expect(mockMatDialog.open).toHaveBeenCalledWith(BoxFormDialogComponent, {
             width: '400px',

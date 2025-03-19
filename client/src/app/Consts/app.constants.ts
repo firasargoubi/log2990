@@ -54,6 +54,7 @@ export const OBJECT_MULTIPLIER = 10;
 export const RIGHT_CLICK = 2;
 export const TIMEOUT_START_COMBAT = 1000;
 export const TURN_START_TIME = 30;
+export const PAD_TIME_VALUE = 10;
 
 export const GAME_CARD_CONSTANTS = {
     successDeleteMessage: 'Jeu supprimé avec succès',

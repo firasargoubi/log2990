@@ -33,6 +33,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     @Output() opponent: Player | null = null;
     @Output() gameState: GameState;
     @Output() remove = new EventEmitter<string>();
+    @Output() deletedPlayers: Player[] = [];
     @Input() player!: Player;
     @Input() tileInfo: Tile;
     isInCombat: boolean = false;
@@ -93,7 +94,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.lobbyService.updateCombatStatus(this.isInCombat);
         });
 
-        this.lobbyService.onCombatEnded().subscribe((data) => {
+        this.lobbyService.onCombatEnded().subscribe(() => {
             this.isInCombat = false;
             this.lobbyService.updateCombatStatus(this.isInCombat);
         });
@@ -272,6 +273,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         }
     }
 
+    getDeletedPlayers(): Player[] {
+        return this.gameState?.deletedPlayers || [];
+    }
+
     private setupGameListeners() {
         this.subscriptions.push(
             this.lobbyService.onGameStarted().subscribe((data) => {
@@ -318,7 +323,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
             this.lobbyService.onBoardChanged().subscribe((data) => {
                 this.gameState = data.gameState;
-
                 this.currentPlayer = data.gameState.players.find((p) => p.id === this.currentPlayer.id) || this.currentPlayer;
             }),
 

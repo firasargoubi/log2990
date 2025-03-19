@@ -308,7 +308,6 @@ export class GameSocketHandlerService {
         newGameState.players[loserIndex] = loser;
         this.gameStates.set(lobbyId, newGameState);
 
-        console.log('After Battle Ended', newGameState);
         this.io.to(lobbyId).emit('combatEnded', { loser });
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
     }
@@ -365,7 +364,6 @@ export class GameSocketHandlerService {
             attacker.winCount += 1;
             if (attacker.winCount === 3) {
                 this.io.to(lobbyId).emit('gameOver', { winner: attacker.name });
-                console.log('Game Over HAHAHHAHAHAHHAHAHAHAHHAHHAHA');
                 return;
             }
             this.handleDefeat(lobbyId, attacker, defender);

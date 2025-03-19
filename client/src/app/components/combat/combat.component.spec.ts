@@ -1,9 +1,11 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+/* eslint-disable max-lines */
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
-import { of } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { CombatComponent } from './combat.component';
 
 describe('CombatComponent', () => {
@@ -12,7 +14,46 @@ describe('CombatComponent', () => {
     let mockLobbyService: jasmine.SpyObj<LobbyService>;
     let mockNotificationService: jasmine.SpyObj<NotificationService>;
 
+    // Subjects to simulate observable emissions
+    let attackResultSubject: BehaviorSubject<{
+        attackRoll: number;
+        defenseRoll: number;
+        attackDice: number;
+        defenseDice: number;
+        damage: number;
+        attackerHP: number;
+        defenderHP: number;
+        attacker: Player;
+        defender: Player;
+    }>;
+    let fleeFailureSubject: BehaviorSubject<{ fleeingPlayer: Player }>;
+    let combatUpdateSubject: BehaviorSubject<{ players: Player[] }>;
+    let startCombatSubject: BehaviorSubject<{ firstPlayer: Player }>;
+    let combatEndedSubject: BehaviorSubject<{ loser: Player }>;
+
     beforeEach(async () => {
+        // Initialize subjects with default values
+        attackResultSubject = new BehaviorSubject({
+            attackRoll: 5,
+            defenseRoll: 3,
+            attackDice: 5,
+            defenseDice: 3,
+            damage: 2,
+            attackerHP: 6,
+            defenderHP: 6,
+            attacker: { id: 'player1' } as Player,
+            defender: { id: 'player2' } as Player,
+        });
+        fleeFailureSubject = new BehaviorSubject({
+            fleeingPlayer: { id: 'player1', name: 'Joueur 1', amountEscape: 2 } as Player,
+        });
+        combatUpdateSubject = new BehaviorSubject({
+            players: [{ id: 'player1', name: 'Joueur 1', amountEscape: 1 } as Player, { id: 'player2', name: 'Joueur 2' } as Player],
+        });
+        startCombatSubject = new BehaviorSubject({ firstPlayer: { id: 'player1' } as Player });
+        combatEndedSubject = new BehaviorSubject({ loser: { name: 'Joueur 2' } as Player });
+
+        // Create spies for services
         mockLobbyService = jasmine.createSpyObj('LobbyService', [
             'handleAttack',
             'attack',
@@ -20,15 +61,21 @@ describe('CombatComponent', () => {
             'updateCombatTime',
             'onAttackResult',
             'onStartCombat',
-            'onGameEnded',
             'onFleeFailure',
             'getCombatUpdate',
+            'onCombatEnded',
         ]);
-
         mockNotificationService = jasmine.createSpyObj('NotificationService', ['showInfo']);
 
+        // Assign observables to mocked methods
+        mockLobbyService.onAttackResult.and.returnValue(attackResultSubject.asObservable());
+        mockLobbyService.onFleeFailure.and.returnValue(fleeFailureSubject.asObservable());
+        mockLobbyService.getCombatUpdate.and.returnValue(combatUpdateSubject.asObservable());
+        mockLobbyService.onStartCombat.and.returnValue(startCombatSubject.asObservable());
+        mockLobbyService.onCombatEnded.and.returnValue(combatEndedSubject.asObservable());
+
         await TestBed.configureTestingModule({
-            declarations: [CombatComponent],
+            imports: [CombatComponent, BrowserAnimationsModule],
             providers: [
                 { provide: LobbyService, useValue: mockLobbyService },
                 { provide: NotificationService, useValue: mockNotificationService },
@@ -40,24 +87,26 @@ describe('CombatComponent', () => {
         fixture = TestBed.createComponent(CombatComponent);
         component = fixture.componentInstance;
 
+        // Default setup
         component.currentPlayer = { id: 'player1', name: 'Joueur 1', amountEscape: 0 } as Player;
         component.opponent = { id: 'player2', name: 'Joueur 2' } as Player;
         component.lobbyId = 'testLobby';
-        component.gameState = { id: 'game1', players: [component.currentPlayer, component.opponent] } as GameState;
+        component.gameState = { id: 'game1', players: [component.currentPlayer, component.opponent], currentPlayer: 'player1' } as GameState;
 
         fixture.detectChanges();
-        component.ngOnInit();
     });
 
     afterEach(() => {
         component.ngOnDestroy();
     });
 
-    it('devrait être créé', () => {
+    // **Initialization Tests**
+    it('should be created', () => {
         expect(component).toBeTruthy();
     });
 
-    it('devrait appeler handleAttack au démarrage si gameState existe', () => {
+    it('should call handleAttack on startup if gameState exists and currentPlayer matches', () => {
+        component.ngOnInit();
         expect(mockLobbyService.handleAttack).toHaveBeenCalledWith(
             component.currentPlayer,
             component.opponent,
@@ -66,18 +115,22 @@ describe('CombatComponent', () => {
         );
     });
 
-    it('devrait démarrer le compte à rebours et décrémenter le temps', (done) => {
+    // **Countdown Management Tests**
+    it('should start the countdown and decrement the time', fakeAsync(() => {
         component.countDown = 3;
         component.startCountdown();
 
-        setTimeout(() => {
-            expect(component.countDown).toBeLessThan(3);
-            component.endTimer();
-            done();
-        }, 2001);
-    });
+        tick(1000);
+        expect(component.countDown).toBe(2);
+        expect(mockLobbyService.updateCombatTime).toHaveBeenCalledWith(2);
 
-    it('devrait stopper le compte à rebours lorsque endTimer est appelé', () => {
+        tick(1000);
+        expect(component.countDown).toBe(1);
+
+        component.endTimer();
+    }));
+
+    it('should stop the countdown when endTimer is called', () => {
         component.countDown = 3;
         component.startCountdown();
         component.endTimer();
@@ -85,20 +138,54 @@ describe('CombatComponent', () => {
         expect(component.isCountdownActive()).toBeFalse();
     });
 
-    it('devrait appeler attack() si onAttack() est déclenché et les conditions sont remplies', () => {
-        component.canAct = true;
-        component.gameState = { id: 'game1', players: [component.currentPlayer, component.opponent] } as GameState;
+    it('should not start the countdown if combatEnded is true', () => {
+        component.combatEnded = true;
+        component.countDown = 5;
+        component.startCountdown();
 
+        expect(component.isCountdownActive()).toBeFalse();
+    });
+
+    it('should return true if the countdown is active', () => {
+        component.countDown = 5;
+        component.startCountdown();
+
+        expect(component.isCountdownActive()).toBeTrue();
+
+        component.endTimer();
+        expect(component.isCountdownActive()).toBeFalse();
+    });
+
+    it('should call onAttack when the countdown reaches zero and canAct is true', fakeAsync(() => {
+        spyOn(component, 'onAttack');
+        component.countDown = 1;
+        component.canAct = true;
+        component.startCountdown();
+
+        tick(1000);
+        expect(component.onAttack).toHaveBeenCalled();
+    }));
+
+    // **Player Actions Tests**
+    it('should call attack() if onAttack() is triggered and conditions are met', () => {
+        component.canAct = true;
         component.onAttack();
 
         expect(mockLobbyService.attack).toHaveBeenCalledWith(component.lobbyId, component.currentPlayer, component.opponent);
     });
 
-    it('devrait appeler flee() et empêcher la fuite après 2 tentatives', () => {
+    it('should not call attack() if canAct is false', () => {
+        component.canAct = false;
+        component.onAttack();
+
+        expect(mockLobbyService.attack).not.toHaveBeenCalled();
+    });
+
+    it('should call flee() and prevent escape after 2 attempts', () => {
         component.canAct = true;
         component.currentPlayer.amountEscape = 1;
-        component.onFlee();
 
+        component.onFlee();
         expect(mockLobbyService.flee).toHaveBeenCalledWith('game1', component.currentPlayer);
 
         component.currentPlayer.amountEscape = 2;
@@ -106,27 +193,14 @@ describe('CombatComponent', () => {
 
         expect(component.canEscape).toBeFalse();
         expect(mockNotificationService.showInfo).toHaveBeenCalledWith('Vous avez déjà tenté de fuir 2 fois, vous ne pouvez plus fuir.');
+        expect(component.countDown).toBe(3);
     });
 
-    it('devrait gérer onFleeFailure() correctement', () => {
-        const fleeingPlayer = { id: 'player1', name: 'Joueur 1', amountEscape: 2 } as Player;
-
-        mockLobbyService.onFleeFailure.and.returnValue(of({ fleeingPlayer }));
+    // **Subscription Tests**
+    it('should handle onAttackResult() correctly', () => {
         component.ngOnInit();
 
-        expect(component.canEscape).toBeFalse();
-        expect(mockNotificationService.showInfo).toHaveBeenCalledWith('Vous avez déjà tenté de fuir 2 fois, vous ne pouvez plus fuir.');
-    });
-
-    it('devrait gérer onGameEnded()', () => {
-        mockLobbyService.onGameEnded.and.returnValue(of({}));
-        component.ngOnInit();
-
-        expect(mockNotificationService.showInfo).toHaveBeenCalledWith('La partie est terminée!');
-    });
-
-    it('devrait gérer onAttackResult()', () => {
-        const attackResult = {
+        attackResultSubject.next({
             attackRoll: 5,
             defenseRoll: 3,
             attackDice: 5,
@@ -136,26 +210,98 @@ describe('CombatComponent', () => {
             defenderHP: 40,
             attacker: component.currentPlayer,
             defender: component.opponent,
-        };
+        });
 
-        mockLobbyService.onAttackResult.and.returnValue(of(attackResult));
-        component.ngOnInit();
+        fixture.detectChanges();
 
-        expect(component.attackDice).toEqual(5);
-        expect(component.defenceDice).toEqual(3);
-        expect(component.damage).toEqual(2);
+        expect(component.attackDice).toBe(5);
+        expect(component.defenceDice).toBe(3);
+        expect(component.damage).toBe(2);
         expect(component.canAct).toBeFalse();
+        expect(component.countDown).toBe(5);
+        expect(component.isCountdownActive()).toBeTrue();
     });
 
-    it('devrait mettre à jour les joueurs après getCombatUpdate()', () => {
-        const updatedPlayer = { ...component.currentPlayer, amountEscape: 1 } as Player;
-        const updatedOpponent = { ...component.opponent } as Player;
-        const gameStateUpdate = { players: [updatedPlayer, updatedOpponent] };
-
-        mockLobbyService.getCombatUpdate.and.returnValue(of(gameStateUpdate));
+    it('should handle onFleeFailure() correctly', () => {
         component.ngOnInit();
 
-        expect(component.currentPlayer.amountEscape).toEqual(1);
+        fleeFailureSubject.next({
+            fleeingPlayer: { id: 'player1', name: 'Joueur 1', amountEscape: 2 } as Player,
+        });
+
+        fixture.detectChanges();
+
+        expect(component.canEscape).toBeFalse();
+        expect(component.canAct).toBeFalse();
+        expect(component.countDown).toBe(3);
+        expect(mockNotificationService.showInfo).toHaveBeenCalledWith("Joueur 1 n'a pas réussi à fuir le combat.");
+    });
+
+    it('should update players after getCombatUpdate()', () => {
+        component.ngOnInit();
+
+        combatUpdateSubject.next({
+            players: [{ id: 'player1', name: 'Joueur 1', amountEscape: 1 } as Player, { id: 'player2', name: 'Joueur 2', amountEscape: 0 } as Player],
+        });
+
+        fixture.detectChanges();
+
+        expect(component.currentPlayer.amountEscape).toBe(1);
         expect(component.canEscape).toBeTrue();
+        expect(component.opponent.amountEscape).toBe(0);
+    });
+
+    it('should handle onStartCombat correctly', () => {
+        component.ngOnInit();
+
+        startCombatSubject.next({
+            firstPlayer: { id: 'player1' } as Player,
+        });
+
+        fixture.detectChanges();
+
+        expect(component.canAct).toBeTrue();
+        expect(component.countDown).toBe(5);
+        expect(component.isCountdownActive()).toBeTrue();
+        expect(component.currentPlayer.amountEscape).toBe(0);
+        expect(component.canEscape).toBeTrue();
+    });
+
+    it('should display a notification when the combat ends', () => {
+        component.ngOnInit();
+
+        combatEndedSubject.next({
+            loser: { name: 'Joueur 2' } as Player,
+        });
+
+        fixture.detectChanges();
+
+        expect(mockNotificationService.showInfo).toHaveBeenCalledWith('La partie est terminée! Joueur 2 a perdu !');
+    });
+
+    it('should update currentPlayer and opponent in ngOnChanges if not defined', () => {
+        component.currentPlayer = undefined as unknown;
+        component.opponent = undefined as unknown;
+        component.gameState = {
+            players: [{ id: 'player1', name: 'Joueur 1' } as Player, { id: 'player2', name: 'Joueur 2' } as Player],
+            currentPlayer: 'player1',
+        } as GameState;
+        component.playerTurn = 'player1';
+
+        component.ngOnChanges();
+
+        expect(component.currentPlayer).toEqual(jasmine.objectContaining({ id: 'player1', name: 'Joueur 1' }));
+        expect(component.opponent).toEqual(jasmine.objectContaining({ id: 'player2', name: 'Joueur 2' }));
+    });
+
+    it('should stop the countdown and unsubscribe subscriptions in ngOnDestroy', () => {
+        component.countDown = 5;
+        component.startCountdown();
+        const subscriptionSpy = spyOn(component['subscriptions'][0], 'unsubscribe');
+
+        component.ngOnDestroy();
+
+        expect(component.isCountdownActive()).toBeFalse();
+        expect(subscriptionSpy).toHaveBeenCalled();
     });
 });

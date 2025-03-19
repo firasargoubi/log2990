@@ -19,4 +19,24 @@ describe('GameInfoComponent', () => {
     it('should create', () => {
         expect(component).toBeTruthy();
     });
+    it('should return the array of deleted players when provided', () => {
+        const deletedPlayers = [
+            {
+                id: '1',
+                name: 'Player One',
+                avatar: 'avatar1.png',
+                isHost: false,
+                life: 100,
+                speed: 10,
+                attack: 5,
+                defense: 3,
+            },
+        ];
+        component.deletedPlayers = deletedPlayers;
+        expect(component.getPlayersDeleted()).toEqual(deletedPlayers);
+    });
+    it('should return an empty array when no deleted players are provided', () => {
+        component.deletedPlayers = [];
+        expect(component.getPlayersDeleted()).toEqual([]);
+    });
 });

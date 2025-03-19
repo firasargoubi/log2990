@@ -29,7 +29,6 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
     defenceDisplay = '';
     damage = 0;
     isAttacker = false;
-    combatState: 'waiting' | 'attacking' | 'defending' | 'ended' = 'waiting';
     private lobbyService = inject(LobbyService);
     private subscriptions: Subscription[] = [];
 
