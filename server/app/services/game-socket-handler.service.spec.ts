@@ -7,8 +7,8 @@
 import { BoardService } from '@app/services/board.service';
 import { GameSocketHandlerService, isTileValid, isWithinBounds } from '@app/services/game-socket-handler.service';
 import { LobbySocketHandlerService } from '@app/services/lobby-socket-handler.service';
-import { GameLobby } from '@common/game-lobby';
 import { GameEvents } from '@common/events'; // Ensure this path is correct
+import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
 import { TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
@@ -236,7 +236,10 @@ describe('GameSocketHandlerService', () => {
     it('should update board and emit boardModified in closeDoor', () => {
         const gameState: GameState = {
             board: [[TileTypes.Floor]],
+            players: [{ id: 'socket1', currentAP: 2 } as any],
+            currentPlayer: 'socket1',
         } as any;
+
         gameStates.set('lobby1', gameState);
         (boardService.handleBoardChange as any) = sandbox.stub().returns(gameState);
 
@@ -252,7 +255,10 @@ describe('GameSocketHandlerService', () => {
     it('should update board and emit boardModified in openDoor', () => {
         const gameState: GameState = {
             board: [[TileTypes.Floor]],
+            players: [{ id: 'socket1', currentAP: 2 } as any],
+            currentPlayer: 'socket1',
         } as any;
+
         gameStates.set('lobby1', gameState);
         (boardService.handleBoardChange as any) = sandbox.stub().returns(gameState);
 
@@ -267,7 +273,10 @@ describe('GameSocketHandlerService', () => {
     it('should update board and emit boardModified in closeDoor', () => {
         const gameState: GameState = {
             board: [[TileTypes.Floor]],
+            players: [{ id: 'socket1', currentAP: 2 } as any],
+            currentPlayer: 'socket1',
         } as any;
+
         gameStates.set('lobby1', gameState);
         (boardService.handleBoardChange as any) = sandbox.stub().returns(gameState);
 
@@ -283,7 +292,10 @@ describe('GameSocketHandlerService', () => {
     it('should update board and emit boardModified in openDoor', () => {
         const gameState: GameState = {
             board: [[TileTypes.Floor]],
+            players: [{ id: 'socket1', currentAP: 2 } as any],
+            currentPlayer: 'socket1',
         } as any;
+
         gameStates.set('lobby1', gameState);
         (boardService.handleBoardChange as any) = sandbox.stub().returns(gameState);
 
@@ -460,23 +472,38 @@ describe('GameSocketHandlerService', () => {
     });
 
     it('should reduce life and emit attackResult in handleAttackAction', () => {
-        const attacker = { id: 'p1', life: 10, attack: 5 } as Player;
-        const defender = { id: 'p2', life: 10, defense: 3 } as Player;
-        const gameState = {
+        const attacker: Player = {
+            id: 'p1',
+            life: 10,
+            attack: 5,
+            bonus: { attack: 'D6', defense: 'D6' },
+            defense: 0,
+        } as Player;
+
+        const defender: Player = {
+            id: 'p2',
+            life: 10,
+            defense: 3,
+            bonus: { attack: 'D6', defense: 'D6' },
+        } as Player;
+
+        const gameState: GameState = {
             players: [attacker, defender],
             board: [[TileTypes.Floor]],
             playerPositions: [
                 { x: 0, y: 0 },
-                { x: 0, y: 0 },
+                { x: 0, y: 1 },
             ],
             debug: false,
         } as GameState;
+
         gameStates.set('lobby1', gameState);
 
-        sandbox.stub(Math, 'random').returns(0.5);
+        sandbox.stub(Math, 'random').returns(0.5); // 0.5 * 6 = 3 + 1 = 4 attack/defense dice
+
         service.handleAttackAction('lobby1', attacker, defender);
 
-        expect(defender.life).to.be.lessThanOrEqual(10);
+        expect(defender.life).to.be.lessThan(10); // Le défenseur perd de la vie
         expect(ioToStub.calledWith('lobby1')).to.be.true;
         const emit = ioToStub.returnValues[0].emit;
         expect(emit.calledWith('attackResult')).to.be.true;
@@ -610,19 +637,31 @@ describe('GameSocketHandlerService', () => {
     });
 
     it('should not reduce life if damage is 0 in handleAttackAction', () => {
-        const attacker = { id: 'p1', life: 10, attack: 1 } as Player;
-        const defender = { id: 'p2', life: 10, defense: 5 } as Player;
+        const attacker: Player = {
+            id: 'p1',
+            life: 10,
+            attack: 1,
+            bonus: { attack: 'D4', defense: 'D4' }, // <-- nécessaire
+            defense: 0,
+        } as Player;
+
+        const defender: Player = {
+            id: 'p2',
+            life: 10,
+            defense: 5,
+            bonus: { attack: 'D4', defense: 'D4' }, // <-- nécessaire
+        } as Player;
+
         const gameState: GameState = {
             players: [attacker, defender],
+            board: [[TileTypes.Floor]],
             playerPositions: [
                 { x: 0, y: 0 },
-                { x: 1, y: 1 },
+                { x: 0, y: 1 },
             ],
-            board: [
-                [0, 0],
-                [0, 0],
-            ],
+            debug: false,
         } as GameState;
+
         gameStates.set('lobby1', gameState);
 
         sandbox.stub(Math, 'random').returns(0);
@@ -633,6 +672,7 @@ describe('GameSocketHandlerService', () => {
         const emit = ioToStub.returnValues[0].emit;
         expect(emit.calledWith('attackResult')).to.be.true;
     });
+
     it('should emit startCombat with correct playerTurn when opponent has first index in startBattle', () => {
         const currentPlayer = { id: 'p1', amountEscape: 0 } as Player;
         const opponent = { id: 'p2', amountEscape: 0 } as Player;
