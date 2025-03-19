@@ -6,6 +6,8 @@ import { Player } from '@common/player';
 import { Subscription } from 'rxjs';
 
 const TO_SECONDS = 1000;
+const BASE_COUNTDOWN = 5;
+const LOWERED_COUNTDOWN = 3;
 @Component({
     selector: 'app-combat',
     templateUrl: './combat.component.html',
@@ -99,7 +101,7 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
         if (this.currentPlayer.amountEscape >= 2) {
             this.canEscape = false;
             this.notificationService.showInfo('Vous avez déjà tenté de fuir 2 fois, vous ne pouvez plus fuir.');
-            this.countDown = 3;
+            this.countDown = LOWERED_COUNTDOWN;
             return;
         }
 
@@ -135,7 +137,7 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
                     this.opponent = data.attacker;
                     this.canAct = true;
                 }
-                this.countDown = this.canEscape ? 5 : 3;
+                this.countDown = this.canEscape ? BASE_COUNTDOWN : LOWERED_COUNTDOWN;
                 this.startCountdown();
             }),
 
@@ -151,7 +153,7 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
                     this.canAct = true;
                 }
 
-                this.countDown = 5;
+                this.countDown = BASE_COUNTDOWN;
                 this.startCountdown();
             }),
 
@@ -172,7 +174,7 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
                 } else {
                     this.canAct = true;
                 }
-                this.countDown = this.canEscape ? 5 : 3;
+                this.countDown = this.canEscape ? BASE_COUNTDOWN : LOWERED_COUNTDOWN;
                 this.startCountdown();
 
                 this.notificationService.showInfo(`${data.fleeingPlayer.name} n'a pas réussi à fuir le combat.`);
