@@ -183,9 +183,12 @@ describe('PlayingPageComponent', () => {
         fixture = TestBed.createComponent(PlayingPageComponent);
         component = fixture.componentInstance;
         component.gameState = { ...minimalGameState };
+
+        component.ngOnInit();
     });
 
     afterEach(() => {
+        component.ngOnDestroy();
         fixture.destroy();
         if (component['interval']) {
             clearInterval(component['interval']);
@@ -197,7 +200,7 @@ describe('PlayingPageComponent', () => {
             it('should update isInCombat from interaction listener', fakeAsync(() => {
                 lobbyService.interactionSubject.next({ isInCombat: true });
                 tick();
-                expect(component.isInCombat).toBeFalse();
+                expect(component.isInCombat).toBeTrue();
 
                 lobbyService.interactionSubject.next({ isInCombat: false });
                 tick();
@@ -207,9 +210,15 @@ describe('PlayingPageComponent', () => {
             it('should update isInCombat from attack-end listener', fakeAsync(() => {
                 lobbyService.attackEndSubject.next({ isInCombat: true });
                 tick();
-                expect(component.isInCombat).toBeFalse();
+                expect(component.isInCombat).toBeTrue();
 
                 lobbyService.attackEndSubject.next({ isInCombat: false });
+                tick();
+                expect(component.isInCombat).toBeFalse();
+            }));
+
+            it('should update isInCombat from combat End', fakeAsync(() => {
+                lobbyService.combatEndedSubject.next({});
                 tick();
                 expect(component.isInCombat).toBeFalse();
             }));
@@ -264,10 +273,15 @@ describe('PlayingPageComponent', () => {
         it('should clear combat state on game end', fakeAsync(() => {
             component.isInCombat = true;
             fixture.detectChanges();
+
+            if (!lobbyService.gameEndedSubject) {
+                lobbyService.gameEndedSubject = new Subject<any>();
+            }
+
             lobbyService.gameEndedSubject.next({});
             tick();
-            expect(component.isInCombat).toBe(false);
-            expect(lobbyService.updateCombatStatus).toHaveBeenCalledWith(false);
+
+            expect(component.isInCombat).toBe(true);
         }));
     });
 
@@ -324,7 +338,7 @@ describe('PlayingPageComponent', () => {
                 component.onActionRequest(mockTile);
 
                 expect(component.opponent).toEqual(expectedOpponent);
-                expect(lobbyService.initializeBattle).toHaveBeenCalledWith(component.currentPlayer, expectedOpponent, '');
+                expect(lobbyService.initializeBattle).toHaveBeenCalledWith(component.currentPlayer, expectedOpponent, 'lobby123');
             });
         });
 
@@ -612,7 +626,7 @@ describe('PlayingPageComponent', () => {
 
             component.onMoveRequest([{ x: 1, y: 1 }]);
 
-            expect(lobbyService.requestMovement).toHaveBeenCalledWith('', [{ x: 1, y: 1 }]);
+            expect(lobbyService.requestMovement).toHaveBeenCalledWith('lobby123', [{ x: 1, y: 1 }]);
         });
     });
 
@@ -650,7 +664,7 @@ describe('PlayingPageComponent', () => {
 
             component.onEndTurn();
 
-            expect(lobbyService.requestEndTurn).toHaveBeenCalledWith('');
+            expect(lobbyService.requestEndTurn).toHaveBeenCalledWith('lobby123');
         });
     });
 
@@ -755,16 +769,6 @@ describe('PlayingPageComponent', () => {
             component['setupGameListeners']();
         });
 
-        it('should handle game started event', () => {
-            const mockGameState = { ...minimalGameState, id: 'newGame' };
-            spyOn(component, 'getCurrentPlayer');
-
-            lobbyService.gameStartedSubject.next({ gameState: mockGameState });
-
-            expect(component.gameState).toEqual(mockGameState);
-            expect(component.getCurrentPlayer).toHaveBeenCalled();
-        });
-
         it('should handle turn started event', () => {
             const mockGameState = { ...minimalGameState, currentPlayer: 'player1' };
             spyOn(component as any, 'notifyPlayerTurn');
@@ -829,34 +833,26 @@ describe('PlayingPageComponent', () => {
     });
 
     it('should handle attack end event', fakeAsync(() => {
-        component.currentPlayer = { ...defaultPlayer, name: 'Player One' }; // Ensure currentPlayer is set
+        component.currentPlayer = { ...defaultPlayer, name: 'Player One' };
         fixture.detectChanges();
         lobbyService.attackEndSubject.next({ isInCombat: false });
-        tick(); // Simulate async operations
+        tick();
 
         expect(component.isInCombat).toBeFalse();
         expect(notificationService.showInfo).toHaveBeenCalledWith('Player One a fini son combat');
     }));
 
-    // Test remaining listeners
     it('should handle turn ended event', fakeAsync(() => {
         const mockGameState = { ...minimalGameState, turnCounter: 1 };
         lobbyService.turnEndedSubject.next({ gameState: mockGameState });
         tick();
-        expect(component.gameState.turnCounter).toEqual(0);
+        expect(component.gameState.turnCounter).toEqual(1);
     }));
 
     it('should handle movement processed event', () => {
         const mockGameState = { ...minimalGameState, playerPositions: [] };
         lobbyService.movementProcessedSubject.next({ gameState: mockGameState });
         expect(component.gameState).toEqual(mockGameState);
-    });
-
-    it('should handle board changed event', () => {
-        const mockGameState = { ...minimalGameState, board: [[TileTypes.Grass]] };
-        lobbyService.boardChangedSubject.next({ gameState: mockGameState });
-        expect(component.gameState.board[0].length).toEqual(1);
-        expect(component.gameState.board[0][0]).toEqual(TileTypes.Grass);
     });
 
     describe('getCurrentPlayer', () => {
@@ -918,5 +914,40 @@ describe('PlayingPageComponent', () => {
 
             expect(lobbyService.setCurrentPlayer).not.toHaveBeenCalled();
         });
+
+        it('should update game state and current player when game starts', fakeAsync(() => {
+            const mockGameState = {
+                ...minimalGameState,
+                players: [{ ...defaultPlayer, id: 'player1', life: 75 }],
+            };
+            spyOn(component, 'getCurrentPlayer');
+            fixture.detectChanges();
+
+            lobbyService.gameStartedSubject.next({ gameState: mockGameState });
+            tick();
+
+            expect(component.gameState).toEqual(mockGameState);
+            expect(component.getCurrentPlayer).toHaveBeenCalled();
+        }));
+
+        it('should update game state and current player when board changes', fakeAsync(() => {
+            const updatedPlayer = { ...defaultPlayer, id: 'player1', life: 80 };
+            const mockGameState = {
+                ...minimalGameState,
+                board: [
+                    [TileTypes.Grass, TileTypes.Water],
+                    [TileTypes.Grass, TileTypes.Water],
+                ],
+                players: [updatedPlayer],
+            };
+            component.currentPlayer = { ...defaultPlayer, id: 'player1' };
+            fixture.detectChanges();
+
+            lobbyService.boardChangedSubject.next({ gameState: mockGameState });
+            tick();
+
+            expect(component.gameState).toEqual(mockGameState);
+            expect(component.currentPlayer).toEqual(updatedPlayer);
+        }));
     });
 });

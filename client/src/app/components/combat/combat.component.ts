@@ -156,7 +156,7 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
             }),
 
             this.lobbyService.onCombatEnded().subscribe((data) => {
-                this.notificationService.showInfo(`La partie est terminée! ${data.loser.name} a perdu ! `);
+                this.notificationService.showInfo(`La partie est terminée! ${data.loser.name} a perdu !`);
             }),
 
             this.lobbyService.onFleeFailure().subscribe((data) => {

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable max-lines */
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -14,7 +16,6 @@ describe('CombatComponent', () => {
     let mockLobbyService: jasmine.SpyObj<LobbyService>;
     let mockNotificationService: jasmine.SpyObj<NotificationService>;
 
-    // Subjects to simulate observable emissions
     let attackResultSubject: BehaviorSubject<{
         attackRoll: number;
         defenseRoll: number;
@@ -162,11 +163,10 @@ describe('CombatComponent', () => {
         component.canAct = true;
         component.startCountdown();
 
-        tick(1000);
+        tick(2000);
         expect(component.onAttack).toHaveBeenCalled();
     }));
 
-    // **Player Actions Tests**
     it('should call attack() if onAttack() is triggered and conditions are met', () => {
         component.canAct = true;
         component.onAttack();
@@ -266,32 +266,15 @@ describe('CombatComponent', () => {
         expect(component.currentPlayer.amountEscape).toBe(0);
         expect(component.canEscape).toBeTrue();
     });
-
     it('should display a notification when the combat ends', () => {
+        mockNotificationService.showInfo.calls.reset();
+
         component.ngOnInit();
 
-        combatEndedSubject.next({
-            loser: { name: 'Joueur 2' } as Player,
-        });
-
+        combatEndedSubject.next({ loser: { name: 'Joueur 2' } as Player });
         fixture.detectChanges();
 
         expect(mockNotificationService.showInfo).toHaveBeenCalledWith('La partie est terminée! Joueur 2 a perdu !');
-    });
-
-    it('should update currentPlayer and opponent in ngOnChanges if not defined', () => {
-        component.currentPlayer = undefined as unknown;
-        component.opponent = undefined as unknown;
-        component.gameState = {
-            players: [{ id: 'player1', name: 'Joueur 1' } as Player, { id: 'player2', name: 'Joueur 2' } as Player],
-            currentPlayer: 'player1',
-        } as GameState;
-        component.playerTurn = 'player1';
-
-        component.ngOnChanges();
-
-        expect(component.currentPlayer).toEqual(jasmine.objectContaining({ id: 'player1', name: 'Joueur 1' }));
-        expect(component.opponent).toEqual(jasmine.objectContaining({ id: 'player2', name: 'Joueur 2' }));
     });
 
     it('should stop the countdown and unsubscribe subscriptions in ngOnDestroy', () => {
@@ -303,5 +286,227 @@ describe('CombatComponent', () => {
 
         expect(component.isCountdownActive()).toBeFalse();
         expect(subscriptionSpy).toHaveBeenCalled();
+    });
+    describe('ngOnChanges', () => {
+        it('should set currentPlayer from gameState when currentPlayer is undefined', () => {
+            // Arrange: currentPlayer is undefined and playerTurn matches a player in gameState.
+            component.currentPlayer = undefined as any;
+            component.playerTurn = 'player1';
+            component.gameState = {
+                id: 'game1',
+                players: [
+                    { id: 'player1', name: 'Joueur 1', amountEscape: 0 } as Player,
+                    { id: 'player2', name: 'Joueur 2', amountEscape: 0 } as Player,
+                ],
+                currentPlayer: 'player1',
+            } as GameState;
+
+            // Act
+            component.ngOnChanges();
+
+            // Assert: currentPlayer is set from gameState.
+            expect(component.currentPlayer).toEqual(jasmine.objectContaining({ id: 'player1' }));
+        });
+
+        it('should set opponent from gameState when opponent is undefined', () => {
+            component.currentPlayer = { id: 'player1', name: 'Joueur 1', amountEscape: 0 } as Player;
+            component.opponent = undefined as any;
+            component.gameState = {
+                id: 'game1',
+                players: [
+                    { id: 'player1', name: 'Joueur 1', amountEscape: 0 } as Player,
+                    { id: 'player2', name: 'Joueur 2', amountEscape: 0 } as Player,
+                ],
+                currentPlayer: 'player1',
+            } as GameState;
+
+            component.ngOnChanges();
+
+            expect(component.opponent).toEqual(jasmine.objectContaining({ id: 'player2' }));
+        });
+
+        it('should not change currentPlayer or opponent if they are already defined', () => {
+            const originalCurrentPlayer = { id: 'player1', name: 'Joueur 1', amountEscape: 0 } as Player;
+            const originalOpponent = { id: 'player2', name: 'Joueur 2', amountEscape: 0 } as Player;
+            component.currentPlayer = originalCurrentPlayer;
+            component.opponent = originalOpponent;
+            component.playerTurn = 'player1';
+            component.gameState = {
+                id: 'game1',
+                players: [originalCurrentPlayer, originalOpponent],
+                currentPlayer: 'player1',
+            } as GameState;
+
+            component.ngOnChanges();
+
+            expect(component.currentPlayer).toBe(originalCurrentPlayer);
+            expect(component.opponent).toBe(originalOpponent);
+        });
+
+        it('should leave currentPlayer as undefined if gameState does not contain a matching player (fallback using ??)', () => {
+            component.currentPlayer = undefined as any;
+            component.playerTurn = 'nonexistent';
+            component.gameState = {
+                id: 'game1',
+                players: [{ id: 'playerX', name: 'Player X', amountEscape: 0 } as Player],
+                currentPlayer: 'nonexistent',
+            } as GameState;
+
+            component.ngOnChanges();
+
+            expect(component.currentPlayer).toBeUndefined();
+        });
+
+        it('should leave opponent as undefined if gameState does not contain an opponent different from currentPlayer (fallback using ??)', () => {
+            const singlePlayer = { id: 'player1', name: 'Player 1', amountEscape: 0 } as Player;
+            component.currentPlayer = singlePlayer;
+            component.opponent = undefined as any;
+            component.gameState = {
+                id: 'game1',
+                players: [singlePlayer],
+                currentPlayer: 'player1',
+            } as GameState;
+
+            component.ngOnChanges();
+
+            expect(component.opponent).toBeUndefined();
+        });
+    });
+    describe('onFlee early returns', () => {
+        it('should return without calling flee when gameState is null', () => {
+            component.gameState = null;
+            component.canAct = true;
+
+            component.onFlee();
+
+            expect(mockLobbyService.flee).not.toHaveBeenCalled();
+        });
+
+        it('should return without calling flee when canAct is false', () => {
+            component.gameState = {
+                id: 'game1',
+                players: [component.currentPlayer, component.opponent],
+                currentPlayer: 'player1',
+            } as GameState;
+            component.canAct = false;
+
+            component.onFlee();
+
+            expect(mockLobbyService.flee).not.toHaveBeenCalled();
+        });
+    });
+    describe('onFlee amountEscape fallback', () => {
+        it('should set currentPlayer.amountEscape to 0 if it is undefined and call flee', () => {
+            component.currentPlayer.amountEscape = undefined;
+            component.canAct = true;
+            component.gameState = { id: 'game1', players: [component.currentPlayer, component.opponent], currentPlayer: 'player1' } as GameState;
+            component.onFlee();
+            expect(mockLobbyService.flee).toHaveBeenCalledWith('game1', component.currentPlayer);
+        });
+
+        it('should not change currentPlayer.amountEscape if it is already defined and call flee', () => {
+            component.currentPlayer.amountEscape = 1;
+            component.canAct = true;
+            component.gameState = { id: 'game1', players: [component.currentPlayer, component.opponent], currentPlayer: 'player1' } as GameState;
+            component.onFlee();
+            expect(component.currentPlayer.amountEscape).toBe(1);
+            expect(mockLobbyService.flee).toHaveBeenCalledWith('game1', component.currentPlayer);
+        });
+    });
+    describe('Subscription Branches', () => {
+        it('should handle onAttackResult else branch correctly', () => {
+            component.ngOnInit();
+            const newAttacker: Player = { id: 'player3', name: 'Joueur 3' } as Player;
+            const newDefender: Player = { id: 'player1', name: 'Joueur 1 Updated', amountEscape: 0 } as Player;
+            attackResultSubject.next({
+                attackRoll: 4,
+                defenseRoll: 2,
+                attackDice: 4,
+                defenseDice: 2,
+                damage: 3,
+                attackerHP: 50,
+                defenderHP: 40,
+                attacker: newAttacker,
+                defender: newDefender,
+            });
+            fixture.detectChanges();
+            expect(component.currentPlayer).toEqual(newDefender);
+            expect(component.opponent).toEqual(newAttacker);
+            expect(component.canAct).toBeTrue();
+        });
+
+        it('should handle onStartCombat if branch correctly', () => {
+            component.ngOnInit();
+            startCombatSubject.next({ firstPlayer: { id: 'player2', name: 'Joueur 2' } as Player });
+            fixture.detectChanges();
+            expect(component.playerTurn).toBe('player2');
+            expect(component.isPlayerTurn).toBeFalse();
+            expect(component.canAct).toBeFalse();
+        });
+
+        it('should handle onFleeFailure else branch correctly', () => {
+            component.ngOnInit();
+            component.canAct = false;
+            fleeFailureSubject.next({
+                fleeingPlayer: { id: 'player3', name: 'Joueur 3', amountEscape: 1 } as Player,
+            });
+            fixture.detectChanges();
+            expect(component.canAct).toBeTrue();
+        });
+    });
+    describe('Additional Branch Coverage', () => {
+        it('should set countDown to 3 when canEscape is false in onAttackResult', () => {
+            // Set canEscape to false to force the branch where countDown becomes 3.
+            component.canEscape = false;
+            // Trigger an attack result event where currentPlayer is the attacker.
+            attackResultSubject.next({
+                attackRoll: 4,
+                defenseRoll: 2,
+                attackDice: 4,
+                defenseDice: 2,
+                damage: 3,
+                attackerHP: 50,
+                defenderHP: 40,
+                attacker: component.currentPlayer,
+                defender: component.opponent,
+            });
+            fixture.detectChanges();
+            // Since canEscape is false, countDown should be set to 3.
+            expect(component.canAct).toBeFalse();
+            expect(component.countDown).toBe(3);
+            // Stop the countdown to clean up.
+            component.endTimer();
+        });
+
+        it('should handle onFleeFailure with undefined amountEscape and set canEscape to true and countDown to 5', () => {
+            component.ngOnInit();
+            component.currentPlayer = { id: 'player1', name: 'Test Player', amountEscape: 0 } as Player;
+            fleeFailureSubject.next({
+                fleeingPlayer: { id: 'player1', name: 'Test Player', amountEscape: undefined } as Player,
+            });
+            fixture.detectChanges();
+            expect(component.canEscape).toBeTrue();
+            expect(component.countDown).toBe(5);
+            expect(component.canAct).toBeFalse();
+            expect(mockNotificationService.showInfo).toHaveBeenCalledWith("Test Player n'a pas réussi à fuir le combat.");
+            component.endTimer();
+        });
+        it('should evaluate canEscape as true when currentPlayer.amountEscape is undefined (using ?? 0)', () => {
+            component.ngOnInit();
+
+            component.currentPlayer.amountEscape = undefined;
+
+            combatUpdateSubject.next({
+                players: [
+                    { id: 'player1', name: 'Joueur 1', amountEscape: undefined } as Player,
+                    { id: 'player2', name: 'Joueur 2', amountEscape: 1 } as Player,
+                ],
+            });
+            fixture.detectChanges();
+
+            expect(component.canEscape).toBeTrue();
+
+            component.endTimer();
+        });
     });
 });
