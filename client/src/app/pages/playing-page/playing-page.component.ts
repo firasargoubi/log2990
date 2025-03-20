@@ -246,10 +246,8 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.notificationService.showError('Aucune information disponible pour cette tuile.');
             return;
         }
-
         const lines = details.split('\n');
         let info = '';
-
         lines.forEach((line) => {
             if (line.startsWith('Player:')) {
                 const playerName = line.replace('Player: ', '').trim();
@@ -257,17 +255,15 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             } else if (line.startsWith('Item:')) {
                 const itemId = parseInt(line.replace('Item: ', '').trim(), 10);
                 const itemDescription = this.getItemDescription(itemId);
-                info += itemDescription ? `Objet: ${itemDescription}\n` : `Objet inconnu (ID: ${itemId})\n`;
+                info += itemDescription && itemDescription !== 'Vide' ? `Objet: ${itemDescription}\n` : `Objet inconnu (ID: ${itemId})\n`;
             } else if (line.startsWith('Tile Type:')) {
                 const tileTypeId = parseInt(line.replace('Tile Type: ', '').trim(), 10);
                 info += `Type de tuile: ${tileTypeId}\n`;
             }
         });
-
         if (!info) {
             info = 'Aucune information pertinente pour cette tuile.';
         }
-
         this.notificationService.showInfo(info);
     }
 
