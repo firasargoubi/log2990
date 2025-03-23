@@ -1,80 +1,140 @@
+:host {
+    display: block;
+    min-height: 100vh;
+    background: url('../../../assets/images/water3.jpg') no-repeat center center;
+    background-size: cover;
+    position: relative;
+}
+
 .header-container {
     position: relative;
     margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-bottom: 15px;
+    height: 60px;
+    color: #2c3818;
 }
 
 .logo {
     position: absolute;
-    top: 20px;
-    left: 20px;
-    width: 145px;
-    height: 145px;
+    top: 10px;
+    left: 10px;
+    width: 100px;
+    height: 100px;
     object-fit: cover;
     border-radius: 50%;
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
 }
 
 .container-wrapper {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: 30px;
     width: 100%;
-    max-width: 1820px;
-    margin: 80px auto 40px;
+    max-width: 1400px;
+    margin: 60px auto 30px;
     padding: 0 20px;
     position: relative;
-    min-height: calc(100vh - 200px);
-}
-
-.logo {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 50%;
-    transition: transform 0.2s;
+    min-height: calc(100vh - 160px);
+    z-index: 1;
 }
 
 .lobby-container {
     flex: 3;
-    background-color: #f0f7e6;
+    background: linear-gradient(145deg, #d4e4b8, #b8c89c);
     border-radius: 15px;
-    border: 2px solid #9eba63;
-    box-shadow: 0 6px 12px rgba(73, 115, 66, 0.2);
-    padding: 30px;
-    min-height: 700px;
-    max-width: 1200px;
+    border: 2px solid #85a44c;
+    box-shadow: 0 8px 16px rgba(58, 92, 53, 0.25);
+    padding: 20px;
+
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(58, 92, 53, 0.3);
+    }
 
     .main-content {
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 15px;
         height: 100%;
+        padding: 15px;
+
+        app-player-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            overflow-y: auto;
+            max-height: 350px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+        }
+
+        .controls-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .buttons-section {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
     }
 }
 
 .chat-container {
     flex: 1;
-    min-width: 380px;
-    max-width: 450px;
-    background: rgba(222, 235, 196, 0.3);
+    min-width: 300px;
+    max-width: 380px;
+    background: linear-gradient(145deg, rgba(167, 184, 129, 0.5), rgba(167, 184, 129, 0.3));
     border-radius: 15px;
     padding: 20px;
-    border: 2px solid #9eba63;
-    height: 700px;
+    border: 2px solid #85a44c;
+    box-shadow: 0 8px 16px rgba(58, 92, 53, 0.2);
     position: sticky;
     top: 100px;
     display: flex;
     flex-direction: column;
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+    box-sizing: border-box;
+    overflow: hidden;
+
+    > * {
+        max-width: 100%;
+    }
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(58, 92, 53, 0.25);
+    }
 }
 
 h2[mat-dialog-title] {
     margin: 40px 0 25px;
     font-size: 1.8rem;
+    color: #2c3818;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    letter-spacing: 0.5px;
 
     &:before,
     &:after {
@@ -94,18 +154,69 @@ p {
     font-size: 1.2rem;
     padding: 14px 28px;
     margin: 0 auto 25px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+button {
+    padding: 12px 24px;
+    border-radius: 8px;
+    background: linear-gradient(145deg, #718c41, #5c7235);
+    color: white;
+    border: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(58, 92, 53, 0.25);
+
+    &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(58, 92, 53, 0.35);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+button.action.promote {
+    width: 80px;
+    height: 80px;
+    display: block;
+    margin: 20px auto;
+    border-radius: 50%;
+    background-color: #d4e4b8;
+    border: 3px solid #718c41;
+    box-shadow: 0 4px 8px rgba(58, 92, 53, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+
+    i {
+        font-size: 40px;
+        filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.2));
+    }
+
+    &:hover {
+        transform: scale(1.08);
+        box-shadow: 0 6px 12px rgba(58, 92, 53, 0.4);
+        background-color: #b8c89c;
+    }
 }
 
 .players-container {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 15px;
     padding: 15px;
 }
 
 @media (max-width: 1400px) {
     .container-wrapper {
-        max-width: 95%;
-        margin-top: 120px;
+        max-width: 90%;
+        margin-top: 80px;
     }
 
     .chat-container {
@@ -131,6 +242,21 @@ p {
         max-width: 100%;
         height: 500px;
         position: static;
+    }
+}
+
+@media (max-width: 1024px) {
+    .container-wrapper {
+        gap: 20px;
+    }
+
+    .chat-container {
+        min-width: 280px;
+        height: 550px;
+    }
+
+    .lobby-container {
+        min-height: 550px;
     }
 }
 
@@ -160,28 +286,5 @@ p {
     p {
         font-size: 1rem;
         padding: 12px 20px;
-    }
-}
-button.action.promote {
-    width: 80px;
-    height: 80px;
-    display: block;
-    margin: 20px auto;
-    border-radius: 50%;
-    background-color: #f0f7e6;
-    border: 3px solid #9eba63;
-    box-shadow: 0 4px 8px rgba(73, 115, 66, 0.3);
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    i {
-        font-size: 40px;
-    }
-
-    &:hover {
-        transform: scale(1.05);
-        background-color: #e8f5d8;
     }
 }
