@@ -54,7 +54,6 @@ export class LobbyFormComponent {
         this.lobbyService.getLobby(this.lobbyId).subscribe({
             next: (response) => {
                 const dialogRef = this.dialog.open(BoxFormDialogComponent, {
-                    width: '400px',
                     data: {
                         lobbyId: this.lobbyId,
                         boxId: response.gameId,
