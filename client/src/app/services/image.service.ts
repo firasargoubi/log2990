@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Tile } from '@app/interfaces/tile';
+import { Tile } from '@common/tile';
 import { ObjectsTypes, TileTypes } from '@app/Consts/app.constants';
 import html2canvas from 'html2canvas';
 
@@ -12,16 +12,12 @@ export class ImageService {
             return Promise.reject('Invalid HTML element');
         }
 
-        try {
-            const canvas = await html2canvas(componentElement, {
-                logging: false,
-                backgroundColor: null,
-            });
+        const canvas = await html2canvas(componentElement, {
+            logging: false,
+            backgroundColor: null,
+        });
 
-            return canvas.toDataURL('image/png');
-        } catch (error) {
-            return Promise.reject('Error capturing component: ' + error);
-        }
+        return canvas.toDataURL('image/png');
     }
 
     async captureBoardFromTiles(board: Tile[][]): Promise<string> {

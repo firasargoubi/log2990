@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/member-ordering */
 import { Injectable } from '@angular/core';
 import { Game } from '@common/game.interface';
-import { Tile } from '@app/interfaces/tile';
-import { MapSize } from '@app/interfaces/map-size';
+import { Tile } from '@common/tile';
+import { MapSize, OBJECT_MULTIPLIER } from '@app/Consts/app.constants';
 import { Coordinates } from '@app/interfaces/coordinates';
-import { OBJECT_MULTIPLIER } from '@app/Consts/app.constants';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({

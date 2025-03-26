@@ -6,9 +6,8 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { SaveService } from './save.service';
 import { GameService } from './game.service';
 import { Game, GameSize, GameType } from '@common/game.interface';
-import { MapSize } from '@app/interfaces/map-size';
-import { Tile } from '@app/interfaces/tile';
-import { TileTypes } from '@app/Consts/app.constants';
+import { MapSize, TileTypes } from '@app/Consts/app.constants';
+import { Tile } from '@common/tile';
 import { of, throwError } from 'rxjs';
 
 describe('SaveService', () => {

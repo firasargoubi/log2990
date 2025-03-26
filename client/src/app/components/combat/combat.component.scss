@@ -1,0 +1,178 @@
+/* Styles généraux pour le conteneur de combat */
+:host {
+    display: block;
+    background-image: linear-gradient(to bottom, #8ecf7d, #4a8d3a);
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    border: 3px solid #3a6b2c;
+    position: relative;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  
+  /* Styles pour le compteur de temps */
+  p {
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    border: 2px solid #fff;
+    position: relative;
+  }
+  
+  /* Ajout d'une petite icône de chronomètre avant le texte */
+  p::before {
+    content: "";
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  
+  /* Styles pour les boutons */
+  button {
+    margin: 0 8px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Styles pour le bouton d'attaque */
+  button:first-of-type {
+    background-color: #d32f2f;
+    color: white;
+    flex: 2;
+    box-shadow: 0 3px 0 #9a0007, 0 4px 8px rgba(0, 0, 0, 0.3);
+    min-width: 150px;
+  }
+  
+  /* Icône de griffe pour le bouton d'attaque */
+  button:first-of-type::before {
+    content: "";
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M17.66 8L12 2.35 6.34 8C4.78 9.56 4 11.64 4 13.64s.78 4.11 2.34 5.67 3.61 2.35 5.66 2.35 4.1-.79 5.66-2.35S20 15.64 20 13.64s-.78-4.08-2.34-5.64zM12 19c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.8;
+  }
+  
+  /* Effets hover et active pour le bouton d'attaque */
+  button:first-of-type:hover {
+    background-color: #f44336;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 0 #9a0007, 0 6px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  button:first-of-type:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #9a0007, 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Styles pour le bouton de fuite */
+  button:last-of-type {
+    background-color: #607d8b;
+    color: white;
+    flex: 1;
+    box-shadow: 0 3px 0 #455a64, 0 4px 8px rgba(0, 0, 0, 0.3);
+    min-width: 100px;
+  }
+  
+  /* Icône de fuite pour le bouton de fuite */
+  button:last-of-type::before {
+    content: "";
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M17.92 11.62a1 1 0 0 0-.21-.33l-5-5a1 1 0 0 0-1.42 1.42l3.3 3.29H7a1 1 0 0 0 0 2h7.59l-3.3 3.29a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l5-5a1 1 0 0 0 .21-.33 1 1 0 0 0 0-.76z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.8;
+  }
+  
+  /* Effets hover et active pour le bouton de fuite */
+  button:last-of-type:hover {
+    background-color: #78909c;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 0 #455a64, 0 6px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  button:last-of-type:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #455a64, 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Styles pour les boutons désactivés */
+  button:disabled {
+    background-color: #ccc;
+    color: #999;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  button:disabled::before {
+    opacity: 0.3;
+  }
+  
+  /* Animation de pulsation pour indiquer l'urgence */
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  
+  button:not(:disabled):first-of-type {
+    animation: pulse 1.5s infinite;
+  }
+  
+  /* Disposition des boutons */
+  div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+  }
+  
+  /* Responsive pour les petits écrans */
+  @media (max-width: 500px) {
+    div {
+      flex-direction: column;
+    }
+    
+    button {
+      width: 100%;
+      margin: 4px 0;
+    }
+  }

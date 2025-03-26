@@ -1,0 +1,19 @@
+<div class="board-tile" (click)="onClick()">
+  <img [src]="getTileImage()" class="tile-image" alt="Tile" />
+
+  <!-- ✅ Couleur de déplacement / chemin superposée juste après l'image de tuile -->
+  <div class="tile-overlay"
+    [class.overlay-available-move]="isAvailableMove"
+    [class.overlay-path-highlighted]="isPathHighlighted">
+  </div>
+
+  <img *ngIf="getObjectImage()" [src]="getObjectImage()" class="object-image" alt="Object" />
+
+  <div *ngIf="player" class="player-marker"
+    [ngClass]="{
+      'current-player': player.isCurrentPlayer,
+      'local-player': player.isLocalPlayer
+    }">
+    <img [src]="player.player.avatar" class="avatar-image" alt="Player" />
+  </div>
+</div>

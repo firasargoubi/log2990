@@ -1,0 +1,25 @@
+.board-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.game-board {
+  display: grid;
+  background-color: #ccc;
+  grid-template-columns: repeat(var(--size), 1fr);
+  grid-template-rows: repeat(var(--size), 1fr);
+  width: 650px;  /* Fixed width matching BoardComponent */
+  height: 650px; /* Fixed height matching BoardComponent */
+  gap: 1px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 700px) {
+  .game-board {
+    width: 90vw;
+    height: 90vw;
+  }
+}

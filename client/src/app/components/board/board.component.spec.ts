@@ -11,10 +11,10 @@ import { ErrorService } from '@app/services/error.service';
 import { GameService } from '@app/services/game.service';
 import { BoardService } from '@app/services/board.service';
 import { of, Subject } from 'rxjs';
-import { Tile } from '@app/interfaces/tile';
+import { Tile } from '@common/tile';
 import { Game, GameSize, GameType } from '@common/game.interface';
 import { Coordinates } from '@app/interfaces/coordinates';
-import { MapSize } from '@app/interfaces/map-size';
+import { MapSize } from '@app/Consts/app.constants';
 
 const MAP_SIZE = 10;
 const TILE_VALUE = 12;

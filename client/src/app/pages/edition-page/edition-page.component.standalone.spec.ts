@@ -19,6 +19,7 @@ import { BoardComponent } from '@app/components/board/board.component';
 import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
 import { EDITION_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { BoardService } from '@app/services/board.service';
 
 const routes: Routes = [];
 
@@ -57,6 +58,7 @@ describe('EditionPageComponent Standalone', () => {
     let notificationServiceSpy: jasmine.SpyObj<NotificationService>;
     let objectCounterServiceSpy: jasmine.SpyObj<ObjectCounterService>;
     let validationServiceSpy: jasmine.SpyObj<ValidationService>;
+    let boardServiceSpy: jasmine.SpyObj<BoardService>;
 
     const mockGame: Game = {
         id: '123',
@@ -72,7 +74,8 @@ describe('EditionPageComponent Standalone', () => {
     };
 
     beforeEach(async () => {
-        saveServiceSpy = jasmine.createSpyObj('SaveService', ['alertBoardForVerification', 'saveGame', 'getGameNames'], {
+        boardServiceSpy = jasmine.createSpyObj('BoardService', ['initializeBoard']);
+        saveServiceSpy = jasmine.createSpyObj('SaveService', ['alertBoardForReset', 'alertBoardForVerification', 'saveGame', 'getGameNames'], {
             isSave$: new Subject<boolean>(),
             isReset$: of(false),
             currentStatus: {},
@@ -112,6 +115,7 @@ describe('EditionPageComponent Standalone', () => {
                 { provide: NotificationService, useValue: notificationServiceSpy },
                 { provide: ObjectCounterService, useValue: objectCounterServiceSpy },
                 { provide: ValidationService, useValue: validationServiceSpy },
+                { provide: BoardService, useValue: boardServiceSpy },
                 provideRouter(routes),
             ],
         }).compileComponents();
@@ -167,6 +171,11 @@ describe('EditionPageComponent Standalone', () => {
 
         component.game.mapSize = GameSize.large;
         expect(component.mapSize).toBe(20);
+    });
+
+    it('should return small map size when mapSize is invalid', () => {
+        component.game.mapSize = 'invalid' as GameSize;
+        expect(component.mapSize).toBe(10);
     });
 
     it('should return correct objectNumber based on mapSize', () => {
@@ -327,5 +336,29 @@ describe('EditionPageComponent Standalone', () => {
         expect(imageServiceSpy.captureBoardFromTiles).toHaveBeenCalled();
         expect(saveServiceSpy.saveGame).toHaveBeenCalled();
         expect(component.saveState).toBeTrue();
+    });
+
+    it('should show error notification when saving fails', async () => {
+        validationServiceSpy.validateGame.and.returnValue(true);
+        component.showErrorPopup = false;
+        component.game = mockGame;
+
+        const error = new Error('Test Error');
+        imageServiceSpy.captureBoardFromTiles.and.returnValue(Promise.reject(error));
+
+        await component.saveBoard();
+
+        expect(notificationServiceSpy.showError).toHaveBeenCalledWith('Error saving game: ' + error.message);
+    });
+    it('should reset the game to reference and alert board reset', () => {
+        const initialGame = { ...component.game };
+        component.game.name = 'Modified Name';
+        component.gameReference = initialGame;
+
+        component.resetBoard();
+
+        expect(component.game).toEqual(initialGame);
+        expect(component['boardService'].initializeBoard).toHaveBeenCalledWith(initialGame, component.mapSize);
+        expect(saveServiceSpy.alertBoardForReset).toHaveBeenCalledWith(true);
     });
 });

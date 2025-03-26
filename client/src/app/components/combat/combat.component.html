@@ -1,0 +1,10 @@
+<div>
+    <p>Temps Restant: {{ countDown }} secondes</p>
+    <button (click)="onAttack()" [disabled]="!canAct">Attaquer</button>
+    <button [disabled]="!canAct || !canEscape" (click)="onFlee()">Fuire</button>
+    <p [textContent]="attackDisplay"></p>
+    <p [textContent]="defenceDisplay"></p>
+    <p>PV restant de votre adversaire: {{ this.opponent.life }}</p>
+    <p>Vos PV restant: {{ this.currentPlayer.life }}</p>
+    <p>Le dommage infligé: {{ damage }}</p>
+</div>

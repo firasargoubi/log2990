@@ -1,0 +1,204 @@
+/* Global Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f8f0; /* Light greenish background */
+    color: #333;
+}
+
+/* Main Game Container */
+.game-container {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    gap: 20px;
+}
+
+/* Sidebar Left (Player Info) */
+.sidebar-left {
+    width: 25%;
+    background-color: #e8f5e9; /* Soft green background */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.component-box {
+    background-color: #ffffff;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Avatar and Stats List */
+ul {
+    list-style-type: none;
+}
+
+ul li {
+    margin-bottom: 10px;
+}
+
+ul li strong {
+    color: #4caf50; /* Green for emphasis */
+}
+
+/* Avatar Styling */
+img {
+    border-radius: 50%;
+    border: 2px solid #4caf50;
+}
+
+/* Bonus Section */
+ul li {
+    color: #616161;
+}
+
+ul li strong {
+    font-size: 1rem;
+    color: #4caf50;
+}
+
+/* Sidebar Right (Game Info, Chat, and Buttons) */
+.sidebar-right {
+    width: 30%;
+    background-color: #e8f5e9;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Game Info */
+.app-game-info {
+    background-color: #ffffff;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.app-game-info p {
+    margin-bottom: 10px;
+}
+
+.app-game-info strong {
+    color: #4caf50;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.action-buttons button {
+    padding: 10px;
+    color: rgb(0, 5, 1);
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.action-buttons button:hover {
+    background-color: #388e3c; /* Darker green on hover */
+}
+
+.action-buttons button:active {
+    transform: scale(0.98);
+}
+
+.selected {
+    background-color: #388e3c;
+    color: black;
+}
+
+/* Game Board Section */
+.main-content {
+    width: 40%;
+}
+
+.board-container {
+    width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-size: cover;
+    background-position: center;
+}
+
+/* Chat Section */
+.app-messages {
+    background-color: #ffffff;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+/* Countdown Timer Styling */
+.app-countdown-timer {
+    background-color: #ffffff;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+.app-countdown-timer h4 {
+    color: #4caf50;
+}
+
+/* Background Decorations */
+.game-container {
+    background-size: cover;
+    background-position: center;
+    border-radius: 10px;
+}
+
+/* Small paw print icon for decoration */
+.app-game-info:before,
+.app-messages:before {
+    content: '🐾';
+    font-size: 2rem;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: -1;
+}
+
+/* Responsive Design for Mobile */
+@media (max-width: 768px) {
+    .game-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .sidebar-left,
+    .sidebar-right,
+    .main-content {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .action-buttons button {
+        width: 100%;
+    }
+}
+
+.debug-indicator {
+    background-color: yellow;
+    color: black;
+    padding: 5px;
+    text-align: center;
+    font-weight: bold;
+}

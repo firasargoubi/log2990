@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Tile } from '@app/interfaces/tile';
+import { Tile } from '@common/tile';
 import { TileTypes } from '@app/interfaces/tile-types';
 
 @Injectable({
