@@ -74,26 +74,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 this.router.navigate([PageUrl.Home, { replaceUrl: true }]);
             }
         });
-        this.lobbyService.onTileUpdate().subscribe({
-            next: (data) => {
-                if (this.gameState) {
-                    this.gameState = {
-                        ...this.gameState,
-                        board: data.newGameBoard.map((row) => [...row]),
-                    };
-                }
-            },
-        });
-        this.combatSubscription = this.lobbyService.onCombatUpdate().subscribe((data) => {
-            if (data && data.timeLeft !== undefined) {
-                this.remainingTime = data.timeLeft;
-            }
-        });
-
-        this.lobbyService.onInteraction().subscribe((data) => {
-            this.isInCombat = data.isInCombat;
-            this.lobbyService.updateCombatStatus(this.isInCombat);
-        });
 
         this.lobbyService.onCombatEnded().subscribe(() => {
             this.isInCombat = false;
@@ -106,39 +86,19 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     onActionRequest(tile: Tile) {
-        const isInvalidState = !this.gameState || !this.currentPlayer;
-        const isNotCurrentPlayerTurn = this.gameState.currentPlayer !== this.currentPlayer.id;
-        const isAnimationActive = this.gameState.animation;
-
-        if (isInvalidState || isNotCurrentPlayerTurn || isAnimationActive) {
-            return;
-        }
+        if (!this.isCurrentPlayerTurn() || this.gameState.animation) return;
 
         const action = this.actionService.getActionType(tile, this.gameState);
-        this.handleAction();
-        if (!action) {
-            return;
-        }
+        if (!action) return;
 
         if (action === 'battle') {
-            this.opponent = this.actionService.findOpponent(tile) || null;
-            if (this.opponent) {
-                this.lobbyService.initializeBattle(this.currentPlayer, this.opponent, this.lobbyId);
-                this.lobbyService.onInteraction().subscribe((data) => {
-                    this.isInCombat = data.isInCombat;
-                });
+            const opponent = this.actionService.findOpponent(tile);
+            this.isInCombat = true;
+            this.lobbyService.updateCombatStatus(this.isInCombat);
+            if (opponent) {
+                this.lobbyService.startCombat(this.lobbyId, this.currentPlayer, opponent);
             }
         }
-        this.lobbyService.executeAction(action, tile, this.lobbyId).subscribe({
-            next: (data) => {
-                if (this.gameState?.board) {
-                    this.gameState = {
-                        ...this.gameState,
-                        board: data.newGameBoard.map((row) => [...row]),
-                    };
-                }
-            },
-        });
     }
 
     handleAction() {
@@ -360,13 +320,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                     return;
                 }
                 this.notificationService.showInfo(`${data.fleeingPlayer.name} a fui le combat.`);
-            }),
-
-            this.lobbyService.onAttackEnd().subscribe((data) => {
-                this.isInCombat = data.isInCombat;
-                this.lobbyService.updateCombatStatus(this.isInCombat);
-                this.currentPlayer.life = this.currentPlayer.maxLife;
-                this.notificationService.showInfo(`${this.currentPlayer.name} a fini son combat`);
             }),
 
             this.lobbyService.onGameOver().subscribe((data) => {

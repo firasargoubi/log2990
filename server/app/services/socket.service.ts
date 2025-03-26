@@ -1,6 +1,5 @@
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
-import { GameState } from '@common/game-state';
 import { Game, Tile } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Server as HttpServer } from 'http';
@@ -53,6 +52,7 @@ export class SocketService {
         socket.on('verifyUsername', (data: { lobbyId: string }, callback: (response: { usernames: string[] }) => void) =>
             this.handleVerifyUsername(socket, data, callback),
         );
+
         socket.on('requestStart', (lobbyId: string) => this.handleRequestStart(socket, lobbyId));
         socket.on('endTurn', (data: { lobbyId: string }) => this.handleEndTurn(socket, data));
         socket.on('requestMovement', (data: { lobbyId: string; coordinates: Coordinates[] }) => this.handleRequestMovement(socket, data));
@@ -64,27 +64,9 @@ export class SocketService {
         socket.on('disconnect', () => this.handleDisconnect(socket));
         socket.on('disconnectFromRoom', (lobbyId: string) => this.handleDisconnectFromRoom(socket, lobbyId));
 
-        socket.on('attackAction', (data: { lobbyId: string; attacker: Player; defender: Player }) =>
-            this.handleAttackAction(data.lobbyId, data.attacker, data.defender),
+        socket.on('startBattle', (data: { lobbyId: string; currentPlayer: Player; opponent: Player }) =>
+            this.handleStartBattle(data.lobbyId, data.currentPlayer, data.opponent),
         );
-        socket.on('initializeBattle', (data: { currentPlayer: Player; opponent: Player; lobbyId: string }) =>
-            this.handleBattleInitialization(socket, data.currentPlayer, data.opponent),
-        );
-        socket.on('startBattle', (data: { lobbyId: string; currentPlayer: Player; opponent: Player; time: number }) =>
-            this.handleStartBattle(data.lobbyId, data.currentPlayer, data.opponent, data.time),
-        );
-
-        socket.on('changeTurnEndTimer', (data: { currentPlayer: Player; opponent: Player; playerTurn: string; gameState: GameState }) =>
-            this.handleChangeTurnEnd(data.currentPlayer, data.opponent, data.playerTurn, data.gameState),
-        );
-
-        socket.on('fleeCombat', (data: { lobbyId: string; player: Player }) => {
-            this.handleFlee(data.lobbyId, data.player);
-        });
-
-        socket.on('terminateAttack', (data: { lobbyId: string }) => {
-            this.terminateAttack(data.lobbyId);
-        });
 
         socket.on('attack', (data: { lobbyId: string; attacker: Player; defender: Player }) => {
             this.handleAttackAction(data.lobbyId, data.attacker, data.defender);
@@ -92,10 +74,6 @@ export class SocketService {
 
         socket.on('flee', (data: { lobbyId: string; player: Player }) => {
             this.handleFlee(data.lobbyId, data.player);
-        });
-
-        socket.on('updateCombatTime', (data: { lobbyId: string; timeLeft: number }) => {
-            this.gameSocketHandlerService.updateCombatTime(data.lobbyId, data.timeLeft);
         });
     }
 
@@ -259,16 +237,8 @@ export class SocketService {
         this.disconnectHandlerService.handleDisconnectFromRoom(socket, lobbyId);
     }
 
-    private handleBattleInitialization(socket: Socket, currentPlayer: Player, opponent: Player): void {
-        this.gameSocketHandlerService.initializeBattle(socket, currentPlayer, opponent);
-    }
-
-    private handleStartBattle(lobbyId: string, currentPlayer: Player, opponent: Player, time: number): void {
-        this.gameSocketHandlerService.startBattle(lobbyId, currentPlayer, opponent, time);
-    }
-
-    private handleChangeTurnEnd(currentPlayer: Player, opponent: Player, playerTurn: string, gameState: GameState): void {
-        this.gameSocketHandlerService.changeTurnEnd(currentPlayer, opponent, playerTurn, gameState);
+    private handleStartBattle(lobbyId: string, currentPlayer: Player, opponent: Player): void {
+        this.gameSocketHandlerService.startBattle(lobbyId, currentPlayer, opponent);
     }
 
     private handleAttackAction(lobbyId: string, attacker: Player, defender: Player) {
@@ -277,9 +247,5 @@ export class SocketService {
 
     private handleFlee(lobbyId: string, player: Player) {
         this.gameSocketHandlerService.handleFlee(lobbyId, player);
-    }
-
-    private terminateAttack(lobbyId: string) {
-        this.gameSocketHandlerService.handleTerminateAttack(lobbyId);
     }
 }

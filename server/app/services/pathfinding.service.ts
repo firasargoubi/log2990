@@ -180,6 +180,45 @@ export class PathfindingService {
         return reachable;
     }
 
+    findClosestAvailableSpot(gameState: GameState, startPosition: Coordinates): Coordinates {
+        const occupiedPositions = new Set(gameState.playerPositions.map((pos) => JSON.stringify(pos)));
+        const queue: Coordinates[] = [startPosition];
+        const visited = new Set<string>();
+        visited.add(JSON.stringify(startPosition));
+        let queueStart = 0;
+
+        while (queueStart < queue.length) {
+            const current = queue[queueStart++];
+
+            if (this.isTileValid(current, gameState, occupiedPositions)) {
+                return current;
+            }
+
+            const directions = [
+                { x: -1, y: 0 },
+                { x: 1, y: 0 },
+                { x: 0, y: -1 },
+                { x: 0, y: 1 },
+            ];
+
+            for (const dir of directions) {
+                const neighbor = {
+                    x: current.x + dir.x,
+                    y: current.y + dir.y,
+                };
+
+                if (this.isWithinBounds(neighbor, gameState.board)) {
+                    const neighborKey = JSON.stringify(neighbor);
+                    if (!visited.has(neighborKey)) {
+                        visited.add(neighborKey);
+                        queue.push(neighbor);
+                    }
+                }
+            }
+        }
+        return { x: -1, y: -1 };
+    }
+
     private getTileCost(tileType: number): number {
         switch (tileType) {
             case TileTypes.Ice:
@@ -250,5 +289,17 @@ export class PathfindingService {
             return a.cost - b.cost;
         }
         return a.distance - b.distance;
+    }
+
+    private isTileValid(tile: Coordinates, gameState: GameState, occupiedPositions: Set<string>): boolean {
+        const isOccupiedByPlayer = occupiedPositions.has(JSON.stringify(tile));
+        const isGrassTile = gameState.board[tile.x]?.[tile.y] === 0; // Example: 0 represents a valid grass tile
+        return !isOccupiedByPlayer && isGrassTile;
+    }
+
+    private isWithinBounds(tile: Coordinates, board: number[][]): boolean {
+        if (tile.y < 0 || tile.y >= board.length) return false;
+        const row = board[tile.y];
+        return tile.x >= 0 && tile.x < row.length;
     }
 }

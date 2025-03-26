@@ -1,14 +1,10 @@
-/* eslint-disable max-lines */
-/* eslint-disable no-dupe-class-members */
 import { Injectable } from '@angular/core';
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
 import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
-import { Tile } from '@common/tile';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { shareReplay as rxjsShareReplay } from 'rxjs/operators';
 import { io, Socket } from 'socket.io-client';
 import { environment } from 'src/environments/environment';
 
@@ -228,136 +224,8 @@ export class LobbyService {
             });
         });
     }
-
-    executeAction(action: string, tile: Tile, lobbyId: string): Observable<{ newGameBoard: number[][] }> {
-        return new Observable<{ newGameBoard: number[][] }>((observer) => {
-            // Attente de la mise à jour de la tuile
-            this.socket.once('tileUpdated', (data: { newGameBoard: number[][] }) => {
-                observer.next(data);
-                observer.complete();
-            });
-
-            // Émission de l'action au serveur
-            this.socket.emit(action, { tile, lobbyId });
-        });
-    }
-
-    initializeBattle(currentPlayer: Player, opponent: Player, lobbyId: string) {
-        this.socket.emit('initializeBattle', { currentPlayer, opponent, lobbyId });
-    }
-
-    onInteraction(): Observable<{ isInCombat: boolean }> {
-        return new Observable<{ isInCombat: boolean }>((observer) => {
-            this.socket.on('playersBattling', (data: { isInCombat: boolean }) => {
-                observer.next(data);
-            });
-        }).pipe(shareReplay(1));
-    }
-
-    getPlayerTurn(): Observable<{ playerTurn: string; countDown: number }> {
-        return new Observable<{ playerTurn: string; countDown: number }>((observer) => {
-            this.socket.on('PlayerTurn', (data: { playerTurn: string; countDown: number }) => {
-                observer.next(data);
-                observer.complete();
-            });
-        });
-    }
-
-    getPlayerSwitch(): Observable<{ newPlayerTurn: string; countDown: number }> {
-        return new Observable((observer) => {
-            this.socket.on('PlayerSwitch', (data: { newPlayerTurn: string; countDown: number }) => {
-                observer.next(data);
-            });
-        });
-    }
-
-    changeTurnEnd(currentPlayer: Player, opponent: Player, playerTurn: string, gameState: GameState) {
-        this.socket.emit('changeTurnEndTimer', { currentPlayer, opponent, playerTurn, gameState });
-    }
-
-    handleAttack(currentPlayer: Player, opponent: Player, lobbyId: string, gameState: GameState) {
-        this.socket.emit('startBattle', { currentPlayer, opponent, lobbyId, gameState });
-    }
-
-    onTileUpdate(): Observable<{ newGameBoard: number[][] }> {
-        return new Observable<{ newGameBoard: number[][] }>((observer) => {
-            this.socket.on('tileUpdated', (data: { newGameBoard: number[][] }) => {
-                observer.next(data);
-            });
-        });
-    }
-
-    updateCountdown(time: number): void {
-        this.socket.emit('updateCountdown(time)', { time }); // Calls the updateCountdown method in SocketService
-    }
-
     handleDefeat(player: Player, lobbyId: string) {
         this.socket.emit('playerDefeated', { player, lobbyId });
-    }
-
-    newSpawnPoints(): Observable<{ player: Player; newSpawn: Coordinates }> {
-        return new Observable<{ player: Player; newSpawn: Coordinates }>((observer) => {
-            this.socket.on('changedSpawnPoint', (data: { player: Player; newSpawn: Coordinates }) => {
-                observer.next(data);
-            });
-        });
-    }
-
-    attackAction(lobbyId: string, opponent: Player, damage: number, opponentLife: number) {
-        this.socket.emit('attackAction', { lobbyId, opponent, damage, opponentLife });
-    }
-
-    updateHealth(): Observable<{ player: Player; remainingHealth: number }> {
-        return new Observable<{ player: Player; remainingHealth: number }>((observer) => {
-            this.socket.on('update-health', (data: { player: Player; remainingHealth: number }) => {
-                observer.next(data);
-                observer.complete();
-            });
-        });
-    }
-
-    terminateAttack(lobbyId: string) {
-        this.socket.emit('terminateAttack', { lobbyId });
-    }
-
-    onAttackEnd(): Observable<{ isInCombat: boolean }> {
-        return new Observable((observer) => {
-            this.socket.on('attackEnd', (data: { isInCombat: boolean }) => {
-                observer.next(data);
-            });
-        });
-    }
-
-    onCombatUpdate(): Observable<{ timeLeft: number }> {
-        return new Observable((observer) => {
-            this.socket.on('combatUpdate', (data) => {
-                observer.next(data); // Envoie le temps restant
-            });
-        });
-    }
-
-    getCombatUpdate(): Observable<{ players: Player[] }> {
-        return new Observable((observer) => {
-            this.socket.on('combatPlayersUpdate', (data) => {
-                observer.next(data); // Sends the updated player states
-            });
-        });
-    }
-
-    performAttack(lobbyId: string, attackerId: string, defenderId: string): void {
-        this.socket.emit('performAttack', { lobbyId, attackerId, defenderId });
-    }
-
-    getAttackResult(): Observable<unknown> {
-        return new Observable((observer) => {
-            this.socket.on('attackResult', (data: unknown) => {
-                observer.next(data);
-            });
-        });
-    }
-
-    updateCombatTime(timeLeft: number): void {
-        this.socket.emit('combatUpdate', { timeLeft });
     }
 
     updateCombatStatus(isInCombat: boolean): void {
@@ -390,8 +258,8 @@ export class LobbyService {
         });
     }
 
-    startCombat(lobbyId: string, currentPlayer: Player, opponent: Player, time: number): void {
-        this.socket.emit('startBattle', { lobbyId, currentPlayer, opponent, time });
+    startCombat(lobbyId: string, currentPlayer: Player, opponent: Player): void {
+        this.socket.emit('startBattle', { lobbyId, currentPlayer, opponent });
     }
 
     onStartCombat(): Observable<{ firstPlayer: Player }> {
@@ -425,8 +293,6 @@ export class LobbyService {
             });
         });
     }
-
-    // Listen for failed flee attempts
     onFleeFailure(): Observable<{ fleeingPlayer: Player }> {
         return new Observable((observer) => {
             this.socket.on('fleeFailure', (data) => {
@@ -434,7 +300,4 @@ export class LobbyService {
             });
         });
     }
-}
-function shareReplay<T>(bufferSize: number): import('rxjs').OperatorFunction<T, T> {
-    return rxjsShareReplay(bufferSize);
 }

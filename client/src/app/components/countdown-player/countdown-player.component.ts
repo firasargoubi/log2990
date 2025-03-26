@@ -74,6 +74,5 @@ export class CountdownPlayerComponent implements OnInit, OnDestroy {
             clearInterval(this.interval);
             this.interval = null;
         }
-        this.lobbyService.updateCombatTime(this.remainingTime);
     }
 }

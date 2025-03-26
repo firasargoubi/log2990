@@ -1,4 +1,4 @@
-import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
+import { gameSocketMessages } from '@app/constants/game-socket-handler-const';
 import { Coordinates } from '@common/coordinates';
 import { GameEvents } from '@common/events';
 import { GameLobby } from '@common/game-lobby';
@@ -9,23 +9,24 @@ import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
 import { BoardService } from './board.service';
 import { LobbySocketHandlerService } from './lobby-socket-handler.service';
+import { PathfindingService } from './pathfinding.service';
 
 const ANIMATION_DELAY_MS = 150;
 const MAX_WIN_COUNT = 3;
 const FLEE_RATE_PERCENT = 30;
 const D4_VALUE = 4;
 const D6_VALUE = 6;
-const MAX_ESCAPE_ATTEMPTS = 2;
+// const MAX_ESCAPE_ATTEMPTS = 2;
 const MAX_FLEE = 100;
 @Service()
 export class GameSocketHandlerService {
     private io: Server;
-    // private combatTimes: Map<string, number> = new Map<string, number>();
     constructor(
         private lobbies: Map<string, GameLobby>,
         private gameStates: Map<string, GameState>,
         private boardService: BoardService,
         private lobbySocketHandlerService: LobbySocketHandlerService,
+        private pathfindingService: PathfindingService,
     ) {}
     setServer(server: Server) {
         this.io = server;
@@ -179,12 +180,7 @@ export class GameSocketHandlerService {
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
     }
 
-    initializeBattle(socket: Socket, currentPlayer: Player, opponent: Player) {
-        this.io.to(currentPlayer.id).to(opponent.id).emit(GameEvents.PlayersBattling, { isInCombat: true });
-    }
-
-    // eslint-disable-next-line no-unused-vars
-    startBattle(lobbyId: string, currentPlayer: Player, opponent: Player, time: number) {
+    startBattle(lobbyId: string, currentPlayer: Player, opponent: Player) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
 
@@ -203,23 +199,7 @@ export class GameSocketHandlerService {
         } else if (opponent.speed === currentPlayer.speed) {
             firstPlayer = currentPlayer;
         }
-
-        this.io.to(lobbyId).emit('combatPlayersUpdate', { players: gameState.players });
         this.io.to(currentPlayer.id).to(opponent.id).emit('startCombat', { firstPlayer });
-    }
-
-    changeTurnEnd(currentPlayer: Player, opponent: Player, playerTurn: string, gameState: GameState) {
-        const player = gameState.players.find((p) => p.id === playerTurn);
-        const newPlayerTurn = player.id === currentPlayer.id ? opponent.id : currentPlayer.id;
-        const newPlayer = gameState.players.find((p) => p.id === newPlayerTurn);
-        const countDown = newPlayer.amountEscape === MAX_ESCAPE_ATTEMPTS ? GameSocketConstants.EscapeCountdown : GameSocketConstants.DefaultCountdown;
-
-        this.io.to(currentPlayer.id).to(opponent.id).emit(GameEvents.PlayerSwitch, {
-            newPlayerTurn,
-            countDown,
-            attackerId: newPlayerTurn,
-            defenderId: playerTurn,
-        });
     }
 
     handlePlayersUpdate(socket: Socket, lobbyId: string, players: Player[]) {
@@ -262,43 +242,7 @@ export class GameSocketHandlerService {
         let newSpawn = originalSpawn;
 
         if (!isInSpawnPoints && occupiedPositions.has(JSON.stringify(originalSpawn))) {
-            const queue: Coordinates[] = [originalSpawn];
-            const visited = new Set<string>();
-            visited.add(JSON.stringify(originalSpawn));
-            let queueStart = 0;
-            let found = false;
-
-            while (queueStart < queue.length && !found) {
-                const current = queue[queueStart++];
-
-                if (isTileValid(current, gameState, occupiedPositions)) {
-                    newSpawn = current;
-                    found = true;
-                    break;
-                }
-
-                const directions = [
-                    { x: -1, y: 0 },
-                    { x: 1, y: 0 },
-                    { x: 0, y: -1 },
-                    { x: 0, y: 1 },
-                ];
-
-                for (const dir of directions) {
-                    const neighbor = {
-                        x: current.x + dir.x,
-                        y: current.y + dir.y,
-                    };
-
-                    if (isWithinBounds(neighbor, gameState.board)) {
-                        const neighborKey = JSON.stringify(neighbor);
-                        if (!visited.has(neighborKey)) {
-                            visited.add(neighborKey);
-                            queue.push(neighbor);
-                        }
-                    }
-                }
-            }
+            newSpawn = this.pathfindingService.findClosestAvailableSpot(gameState, originalSpawn);
         }
 
         winner.life = winner.maxLife;
@@ -345,15 +289,12 @@ export class GameSocketHandlerService {
         if (attackerIndex === -1 || defenderIndex === -1) {
             return;
         }
-        let attackDice;
-        let defenseDice;
+        let attackDice = Math.floor(Math.random() * this.getDiceValue(attacker.bonus.attack)) + 1;
+        let defenseDice = Math.floor(Math.random() * this.getDiceValue(defender.bonus.defense)) + 1;
 
         if (gameState.debug) {
             attackDice = attacker.attack;
-            defenseDice = defender.defense;
-        } else {
-            attackDice = Math.floor(Math.random() * this.getDiceValue(attacker.bonus.attack)) + 1;
-            defenseDice = Math.floor(Math.random() * this.getDiceValue(defender.bonus.defense)) + 1;
+            defenseDice = 1;
         }
 
         if (this.isPlayerOnIceTile(gameState, attacker)) {
@@ -423,25 +364,6 @@ export class GameSocketHandlerService {
         }
 
         this.gameStates.set(lobbyId, gameState);
-        this.updateCombatPlayers(lobbyId);
-    }
-
-    handleTerminateAttack(lobbyId: string) {
-        const isInCombat = false;
-        this.io.to(lobbyId).emit(GameEvents.AttackEnd, { isInCombat });
-    }
-
-    updateCombatTime(lobbyId: string, timeLeft: number): void {
-        this.io.to(lobbyId).emit('combatUpdate', { timeLeft });
-    }
-
-    updateCombatPlayers(lobbyId: string): void {
-        const gameState = this.gameStates.get(lobbyId);
-        if (!gameState) return;
-
-        this.io.to(lobbyId).emit('combatPlayersUpdate', {
-            players: gameState.players,
-        });
     }
 
     private getDiceValue(playerDice: string): number {
@@ -470,14 +392,4 @@ export class GameSocketHandlerService {
         const tile = gameState.board[position.x][position.y];
         return tile === TileTypes.Ice;
     }
-}
-export function isTileValid(tile: Coordinates, gameState: GameState, occupiedPositions: Set<string>): boolean {
-    const isOccupiedByPlayer = occupiedPositions.has(JSON.stringify(tile));
-    const isGrassTile = gameState.board[tile.x]?.[tile.y] === 0;
-    return !isOccupiedByPlayer && isGrassTile;
-}
-export function isWithinBounds(tile: Coordinates, board: number[][]): boolean {
-    if (tile.y < 0 || tile.y >= board.length) return false;
-    const row = board[tile.y];
-    return tile.x >= 0 && tile.x < row.length;
 }
