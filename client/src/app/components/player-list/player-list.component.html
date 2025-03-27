@@ -1,0 +1,3 @@
+@for (player of players; track $index) {
+<app-player-card [player]="player" [currentPlayer]="currentPlayer" [hostId]="hostId" (remove)="remove($event)"></app-player-card>
+}

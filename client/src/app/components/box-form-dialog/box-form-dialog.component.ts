@@ -1,16 +1,18 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Inject } from '@angular/core';
+import { Component, inject, Inject, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
+import { CREATE_PAGE_CONSTANTS, GAME_IMAGES, MAIN_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 import { PageUrl } from '@app/Consts/route-constants';
-import { Game } from '@common/game.interface';
 import { GameService } from '@app/services/game.service';
+import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
-import { CREATE_PAGE_CONSTANTS, GAME_IMAGES } from '@app/Consts/app.constants';
+import { Game } from '@common/game.interface';
+import { Player } from '@common/player';
+import { Subscription } from 'rxjs';
 
 const DEFAULT_STAT_VALUE = 4;
-const SIX_VALUE_DICE = 6;
 
 @Component({
     selector: 'app-box-form-dialog',
@@ -18,9 +20,10 @@ const SIX_VALUE_DICE = 6;
     styleUrls: ['./box-form-dialog.component.scss'],
     imports: [CommonModule, RouterModule],
 })
-export class BoxFormDialogComponent {
+export class BoxFormDialogComponent implements OnDestroy {
     form: FormGroup;
     gameList: Game[] = [];
+    lobbyService = inject(LobbyService);
     avatars = [
         GAME_IMAGES.fawn,
         GAME_IMAGES.bear,
@@ -39,20 +42,27 @@ export class BoxFormDialogComponent {
     formValid$: boolean = false;
     attributeClicked$: boolean = false;
     diceClicked$: boolean = false;
+    increasedAttribute: string | null = null;
+    diceAttribute: string | null = null;
+    private subscriptions: Subscription[] = [];
 
     private notificationService = inject(NotificationService);
     private router = inject(Router);
 
     constructor(
         public dialogRef: MatDialogRef<BoxFormDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: { boxId: string; game: Game; gameList: Game[] },
+        @Inject(MAT_DIALOG_DATA) public data: { boxId: string; game: Game; gameList: Game[]; lobbyId: string; isJoining: boolean },
         private gameService: GameService,
     ) {
         this.loadGames();
 
+        this.lobbyService.verifyAvatars(this.data.lobbyId).subscribe((response: { avatars: string[] }) => {
+            this.avatars = this.avatars.filter((a) => !response.avatars.includes(a));
+        });
+
         this.form = new FormGroup({
             name: new FormControl('New Player', [Validators.required]),
-            avatar: new FormControl(this.avatars[0], [Validators.required]),
+            avatar: new FormControl(null, [Validators.required]),
             life: new FormControl(DEFAULT_STAT_VALUE, [Validators.min(0)]),
             speed: new FormControl(DEFAULT_STAT_VALUE, [Validators.min(0)]),
             attack: new FormControl(DEFAULT_STAT_VALUE, [Validators.min(0)]),
@@ -62,10 +72,34 @@ export class BoxFormDialogComponent {
         this.form.statusChanges.subscribe(() => {
             this.formValid$ = this.form.valid;
         });
+
+        this.subscriptions.push(
+            this.lobbyService.onLobbyUpdated().subscribe({
+                next: (socketData) => {
+                    if (socketData.lobby.id === this.data.lobbyId) {
+                        this.dialogRef.close();
+                        const playerId = this.lobbyService.getSocketId();
+                        this.router.navigate([`${PageUrl.Waiting}/${socketData.lobby.id}/${playerId}`], { replaceUrl: true });
+                    }
+                },
+            }),
+        );
+
+        this.subscriptions.push(
+            this.lobbyService.onError().subscribe({
+                next: (error) => {
+                    this.notificationService.showError(error);
+                },
+            }),
+        );
     }
 
-    get gameExists(): boolean {
-        return this.gameList.some((game) => game.id === this.data.game.id);
+    get isFormComplete(): boolean {
+        return this.form.valid && !!this.increasedAttribute && !!this.diceAttribute;
+    }
+
+    ngOnDestroy(): void {
+        this.subscriptions.forEach((sub) => sub.unsubscribe());
     }
 
     closeDialog(): void {
@@ -83,26 +117,52 @@ export class BoxFormDialogComponent {
     }
 
     inputName(event: Event): void {
-        const inputName = (event.target as HTMLInputElement).value;
+        const inputName = (event.target as HTMLInputElement).value.trim();
+
+        if (inputName.length === 0) {
+            this.form.get('name')?.setErrors({ whitespace: true });
+        } else {
+            this.form.get('name')?.setErrors(null);
+        }
         this.form.get('name')?.setValue(inputName);
     }
 
     increase(attribute: string): void {
         if (!this.attributeClicked$) {
-            const formControl = this.form.get(attribute);
-            const currentValue = formControl?.value;
-            formControl?.setValue(currentValue + 2);
             this.attributeClicked$ = true;
+            this.increasedAttribute = attribute;
+
+            const currentValue = this.form.get(attribute)?.value;
+
+            if (currentValue !== undefined) {
+                const newValue = currentValue + 2;
+                this.form.get(attribute)?.setValue(newValue);
+            }
         }
     }
 
     pickDice(attribute: string): void {
-        const opposite = attribute === 'attack' ? 'defense' : 'attack';
-        this.form.get(attribute)?.setValue(SIX_VALUE_DICE);
-        this.form.get(opposite)?.setValue(DEFAULT_STAT_VALUE);
         this.diceClicked$ = true;
+        this.diceAttribute = attribute;
+
+        const currentValue = this.form.get(attribute)?.value;
+
+        if (currentValue !== undefined) {
+            const newValue = currentValue + 2;
+            this.form.get(attribute)?.setValue(newValue);
+        }
     }
 
+    isRoomLocked(): boolean {
+        let isLocked = false;
+        this.lobbyService.getLobby(this.data.lobbyId).subscribe((lobby) => {
+            if (lobby.maxPlayers - 1 === lobby.players.length) {
+                this.lobbyService.lockLobby(this.data.lobbyId);
+                isLocked = true;
+            }
+        });
+        return isLocked;
+    }
     resetAttributes(): void {
         this.form.patchValue({
             life: DEFAULT_STAT_VALUE,
@@ -112,25 +172,112 @@ export class BoxFormDialogComponent {
         });
         this.attributeClicked$ = false;
         this.diceClicked$ = false;
+        this.formValid$ = false;
     }
 
-    linkRoute(): void {
-        if (!(this.form.get('name')?.value === 'New Player')) {
-            this.router.navigate([PageUrl.Waiting]);
+    onSubmit(event: Event): void {
+        event.preventDefault();
+        if (this.isFormComplete) {
+            this.save();
+        } else {
+            this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorMissingBonuses);
         }
     }
 
     save(): void {
+        if (this.data.isJoining) {
+            this.saveJoin();
+        } else {
+            this.saveCreate();
+        }
+    }
+
+    saveJoin(): void {
         this.form.updateValueAndValidity();
+        if (!this.increasedAttribute || !this.diceAttribute) {
+            this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorEmptyBonuses);
+            return;
+        }
+        if (this.form.valid) {
+            this.lobbyService.verifyUsername(this.data.lobbyId).subscribe((response: { usernames: string[] }) => {
+                const basePlayerData = this.getPlayerData();
+                const baseName = basePlayerData.name;
+                let uniqueName = baseName.trim();
+                let counter = 2;
+                while (response.usernames.includes(uniqueName)) {
+                    uniqueName = `${baseName}-${counter}`;
+                    counter++;
+                }
+                basePlayerData.name = uniqueName;
+
+                if (this.isRoomLocked()) {
+                    this.notificationService.showError(MAIN_PAGE_CONSTANTS.errorLockedLobbyMessage);
+                    return;
+                } else {
+                    this.lobbyService.joinLobby(this.data.lobbyId, basePlayerData);
+                }
+            });
+        }
+    }
+
+    saveCreate(): void {
+        this.form.updateValueAndValidity();
+        if (!this.increasedAttribute || !this.diceAttribute) {
+            this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorEmptyBonuses);
+            return;
+        }
         const gameExists = this.gameList.some((game) => game.id === this.data.game.id);
         if (!gameExists || !this.data.game.isVisible) {
             this.notificationService.showError(CREATE_PAGE_CONSTANTS.errorGameDeleted);
             return;
         }
         if (this.form.valid) {
-            localStorage.setItem('form', JSON.stringify(this.form.value));
-            this.linkRoute();
+            const playerData = this.getPlayerData();
+            playerData.name = this.form.value.name.trim();
+            this.lobbyService.joinLobby(this.data.lobbyId, playerData);
         }
+    }
+
+    private buildBonus(): { life?: number; speed?: number; attack?: 'D4' | 'D6'; defense?: 'D4' | 'D6' } {
+        const bonus: { life?: number; speed?: number; attack?: 'D4' | 'D6'; defense?: 'D4' | 'D6' } = {};
+        if (this.increasedAttribute === 'life') {
+            bonus.life = 2;
+        } else if (this.increasedAttribute === 'speed') {
+            bonus.speed = 2;
+        }
+        if (!this.diceAttribute) {
+            if (this.increasedAttribute === 'attack') {
+                bonus.attack = 'D4';
+            } else if (this.increasedAttribute === 'defense') {
+                bonus.defense = 'D4';
+            }
+        }
+        if (this.diceAttribute === 'attack') {
+            bonus.attack = 'D6';
+            bonus.defense = 'D4';
+        } else if (this.diceAttribute === 'defense') {
+            bonus.defense = 'D6';
+            bonus.attack = 'D4';
+        }
+        return bonus;
+    }
+
+    private getPlayerData(): Player {
+        const formData = this.form.value;
+        const bonus = this.buildBonus();
+        return {
+            id: '',
+            name: formData.name.trim(),
+            avatar: formData.avatar,
+            isHost: false,
+            life: formData.life,
+            maxLife: formData.life,
+            speed: formData.speed,
+            attack: formData.attack,
+            defense: formData.defense,
+            bonus,
+            winCount: 0,
+        };
     }
 
     private loadGames(): void {

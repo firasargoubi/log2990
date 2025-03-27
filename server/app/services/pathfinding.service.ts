@@ -1,24 +1,9 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-import { Service } from 'typedi';
-import { GameState } from '@common/game-state';
+import { Node, PathContext } from '@app/interface/pathfinding-interfaces';
 import { Coordinates } from '@common/coordinates';
+import { GameState } from '@common/game-state';
 import { TileTypes } from '@common/game.interface';
-
-interface Node {
-    x: number;
-    y: number;
-    cost: number;
-    distance: number;
-    parent: Node | null;
-}
-
-interface PathContext {
-    gameState: GameState;
-    current: Node;
-    visitedMap: Map<string, { cost: number; distance: number }>;
-    openSet: Node[];
-    maxMovementPoints: number;
-}
+import { Service } from 'typedi';
 
 @Service()
 export class PathfindingService {

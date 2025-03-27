@@ -13,9 +13,12 @@ export interface GameState {
     playerPositions: Coordinates[];
     spawnPoints: Coordinates[];
     currentPlayerMovementPoints: number;
+    currentPlayerActionPoints: number;
     combat?: {
         playerId: string;
         isActive: boolean;
         endTime: Date;
     };
+    debug: boolean;
+    animation?: boolean;
 }

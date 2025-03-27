@@ -1,5 +1,5 @@
-import { Player } from '@common/player';
 import { Coordinates } from '@common/coordinates';
+import { Player } from '@common/player';
 
 export interface GameState {
     id: string;

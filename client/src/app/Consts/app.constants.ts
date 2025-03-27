@@ -16,7 +16,7 @@ export enum ObjectsTypes {
     RANDOM = 7,
 }
 
-export { GameType, GameSize };
+export { GameSize, GameType };
 
 export enum TileTypes {
     Grass = 1,
@@ -52,6 +52,9 @@ export const PULLING_INTERVAL = 5000;
 export const WANTED_TILE_PERCENTAGE = 0.5;
 export const OBJECT_MULTIPLIER = 10;
 export const RIGHT_CLICK = 2;
+export const TIMEOUT_START_COMBAT = 1000;
+export const TURN_START_TIME = 30;
+export const PAD_TIME_VALUE = 10;
 
 export const GAME_CARD_CONSTANTS = {
     successDeleteMessage: 'Jeu supprimé avec succès',
@@ -60,6 +63,12 @@ export const GAME_CARD_CONSTANTS = {
     errorVisibilityMessage: 'Impossible de modifier la visibilité',
 };
 
+export const MAIN_PAGE_CONSTANTS = {
+    successJoinMessage: 'Salle Rejointe',
+    errorFullLobbyMessage: 'La salle est pleine',
+    errorLockedLobbyMessage: 'La salle est verrouillée',
+    errorJoinMessage: 'Impossible de rejoindre la salle',
+};
 export const ADMIN_PAGE_CONSTANTS = {
     successFetchMessage: 'Jeux chargés avec succès',
     errorFetchMessage: 'Chargement des jeux impossible, réessayez plus tard.',
@@ -78,6 +87,9 @@ export const CREATE_PAGE_CONSTANTS = {
     errorRefreshGames: 'Erreur lors du rafraîchissement des jeux',
     errorLoadingGames: 'Erreur lors du chargement des jeux',
     errorGameDeleted: 'Ce jeu a été supprimé ou sa visibilité a changéee entre temps, Veuillez choisir un autre jeu.',
+    errorLobbyCreation: 'Impossible de créer le lobby',
+    errorMissingBonuses: 'Veuillez attribuer le bonus de +2 pour la vie ou la vitesse et le bonus de dé (6 faces) pour l’attaque ou la défense.',
+    errorEmptyBonuses: 'Veuillez remplir toutes les conditions de bonus.',
 };
 
 export const EDITION_PAGE_CONSTANTS = {
@@ -91,6 +103,12 @@ export const EDITION_PAGE_CONSTANTS = {
     successGameLoaded: 'Jeu chargé avec succès.',
     errorGameLoad: 'Impossible de charger le jeu.',
     successGameSaved: 'Jeu sauvegardé avec succès.',
+};
+export const WAITING_PAGE_CONSTANTS = {
+    gameLocked: 'La partie est verrouillée',
+    errorStartGame: 'Impossible de démarrer la partie',
+    errorPlayerKicked: "Vous avez été expulsé par l'administrateur",
+    lobbyCancelled: 'La partie a été annulée',
 };
 
 export const GAME_IMAGES = {
@@ -171,4 +189,37 @@ export const OBJECTS_DESCRIPTION = {
     vortex: "Cet objet indique l'endroit où une bataille épique est sur le point d'avoir lieu",
     gnome: 'Ce petit gnome farceur a un cadeau pour vous. À vos risque et périls...',
     undefined: 'Objet inconnu',
+};
+
+export const PLAYING_PAGE = {
+    debugKey: 'd',
+    lobbyIdParam: 'id',
+    homeRoute: '/home',
+    defaultActionPoints: 1,
+};
+
+export const PLAYING_PAGE_DESCRIPTION = {
+    combatFlee: 'Vous avez fuit le combat.',
+    endCombat: 'a fini son combat',
+    gameName: 'Forest Adventure',
+    yourTurn: "C'est votre tour!",
+    turnOff: "C'est le tour de",
+    fleeYou: 'Vous avez fui le combat.',
+    hasFled: 'a fui le combat.',
+    hasFinishedCombat: 'a fini son combat',
+};
+
+export const DELAY_COUNTDOWN = 1000;
+
+export const WAITING_PAGE = {
+    lobbyIdParam: 'id',
+    playerIdParam: 'playerId',
+
+    defaultPlayerId: '0000',
+    defaultPlayerName: 'Unknown',
+    defaultHostId: '0000',
+
+    lobbyCancelled: "La partie a été annulée, l'hôte a quitté le lobby.",
+    gameLocked: 'La partie est désormais verrouillée.',
+    errorStartGame: 'Impossible de démarrer la partie. Veuillez réessayer.',
 };

@@ -1,0 +1,15 @@
+<div class="board-container">
+  <div class="game-board" [style.--size]="tiles.length">
+    @for (row of tiles; track $index;) { @for (tile of row; track $index;) {
+          <app-game-tile
+        [tile]="tile"
+        [isAvailableMove]="isAvailableMove(tile.x, tile.y)"
+        [isPathHighlighted]="isOnHighlightedPath(tile.x, tile.y)"
+        [player]="getPlayerAtPosition(tile.x, tile.y)"
+        (tileClick)="onTileClick(tile)"
+        (contextmenu)="onTileRightClick($event,tile)"
+        (mouseenter)="onTileHover(tile)"
+        (mouseleave)="onTileLeave()"
+      ></app-game-tile>
+        }}
+</div>

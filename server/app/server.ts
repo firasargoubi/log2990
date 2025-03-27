@@ -1,11 +1,11 @@
 import { Application } from '@app/app';
 import { SocketService } from '@app/services/socket.service';
 import { GameLobby } from '@common/game-lobby';
+import { GameState } from '@common/game-state';
 import * as http from 'http';
 import mongoose from 'mongoose';
 import { AddressInfo } from 'net';
 import { Service } from 'typedi';
-import { GameState } from '@common/game-state';
 import { BoardService } from './services/board.service';
 import { DisconnectHandlerService } from './services/disconnect-handler.service';
 import { GameSocketHandlerService } from './services/game-socket-handler.service';
@@ -41,7 +41,7 @@ export class Server {
         const lobbyHandler = new LobbySocketHandlerService(lobbyMap);
         const gameHandler = new GameSocketHandlerService(lobbyMap, gameStateMap, boardService, lobbyHandler);
         const validationHandler = new ValidationSocketHandlerService(lobbyMap);
-        const disconnectHandler = new DisconnectHandlerService(lobbyMap, gameStateMap, gameHandler, lobbyHandler, boardService);
+        const disconnectHandler = new DisconnectHandlerService(lobbyMap, lobbyHandler);
         this.socketManager = new SocketService(this.server, lobbyHandler, gameHandler, validationHandler, disconnectHandler);
         this.socketManager.init();
 

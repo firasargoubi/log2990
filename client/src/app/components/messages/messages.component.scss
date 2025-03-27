@@ -1,0 +1,33 @@
+.tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 10px;
+}
+
+button {
+    padding: 10px;
+    cursor: pointer;
+    border: none;
+    background-color: #f0f0f0;
+}
+
+button.active {
+    background-color: #cce7ff;
+}
+
+.chat-tab,
+.event-log-tab {
+    margin: 10px 0;
+}
+
+.chat-messages,
+.event-log {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+}
