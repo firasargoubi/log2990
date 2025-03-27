@@ -21,8 +21,7 @@ body {
 form {
     max-width: 600px;
     margin: 0 auto;
-    background-color: rgba(255, 255, 255, 0.9);
-    background-image: linear-gradient(to bottom, #507d2a, rgba(216, 225, 195, 0.7));
+    background-color: #b8d58b;
     padding: 20px;
     box-shadow: 0 4px 12px rgba(21, 36, 17, 0.3);
     border: 3px solid var(--forest-green);
@@ -37,7 +36,7 @@ form::before {
     left: 0;
     right: 0;
     height: 6px;
-    background: linear-gradient(to right, var(--forest-green), var(--leaf-green), var(--forest-green));
+    background: #b8d58b;
 }
 
 h2 {
@@ -55,16 +54,19 @@ label {
     color: var(--forest-green);
     margin-bottom: 8px;
     display: block;
+    text-align: center;
 }
 
 input[type='text'] {
     width: 100%;
+    max-width: 550px;
     padding: 10px 12px;
     border: 2px solid var(--leaf-green);
     border-radius: 8px;
     background-color: rgba(255, 255, 255, 0.8);
     font-size: 16px;
-    margin-bottom: 15px;
+    margin: 0 auto 15px;
+    display: block;
     transition: all 0.3s ease;
 }
 
@@ -93,7 +95,7 @@ input[type='text']:focus {
     margin-top: 10px;
     padding: 10px;
     border-radius: 8px;
-    background-color: rgba(216, 225, 195, 0.4);
+    background-color: #b8d58b;
 }
 
 .avatars img {
@@ -137,7 +139,7 @@ input[type='text']:focus {
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(to right, var(--leaf-green), var(--sun-yellow), var(--leaf-green));
+    background: #b8d58b;
 }
 
 .description1 label,
@@ -212,12 +214,11 @@ button#defense {
 .summary {
     display: flex;
     justify-content: space-around;
-    background-color: rgba(80, 125, 42, 0.2);
+    background-color: #b8d58b;
     padding: 15px;
     border-radius: 8px;
     margin: 20px 0;
     border: 1px solid var(--leaf-green);
-    background-image: linear-gradient(to bottom, rgba(216, 225, 195, 0.4), rgba(80, 125, 42, 0.2));
 }
 
 .summary p {
@@ -251,21 +252,21 @@ button#defense {
 }
 
 .actions button:first-child {
-    background-color: #567d32;
+    background-color: #4a7c59; /* Moss green for Reinitialized */
     color: white;
-    border-bottom: 3px solid #3a5723;
+    border-bottom: 3px solid #365c43;
 }
 
 .actions button:nth-child(2) {
-    background-color: #567d32;
+    background-color: #8b4513; /* Saddle brown for Cancel */
     color: white;
-    border-bottom: 3px solid #3a5723;
+    border-bottom: 3px solid #5d2e0d;
 }
 
 .actions button:last-child {
-    background-color: #567d32;
+    background-color: #2e8b57; /* Sea green for Save */
     color: white;
-    border-bottom: 3px solid #3a5723;
+    border-bottom: 3px solid #1c5837;
 }
 
 .actions button:disabled {
