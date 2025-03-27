@@ -29,7 +29,6 @@ export interface Game {
 }
 
 export enum ObjectsTypes {
-    EMPTY = 0,
     BOOTS = 1,
     SWORD = 2,
     POTION = 3,

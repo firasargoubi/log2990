@@ -18,5 +18,4 @@ export interface Player {
     currentMP?: number;
     currentAP?: number;
     winCount: number;
-    items?: number[];
 }
