@@ -38,10 +38,17 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
     private notificationService = inject(NotificationService);
 
     ngOnInit() {
-        if (this.gameState && this.gameState.currentPlayer === this.currentPlayer.id) {
-            this.lobbyService.attack(this.lobbyId, this.currentPlayer, this.opponent);
-        }
         this.setupSubscriptions();
+        if (this.currentPlayer.id !== this.gameState?.currentPlayer) {
+            this.playerTurn = this.gameState?.currentPlayer || '';
+            this.isPlayerTurn = false;
+            this.canAct = false;
+        } else {
+            this.canAct = true;
+        }
+
+        this.countDown = BASE_COUNTDOWN;
+        this.startCountdown();
     }
 
     ngOnChanges() {
@@ -138,26 +145,6 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
                 }
                 this.countDown = this.canEscape ? BASE_COUNTDOWN : LOWERED_COUNTDOWN;
                 this.startCountdown();
-            }),
-
-            this.lobbyService.onStartCombat().subscribe((data) => {
-                this.currentPlayer.amountEscape = 0;
-                this.canEscape = true;
-
-                if (this.currentPlayer.id !== data.firstPlayer.id) {
-                    this.playerTurn = data.firstPlayer.id;
-                    this.isPlayerTurn = false;
-                    this.canAct = false;
-                } else {
-                    this.canAct = true;
-                }
-
-                this.countDown = BASE_COUNTDOWN;
-                this.startCountdown();
-            }),
-
-            this.lobbyService.onCombatEnded().subscribe((data) => {
-                this.notificationService.showInfo(`La partie est terminée! ${data.loser.name} a perdu !`);
             }),
 
             this.lobbyService.onFleeFailure().subscribe((data) => {

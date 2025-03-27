@@ -140,7 +140,7 @@ export class BoardService {
 
         gameState.players[currentPlayerIndex].currentAP = gameState.currentPlayerActionPoints;
 
-        return this.handleTurn(gameState);
+        return gameState;
     }
 
     handleTeleport(gameState: GameState, targetCoordinate: Coordinates): GameState {
@@ -181,7 +181,7 @@ export class BoardService {
         }
 
         const currentPlayer = gameState.players[playerIndex];
-        gameState.currentPlayerMovementPoints = this.getPlayerMovementPoints(currentPlayer);
+        gameState.currentPlayerMovementPoints = currentPlayer.currentMP || currentPlayer.speed;
 
         const availableMoves = this.findAllPaths(gameState, playerPosition);
         gameState.availableMoves = availableMoves;

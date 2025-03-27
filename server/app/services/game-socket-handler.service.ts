@@ -78,8 +78,6 @@ export class GameSocketHandlerService {
 
             this.gameStates.set(lobbyId, updatedGameState);
 
-            this.io.to(lobbyId).emit(GameEvents.TurnEnded, { gameState });
-
             this.startTurn(lobbyId);
         } catch (error) {
             socket.emit(GameEvents.Error, `${gameSocketMessages.failedEndTurn} ${error.message}`);
@@ -101,9 +99,6 @@ export class GameSocketHandlerService {
                     }
                     this.gameStates.set(lobbyId, updatedGameState);
                     this.io.to(lobbyId).emit('movementProcessed', { gameState: updatedGameState });
-                    if (updatedGameState.availableMoves.length === 0) {
-                        this.handleEndTurn(socket, lobbyId);
-                    }
                 }, ANIMATION_DELAY_MS);
             }
         } catch (error) {
@@ -133,7 +128,7 @@ export class GameSocketHandlerService {
 
             this.gameStates.set(lobbyId, updatedGameState);
 
-            this.io.to(lobbyId).emit(GameEvents.TurnStarted, { gameState });
+            this.io.to(lobbyId).emit(GameEvents.TurnStarted, { gameState: updatedGameState });
         } catch (error) {
             this.io.to(lobbyId).emit(GameEvents.Error, `${gameSocketMessages.turnError}${error.message}`);
         }
@@ -154,6 +149,8 @@ export class GameSocketHandlerService {
             board: newGameBoard,
             currentPlayerActionPoints: 0,
         };
+
+        console.log("Closed Door", updatedGameState);
 
         updatedGameState.players[currentPlayerIndex].currentAP = 0;
         const newGameState = this.boardService.handleBoardChange(updatedGameState);
@@ -186,7 +183,6 @@ export class GameSocketHandlerService {
 
         currentPlayer.amountEscape = 0;
         opponent.amountEscape = 0;
-
         const currentPlayerIndex = gameState.players.findIndex((p) => p.id === currentPlayer.id);
         const opponentIndex = gameState.players.findIndex((p) => p.id === opponent.id);
 
@@ -353,7 +349,6 @@ export class GameSocketHandlerService {
 
         const opponent = gameState.players.find((p) => p.id !== fleeingPlayer.id);
         if (opponent) {
-            // eslint-disable-next-line max-lines
             gameState.currentPlayer = opponent.id;
         }
 

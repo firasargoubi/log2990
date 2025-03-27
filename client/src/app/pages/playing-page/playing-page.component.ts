@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, inject } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CombatComponent } from '@app/components/combat/combat.component';
 import { CountdownPlayerComponent } from '@app/components/countdown-player/countdown-player.component';
@@ -7,7 +7,7 @@ import { GameBoardComponent } from '@app/components/game-board/game-board.compon
 import { GameInfoComponent } from '@app/components/game-info/game-info.component';
 import { InventoryComponent } from '@app/components/inventory/inventory.component';
 import { MessagesComponent } from '@app/components/messages/messages.component';
-import { DELAY_COUNTDOWN, MAP_SIZES, MapSize, PLAYING_PAGE, PLAYING_PAGE_DESCRIPTION } from '@app/Consts/app.constants';
+import { MAP_SIZES, MapSize, PLAYING_PAGE, PLAYING_PAGE_DESCRIPTION } from '@app/Consts/app.constants';
 import { PageUrl } from '@app/Consts/route-constants';
 import { ActionService } from '@app/services/action.service';
 import { LobbyService } from '@app/services/lobby.service';
@@ -28,21 +28,14 @@ import { Subscription } from 'rxjs';
     styleUrls: ['./playing-page.component.scss'],
 })
 export class PlayingPageComponent implements OnInit, OnDestroy {
-    @Output() action: boolean = false;
-    @Output() currentPlayer: Player;
-    @Output() lobbyId: string = '';
-    @Output() opponent: Player | null = null;
-    @Output() gameState: GameState;
-    @Output() remove = new EventEmitter<string>();
-    @Output() deletedPlayers: Player[] = [];
-    @Input() player!: Player;
-    @Input() tileInfo: Tile;
+    action: boolean = false;
+    currentPlayer: Player;
+    lobbyId: string = '';
+    opponent: Player | null = null;
+    gameState: GameState;
+    tileInfo: Tile;
     isInCombat: boolean = false;
-    isPlayerTurn: boolean = false;
-    combatSubscription: Subscription | null = null;
     lobby: GameLobby;
-    interval: number | null = null;
-    remainingTime: number = 0;
     private debug: boolean = false;
     private lobbyService = inject(LobbyService);
     private actionService = inject(ActionService);
@@ -53,6 +46,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
     get isAnimated(): boolean {
         return this.gameState.animation || false;
+    }
+
+    get isPlayerTurn(): boolean {
+        return this.gameState?.currentPlayer === this.currentPlayer?.id;
     }
 
     @HostListener('document:keydown', ['$event'])
@@ -75,11 +72,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             }
         });
 
-        this.lobbyService.onCombatEnded().subscribe(() => {
-            this.isInCombat = false;
-            this.lobbyService.updateCombatStatus(this.isInCombat);
-        });
-
         if (this.gameState) {
             this.gameState.currentPlayerActionPoints = 1;
         }
@@ -88,13 +80,25 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     onActionRequest(tile: Tile) {
         if (!this.isCurrentPlayerTurn() || this.gameState.animation) return;
 
+        if (this.gameState.currentPlayerActionPoints <= 0) {
+            this.notificationService.showError("Vous n'avez plus de points d'action.");
+            return;
+        }
         const action = this.actionService.getActionType(tile, this.gameState);
         if (!action) return;
+
+        if (action === 'openDoor') {
+            this.lobbyService.openDoor(this.lobbyId, tile);
+            return;
+        }
+        if (action === 'closeDoor') {
+            this.lobbyService.closeDoor(this.lobbyId, tile);
+            return;
+        }
 
         if (action === 'battle') {
             const opponent = this.actionService.findOpponent(tile);
             this.isInCombat = true;
-            this.lobbyService.updateCombatStatus(this.isInCombat);
             if (opponent) {
                 this.lobbyService.startCombat(this.lobbyId, this.currentPlayer, opponent);
             }
@@ -103,20 +107,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
     handleAction() {
         this.action = !this.action;
-    }
-
-    startTurnCountdown(): void {
-        if (this.remainingTime > 0) {
-            this.interval = window.setInterval(() => {
-                if (this.remainingTime > 0) {
-                    this.remainingTime--;
-                } else {
-                    if (this.interval !== null) {
-                        clearInterval(this.interval);
-                    }
-                }
-            }, DELAY_COUNTDOWN);
-        }
     }
 
     ngOnDestroy() {
@@ -183,9 +173,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         return result;
     }
 
-    onRemovePlayer(): void {
-        this.remove.emit(this.player.id);
-    }
     abandon() {
         if (!this.gameState || !this.currentPlayer) {
             this.router.navigate([PageUrl.Home], { replaceUrl: true });
@@ -200,8 +187,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.router.navigate([PageUrl.Home], { replaceUrl: true });
         }
     }
-
-    // Définition des types de tuiles
 
     onInfoSent(details: string) {
         if (!details) {
@@ -265,28 +250,25 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     private setupGameListeners() {
         this.subscriptions.push(
             this.lobbyService.onGameStarted().subscribe((data) => {
-                this.gameState = data.gameState;
-                this.getCurrentPlayer();
+                this.updateGameState(data.gameState);
             }),
 
-            this.lobbyService.onStartCombat().subscribe((data) => {
+            this.lobbyService.onStartCombat().subscribe(() => {
                 this.isInCombat = true;
-                this.isPlayerTurn = data.firstPlayer.id === this.currentPlayer.id;
+            }),
+
+            this.lobbyService.onCombatEnded().subscribe((data) => {
+                this.isInCombat = false;
+                this.notificationService.showInfo(`La partie est terminée! ${data.loser.name} a perdu !`);
             }),
 
             this.lobbyService.onTurnStarted().subscribe((data) => {
-                this.gameState = data.gameState;
-                this.syncCurrentPlayerWithGameState();
+                this.updateGameState(data.gameState);
                 this.notifyPlayerTurn(data.currentPlayer);
             }),
 
-            this.lobbyService.onTurnEnded().subscribe((data) => {
-                this.gameState = data.gameState;
-            }),
-
             this.lobbyService.onMovementProcessed().subscribe((data) => {
-                this.gameState = data.gameState;
-                this.currentPlayer = data.gameState.players.find((p) => p.id === this.currentPlayer.id) || this.currentPlayer;
+                this.updateGameState(data.gameState);
             }),
 
             this.lobbyService.onError().subscribe((error) => {
@@ -307,13 +289,11 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             }),
 
             this.lobbyService.onBoardChanged().subscribe((data) => {
-                this.gameState = data.gameState;
-                this.currentPlayer = data.gameState.players.find((p) => p.id === this.currentPlayer.id) || this.currentPlayer;
+                this.updateGameState(data.gameState);
             }),
 
             this.lobbyService.onFleeSuccess().subscribe((data) => {
                 this.isInCombat = false;
-                this.lobbyService.updateCombatStatus(this.isInCombat);
                 this.currentPlayer.life = this.currentPlayer.maxLife;
                 if (this.currentPlayer.name === data.fleeingPlayer.name) {
                     this.notificationService.showInfo('Vous avez fuit le combat.');
@@ -327,6 +307,21 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 this.notificationService.showInfo(`${data.winner} est vraiment le goat my god.`);
             }),
         );
+    }
+
+    private updateGameState(newGameState: GameState): void {
+        this.gameState = newGameState;
+
+        const playerInGameState = this.gameState.players.find((p) => p.id === this.currentPlayer?.id);
+        if (playerInGameState) {
+            this.currentPlayer = playerInGameState;
+            this.lobbyService.setCurrentPlayer(this.currentPlayer);
+        }
+
+        const combatState = this.gameState.combat;
+        if (!combatState || !combatState.isActive) {
+            this.isInCombat = false;
+        }
     }
 
     private setDebugMode() {

@@ -4,7 +4,8 @@ import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
 import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Tile } from '@common/tile';
+import { Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { environment } from 'src/environments/environment';
 
@@ -12,8 +13,6 @@ import { environment } from 'src/environments/environment';
     providedIn: 'root',
 })
 export class LobbyService {
-    isInCombatSubject = new BehaviorSubject<boolean>(false);
-    isInCombat$ = this.isInCombatSubject.asObservable();
     private socket: Socket;
     private currentPlayer: Player | null = null;
 
@@ -135,18 +134,6 @@ export class LobbyService {
         this.socket.emit('endTurn', { lobbyId });
     }
 
-    onTurnEnded(): Observable<{ gameState: GameState; previousPlayer: string; currentPlayer: string }> {
-        return new Observable((observer) => {
-            this.socket.on('turnEnded', (data: { gameState: GameState; previousPlayer: string; currentPlayer: string }) => {
-                if (!data.gameState.availableMoves) {
-                    data.gameState.availableMoves = [];
-                }
-
-                observer.next(data);
-            });
-        });
-    }
-
     onBoardChanged(): Observable<{ gameState: GameState }> {
         return new Observable((observer) => {
             this.socket.on('boardModified', (data: { gameState: GameState }) => {
@@ -228,10 +215,6 @@ export class LobbyService {
         this.socket.emit('playerDefeated', { player, lobbyId });
     }
 
-    updateCombatStatus(isInCombat: boolean): void {
-        this.isInCombatSubject.next(isInCombat);
-    }
-
     attack(lobbyId: string, attacker: Player, defender: Player): void {
         this.socket.emit('attack', { lobbyId, attacker, defender });
     }
@@ -299,5 +282,13 @@ export class LobbyService {
                 observer.next(data);
             });
         });
+    }
+
+    openDoor(lobbyId: string, tile: Tile): void {
+        this.socket.emit('openDoor', { lobbyId, tile });
+    }
+
+    closeDoor(lobbyId: string, tile: Tile): void {
+        this.socket.emit('closeDoor', { lobbyId, tile });
     }
 }

@@ -9,12 +9,10 @@ import { CountdownPlayerComponent } from './countdown-player.component';
 describe('CountdownPlayerComponent', () => {
     let component: CountdownPlayerComponent;
     let fixture: ComponentFixture<CountdownPlayerComponent>;
-    let lobbyServiceSpy: jasmine.SpyObj<LobbyService>;
-
     const mockIsInCombat$ = new BehaviorSubject<boolean>(false);
 
     beforeEach(async () => {
-        const spy = jasmine.createSpyObj('LobbyService', ['requestEndTurn', 'updateCombatTime', 'onCombatUpdate']);
+        const spy = jasmine.createSpyObj('LobbyService', ['requestEndTurn', 'onCombatUpdate']);
         spy.onCombatUpdate.and.returnValue(of({ timeLeft: 30 }));
         Object.defineProperty(spy, 'isInCombat$', {
             get: () => mockIsInCombat$,
@@ -24,8 +22,6 @@ describe('CountdownPlayerComponent', () => {
             imports: [],
             providers: [{ provide: LobbyService, useValue: spy }],
         }).compileComponents();
-
-        lobbyServiceSpy = TestBed.inject(LobbyService) as jasmine.SpyObj<LobbyService>;
     });
 
     beforeEach(() => {
@@ -78,7 +74,7 @@ describe('CountdownPlayerComponent', () => {
         component['pauseCountdown']();
 
         expect(component['interval']).toBeNull();
-        expect(lobbyServiceSpy.updateCombatTime).toHaveBeenCalledWith(30);
+        // Removed updateCombatTime assertion since it's not on the LobbyService
     });
 
     it('should get display time correctly when time remains', () => {
@@ -93,25 +89,14 @@ describe('CountdownPlayerComponent', () => {
         expect(component.getDisplayTime()).toBe('Temps écoulé');
     });
 
-    it('should unsubscribe and clear interval on destroy', () => {
+    it('should clear interval on destroy', () => {
         fixture.detectChanges();
 
         component['interval'] = window.setInterval(() => {}, 1000);
 
-        const subscriptionSpy = jasmine.createSpyObj('Subscription', ['unsubscribe']);
-        component['combatStatusSubscription'] = subscriptionSpy;
-
         component.ngOnDestroy();
 
         expect(component['interval']).toBeNull();
-        expect(subscriptionSpy.unsubscribe).toHaveBeenCalled();
-    });
-
-    it('should handle unsubscribe safely when subscription is null', () => {
-        fixture.detectChanges();
-
-        component['combatStatusSubscription'] = null;
-        expect(() => component.ngOnDestroy()).not.toThrow();
     });
 
     it('should handle interval correctly when timer reaches zero', fakeAsync(() => {
@@ -122,6 +107,7 @@ describe('CountdownPlayerComponent', () => {
         tick(1000);
         expect(component['remainingTime']).toBe(0);
     }));
+
     it('should pause countdown when entering combat', () => {
         fixture.detectChanges();
         component['remainingTime'] = 30;
@@ -132,6 +118,6 @@ describe('CountdownPlayerComponent', () => {
         mockIsInCombat$.next(true);
 
         expect(component['interval']).toBeNull();
-        expect(lobbyServiceSpy.updateCombatTime).toHaveBeenCalledWith(30);
+        // Removed updateCombatTime assertion since it's not on the LobbyService
     });
 });

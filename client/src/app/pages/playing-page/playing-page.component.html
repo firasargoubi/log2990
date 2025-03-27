@@ -2,7 +2,7 @@
     <div class="sidebar-left">
         <div class="component-box">
             <app-game-info
-                [gameName]="getGameName()"
+                [gameName]="'Tile Bound'"
                 [mapSize]="getMapSize()"
                 [playerCount]="getPlayerCount()"
                 [activePlayer]="getActivePlayer()"
@@ -12,7 +12,7 @@
                 >
             </app-game-info>
             <div class="header">
-                @if (gameState && currentPlayer && currentPlayer.isHost && gameState.debug) {
+                @if (gameState && gameState.debug) {
                 <div class="debug-indicator">Mode Debug Activé</div>
                 }
             </div>
