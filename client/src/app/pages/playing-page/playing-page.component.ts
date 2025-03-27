@@ -43,6 +43,8 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     lobby: GameLobby;
     interval: number | null = null;
     remainingTime: number = 0;
+    inventoryItems: number[] = [];
+
     private debug: boolean = false;
     private lobbyService = inject(LobbyService);
     private actionService = inject(ActionService);
@@ -327,6 +329,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.lobbyService.onMovementProcessed().subscribe((data) => {
                 this.gameState = data.gameState;
                 this.currentPlayer = data.gameState.players.find((p) => p.id === this.currentPlayer.id) || this.currentPlayer;
+                this.inventoryItems = this.currentPlayer?.items ?? [];
             }),
 
             this.lobbyService.onError().subscribe((error) => {

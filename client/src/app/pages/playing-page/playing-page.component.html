@@ -7,7 +7,7 @@
                 [playerCount]="getPlayerCount()"
                 [activePlayer]="getActivePlayer()"
                 [players]="getPlayers()"
-                [deletedPlayers]=" getDeletedPlayers()"
+                [deletedPlayers]="getDeletedPlayers()"
             >
                 >
             </app-game-info>
@@ -70,7 +70,8 @@
         <app-countdown-player [countdown]="60" [isPlayerTurn]="false" [isInCombat]="isInCombat" [isTransitioning]="false"> </app-countdown-player>
         }
 
-        <app-inventory></app-inventory>
+        <app-inventory [items]="inventoryItems"></app-inventory>
+
         @if (isInCombat) {
 
         <div class="action-buttons">

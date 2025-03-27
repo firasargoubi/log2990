@@ -102,11 +102,22 @@ export class BoardService {
             const tileCost = this.pathfindingService.getMovementCost(gameState, path[i]);
             movementCost += tileCost;
         }
-
         gameState.playerPositions[indexPlayer] = targetCoordinate;
 
-        gameState.currentPlayerMovementPoints -= movementCost;
+        const tileValue = gameState.board[targetCoordinate.x][targetCoordinate.y];
+        const item = Math.floor(tileValue / TILE_DELIMITER);
+        const tile = tileValue % TILE_DELIMITER;
+        if (item !== ObjectsTypes.EMPTY && item !== ObjectsTypes.SPAWN) {
+            gameState.players[indexPlayer].items ??= [];
+            gameState.players[indexPlayer].items.push(item);
+            gameState.board[targetCoordinate.x][targetCoordinate.y] = tile;
+            gameState.availableMoves = [];
+            gameState.shortestMoves = [];
 
+            return gameState;
+        }
+
+        gameState.currentPlayerMovementPoints -= movementCost;
         gameState.players[indexPlayer].currentMP = gameState.currentPlayerMovementPoints;
 
         if (gameState.currentPlayerMovementPoints >= 0) {
