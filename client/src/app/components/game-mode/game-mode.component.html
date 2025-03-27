@@ -1,37 +1,50 @@
-<mat-dialog-content>
-    <div class="mode-section">
-        <h6>Choisir le mode</h6>
-        <div class="mode-radio-group">
-            <label>
-                <input type="radio" [(ngModel)]="selectedMode.type" [value]="gameType.classic" name="gameMode" class="mode-radio-button-classic" />
-                Classique
-            </label>
-            <label>
-                <input type="radio" [(ngModel)]="selectedMode.type" [value]="gameType.capture" name="gameMode" class="mode-radio-button-capture" />
-                Capturer le drapeau
-            </label>
+<form action="">
+    <div class="game-mode-dialog">
+        <div class="mode-section">
+            <h6>Choisir le mode</h6>
+            <div class="mode-radio-group">
+                <label>
+                    <input
+                        type="radio"
+                        [(ngModel)]="selectedMode.type"
+                        [value]="gameType.classic"
+                        name="gameMode"
+                        class="mode-radio-button-classic"
+                    />
+                    Classique
+                </label>
+                <label>
+                    <input
+                        type="radio"
+                        [(ngModel)]="selectedMode.type"
+                        [value]="gameType.capture"
+                        name="gameMode"
+                        class="mode-radio-button-capture"
+                    />
+                    Capturer le drapeau
+                </label>
+            </div>
+        </div>
+        <div class="size-section">
+            <h6>Choisir la taille</h6>
+            <div class="size-radio-group">
+                <label>
+                    <input type="radio" [(ngModel)]="selectedMode.size" [value]="gameSize.small" name="gameSize" class="size-radio-button-small" />
+                    Petite
+                </label>
+                <label>
+                    <input type="radio" [(ngModel)]="selectedMode.size" [value]="gameSize.medium" name="gameSize" class="size-radio-button-medium" />
+                    Moyenne
+                </label>
+                <label>
+                    <input type="radio" [(ngModel)]="selectedMode.size" [value]="gameSize.large" name="gameSize" class="size-radio-button-large" />
+                    Grande
+                </label>
+            </div>
         </div>
     </div>
-
-    <div class="size-section">
-        <h6>Choisir la taille</h6>
-        <div class="size-radio-group">
-            <label>
-                <input type="radio" [(ngModel)]="selectedMode.size" [value]="gameSize.small" name="gameSize" class="size-radio-button-small" />
-                Petite
-            </label>
-            <label>
-                <input type="radio" [(ngModel)]="selectedMode.size" [value]="gameSize.medium" name="gameSize" class="size-radio-button-medium" />
-                Moyenne
-            </label>
-            <label>
-                <input type="radio" [(ngModel)]="selectedMode.size" [value]="gameSize.large" name="gameSize" class="size-radio-button-large" />
-                Grande
-            </label>
-        </div>
+    <div class="dialog-actions">
+        <button mat-button (click)="onCancel()">Annuler</button>
+        <button mat-raised-button color="primary" (click)="onConfirm()">Confirmer</button>
     </div>
-</mat-dialog-content>
-<mat-dialog-actions>
-    <button mat-button (click)="onCancel()">Annuler</button>
-    <button mat-raised-button color="primary" (click)="onConfirm()">Confirmer</button>
-</mat-dialog-actions>
+</form>

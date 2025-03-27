@@ -1,50 +1,180 @@
+:root {
+    --forest-green: #1e3d14;
+    --leaf-green: #4a7a23;
+    --dark-green: #0f2209;
+    --light-green: #5c9c3d;
+    --bg-gradient-light: #e8f3d4;
+    --bg-gradient-dark: #c5dfa0;
+}
+
 h2[mat-dialog-title] {
-    color: #3f783f;
-    font-family: 'Press Start 2P', cursive;
-    text-align: center;
-    margin-bottom: 30px;
+    color: var(--forest-green);
+    font-size: 1.5em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.15);
+    margin-bottom: 25px;
+    position: relative;
+}
+
+h2[mat-dialog-title]::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--leaf-green), transparent);
+}
+
+mat-dialog-content {
+    background: linear-gradient(145deg, var(--bg-gradient-light), var(--bg-gradient-dark));
+    padding: 25px 20px;
+    border-radius: 15px;
+    box-shadow:
+        0 10px 30px rgba(21, 36, 17, 0.25),
+        inset 0 2px 10px rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+mat-dialog-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
 }
 
 .mode-section,
 .size-section {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 50px;
-    background-color: #9eba63;
+    background: linear-gradient(165deg, #2d5320, #1a3612);
+    border-radius: 15px;
     padding: 20px;
-    margin-bottom: 20px;
+    margin: 12px;
+    box-shadow:
+        0 8px 20px rgba(21, 36, 17, 0.2),
+        inset 0 2px 10px rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+.size-section {
+    background: linear-gradient(165deg, #345e25, #1f4016);
+}
+
+.mode-section::before,
+.size-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, #aed581, transparent);
 }
 
 h6 {
-    color: #125d0c;
-    font-family: 'Press Start 2P';
-    margin-bottom: 15px;
+    color: #ffffff;
+    font-size: 1.1em;
+    letter-spacing: 2px;
+    text-shadow:
+        0 2px 3px rgba(0, 0, 0, 0.5),
+        0 0 10px rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+    text-align: center;
+    font-family: 'Press Start 2P', cursive;
 }
 
-.mat-radio-group {
+.mode-radio-group,
+.size-radio-group {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.mat-radio-button {
-    color: #9eba63;
+label {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    padding: 12px 18px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-.mat-dialog-actions {
+label:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.15),
+        inset 0 2px 5px rgba(255, 255, 255, 0.1);
+}
+
+input[type='radio'] {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+input[type='radio']:checked {
+    border-color: #9ccc65;
+    background: linear-gradient(145deg, #9ccc65, #7cb342);
+    box-shadow:
+        0 0 15px rgba(139, 195, 74, 0.4),
+        inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+form {
+    background-color: #7cb342;
+}
+
+.dialog-actions {
+    background: linear-gradient(165deg, rgba(255, 255, 255, 0.1), transparent);
+    display: flex;
     justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-    padding-top: 20px;
+    gap: 15px;
+    margin: 25px 0 15px;
+    padding: 15px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 button {
-    font-family: 'Press Start 2P', cursive;
+    min-width: 120px;
+    padding: 12px 22px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9em;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
-    padding: 10px 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-    &[color='primary'] {
-        background: #125d0c;
-        color: #ffffff;
-    }
+button[mat-button] {
+    background: linear-gradient(165deg, #b35f2e, #8b4513);
+    color: white;
+}
+
+button[mat-button]:hover {
+    background: linear-gradient(165deg, #cc6d34, #a65d2e);
+}
+
+button[mat-raised-button] {
+    background: linear-gradient(165deg, #43b675, #2e8b57) !important;
+    color: white !important;
+}
+
+button[mat-raised-button]:hover {
+    background: linear-gradient(165deg, #4dc983, #359c63) !important;
 }
