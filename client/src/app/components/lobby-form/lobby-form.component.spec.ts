@@ -74,7 +74,6 @@ describe('LobbyFormComponent', () => {
         tick();
 
         expect(mockMatDialog.open).toHaveBeenCalledWith(BoxFormDialogComponent, {
-            width: '400px',
             data: { lobbyId: '123', boxId: 'game1', isJoining: true },
         });
         expect(mockDialogRef.close).toHaveBeenCalledWith('123');
@@ -114,7 +113,6 @@ describe('LobbyFormComponent', () => {
         expect(component.isLoading).toBeFalse();
         expect(mockDialogRef.close).toHaveBeenCalledWith('123');
         expect(mockMatDialog.open).toHaveBeenCalledWith(BoxFormDialogComponent, {
-            width: '400px',
             data: { lobbyId: '123', boxId: 'game1', isJoining: true },
         });
     }));
@@ -228,7 +226,6 @@ describe('LobbyFormComponent', () => {
         component['openBoxFormDialog']();
 
         expect(mockMatDialog.open).toHaveBeenCalledWith(BoxFormDialogComponent, {
-            width: '400px',
             data: { lobbyId: '123', boxId: 'game1', isJoining: true },
         });
     });
