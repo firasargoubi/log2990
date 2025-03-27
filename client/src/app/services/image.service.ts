@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Tile } from '@common/tile';
-import { ObjectsTypes, TileTypes } from '@app/Consts/app.constants';
+import { ObjectsTypes, TileTypes } from '@common/game.interface';
 import html2canvas from 'html2canvas';
 
 @Injectable({

@@ -2,7 +2,8 @@ import { CdkDrag } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { GAME_IMAGES, OBJECT_NAMES, OBJECTS_DESCRIPTION, ObjectsTypes } from '@app/Consts/app.constants';
+import { GAME_IMAGES, OBJECT_NAMES, OBJECTS_DESCRIPTION } from '@app/Consts/app.constants';
+import { ObjectsTypes } from '@common/game.interface';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { Subscription } from 'rxjs';
 

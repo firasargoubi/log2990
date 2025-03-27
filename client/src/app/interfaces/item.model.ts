@@ -1,4 +1,5 @@
-import { GAME_IMAGES, OBJECT_NAMES, OBJECTS_DESCRIPTION, ObjectsTypes } from '@app/Consts/app.constants';
+import { GAME_IMAGES, OBJECT_NAMES, OBJECTS_DESCRIPTION } from '@app/Consts/app.constants';
+import { ObjectsTypes } from '@common/game.interface';
 
 export class ItemModel {
     type: number;

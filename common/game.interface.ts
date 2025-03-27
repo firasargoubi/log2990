@@ -29,17 +29,14 @@ export interface Game {
 }
 
 export enum ObjectsTypes {
-    EMPTY = 0,
-    SWORD = 1,
-    POTION = 2,
-    WAND = 3,
-    CRYSTAL = 4,
-    JUICE = 5,
-    SPAWN = 6,
-    RANDOM = 7,
-    BOOTS = 8,
-    TRAP,
-    WALL,
+    BOOTS = 1,
+    SWORD = 2,
+    POTION = 3,
+    WAND = 4,
+    CRYSTAL = 5,
+    JUICE = 6,
+    SPAWN = 7,
+    RANDOM = 8,
 }
 
 export enum TileTypes {
@@ -49,8 +46,6 @@ export enum TileTypes {
     DoorClosed = 4,
     DoorOpen = 5,
     Wall = 6,
-    Floor,
-    Empty,
 }
 
 export interface Tile {

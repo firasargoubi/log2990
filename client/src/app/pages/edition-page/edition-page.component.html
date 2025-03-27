@@ -28,7 +28,7 @@
         }
         <div class="object-tools">
             @if (gameLoaded) {
-            <app-objects [mapSize]="game.mapSize"></app-objects>
+            <app-objects [mapSize]="game.mapSize" [gameMode]="game.mode"></app-objects>
             }
         </div>
     </section>

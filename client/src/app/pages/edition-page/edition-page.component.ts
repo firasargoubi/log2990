@@ -97,6 +97,7 @@ export class EditionPageComponent implements OnInit {
 
                 this.saveState = true;
                 this.errorService.addMessage(EDITION_PAGE_CONSTANTS.successGameLoaded);
+                console.log(this.game.board);
             }
         } catch (err) {
             this.notificationService.showError('Error saving game: ' + (err as Error).message);

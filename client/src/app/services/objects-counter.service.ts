@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/member-ordering */
 import { Injectable } from '@angular/core';
-import { ObjectsTypes } from '@app/Consts/app.constants';
+import { ObjectsTypes } from '@common/game.interface';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({

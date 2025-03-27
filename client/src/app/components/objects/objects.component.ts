@@ -4,9 +4,9 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { ItemComponent } from '@app/components/item/item.component';
-import { MAX_OBJECTS, ObjectsTypes } from '@app/Consts/app.constants';
 import { ItemModel } from '@app/interfaces/item.model';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
+import { GameType, ObjectsTypes } from '@common/game.interface';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
@@ -18,6 +18,7 @@ import { filter } from 'rxjs/operators';
 })
 export class ObjectsComponent implements OnInit, OnDestroy {
     @Input() mapSize: string;
+    @Input() gameMode: GameType;
     range: number[] = [];
     items: ItemModel[] = [];
     private subscriptions: Subscription[] = [];
@@ -26,7 +27,7 @@ export class ObjectsComponent implements OnInit, OnDestroy {
         private counterService: ObjectCounterService,
         private router: Router,
     ) {
-        this.range = this.generateRange(0, MAX_OBJECTS);
+        this.range = this.generateRange(1);
         this.counterService.spawnCounter$.pipe(takeUntilDestroyed()).subscribe((value) => {
             if (value === 0) {
                 const spawnItem = this.items.find((item) => item.type === ObjectsTypes.SPAWN);
@@ -69,8 +70,14 @@ export class ObjectsComponent implements OnInit, OnDestroy {
         }
     }
 
-    private generateRange(start: number, end: number): number[] {
-        return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    private generateRange(start: number): number[] {
+        let rangeEnd = 8;
+
+        if (this.gameMode === GameType.capture) {
+            rangeEnd = 9;
+        }
+
+        return Array.from({ length: rangeEnd - start + 1 }, (_, i) => start + i);
     }
 
     private incrementCounter(item: ItemModel): void {

@@ -5,27 +5,7 @@ export const APP_CONSTANTS = {
     actionLabel: 'Fermer',
 };
 
-export enum ObjectsTypes {
-    BOOTS = 0,
-    SWORD = 1,
-    POTION = 2,
-    WAND = 3,
-    CRYSTAL = 4,
-    JUICE = 5,
-    SPAWN = 6,
-    RANDOM = 7,
-}
-
 export { GameSize, GameType };
-
-export enum TileTypes {
-    Grass = 1,
-    Water = 2,
-    Ice = 3,
-    DoorClosed = 4,
-    DoorOpen = 5,
-    Wall = 6,
-}
 
 export enum MapSize {
     SMALL = 10,
@@ -46,7 +26,6 @@ export interface GameMode {
 
 export const DEFAULT_STAT_VALUE = 4;
 export const SIX_VALUE_DICE = 6;
-export const MAX_OBJECTS = 7;
 export const MAX_TILE = 6;
 export const PULLING_INTERVAL = 5000;
 export const WANTED_TILE_PERCENTAGE = 0.5;
