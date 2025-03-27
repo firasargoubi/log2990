@@ -8,6 +8,7 @@ import { Player } from '@common/player';
 import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
 import { BoardService } from './board.service';
+import { GameService } from './game.service';
 import { LobbySocketHandlerService } from './lobby-socket-handler.service';
 
 const ANIMATION_DELAY_MS = 150;
@@ -20,12 +21,12 @@ const MAX_FLEE = 100;
 @Service()
 export class GameSocketHandlerService {
     private io: Server;
-    // private combatTimes: Map<string, number> = new Map<string, number>();
     constructor(
         private lobbies: Map<string, GameLobby>,
         private gameStates: Map<string, GameState>,
         private boardService: BoardService,
         private lobbySocketHandlerService: LobbySocketHandlerService,
+        private gameService: GameService,
     ) {}
     setServer(server: Server) {
         this.io = server;
@@ -33,6 +34,12 @@ export class GameSocketHandlerService {
 
     async handleRequestStart(socket: Socket, lobbyId: string) {
         const lobby = this.lobbies.get(lobbyId);
+        const game = await this.gameService.getGameById(lobby.gameId);
+        if (!game) {
+            socket.emit(GameEvents.Error, gameSocketMessages.gameNotFound);
+            return;
+        }
+
         if (!lobby) {
             socket.emit(GameEvents.Error, gameSocketMessages.lobbyNotFound);
             return;
@@ -42,6 +49,13 @@ export class GameSocketHandlerService {
         if (!player || !player.isHost) {
             socket.emit(GameEvents.Error, gameSocketMessages.onlyHostStart);
             return;
+        }
+
+        if (game.mode === 'capture') {
+            if (lobby.players.length % 2 !== 0) {
+                socket.emit(GameEvents.Error, gameSocketMessages.notEnoughPlayers);
+                return;
+            }
         }
 
         try {

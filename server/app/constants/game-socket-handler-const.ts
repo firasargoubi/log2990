@@ -12,4 +12,5 @@ export const gameSocketMessages = {
     failedEndTurn: 'Failed to end turn:',
     movementError: 'Movement error: ',
     turnError: 'Turn error:',
+    notEnoughPlayers: "Il n'y a pas assez de joueurs pour commencer une partie CTF",
 };
