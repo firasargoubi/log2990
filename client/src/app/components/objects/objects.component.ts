@@ -44,6 +44,7 @@ export class ObjectsComponent implements OnInit, OnDestroy {
                 this.resetComponent();
             }),
         );
+        console.log(this.items);
     }
 
     ngOnDestroy(): void {
@@ -52,6 +53,7 @@ export class ObjectsComponent implements OnInit, OnDestroy {
 
     drop(event: CdkDragDrop<ItemModel[]>): void {
         const draggedItem = event.previousContainer.data[event.previousIndex];
+        console.log(draggedItem);
         if (event.previousContainer !== event.container) {
             draggedItem.isPlaced = false;
             event.previousContainer.data.splice(event.previousIndex, 1);

@@ -100,6 +100,15 @@ export class ItemComponent implements OnInit, OnDestroy {
                 }
             });
             this.subscriptions.push(subscription);
+        } else {
+            const subscription = this.objectCounterService.itemCounter$.subscribe((value) => {
+                if (value <= 0) {
+                    this.isPlaced = true;
+                } else {
+                    this.isPlaced = false;
+                }
+            });
+            this.subscriptions.push(subscription);
         }
     }
 

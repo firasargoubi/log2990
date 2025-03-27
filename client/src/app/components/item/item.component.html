@@ -9,15 +9,12 @@
         <div class="item" cdkDrag>
             <img [src]="image" [matTooltip]="description" matTooltipPosition="before">
         </div>
-
-
-    
     <p [innerText]="name"></p>
 }
 
 @if (type === objectsTypes.SPAWN) {
     <p class="counter">{{objectCounterService.spawnCounter$ | async}}</p>
 }
-@if (type === objectsTypes.RANDOM) {
-    <p class="counter">{{objectCounterService.counter$ | async}}</p>
+@else {
+    <p class="counter">{{objectCounterService.itemCounter$ | async}}</p>
 }

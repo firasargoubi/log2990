@@ -10,7 +10,7 @@ export class ObjectCounterService {
     private itemCounterSubject = new BehaviorSubject<number>(0);
     private spawnCounterSubject = new BehaviorSubject<number>(0);
 
-    counter$: Observable<number> = this.itemCounterSubject.asObservable();
+    itemCounter$: Observable<number> = this.itemCounterSubject.asObservable();
     spawnCounter$: Observable<number> = this.spawnCounterSubject.asObservable();
 
     initializeCounter(initialValue: number): void {

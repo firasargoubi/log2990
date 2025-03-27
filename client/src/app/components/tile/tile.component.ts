@@ -2,7 +2,7 @@ import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ItemComponent } from '@app/components/item/item.component';
-import { GAME_IMAGES, ObjectsTypes } from '@app/Consts/app.constants';
+import { GAME_IMAGES } from '@app/Consts/app.constants';
 import { DEFAULT_ITEMS } from '@app/interfaces/default-items';
 import { TileTypes } from '@app/interfaces/tile-types';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
@@ -96,12 +96,16 @@ export class TileComponent implements OnInit {
         if (event.previousContainer.id !== 'objects-container' && !this.placedItem.length) {
             this.placedItem.push(draggedItem);
             event.previousContainer.data.splice(event.previousIndex, 1);
-        } else if (!this.placedItem.length && this.count && draggedItem.type === ObjectsTypes.SPAWN) {
+        } else if (!this.placedItem.length) {
             this.placedItem.push(draggedItem);
             this.decrementCounter(draggedItem);
+            console.log(draggedItem);
         }
 
         this.objectID = draggedItem.type;
         this.objectMoved.emit(true);
+        console.log('Objects container : ', event.previousContainer.data);
+        console.log('Objects container id: ', event.previousContainer.id);
+
     }
 }

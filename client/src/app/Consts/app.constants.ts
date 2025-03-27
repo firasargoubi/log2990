@@ -174,8 +174,8 @@ export const OBJECT_NAMES = {
     wand: 'Baguette magique',
     crystalBall: 'Boule de cristal',
     berryJuice: 'Jus de baies',
-    vortex: 'Vortex',
-    gnome: 'Gnome',
+    vortex: 'Point de départ',
+    gnome: 'Gnome mystère',
     undefined: 'Objet inconnu',
 };
 

@@ -20,7 +20,7 @@ describe('ObjectCounterService', () => {
 
     it('should initialize counter with a given value', (done) => {
         service.initializeCounter(5);
-        service.counter$.pipe(take(1)).subscribe((value) => {
+        service.itemCounter$.pipe(take(1)).subscribe((value) => {
             expect(value).toBe(5);
             done();
         });
@@ -109,7 +109,7 @@ describe('ObjectCounterService', () => {
 
         it('should increment regular counter for unknown types', (done) => {
             service.incrementCounter(999);
-            service.counter$.pipe(take(1)).subscribe((value) => {
+            service.itemCounter$.pipe(take(1)).subscribe((value) => {
                 expect(value).toBe(6);
                 done();
             });
@@ -118,10 +118,10 @@ describe('ObjectCounterService', () => {
         it('should decrement regular counter only when > 0', (done) => {
             service.initializeCounter(1);
             service.decrementCounter(999);
-            service.counter$.pipe(take(1)).subscribe((value) => {
+            service.itemCounter$.pipe(take(1)).subscribe((value) => {
                 expect(value).toBe(0);
                 service.decrementCounter(999);
-                service.counter$.pipe(take(1)).subscribe((innerValue) => {
+                service.itemCounter$.pipe(take(1)).subscribe((innerValue) => {
                     expect(innerValue).toBe(0);
                     done();
                 });
