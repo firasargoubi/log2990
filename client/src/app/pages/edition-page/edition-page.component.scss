@@ -3,33 +3,31 @@
     grid-template-columns: 300px 1fr 300px;
     gap: 10px;
     height: 100vh;
-    width: 100%;
-    background-color: #143018;
-    color: #e8f0d8;
-    font-family: 'Press Start 2P', cursive;
     padding: 10px;
     box-sizing: border-box;
-    background-image: linear-gradient(rgba(20, 48, 24, 0.85), rgba(20, 48, 24, 0.85));
-    background-size: cover;
-    background-position: center;
+    background: linear-gradient(#143018d9, #143018d9);
+    color: #e8f0d8;
+    font-family: 'Press Start 2P', cursive;
     position: relative;
 }
-
 .panel {
-    background-color: rgba(35, 75, 41, 0.9);
+    background: #234b29e6;
     border-radius: 15px;
     border: 3px solid #6a9c3c;
     box-shadow:
-        0 0 20px rgba(105, 221, 82, 0.3),
-        inset 0 0 30px rgba(21, 56, 20, 0.6);
+        0 0 20px #69dd5233,
+        inset 0 0 30px #15381499;
     padding: 15px;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     position: relative;
     overflow: hidden;
     z-index: 1;
 }
-
+.center-panel {
+    align-items: center;
+}
 .left-panel,
 .right-panel {
     max-height: 98vh;
@@ -38,343 +36,173 @@
     scrollbar-color: #75b94a #143018;
 }
 
-.left-panel::-webkit-scrollbar,
-.right-panel::-webkit-scrollbar {
-    width: 8px;
-}
-
-.left-panel::-webkit-scrollbar-thumb,
-.right-panel::-webkit-scrollbar-thumb {
-    background-color: #75b94a;
-    border-radius: 10px;
-}
-
-.left-panel::-webkit-scrollbar-track,
-.right-panel::-webkit-scrollbar-track {
-    background-color: #143018;
-    border-radius: 10px;
-}
-
 .section-header {
-    background-color: #3a7d23;
+    background: #3a7d23;
     color: #f8ffd0;
     text-align: center;
     padding: 10px;
     border-radius: 8px;
     margin-bottom: 15px;
-    font-weight: bold;
-    letter-spacing: 1px;
-    text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
     border: 2px solid #94c661;
     position: relative;
-}
-
-.section-header::before {
-    content: '🐿️🌿';
-    position: absolute;
-    left: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 3px #0008;
 }
 
 .input-container {
     margin-bottom: 20px;
     max-width: 90%;
-    position: relative;
 }
-
 .dark-input {
     width: 100%;
-    background-color: rgba(20, 30, 15, 0.8);
+    background: #141e0fcc;
     color: #c5e0a5;
     border: 2px solid #477a2d;
     border-radius: 10px;
     padding: 12px 15px;
-    font-size: 14px;
-    font-family: 'Courier New', monospace;
+    font:
+        14px 'Courier New',
+        monospace;
     transition:
         border-color 0.3s,
         box-shadow 0.3s;
 }
-
 .dark-input:focus {
     border-color: #94ff96;
-    box-shadow: 0 0 10px rgba(148, 255, 150, 0.5);
-    outline: none;
+    box-shadow: 0 0 10px #94ff9680;
+    outline: 0;
 }
-
 .description-area {
     height: 100px;
     resize: none;
-    border-radius: 15px;
     max-width: 95%;
-    background-image: linear-gradient(rgba(20, 30, 15, 0.9), rgba(20, 30, 15, 0.7));
+    background: linear-gradient(#141e0fe6, #141e0fb3);
 }
-
 .button-container {
     margin-top: auto;
 }
-
 .action-button {
     width: 100%;
-    background-color: #4d8c3d;
-    color: white;
-    border: none;
+    background: #4d8c3d;
+    color: #fff;
+    border: 0;
     border-radius: 25px;
     padding: 12px;
     margin-bottom: 12px;
     cursor: pointer;
-    font-weight: bold;
+    font:
+        700 12px 'Press Start 2P',
+        cursive;
     text-transform: uppercase;
     letter-spacing: 1px;
     box-shadow: 0 4px 0 #2d5f1a;
     transition:
         transform 0.1s,
         box-shadow 0.1s;
-    font-family: 'Press Start 2P', cursive;
-    font-size: 12px;
-    position: relative;
 }
-
 .action-button::before {
-    content: '⚡';
     margin-right: 8px;
 }
-
 .action-button:hover {
-    background-color: #5da84a;
+    background: #5da84a;
     transform: translateY(2px);
     box-shadow: 0 2px 0 #2d5f1a;
 }
-
 .save-button {
-    background-color: #5d4037;
-    box-shadow: 0 4px 0 #2d5f1a;
+    background: #5d4037;
 }
-
-.save-button::before {
-    content: '💾';
-}
-
 .save-button:hover {
-    background-color: #5d4037;
-    transform: translateY(2px);
-    box-shadow: 0 2px 0 #2d5f1a;
+    background: #5d4037;
 }
 
 .small-buttons {
     display: flex;
-    justify-content: space-between;
     gap: 10px;
 }
-
 .small-button {
     flex: 1;
     padding: 8px;
     font-size: 10px;
 }
-
 .game-board {
     width: 100%;
     height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #e9d8b6;
+    background: #e9d8b6;
     border-radius: 15px;
-    box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 25px #0008;
     border: 8px solid #5d4037;
-    position: relative;
-    overflow: hidden;
-    pointer-events: none;
-
     min-width: 670px;
     min-height: 670px;
     max-width: 670px;
     max-height: 670px;
-    transform: translateZ(0);
-    will-change: transform;
-    contain: layout size;
-
-    & > * {
-        pointer-events: auto;
-        width: 650px;
-        height: 650px;
-        contain: layout size style;
-        transform: translateZ(0);
-    }
 }
-
-.board-grid > div {
-    border: 1px solid rgba(139, 69, 19, 0.3);
-    transition: all 0.2s;
+.game-board > * {
+    width: 650px;
+    height: 650px;
 }
-
-.board-grid > div:hover {
-    box-shadow: inset 0 0 10px rgba(255, 248, 220, 0.7);
-}
-
 .tiles-grid,
 .items-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
     margin-bottom: 20px;
-    background-color: #5d4037;
+    background: #5d4037;
     padding: 15px;
     border-radius: 8px;
     border: 2px solid #3e2723;
-    position: relative;
 }
-
-.tiles-grid::before,
-.items-grid::before {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    opacity: 0.1;
-    font-size: 20px;
-    pointer-events: none;
-}
-
-.tile-item,
-.item-container {
-    border-radius: 8px;
-    width: 100%;
-    aspect-ratio: 1/1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    background-color: rgba(20, 20, 40, 0.6);
-    background-size: cover;
-    transition:
-        transform 0.2s,
-        box-shadow 0.2s;
-    border: 2px solid #3d3d3d;
-    position: relative;
-    z-index: 1;
-}
-
-.center-panel {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-}
-
-@media (max-width: 1200px) {
-    .game-editor {
-        grid-template-columns: 250px 1fr 250px;
-    }
-}
-
-@media (max-width: 900px) {
-    .game-editor {
-        grid-template-columns: 200px 1fr 200px;
-    }
-
-    .section-header::before {
-        display: none;
-    }
-}
-
-@media (max-width: 600px) {
-    .game-editor {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr auto;
-    }
-
-    .panel {
-        max-height: 300px;
-        overflow-y: auto;
-    }
-}
-
 .popup {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background: #0008;
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 9999;
 }
-
 .popup-content {
-    position: relative;
-    background-color: #2d5f1a;
+    background: #2d5f1a;
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    z-index: 10000;
+    box-shadow: 0 4px 8px #0002;
+    position: relative;
 }
-
 .close {
     position: absolute;
     top: 10px;
     right: 10px;
-    font-size: 24px;
     cursor: pointer;
 }
-
-.title-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
 .logo-link {
     display: block;
     width: 60px;
     height: 60px;
     margin: 10px auto 20px;
-    transition: transform 0.2s;
     border-radius: 50%;
-    overflow: hidden;
     border: 3px solid #6a9c3c;
+    overflow: hidden;
+    transition: transform 0.2s;
 }
-
 .logo-link:hover {
     transform: scale(1.1);
 }
-
 .logo {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
-
 .cdk-drag-preview {
     z-index: 9999;
     opacity: 0.8;
     pointer-events: none;
-    will-change: transform;
-    contain: layout size style;
 }
-
-.cdk-drag-placeholder {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.cdk-drag-animating {
-    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
-}
-
-.cdk-drag-preview {
-    z-index: 1000;
-    pointer-events: none;
-}
-
 .cdk-drag-placeholder {
     opacity: 0;
 }
