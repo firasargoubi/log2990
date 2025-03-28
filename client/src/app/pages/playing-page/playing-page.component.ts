@@ -35,6 +35,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     @Output() gameState: GameState;
     @Output() remove = new EventEmitter<string>();
     @Output() deletedPlayers: Player[] = [];
+    @Output() isCTF: boolean = false;
     @Input() player!: Player;
     @Input() tileInfo: Tile;
     isInCombat: boolean = false;
@@ -226,6 +227,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     onRemovePlayer(): void {
         this.remove.emit(this.player.id);
     }
+
     abandon() {
         if (!this.gameState || !this.currentPlayer) {
             this.router.navigate([PageUrl.Home], { replaceUrl: true });
@@ -316,6 +318,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
             this.lobbyService.onTurnStarted().subscribe((data) => {
                 this.gameState = data.gameState;
+                if (this.gameState.gameMode === PLAYING_PAGE.ctf) {
+                    this.isCTF = true;
+                    this.lobbyService.createTeams(this.lobbyId, this.gameState.players);
+                }
                 this.syncCurrentPlayerWithGameState();
                 this.notifyPlayerTurn(data.currentPlayer);
             }),
@@ -372,6 +378,18 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.lobbyService.onGameOver().subscribe((data) => {
                 this.abandon();
                 this.notificationService.showInfo(`${data.winner} est vraiment le goat my god.`);
+            }),
+
+            this.lobbyService.teamCreated().subscribe((data) => {
+                if (data) {
+                    this.gameState = {
+                        ...this.gameState,
+                        teams: {
+                            team1: data.team1,
+                            team2: data.team2,
+                        },
+                    };
+                }
             }),
         );
     }

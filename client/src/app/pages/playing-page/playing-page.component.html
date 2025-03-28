@@ -2,14 +2,15 @@
     <div class="sidebar-left">
         <div class="component-box">
             <app-game-info
+                [gameState]="gameState"
                 [gameName]="getGameName()"
                 [mapSize]="getMapSize()"
                 [playerCount]="getPlayerCount()"
                 [activePlayer]="getActivePlayer()"
                 [players]="getPlayers()"
                 [deletedPlayers]="getDeletedPlayers()"
+                [isCTF]="isCTF"
             >
-                >
             </app-game-info>
             <div class="header">
                 @if (gameState && currentPlayer && currentPlayer.isHost && gameState.debug) {

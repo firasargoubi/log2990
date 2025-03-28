@@ -20,5 +20,10 @@ export interface GameState {
         endTime: Date;
     };
     debug: boolean;
+    gameMode: string;
     animation?: boolean;
+    teams?: {
+        team1: Player[];        
+        team2: Player[];
+    };
 }

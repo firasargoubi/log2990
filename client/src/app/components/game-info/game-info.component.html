@@ -18,6 +18,9 @@
     <ul>
         @for (player of players; track player.id) {
         <li>{{ player.name }}</li>
+        @if (isCTF) {
+            - <strong>Équipe:</strong> {{ getTeam(player) }}
+        }
         }
     </ul>
 </div>

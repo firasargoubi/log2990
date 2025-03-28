@@ -97,6 +97,10 @@ export class SocketService {
         socket.on('updateCombatTime', (data: { lobbyId: string; timeLeft: number }) => {
             this.gameSocketHandlerService.updateCombatTime(data.lobbyId, data.timeLeft);
         });
+
+        socket.on('createTeams', (data: { lobbyId: string; players: Player[] }) => {
+            this.createTeams(data.lobbyId, data.players);
+        });
     }
 
     private handleCreateLobby(socket: Socket, game: Game): void {
@@ -281,5 +285,9 @@ export class SocketService {
 
     private terminateAttack(lobbyId: string) {
         this.gameSocketHandlerService.handleTerminateAttack(lobbyId);
+    }
+
+    private createTeams(lobbyId: string, players: Player[]) {
+        this.gameSocketHandlerService.createTeams(lobbyId, players);
     }
 }

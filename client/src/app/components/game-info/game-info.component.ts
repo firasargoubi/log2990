@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
+import { GameState } from '@common/game-state';
 
 export interface Player {
     id: string;
@@ -33,7 +34,15 @@ export class GameInfoComponent {
     @Input() activePlayer: string = '';
     @Input() players: Player[] = [];
     @Input() deletedPlayers: Player[] = [];
+    @Input() isCTF: boolean = false;
+    @Input() gameState: GameState | undefined;
+
     getPlayersDeleted(): Player[] {
         return this.deletedPlayers;
+    }
+
+    getTeam(player: Player): string {
+        if (!this.gameState?.teams) return 'Aucune';
+        return this.gameState.teams.team1.some((p) => p.id === player.id) ? 'Red' : 'Blue';
     }
 }

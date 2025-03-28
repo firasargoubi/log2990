@@ -418,6 +418,14 @@ export class LobbyService {
         });
     }
 
+    teamCreated(): Observable<{ team1: Player[]; team2: Player[] }> {
+        return new Observable((observer) => {
+            this.socket.on('teamsCreated', (data) => {
+                observer.next(data);
+            });
+        });
+    }
+
     onFleeSuccess(): Observable<{ fleeingPlayer: Player }> {
         return new Observable((observer) => {
             this.socket.on('fleeSuccess', (data) => {
@@ -426,13 +434,16 @@ export class LobbyService {
         });
     }
 
-    // Listen for failed flee attempts
     onFleeFailure(): Observable<{ fleeingPlayer: Player }> {
         return new Observable((observer) => {
             this.socket.on('fleeFailure', (data) => {
                 observer.next(data);
             });
         });
+    }
+
+    createTeams(lobbyId: string, players: Player[]): void {
+        this.socket.emit('createTeams', { lobbyId, players });
     }
 }
 function shareReplay<T>(bufferSize: number): import('rxjs').OperatorFunction<T, T> {

@@ -10,7 +10,6 @@ import { Service } from 'typedi';
 import { BoardService } from './board.service';
 import { GameService } from './game.service';
 import { LobbySocketHandlerService } from './lobby-socket-handler.service';
-
 const ANIMATION_DELAY_MS = 150;
 const MAX_WIN_COUNT = 3;
 const FLEE_RATE_PERCENT = 30;
@@ -35,6 +34,7 @@ export class GameSocketHandlerService {
     async handleRequestStart(socket: Socket, lobbyId: string) {
         const lobby = this.lobbies.get(lobbyId);
         const game = await this.gameService.getGameById(lobby.gameId);
+        const gameState = await this.boardService.initializeGameState(lobby);
         if (!game) {
             socket.emit(GameEvents.Error, gameSocketMessages.gameNotFound);
             return;
@@ -59,8 +59,6 @@ export class GameSocketHandlerService {
         }
 
         try {
-            const gameState = await this.boardService.initializeGameState(lobby);
-
             this.gameStates.set(lobbyId, gameState);
 
             lobby.isLocked = true;
@@ -349,6 +347,14 @@ export class GameSocketHandlerService {
 
         this.gameStates.set(lobbyId, updatedGameState);
         this.io.to(lobbyId).emit('boardModified', { gameState: updatedGameState });
+    }
+
+    createTeams(lobbyId: string, players: Player[]) {
+        const shuffledPlayers = [...players].sort(() => Math.random() - 0.5);
+        const half = Math.ceil(players.length / 2);
+        const team1: Player[] = shuffledPlayers.slice(0, half).map((player) => ({ ...player, team: 'Red' }));
+        const team2: Player[] = shuffledPlayers.slice(half).map((player) => ({ ...player, team: 'Blue' }));
+        this.io.to(lobbyId).emit(GameEvents.TeamsCreated, { team1, team2 });
     }
 
     handleAttackAction(lobbyId: string, attacker: Player, defender: Player) {
