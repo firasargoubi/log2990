@@ -1,7 +1,7 @@
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { Component, ElementRef, inject, ViewChild, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { BoardComponent } from '@app/components/board/board.component';
 import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
@@ -21,7 +21,7 @@ import { catchError, EMPTY, tap } from 'rxjs';
     selector: 'app-game-page',
     templateUrl: './edition-page.component.html',
     styleUrls: ['./edition-page.component.scss'],
-    imports: [FormsModule, BoardComponent, TileOptionsComponent, ObjectsComponent, DragDropModule],
+    imports: [FormsModule, BoardComponent, TileOptionsComponent, ObjectsComponent, DragDropModule, RouterLink],
 })
 export class EditionPageComponent implements OnInit {
     @ViewChild('board', { static: false }) boardElement: ElementRef;
