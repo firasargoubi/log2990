@@ -23,8 +23,8 @@
             </app-player-list>
 
             @if (isHost()) {
-            <button mat-icon-button (click)="lockRoom()" class="action promote" matTooltip="Promouvoir" matTooltipPosition="below">
-                <i>🔒</i>
+            <button mat-icon-button (click)="lockRoom()" class="action promote" matTooltip="Verouiller/Déverouiller" matTooltipPosition="below">
+                <i>{{ lobby.isLocked ? '🔒' : '🔓' }}</i>
             </button>
             }
         </div>

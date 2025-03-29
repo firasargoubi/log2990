@@ -1,37 +1,61 @@
-<div class="container">
-    <section class="game-info-container">
+<div class="game-editor" cdkDropListGroup>
+    <div class="panel left-panel">
         <a routerLink="/home" class="logo-link">
             <img class="logo" src="assets/images/logo.png" alt="Logo" />
         </a>
-        <input type="text" [(ngModel)]="game.name" placeholder="Entrer le nom du jeu" class="input-field" maxlength="20" />
-        <textarea [(ngModel)]="game.description" placeholder="Entrer une description" class="textarea-field" maxlength="100"></textarea>
-        <button class="button" (click)="saveBoard()">
-            <img src="assets/objects/save.png" alt="Save" class="save-icon" />
-        </button>
-        <button class="button" (click)="resetBoard()">
-            <img src="assets/objects/reset-icon.png" alt="Reset" class="save-icon" />
-        </button>
-    </section>
+        <div class="section-header">TITRE</div>
+        <div class="input-container">
+            <input type="text" placeholder="ENTREZ UN TITRE" class="dark-input" [(ngModel)]="game.name" />
+        </div>
 
-    <section class="main-content" cdkDropListGroup>
-        <div class="tile-tools">
+        <div class="section-header">DESCRIPTION</div>
+        <div class="input-container">
+            <textarea placeholder="ENTREZ UNE DESCRIPTION" class="dark-input description-area" [(ngModel)]="game.description"></textarea>
+        </div>
+
+        <div class="mode-info">
+            <div class="info-row">
+                <span class="info-label">MODE : </span>
+                <span class="info-value">{{ game.mode }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">TAILLE : </span>
+                <span class="info-value">{{ game.mapSize }}</span>
+            </div>
+        </div>
+
+        <div class="button-container">
+            <button class="action-button save-button" (click)="saveBoard()">💾 SAUVEGARDER</button>
+            <div class="small-buttons">
+                <button class="action-button small-button" (click)="resetBoard()">RÉINITIALISER</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel center-panel">
+        <div class="game-board">
+            @if (gameLoaded) {
+            <app-board [game]="game"></app-board>
+            } @else {
+            <app-board></app-board>
+            }
+        </div>
+    </div>
+
+    <div class="panel right-panel">
+        <div class="section-header">TUILES</div>
+        <div class="tiles-grid">
             <app-tile-options></app-tile-options>
         </div>
-        @if (gameLoaded) {
-        <div #board class="board-container">
-            <app-board [game]="game"></app-board>
-        </div>
-        } @else {
-        <div class="board-container">
-            <app-board></app-board>
-        </div>
-        }
-        <div class="object-tools">
+
+        <div class="section-header">ITEMS</div>
+        <div class="items-grid">
             @if (gameLoaded) {
             <app-objects [mapSize]="game.mapSize" [gameMode]="game.mode"></app-objects>
             }
         </div>
-    </section>
+    </div>
+
     @if (showErrorPopup) {
     <div class="popup">
         <div class="popup-content">

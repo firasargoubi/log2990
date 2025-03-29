@@ -1,6 +1,6 @@
-<h2>Joindre une partie</h2>
 <form>
-    <div>
+    <div class="form-container">
+        <h2>Joindre une partie</h2>
         <label for="id">Identifiant de partie: </label>
         <input
             id="id"
@@ -14,7 +14,6 @@
         />
     </div>
 
-    <!-- Message d'erreur -->
     <div *ngIf="errorMessage" class="error-message">
         {{ errorMessage }}
     </div>

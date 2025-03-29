@@ -18,10 +18,7 @@ export class MainPageComponent {
     message: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
     openLobbyForm(): void {
-        const dialogRef: MatDialogRef<LobbyFormComponent> = this.dialog.open(LobbyFormComponent, {
-            width: '700px',
-            height: '400px',
-        });
+        const dialogRef: MatDialogRef<LobbyFormComponent> = this.dialog.open(LobbyFormComponent, {});
 
         dialogRef.afterClosed().subscribe({
             next: (result) => {
