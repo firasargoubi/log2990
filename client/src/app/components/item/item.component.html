@@ -1,5 +1,5 @@
 @if (isPlaced) {
-    <div class="grey-item item">
+    <div class="grey-item item" cdkDrag [cdkDragDisabled]="isPlaced">
         <img [src]="image" [matTooltip]="description" matTooltipPosition="before">
     </div>
     <p [innerText]="name"></p>
@@ -15,9 +15,6 @@
 @if (type === objectsTypes.SPAWN) {
     <p class="counter">{{objectCounterService.spawnCounter$ | async}}</p>
 }
-@else if (type === objectsTypes.FLAG) {
-    <p class="counter">{{uniqueCounter}}</p>
-}
-@else {
+@else if (type !== objectsTypes.FLAG) {
     <p class="counter">{{objectCounterService.itemCounter$ | async}}</p>
 }

@@ -114,8 +114,6 @@ export class ItemComponent implements OnInit, OnDestroy {
             const subscription = this.objectCounterService.itemCounter$.subscribe((value) => {
                 if (value <= 0) {
                     this.isPlaced = true;
-                } else {
-                    this.isPlaced = false;
                 }
             });
             this.subscriptions.push(subscription);

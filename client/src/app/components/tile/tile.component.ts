@@ -5,7 +5,7 @@ import { ItemComponent } from '@app/components/item/item.component';
 import { GAME_IMAGES } from '@app/Consts/app.constants';
 import { DEFAULT_ITEMS } from '@app/interfaces/default-items';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
-import { TileTypes } from '@common/game.interface';
+import { ObjectsTypes, TileTypes } from '@common/game.interface';
 @Component({
     selector: 'app-tile',
     imports: [CommonModule, CdkDropList, CdkDrag],
@@ -89,6 +89,7 @@ export class TileComponent implements OnInit {
 
     drop(event: CdkDragDrop<ItemComponent[]>) {
         const draggedItem = event.previousContainer.data[event.previousIndex];
+        console.log(draggedItem);
 
         if (this.type === TileTypes.DoorClosed || this.type === TileTypes.DoorOpen || this.type === TileTypes.Wall) {
             return;
@@ -97,6 +98,9 @@ export class TileComponent implements OnInit {
             this.placedItem.push(draggedItem);
             event.previousContainer.data.splice(event.previousIndex, 1);
         } else if (!this.placedItem.length) {
+            if (draggedItem.type !== ObjectsTypes.SPAWN) {
+                draggedItem.isPlaced = true;
+            }
             this.placedItem.push(draggedItem);
             this.decrementCounter(draggedItem);
         }
