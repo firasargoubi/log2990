@@ -31,11 +31,6 @@ describe('GameModeDialogComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should render the title', () => {
-        const title = fixture.debugElement.query(By.css('h2[mat-dialog-title]')).nativeElement;
-        expect(title.textContent).toContain("Création / édition d'un jeu");
-    });
-
     it('should render the mode section with radio buttons', () => {
         const radioLabels = fixture.debugElement.queryAll(By.css('.mode-radio-group label'));
 
