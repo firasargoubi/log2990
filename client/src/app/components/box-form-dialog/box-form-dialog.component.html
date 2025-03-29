@@ -8,7 +8,7 @@
     </div>
 
     <div class="avatar-grid">
-        <label>Choisi ton avatar: </label>
+        <label>Choisis ton avatar: </label>
         <div class="avatars">
             @for (avatar of avatars; track avatar) {
             <img [src]="avatar" [class.selected]="form.get('avatar')?.value === avatar" (click)="selectAvatar(avatar)" alt="Avatar" />
@@ -17,7 +17,7 @@
     </div>
 
     <div class="description1">
-        <label>Choisi un bonus</label>
+        <label>Choisis un bonus</label>
     </div>
 
     <div class="stats">

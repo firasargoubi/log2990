@@ -116,7 +116,8 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
     lockRoom(): void {
         if (this.lobby?.id) {
             this.lobbyService.lockLobby(this.lobby.id);
-            this.notificationService.showSuccess(WAITING_PAGE_CONSTANTS.gameLocked);
+            const message = this.lobby.isLocked ? WAITING_PAGE_CONSTANTS.gameUnlocked : WAITING_PAGE_CONSTANTS.gameLocked;
+            this.notificationService.showSuccess(message);
         }
     }
 

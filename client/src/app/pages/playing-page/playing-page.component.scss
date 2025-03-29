@@ -1,4 +1,3 @@
-/* Global Styles */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -14,7 +13,6 @@ body {
     background-position: center;
 }
 
-/* Main Game Container */
 .game-container {
     display: flex;
     justify-content: space-between;
@@ -24,7 +22,6 @@ body {
     width: 100%;
 }
 
-/* Common Panel Styling */
 .sidebar-left,
 .sidebar-right {
     background-color: rgba(35, 75, 41, 0.9);
@@ -39,17 +36,14 @@ body {
     scrollbar-color: #75b94a #143018;
 }
 
-/* Sidebar Left (Player Info) */
 .sidebar-left {
     width: 25%;
 }
 
-/* Sidebar Right (Game Info, Chat, and Buttons) */
 .sidebar-right {
     width: 30%;
 }
 
-/* Scrollbar Styling for Both Sidebars */
 .sidebar-left::-webkit-scrollbar,
 .sidebar-right::-webkit-scrollbar {
     width: 8px;
@@ -67,7 +61,6 @@ body {
     border-radius: 10px;
 }
 
-/* Section Headers */
 h3,
 h4 {
     background-color: #3a7d23;
@@ -83,7 +76,6 @@ h4 {
     position: relative;
 }
 
-/* Common Text Styling */
 ul li,
 .app-game-info p,
 .app-messages p {
@@ -93,20 +85,17 @@ ul li,
     line-height: 1.4;
 }
 
-/* Emphasis Text */
 ul li strong,
 .app-game-info strong,
 .app-countdown-timer h4 {
     color: #94ff96;
 }
 
-/* Lists */
 ul {
     list-style-type: none;
     padding-left: 5px;
 }
 
-/* Avatar Styling */
 img {
     border-radius: 50%;
     border: 3px solid #6a9c3c;
@@ -115,7 +104,6 @@ img {
     margin: 0 auto 15px auto;
 }
 
-/* Action Buttons */
 .action-buttons {
     display: flex;
     flex-direction: column;
@@ -165,7 +153,6 @@ img {
     transform: translateY(2px);
 }
 
-/* Game Board Section */
 .main-content {
     width: 40%;
     display: flex;
@@ -186,7 +173,6 @@ img {
     position: relative;
 }
 
-/* Debug Indicator */
 .debug-indicator {
     background-color: #75b94a;
     color: #143018;
@@ -200,49 +186,4 @@ img {
     left: 0;
     right: 0;
     z-index: 1000;
-}
-
-/* Responsive Design */
-@media (max-width: 1200px) {
-    .game-container {
-        padding: 15px;
-        gap: 15px;
-    }
-}
-
-@media (max-width: 900px) {
-    .action-buttons button::before {
-        display: none;
-    }
-
-    .sidebar-left,
-    .sidebar-right {
-        padding: 15px;
-    }
-}
-
-@media (max-width: 768px) {
-    .game-container {
-        flex-direction: column;
-        align-items: center;
-        height: auto;
-        overflow-y: auto;
-    }
-
-    .sidebar-left,
-    .sidebar-right,
-    .main-content {
-        width: 100%;
-        margin-bottom: 20px;
-        max-height: none;
-    }
-
-    .board-container {
-        height: 400px;
-    }
-
-    .action-buttons button {
-        width: 100%;
-        padding: 10px;
-    }
 }

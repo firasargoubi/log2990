@@ -106,6 +106,7 @@ export const EDITION_PAGE_CONSTANTS = {
 };
 export const WAITING_PAGE_CONSTANTS = {
     gameLocked: 'La partie est verrouillée',
+    gameUnlocked: 'La partie est déverrouillée',
     errorStartGame: 'Impossible de démarrer la partie',
     errorPlayerKicked: "Vous avez été expulsé par l'administrateur",
     lobbyCancelled: 'La partie a été annulée',
