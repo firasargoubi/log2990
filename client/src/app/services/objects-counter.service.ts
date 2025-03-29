@@ -23,6 +23,8 @@ export class ObjectCounterService {
             case ObjectsTypes.SPAWN:
                 this.spawnCounterSubject.next(this.spawnCounterSubject.value + 1);
                 break;
+            case ObjectsTypes.FLAG:
+                break;
             default:
                 this.itemCounterSubject.next(this.itemCounterSubject.value + 1);
                 break;
@@ -35,6 +37,8 @@ export class ObjectCounterService {
                 if (this.spawnCounterSubject.value > 0) {
                     this.spawnCounterSubject.next(this.spawnCounterSubject.value - 1);
                 }
+                break;
+            case ObjectsTypes.FLAG:
                 break;
             default:
                 if (this.itemCounterSubject.value > 0) {

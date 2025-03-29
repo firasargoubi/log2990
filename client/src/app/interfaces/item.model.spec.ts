@@ -1,5 +1,5 @@
 import { ItemModel } from './item.model';
-import { ObjectsTypes } from '@app/Consts/app.constants';
+import { ObjectsTypes } from '@common/game.interface';
 
 describe('ItemModel', () => {
     it('should create an instance with the correct type', () => {

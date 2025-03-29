@@ -3,7 +3,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ItemComponent } from './item.component';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { of, Subject } from 'rxjs';
-import { OBJECT_NAMES, ObjectsTypes } from '@app/Consts/app.constants';
+import { OBJECT_NAMES } from '@app/Consts/app.constants';
+import { ObjectsTypes } from '@common/game.interface';
 
 describe('ItemComponent', () => {
     let component: ItemComponent;

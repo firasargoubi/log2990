@@ -2,7 +2,7 @@
 import { TestBed } from '@angular/core/testing';
 import { take } from 'rxjs/operators';
 import { ObjectCounterService } from './objects-counter.service';
-import { ObjectsTypes } from '@app/Consts/app.constants';
+import { ObjectsTypes } from '@common/game.interface';
 
 describe('ObjectCounterService', () => {
     let service: ObjectCounterService;

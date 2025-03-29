@@ -1,9 +1,9 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Tile } from '@common/tile';
-import { Player } from '@common/player';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { GAME_IMAGES } from '@app/Consts/app.constants';
-import { TileTypes, ObjectsTypes } from '@common/game.interface';
+import { ObjectsTypes, TileTypes } from '@common/game.interface';
+import { Player } from '@common/player';
+import { Tile } from '@common/tile';
 
 @Component({
     selector: 'app-game-tile',
@@ -60,8 +60,10 @@ export class GameTileComponent {
                 return GAME_IMAGES.vortex;
             case ObjectsTypes.RANDOM:
                 return GAME_IMAGES.gnome;
+            case ObjectsTypes.FLAG:
+                return GAME_IMAGES.flag;
             default:
-                return GAME_IMAGES.undefined;
+                return 'flop';
         }
     }
 

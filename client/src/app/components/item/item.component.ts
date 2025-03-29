@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { GAME_IMAGES, OBJECT_NAMES, OBJECTS_DESCRIPTION } from '@app/Consts/app.constants';
-import { ObjectsTypes } from '@common/game.interface';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
+import { ObjectsTypes } from '@common/game.interface';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -18,6 +18,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     @Input() isPlaced: boolean = false;
 
     objectsTypes = ObjectsTypes;
+    uniqueCounter = 1;
     private subscriptions: Subscription[] = [];
 
     constructor(public objectCounterService: ObjectCounterService) {}
@@ -40,6 +41,8 @@ export class ItemComponent implements OnInit, OnDestroy {
                 return GAME_IMAGES.vortex;
             case ObjectsTypes.RANDOM:
                 return GAME_IMAGES.gnome;
+            case ObjectsTypes.FLAG:
+                return GAME_IMAGES.flag;
             default:
                 return GAME_IMAGES.undefined;
         }
@@ -63,6 +66,8 @@ export class ItemComponent implements OnInit, OnDestroy {
                 return OBJECT_NAMES.vortex;
             case ObjectsTypes.RANDOM:
                 return OBJECT_NAMES.gnome;
+            case ObjectsTypes.FLAG:
+                return OBJECT_NAMES.flag;
             default:
                 return OBJECT_NAMES.undefined;
         }
@@ -86,6 +91,8 @@ export class ItemComponent implements OnInit, OnDestroy {
                 return OBJECTS_DESCRIPTION.vortex;
             case ObjectsTypes.RANDOM:
                 return OBJECTS_DESCRIPTION.gnome;
+            case ObjectsTypes.FLAG:
+                return OBJECTS_DESCRIPTION.flag;
             default:
                 return OBJECTS_DESCRIPTION.undefined;
         }
@@ -101,6 +108,8 @@ export class ItemComponent implements OnInit, OnDestroy {
                 }
             });
             this.subscriptions.push(subscription);
+        } else if (this.type === ObjectsTypes.FLAG) {
+            this.isPlaced = false;
         } else {
             const subscription = this.objectCounterService.itemCounter$.subscribe((value) => {
                 if (value <= 0) {

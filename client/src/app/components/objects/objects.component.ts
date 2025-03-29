@@ -18,7 +18,7 @@ import { filter } from 'rxjs/operators';
 })
 export class ObjectsComponent implements OnInit, OnDestroy {
     @Input() mapSize: string;
-    @Input() gameMode: GameType;
+    @Input() gameMode!: GameType;
     range: number[] = [];
     items: ItemModel[] = [];
     private subscriptions: Subscription[] = [];
@@ -27,7 +27,6 @@ export class ObjectsComponent implements OnInit, OnDestroy {
         private counterService: ObjectCounterService,
         private router: Router,
     ) {
-        this.range = this.generateRange(1);
         this.counterService.spawnCounter$.pipe(takeUntilDestroyed()).subscribe((value) => {
             if (value === 0) {
                 const spawnItem = this.items.find((item) => item.type === ObjectsTypes.SPAWN);
@@ -39,13 +38,13 @@ export class ObjectsComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
+        this.range = this.generateRange();
         this.resetComponent();
         this.subscriptions.push(
             this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
                 this.resetComponent();
             }),
         );
-        console.log(this.items);
     }
 
     ngOnDestroy(): void {
@@ -54,7 +53,6 @@ export class ObjectsComponent implements OnInit, OnDestroy {
 
     drop(event: CdkDragDrop<ItemModel[]>): void {
         const draggedItem = event.previousContainer.data[event.previousIndex];
-        console.log(draggedItem);
         if (event.previousContainer !== event.container) {
             draggedItem.isPlaced = false;
             event.previousContainer.data.splice(event.previousIndex, 1);
@@ -70,14 +68,13 @@ export class ObjectsComponent implements OnInit, OnDestroy {
         }
     }
 
-    private generateRange(start: number): number[] {
+    private generateRange(): number[] {
         let rangeEnd = 8;
-
         if (this.gameMode === GameType.capture) {
-            rangeEnd = 9;
+            rangeEnd++;
         }
 
-        return Array.from({ length: rangeEnd - start + 1 }, (_, i) => start + i);
+        return Array.from({ length: rangeEnd }, (_, i) => 1 + i);
     }
 
     private incrementCounter(item: ItemModel): void {

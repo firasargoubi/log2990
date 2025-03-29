@@ -120,6 +120,7 @@ export const GAME_IMAGES = {
     berryJuice: 'assets/objects/berry-juice.png',
     vortex: 'assets/objects/vortex.png',
     gnome: 'assets/objects/gnome.png',
+    flag: 'assets/objects/flag.png',
     undefined: 'assets/objects/undefined.png',
 };
 
@@ -155,6 +156,7 @@ export const OBJECT_NAMES = {
     berryJuice: 'Jus de baies',
     vortex: 'Point de départ',
     gnome: 'Gnome mystère',
+    flag: 'Drapeau',
     undefined: 'Objet inconnu',
 };
 
@@ -167,6 +169,7 @@ export const OBJECTS_DESCRIPTION = {
     berryJuice: 'Ne paniquez pas, ce nectar soignera toutes vos blessures!',
     vortex: "Cet objet indique l'endroit où une bataille épique est sur le point d'avoir lieu",
     gnome: 'Ce petit gnome farceur a un cadeau pour vous. À vos risque et périls...',
+    flag: "Cette relique à l'effigie de la reine de la forêt doit être sécurisé à tout prix.",
     undefined: 'Objet inconnu',
 };
 

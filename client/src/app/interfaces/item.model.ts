@@ -28,6 +28,8 @@ export class ItemModel {
                 return GAME_IMAGES.vortex;
             case ObjectsTypes.RANDOM:
                 return GAME_IMAGES.gnome;
+            case ObjectsTypes.FLAG:
+                return GAME_IMAGES.flag;
             default:
                 return GAME_IMAGES.undefined;
         }
@@ -51,6 +53,8 @@ export class ItemModel {
                 return OBJECT_NAMES.vortex;
             case ObjectsTypes.RANDOM:
                 return OBJECT_NAMES.gnome;
+            case ObjectsTypes.FLAG:
+                return OBJECT_NAMES.flag;
             default:
                 return OBJECT_NAMES.undefined;
         }
@@ -74,6 +78,8 @@ export class ItemModel {
                 return OBJECTS_DESCRIPTION.vortex;
             case ObjectsTypes.RANDOM:
                 return OBJECTS_DESCRIPTION.gnome;
+            case ObjectsTypes.FLAG:
+                return OBJECTS_DESCRIPTION.flag;
             default:
                 return OBJECTS_DESCRIPTION.undefined;
         }

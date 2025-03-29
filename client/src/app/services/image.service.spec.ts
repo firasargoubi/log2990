@@ -4,8 +4,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ImageService } from './image.service';
 import { Tile } from '@common/tile';
-import { TileTypes } from '@app/interfaces/tile-types';
-import { ObjectsTypes } from '@app/Consts/app.constants';
+import { ObjectsTypes, TileTypes } from '@common/game.interface';
 import * as html2canvasModule from 'html2canvas';
 
 describe('ImageService', () => {

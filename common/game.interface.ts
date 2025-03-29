@@ -37,6 +37,8 @@ export enum ObjectsTypes {
     JUICE = 6,
     SPAWN = 7,
     RANDOM = 8,
+    FLAG = 9,
+    EMPTY = 0,
 }
 
 export enum TileTypes {

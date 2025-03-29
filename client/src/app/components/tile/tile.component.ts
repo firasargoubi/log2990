@@ -4,8 +4,8 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ItemComponent } from '@app/components/item/item.component';
 import { GAME_IMAGES } from '@app/Consts/app.constants';
 import { DEFAULT_ITEMS } from '@app/interfaces/default-items';
-import { TileTypes } from '@common/game.interface';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
+import { TileTypes } from '@common/game.interface';
 @Component({
     selector: 'app-tile',
     imports: [CommonModule, CdkDropList, CdkDrag],
@@ -99,13 +99,9 @@ export class TileComponent implements OnInit {
         } else if (!this.placedItem.length) {
             this.placedItem.push(draggedItem);
             this.decrementCounter(draggedItem);
-            console.log(draggedItem);
         }
 
         this.objectID = draggedItem.type;
         this.objectMoved.emit(true);
-        console.log('Objects container : ', event.previousContainer.data);
-        console.log('Objects container id: ', event.previousContainer.id);
-
     }
 }
