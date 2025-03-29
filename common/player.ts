@@ -18,4 +18,8 @@ export interface Player {
     currentMP?: number;
     currentAP?: number;
     winCount: number;
+    virtualPlayerData?: {
+        profile: 'aggressive' | 'defensive';
+        decisionDelay: number;
+    };
 }

@@ -9,6 +9,8 @@
             </li>
             @if (player.isHost) {
             <li>👑</li>
+            } @if(player.virtualPlayerData) {
+            <li>💻</li>
             }
         </ul>
         <div class="player-stats">
