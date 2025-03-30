@@ -54,9 +54,8 @@ export class ObjectsComponent implements OnInit, OnDestroy {
     drop(event: CdkDragDrop<ItemModel[]>): void {
         const draggedItem = event.previousContainer.data[event.previousIndex];
         if (event.previousContainer !== event.container) {
-            draggedItem.isPlaced = false;
-            event.previousContainer.data.splice(event.previousIndex, 1);
             this.incrementCounter(draggedItem);
+            event.previousContainer.data.splice(event.previousIndex, 1);
         }
     }
 

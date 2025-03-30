@@ -63,7 +63,7 @@ export class GameTileComponent {
             case ObjectsTypes.FLAG:
                 return GAME_IMAGES.flag;
             default:
-                return 'flop';
+                return GAME_IMAGES.undefined;
         }
     }
 

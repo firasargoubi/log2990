@@ -15,7 +15,7 @@ import { Subscription } from 'rxjs';
 })
 export class ItemComponent implements OnInit, OnDestroy {
     @Input() type: number;
-    @Input() isPlaced: boolean = false;
+    isPlaced: boolean = false;
 
     objectsTypes = ObjectsTypes;
     uniqueCounter = 1;
@@ -101,26 +101,40 @@ export class ItemComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         if (this.type === ObjectsTypes.SPAWN) {
             const subscription = this.objectCounterService.spawnCounter$.subscribe((value) => {
-                if (value <= 0) {
-                    this.isPlaced = true;
-                } else {
-                    this.isPlaced = false;
-                }
+                this.isPlaced = value > 0 ? false : true;
             });
             this.subscriptions.push(subscription);
         } else if (this.type === ObjectsTypes.FLAG) {
-            this.isPlaced = false;
+            this.subscriptions.push(
+                this.objectCounterService.flagPlaced$.subscribe((placed) => {
+                    this.isPlaced = placed;
+                }),
+            );
+        } else if (this.type === ObjectsTypes.RANDOM) {
+            this.subscriptions.push(
+                this.objectCounterService.itemCounter$.subscribe((value) => {
+                    this.isPlaced = value > 0 ? false : true;
+                }),
+            );
         } else {
-            const subscription = this.objectCounterService.itemCounter$.subscribe((value) => {
-                if (value <= 0) {
-                    this.isPlaced = true;
-                }
-            });
-            this.subscriptions.push(subscription);
+            this.subscriptions.push(
+                this.objectCounterService.itemCounter$.subscribe(() => {
+                    this.updateIsPlaced();
+                }),
+            );
+            this.updateIsPlaced();
         }
     }
 
     ngOnDestroy(): void {
         this.subscriptions.forEach((sub) => sub.unsubscribe());
+    }
+
+    private updateIsPlaced(): void {
+        if (this.type !== ObjectsTypes.SPAWN && this.type !== ObjectsTypes.FLAG) {
+            const isThisItemPlaced = this.objectCounterService.isItemPlaced(this.type);
+            const maxItemsPlaced = this.objectCounterService.getItemCounter() <= 0;
+            this.isPlaced = isThisItemPlaced || maxItemsPlaced;
+        }
     }
 }
