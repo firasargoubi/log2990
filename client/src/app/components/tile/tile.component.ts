@@ -4,11 +4,12 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ItemComponent } from '@app/components/item/item.component';
 import { GAME_IMAGES } from '@app/Consts/app.constants';
 import { DEFAULT_ITEMS } from '@app/interfaces/default-items';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { TileTypes } from '@common/game.interface';
 @Component({
     selector: 'app-tile',
-    imports: [CommonModule, CdkDropList, CdkDrag],
+    imports: [CommonModule, CdkDropList, CdkDrag, MatTooltipModule],
     templateUrl: './tile.component.html',
     styleUrl: './tile.component.scss',
 })

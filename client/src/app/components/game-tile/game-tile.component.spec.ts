@@ -214,6 +214,6 @@ describe('GameTileComponent', () => {
         component.tile = { ...component.tile, object: null as unknown as number };
         fixture.detectChanges();
 
-        expect(component.getObjectImage()).toBeNull();
+        expect(component.getObjectDescription()).toBeNull();
     });
 });

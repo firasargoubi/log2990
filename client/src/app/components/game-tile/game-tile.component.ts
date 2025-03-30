@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { GAME_IMAGES } from '@app/Consts/app.constants';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { GAME_IMAGES, OBJECTS_DESCRIPTION } from '@app/Consts/app.constants';
 import { ObjectsTypes, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
@@ -8,7 +9,7 @@ import { Tile } from '@common/tile';
 @Component({
     selector: 'app-game-tile',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, MatTooltipModule],
     templateUrl: './game-tile.component.html',
     styleUrls: ['./game-tile.component.scss'],
 })
@@ -64,6 +65,33 @@ export class GameTileComponent {
                 return GAME_IMAGES.flag;
             default:
                 return GAME_IMAGES.undefined;
+        }
+    }
+
+    getObjectDescription() {
+        if (!this.tile || !this.tile.object) return null;
+
+        switch (this.tile.object) {
+            case ObjectsTypes.BOOTS:
+                return OBJECTS_DESCRIPTION.boots;
+            case ObjectsTypes.SWORD:
+                return OBJECTS_DESCRIPTION.sword;
+            case ObjectsTypes.POTION:
+                return OBJECTS_DESCRIPTION.potion;
+            case ObjectsTypes.WAND:
+                return OBJECTS_DESCRIPTION.wand;
+            case ObjectsTypes.CRYSTAL:
+                return OBJECTS_DESCRIPTION.crystal;
+            case ObjectsTypes.JUICE:
+                return OBJECTS_DESCRIPTION.berryJuice;
+            case ObjectsTypes.SPAWN:
+                return OBJECTS_DESCRIPTION.vortex;
+            case ObjectsTypes.RANDOM:
+                return OBJECTS_DESCRIPTION.gnome;
+            case ObjectsTypes.FLAG:
+                return OBJECTS_DESCRIPTION.flag;
+            default:
+                return OBJECTS_DESCRIPTION.undefined;
         }
     }
 
