@@ -71,6 +71,7 @@ export class SaveService {
             minTerrain: this.verifyTilePercentage(),
             accessible: this.verifyAccessible(),
             allSpawnPoints: this.verifySpawnPoints(this.board.length),
+            ctfPlaced: this.verifyFlag(),
         };
     }
 
@@ -81,7 +82,6 @@ export class SaveService {
             lastModified: new Date(),
             isVisible: false,
         };
-
         if (!game.id) {
             this.gameService.createGame(gameData).subscribe();
         } else {
@@ -113,6 +113,15 @@ export class SaveService {
             default:
                 return count === OBJECT_COUNT.small;
         }
+    }
+
+    verifyFlag(): boolean {
+        for (const row of this.board) {
+            for (const tile of row) {
+                if (tile.object === ObjectsTypes.FLAG) return true;
+            }
+        }
+        return false;
     }
 
     verifyDoors(): boolean {

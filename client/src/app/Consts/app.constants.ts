@@ -82,6 +82,7 @@ export const EDITION_PAGE_CONSTANTS = {
     successGameLoaded: 'Jeu chargé avec succès.',
     errorGameLoad: 'Impossible de charger le jeu.',
     successGameSaved: 'Jeu sauvegardé avec succès.',
+    missingFlag: 'Il faut placer un drapeau en mode ctf!',
 };
 export const WAITING_PAGE_CONSTANTS = {
     gameLocked: 'La partie est verrouillée',

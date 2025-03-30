@@ -235,6 +235,20 @@ describe('SaveService', () => {
         });
     });
 
+    describe('verifyFlag', () => {
+        it('should return false if flag is not on the board', () => {
+            const board: Tile[][] = [[{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 0 }]];
+            service.verifyBoard(board);
+
+            expect(service.verifyFlag()).toBeFalse();
+        });
+        it('should return true if flag is on the board', () => {
+            const board: Tile[][] = [[{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 9 }]];
+            service.verifyBoard(board);
+
+            expect(service.verifyFlag()).toBeTrue();
+        });
+    });
     describe('Game saving operations', () => {
         it('should call createGame() if game has no ID', () => {
             const game: Game = {

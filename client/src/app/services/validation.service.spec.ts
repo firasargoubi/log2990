@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { TestBed } from '@angular/core/testing';
-import { ValidationService } from './validation.service';
+import { EDITION_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { Game, GameSize, GameType } from '@common/game.interface';
 import { ErrorService } from './error.service';
 import { SaveService } from './save.service';
-import { Game, GameSize, GameType } from '@common/game.interface';
-import { EDITION_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { ValidationService } from './validation.service';
 
 describe('ValidationService', () => {
     let service: ValidationService;
@@ -16,6 +16,18 @@ describe('ValidationService', () => {
         name: 'Test Game',
         mapSize: GameSize.small,
         mode: GameType.classic,
+        previewImage: '',
+        description: 'Test description',
+        lastModified: new Date(),
+        isVisible: true,
+        board: [],
+        objects: [],
+    };
+    const mockCtfGame: Game = {
+        id: '2',
+        name: 'Test CTF Game',
+        mapSize: GameSize.small,
+        mode: GameType.capture,
         previewImage: '',
         description: 'Test description',
         lastModified: new Date(),
@@ -132,5 +144,15 @@ describe('ValidationService', () => {
 
         expect(result).toBeFalse();
         expect(errorServiceSpy.addMessage).toHaveBeenCalledWith(EDITION_PAGE_CONSTANTS.errorInvalidMinTiles);
+    });
+
+    it('should invalidate ctf game with missing flag', () => {
+        const gameNames: string[] = ['Other Game'];
+        saveServiceSpy.currentStatus.ctfPlaced = false;
+
+        const result = service.validateGame(mockCtfGame, gameNames);
+
+        expect(result).toBeFalse();
+        expect(errorServiceSpy.addMessage).toHaveBeenCalledWith(EDITION_PAGE_CONSTANTS.missingFlag);
     });
 });
