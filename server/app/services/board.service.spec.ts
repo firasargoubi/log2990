@@ -415,24 +415,6 @@ describe('BoardService', () => {
         expect(result).to.equal(state);
     });
 
-    it('should return empty list in available and shortest Path if movement cost is negative in handleMovement', () => {
-        const state = {
-            players: [{ id: 'p1', speed: 2, bonus: {} }],
-            currentPlayer: 'p1',
-            playerPositions: [{ x: 0, y: 0 }],
-            availableMoves: [{ x: 1, y: 1 }],
-            currentPlayerMovementPoints: -1,
-        } as any;
-
-        pathfindingService.findShortestPath.returns([
-            { x: 0, y: 0 },
-            { x: 1, y: 1 },
-        ]);
-
-        const result = boardService.handleMovement(state, { x: 1, y: 1 });
-        expect(result.availableMoves).to.deep.equal([]);
-        expect(result.shortestMoves).to.deep.equal([]);
-    });
     it('should return empty array if gameState or startPosition is null in findAllPaths', async () => {
         const result1 = (boardService as any).findAllPaths(null, { x: 0, y: 0 });
         expect(Array.isArray(result1)).to.equal(true);

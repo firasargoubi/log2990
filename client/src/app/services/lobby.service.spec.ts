@@ -1,385 +1,683 @@
+/* eslint-disable @typescript-eslint/no-shadow */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable complexity */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable max-lines */
 import { TestBed } from '@angular/core/testing';
-import { Socket } from 'socket.io-client';
-import { SocketTestHelper } from './lobby-test-helper';
 import { LobbyService } from './lobby.service';
-import { Player } from '@common/player';
-import { Game, TileTypes } from '@common/game.interface';
+import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
-import { Coordinates } from '@common/coordinates';
+import { Game } from '@common/game.interface';
+import { Player } from '@common/player';
 import { Tile } from '@common/tile';
+import { take } from 'rxjs/operators';
 
 describe('LobbyService', () => {
     let service: LobbyService;
-    let socketHelper: SocketTestHelper;
+    let socketMock: any;
 
     beforeEach(() => {
-        TestBed.configureTestingModule({});
-        socketHelper = new SocketTestHelper();
+        // Create a mock for socket.io
+        socketMock = {
+            id: 'socket-id-123',
+            connected: true,
+            emit: jasmine.createSpy('emit'),
+            on: jasmine.createSpy('on'),
+            disconnect: jasmine.createSpy('disconnect'),
+            connect: jasmine.createSpy('connect'),
+        };
+
+        // Mock the io function
+        (window as any).io = jasmine.createSpy('io').and.returnValue(socketMock);
+
+        TestBed.configureTestingModule({
+            providers: [LobbyService],
+        });
+
         service = TestBed.inject(LobbyService);
-        service['socket'] = socketHelper as unknown as Socket;
+        // Replace the socket with our mock
+        (service as any).socket = socketMock;
     });
 
     it('should be created', () => {
         expect(service).toBeTruthy();
     });
 
-    it('should get socket id', () => {
-        expect(service.getSocketId()).toBe('test-socket-id');
-    });
+    describe('Player management', () => {
+        it('should set and get current player', () => {
+            const testPlayer: Player = {
+                id: 'player1',
+                name: 'Player One',
+                isHost: true,
+            } as Player;
 
-    it('should set and get current player', () => {
-        const player: Player = { name: 'TestPlayer', id: '123' } as Player;
-        service.setCurrentPlayer(player);
-        expect(service.getCurrentPlayer()).toEqual(player);
-    });
+            service.setCurrentPlayer(testPlayer);
 
-    it('should disconnect socket', () => {
-        const spy = spyOn(service['socket'], 'disconnect');
-        service.disconnect();
-        expect(spy).toHaveBeenCalled();
-    });
-
-    it('should reconnect when socket is not connected', () => {
-        socketHelper.connected = false;
-        const spy = spyOn(service['socket'], 'connect');
-        service.reconnect();
-        expect(spy).toHaveBeenCalled();
-    });
-
-    it('should not reconnect when socket is already connected', () => {
-        socketHelper.connected = true;
-        const spy = spyOn(service['socket'], 'connect');
-        service.reconnect();
-        expect(spy).not.toHaveBeenCalled();
-    });
-
-    it('should emit createLobby with game data', () => {
-        const game: Game = { id: 'game1', name: 'TestGame' } as Game;
-        const spy = spyOn(service['socket'], 'emit');
-        service.createLobby(game);
-        expect(spy).toHaveBeenCalledWith('createLobby', game);
-    });
-
-    it('should listen for lobbyCreated event', () => {
-        const mockLobby: GameLobby = { id: 'lobby1', players: [], isLocked: false, maxPlayers: 1, gameId: '1234' } as GameLobby;
-        const data = { lobby: mockLobby };
-        let result: any;
-
-        service.onLobbyCreated().subscribe((response) => {
-            result = response;
+            expect(service.getCurrentPlayer()).toEqual(testPlayer);
         });
 
-        socketHelper.peerSideEmit('lobbyCreated', data);
-        expect(result).toEqual(data);
-    });
-
-    it('should emit joinLobby with lobbyId and player', () => {
-        const lobbyId = 'lobby123';
-        const player: Player = { name: 'TestPlayer', id: '123' } as Player;
-        const spy = spyOn(service['socket'], 'emit');
-        service.joinLobby(lobbyId, player);
-        expect(spy).toHaveBeenCalledWith('joinLobby', { lobbyId, player });
-    });
-
-    it('should emit leaveLobby with lobbyId and playerName', () => {
-        const lobbyId = 'lobby123';
-        const playerName = 'TestPlayer';
-        const spy = spyOn(service['socket'], 'emit');
-        service.leaveLobby(lobbyId, playerName);
-        expect(spy).toHaveBeenCalledWith('leaveLobby', { lobbyId, playerName });
-    });
-
-    it('should emit leaveGame with lobbyId and playerName', () => {
-        const lobbyId = 'lobby123';
-        const playerName = 'TestPlayer';
-        const spy = spyOn(service['socket'], 'emit');
-        service.leaveGame(lobbyId, playerName);
-        expect(spy).toHaveBeenCalledWith('leaveGame', lobbyId, playerName);
-    });
-
-    it('should emit lockLobby with lobbyId', () => {
-        const lobbyId = 'lobby123';
-        const spy = spyOn(service['socket'], 'emit');
-        service.lockLobby(lobbyId);
-        expect(spy).toHaveBeenCalledWith('lockLobby', lobbyId);
-    });
-
-    it('should emit disconnectFromRoom with lobbyId', () => {
-        const lobbyId = 'lobby123';
-        const spy = spyOn(service['socket'], 'emit');
-        service.disconnectFromRoom(lobbyId);
-        expect(spy).toHaveBeenCalledWith('disconnectFromRoom', lobbyId);
-    });
-
-    it('should emit updatePlayers with lobbyId and players', () => {
-        const lobbyId = 'lobby123';
-        const players: Player[] = [{ name: 'Player1', id: '1' } as Player, { name: 'Player2', id: '2' } as Player];
-        const spy = spyOn(service['socket'], 'emit');
-        service.updatePlayers(lobbyId, players);
-        expect(spy).toHaveBeenCalledWith('updatePlayers', lobbyId, players);
-    });
-
-    it('should listen for lobbyLocked event', () => {
-        const data = { lobbyId: 'lobby123' };
-        let result: any;
-
-        service.onLobbyLocked().subscribe((response) => {
-            result = response;
+        it('should return socket id', () => {
+            expect(service.getSocketId()).toEqual('socket-id-123');
         });
 
-        socketHelper.peerSideEmit('lobbyLocked', data);
-        expect(result).toEqual(data);
+        it('should handle socket id when undefined', () => {
+            socketMock.id = undefined;
+            expect(service.getSocketId()).toEqual('');
+        });
     });
 
-    it('should emit requestStart with lobbyId', () => {
-        const lobbyId = 'lobby123';
-        const spy = spyOn(service['socket'], 'emit');
-        service.requestStartGame(lobbyId);
-        expect(spy).toHaveBeenCalledWith('requestStart', lobbyId);
-    });
-
-    it('should listen for gameStarted event', () => {
-        const mockGameState: GameState = {} as GameState;
-        const data = { gameState: mockGameState };
-        let result: any;
-
-        service.onGameStarted().subscribe((response) => {
-            result = response;
+    describe('Socket connection management', () => {
+        it('should disconnect socket', () => {
+            service.disconnect();
+            expect(socketMock.disconnect).toHaveBeenCalled();
         });
 
-        socketHelper.peerSideEmit('gameStarted', data);
-        expect(result).toEqual(data);
-    });
-
-    it('should listen for turnStarted event', () => {
-        const mockGameState: GameState = {} as GameState;
-        const data = {
-            gameState: mockGameState,
-            currentPlayer: 'player1',
-            availableMoves: [{ x: 1, y: 1 }],
-        };
-        let result: any;
-
-        service.onTurnStarted().subscribe((response) => {
-            result = response;
+        it('should reconnect when socket is disconnected', () => {
+            socketMock.connected = false;
+            service.reconnect();
+            expect(socketMock.connect).toHaveBeenCalled();
         });
 
-        socketHelper.peerSideEmit('turnStarted', data);
-        expect(result).toEqual(data);
+        it('should not reconnect when socket is already connected', () => {
+            socketMock.connected = true;
+            service.reconnect();
+            expect(socketMock.connect).not.toHaveBeenCalled();
+        });
     });
 
-    it('should emit requestMovement with lobbyId and coordinates', () => {
-        const lobbyId = 'lobby123';
-        const coordinates: Coordinates[] = [{ x: 1, y: 1 }];
-        const spy = spyOn(service['socket'], 'emit');
-        service.requestMovement(lobbyId, coordinates);
-        expect(spy).toHaveBeenCalledWith('requestMovement', { lobbyId, coordinates });
-    });
-
-    it('should emit requestTeleport with lobbyId and coordinates', () => {
-        const lobbyId = 'lobby123';
-        const coordinates: Coordinates = { x: 1, y: 1 };
-        const spy = spyOn(service['socket'], 'emit');
-        service.requestTeleport(lobbyId, coordinates);
-        expect(spy).toHaveBeenCalledWith('teleport', { lobbyId, coordinates });
-    });
-
-    it('should handle movementProcessed event and initialize availableMoves if missing', () => {
-        const mockGameState: GameState = {} as GameState;
-        const data = {
-            gameState: mockGameState,
-            playerMoved: 'player1',
-            newPosition: { x: 2, y: 2 },
-        };
-        let result: any;
-
-        service.onMovementProcessed().subscribe((response) => {
-            result = response;
+    describe('Lobby management', () => {
+        it('should create lobby', () => {
+            const testGame: Game = { id: 'game1', name: 'Test Game' } as Game;
+            service.createLobby(testGame);
+            expect(socketMock.emit).toHaveBeenCalledWith('createLobby', testGame);
         });
 
-        socketHelper.peerSideEmit('movementProcessed', data);
-        expect(result.gameState.availableMoves).toEqual([]);
-        expect(result.playerMoved).toEqual('player1');
-        expect(result.newPosition).toEqual({ x: 2, y: 2 });
-    });
-
-    it('should emit requestEndTurn with lobbyId', () => {
-        const lobbyId = 'lobby123';
-        const spy = spyOn(service['socket'], 'emit');
-        service.requestEndTurn(lobbyId);
-        expect(spy).toHaveBeenCalledWith('endTurn', { lobbyId });
-    });
-
-    it('should listen for boardChanged event', () => {
-        const mockGameState: GameState = {} as GameState;
-        const data = { gameState: mockGameState };
-        let result: any;
-
-        service.onBoardChanged().subscribe((response) => {
-            result = response;
+        it('should join lobby', () => {
+            const testPlayer: Player = { id: 'player1', name: 'Test Player' } as Player;
+            service.joinLobby('lobby1', testPlayer);
+            expect(socketMock.emit).toHaveBeenCalledWith('joinLobby', { lobbyId: 'lobby1', player: testPlayer });
         });
 
-        socketHelper.peerSideEmit('boardModified', data);
-        expect(result).toEqual(data);
-    });
-
-    it('should listen for error event', () => {
-        const errorMessage = 'Test error';
-        let result: any;
-
-        service.onError().subscribe((error) => {
-            result = error;
+        it('should leave lobby', () => {
+            service.leaveLobby('lobby1', 'Test Player');
+            expect(socketMock.emit).toHaveBeenCalledWith('leaveLobby', { lobbyId: 'lobby1', playerName: 'Test Player' });
         });
 
-        socketHelper.peerSideEmit('error', errorMessage);
-        expect(result).toEqual(errorMessage);
-    });
-
-    it('should emit setDebug with lobbyId and debug flag', () => {
-        const lobbyId = 'lobby123';
-        const debug = true;
-        const spy = spyOn(service['socket'], 'emit');
-        service.setDebug(lobbyId, debug);
-        expect(spy).toHaveBeenCalledWith('setDebug', { lobbyId, debug });
-    });
-
-    it('should emit handleDefeat with player and lobbyId', () => {
-        const lobbyId = 'lobby123';
-        const player: Player = { name: 'TestPlayer', id: '123' } as Player;
-        const spy = spyOn(service['socket'], 'emit');
-        service.handleDefeat(player, lobbyId);
-        expect(spy).toHaveBeenCalledWith('playerDefeated', { player, lobbyId });
-    });
-
-    it('should emit attack with lobbyId, attacker and defender', () => {
-        const lobbyId = 'lobby123';
-        const attacker: Player = { name: 'Attacker', id: '1' } as Player;
-        const defender: Player = { name: 'Defender', id: '2' } as Player;
-        const spy = spyOn(service['socket'], 'emit');
-        service.attack(lobbyId, attacker, defender);
-        expect(spy).toHaveBeenCalledWith('attack', { lobbyId, attacker, defender });
-    });
-
-    it('should emit flee with lobbyId and player', () => {
-        const lobbyId = 'lobby123';
-        const player: Player = { name: 'TestPlayer', id: '123' } as Player;
-        const spy = spyOn(service['socket'], 'emit');
-        service.flee(lobbyId, player);
-        expect(spy).toHaveBeenCalledWith('flee', { lobbyId, player });
-    });
-
-    it('should listen for attackResult event', () => {
-        const player1: Player = { name: 'Player1', id: '1' } as Player;
-        const player2: Player = { name: 'Player2', id: '2' } as Player;
-        const data = {
-            attackDice: 6,
-            defenseDice: 6,
-            attackRoll: 4,
-            defenseRoll: 2,
-            attackerHP: 10,
-            defenderHP: 8,
-            damage: 2,
-            attacker: player1,
-            defender: player2,
-        };
-        let result: any;
-
-        service.onAttackResult().subscribe((response) => {
-            result = response;
+        it('should leave game', () => {
+            service.leaveGame('lobby1', 'Test Player');
+            expect(socketMock.emit).toHaveBeenCalledWith('leaveGame', 'lobby1', 'Test Player');
         });
 
-        socketHelper.peerSideEmit('attackResult', data);
-        expect(result).toEqual(data);
-    });
-
-    it('should emit startCombat with lobbyId, currentPlayer and opponent', () => {
-        const lobbyId = 'lobby123';
-        const currentPlayer: Player = { name: 'Player1', id: '1' } as Player;
-        const opponent: Player = { name: 'Player2', id: '2' } as Player;
-        const spy = spyOn(service['socket'], 'emit');
-        service.startCombat(lobbyId, currentPlayer, opponent);
-        expect(spy).toHaveBeenCalledWith('startBattle', { lobbyId, currentPlayer, opponent });
-    });
-
-    it('should listen for startCombat event', () => {
-        const player: Player = { name: 'Player1', id: '1' } as Player;
-        const data = { firstPlayer: player };
-        let result: any;
-
-        service.onStartCombat().subscribe((response) => {
-            result = response;
+        it('should lock lobby', () => {
+            service.lockLobby('lobby1');
+            expect(socketMock.emit).toHaveBeenCalledWith('lockLobby', 'lobby1');
         });
 
-        socketHelper.peerSideEmit('startCombat', data);
-        expect(result).toEqual(data);
-    });
-
-    it('should listen for combatEnded event', () => {
-        const player: Player = { name: 'Player1', id: '1' } as Player;
-        const data = { loser: player };
-        let result: any;
-
-        service.onCombatEnded().subscribe((response) => {
-            result = response;
+        it('should disconnect from room', () => {
+            service.disconnectFromRoom('lobby1');
+            expect(socketMock.emit).toHaveBeenCalledWith('disconnectFromRoom', 'lobby1');
         });
 
-        socketHelper.peerSideEmit('combatEnded', data);
-        expect(result).toEqual(data);
-    });
-
-    it('should listen for gameOver event', () => {
-        const data = { winner: 'Player1' };
-        let result: any;
-
-        service.onGameOver().subscribe((response) => {
-            result = response;
+        it('should update players', () => {
+            const players: Player[] = [{ id: 'player1', name: 'Player 1' } as Player];
+            service.updatePlayers('lobby1', players);
+            expect(socketMock.emit).toHaveBeenCalledWith('updatePlayers', 'lobby1', players);
         });
 
-        socketHelper.peerSideEmit('gameOver', data);
-        expect(result).toEqual(data);
-    });
+        it('should get lobby', (done) => {
+            const testLobby: GameLobby = { id: 'lobby1' } as GameLobby;
 
-    it('should listen for fleeSuccess event', () => {
-        const player: Player = { name: 'Player1', id: '1' } as Player;
-        const data = { fleeingPlayer: player };
-        let result: any;
+            socketMock.emit.and.callFake((event: string, lobbyId: string, callback: Function) => {
+                if (event === 'getLobby') {
+                    callback(testLobby);
+                }
+            });
 
-        service.onFleeSuccess().subscribe((response) => {
-            result = response;
+            service
+                .getLobby('lobby1')
+                .pipe(take(1))
+                .subscribe((lobby) => {
+                    expect(lobby).toEqual(testLobby);
+                    done();
+                });
+
+            expect(socketMock.emit).toHaveBeenCalledWith('getLobby', 'lobby1', jasmine.any(Function));
         });
 
-        socketHelper.peerSideEmit('fleeSuccess', data);
-        expect(result).toEqual(data);
+        it('should get game ID', (done) => {
+            socketMock.emit.and.callFake((event: string, lobbyId: string, callback: Function) => {
+                if (event === 'getGameId') {
+                    callback('game1');
+                }
+            });
+
+            service
+                .getGameId('lobby1')
+                .pipe(take(1))
+                .subscribe((gameId) => {
+                    expect(gameId).toEqual('game1');
+                    done();
+                });
+
+            expect(socketMock.emit).toHaveBeenCalledWith('getGameId', 'lobby1', jasmine.any(Function));
+        });
     });
 
-    it('should listen for fleeFailure event', () => {
-        const player: Player = { name: 'Player1', id: '1' } as Player;
-        const data = { fleeingPlayer: player };
-        let result: any;
-
-        service.onFleeFailure().subscribe((response) => {
-            result = response;
+    describe('Game management', () => {
+        it('should request start game', () => {
+            service.requestStartGame('lobby1');
+            expect(socketMock.emit).toHaveBeenCalledWith('requestStart', 'lobby1');
         });
 
-        socketHelper.peerSideEmit('fleeFailure', data);
-        expect(result).toEqual(data);
+        it('should request movement', () => {
+            const coordinates: Coordinates[] = [{ x: 1, y: 1 }];
+            service.requestMovement('lobby1', coordinates);
+            expect(socketMock.emit).toHaveBeenCalledWith('requestMovement', { lobbyId: 'lobby1', coordinates });
+        });
+
+        it('should request teleport', () => {
+            const coordinate: Coordinates = { x: 2, y: 3 };
+            service.requestTeleport('lobby1', coordinate);
+            expect(socketMock.emit).toHaveBeenCalledWith('teleport', { lobbyId: 'lobby1', coordinates: coordinate });
+        });
+
+        it('should request end turn', () => {
+            service.requestEndTurn('lobby1');
+            expect(socketMock.emit).toHaveBeenCalledWith('endTurn', { lobbyId: 'lobby1' });
+        });
+
+        it('should set debug', () => {
+            service.setDebug('lobby1', true);
+            expect(socketMock.emit).toHaveBeenCalledWith('setDebug', { lobbyId: 'lobby1', debug: true });
+        });
     });
 
-    it('should emit openDoor with lobbyId and tile', () => {
-        const lobbyId = 'lobby123';
-        const tile: Tile = { id: 'abc', x: 1, y: 1, type: TileTypes.DoorClosed, object: 0 } as Tile;
-        const spy = spyOn(service['socket'], 'emit');
-        service.openDoor(lobbyId, tile);
-        expect(spy).toHaveBeenCalledWith('openDoor', { lobbyId, tile });
+    describe('Combat management', () => {
+        it('should handle defeat', () => {
+            const player: Player = { id: 'player1', name: 'Player 1' } as Player;
+            service.handleDefeat(player, 'lobby1');
+            expect(socketMock.emit).toHaveBeenCalledWith('playerDefeated', { player, lobbyId: 'lobby1' });
+        });
+
+        it('should attack', () => {
+            const attacker: Player = { id: 'player1', name: 'Attacker' } as Player;
+            const defender: Player = { id: 'player2', name: 'Defender' } as Player;
+            service.attack('lobby1', attacker, defender);
+            expect(socketMock.emit).toHaveBeenCalledWith('attack', { lobbyId: 'lobby1', attacker, defender });
+        });
+
+        it('should flee', () => {
+            const player: Player = { id: 'player1', name: 'Runner' } as Player;
+            service.flee('lobby1', player);
+            expect(socketMock.emit).toHaveBeenCalledWith('flee', { lobbyId: 'lobby1', player });
+        });
+
+        it('should start combat', () => {
+            const currentPlayer: Player = { id: 'player1', name: 'Current' } as Player;
+            const opponent: Player = { id: 'player2', name: 'Opponent' } as Player;
+            service.startCombat('lobby1', currentPlayer, opponent);
+            expect(socketMock.emit).toHaveBeenCalledWith('startBattle', {
+                lobbyId: 'lobby1',
+                currentPlayer,
+                opponent,
+            });
+        });
     });
 
-    it('should emit closeDoor with lobbyId and tile', () => {
-        const lobbyId = 'lobby123';
-        const tile: Tile = { id: 'abc', x: 1, y: 1, type: TileTypes.DoorOpen, object: 0 } as Tile;
-        const spy = spyOn(service['socket'], 'emit');
-        service.closeDoor(lobbyId, tile);
-        expect(spy).toHaveBeenCalledWith('closeDoor', { lobbyId, tile });
+    describe('Door management', () => {
+        it('should open door', () => {
+            const tile: Tile = { x: 1, y: 2, type: 1 } as Tile;
+            service.openDoor('lobby1', tile);
+            expect(socketMock.emit).toHaveBeenCalledWith('openDoor', { lobbyId: 'lobby1', tile });
+        });
+
+        it('should close door', () => {
+            const tile: Tile = { x: 1, y: 2, type: 1 } as Tile;
+            service.closeDoor('lobby1', tile);
+            expect(socketMock.emit).toHaveBeenCalledWith('closeDoor', { lobbyId: 'lobby1', tile });
+        });
     });
+
+    describe('Verification methods', () => {
+        it('should verify room', (done) => {
+            const response = { exists: true, isLocked: false };
+
+            socketMock.emit.and.callFake((event: string, data: any, callback: Function) => {
+                if (event === 'verifyRoom') {
+                    callback(response);
+                }
+            });
+
+            service
+                .verifyRoom('game1')
+                .pipe(take(1))
+                .subscribe((result) => {
+                    expect(result).toEqual(response);
+                    done();
+                });
+
+            expect(socketMock.emit).toHaveBeenCalledWith('verifyRoom', { gameId: 'game1' }, jasmine.any(Function));
+        });
+
+        it('should verify avatars', (done) => {
+            const response = { avatars: ['avatar1', 'avatar2'] };
+
+            socketMock.emit.and.callFake((event: string, data: any, callback: Function) => {
+                if (event === 'verifyAvatars') {
+                    callback(response);
+                }
+            });
+
+            service
+                .verifyAvatars('lobby1')
+                .pipe(take(1))
+                .subscribe((result) => {
+                    expect(result).toEqual(response);
+                    done();
+                });
+
+            expect(socketMock.emit).toHaveBeenCalledWith('verifyAvatars', { lobbyId: 'lobby1' }, jasmine.any(Function));
+        });
+
+        it('should verify username', (done) => {
+            const response = { usernames: ['user1', 'user2'] };
+
+            socketMock.emit.and.callFake((event: string, data: any, callback: Function) => {
+                if (event === 'verifyUsername') {
+                    callback(response);
+                }
+            });
+
+            service
+                .verifyUsername('lobby1')
+                .pipe(take(1))
+                .subscribe((result) => {
+                    expect(result).toEqual(response);
+                    done();
+                });
+
+            expect(socketMock.emit).toHaveBeenCalledWith('verifyUsername', { lobbyId: 'lobby1' }, jasmine.any(Function));
+        });
+    });
+
+    describe('Socket event subscriptions', () => {
+        it('should handle onLobbyCreated event', (done) => {
+            const testData = { lobby: { id: 'lobby1' } as GameLobby };
+
+            service
+                .onLobbyCreated()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    expect(data).toEqual(testData);
+                    done();
+                });
+
+            // Simulate the socket.on callback being triggered
+            const callArgs = socketMock.on.calls.allArgs().find((args: any[]) => args[0] === 'lobbyCreated');
+            if (callArgs) {
+                const onLobbyCreatedCallback = callArgs[1];
+                onLobbyCreatedCallback(testData);
+            }
+        });
+
+        it('should handle onLobbyLocked event', (done) => {
+            const testData = { lobbyId: 'lobby1' };
+
+            service
+                .onLobbyLocked()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    expect(data).toEqual(testData);
+                    done();
+                });
+
+            // Simulate socket event
+            const callback = findSocketCallback('lobbyLocked');
+            callback(testData);
+        });
+
+        it('should handle onGameStarted event', (done) => {
+            const testData = { gameState: { id: 'game1' } as GameState };
+
+            service
+                .onGameStarted()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    expect(data).toEqual(testData);
+                    done();
+                });
+
+            // Simulate socket event
+            const callback = findSocketCallback('gameStarted');
+            callback(testData);
+        });
+
+        it('should handle onTurnStarted event', (done) => {
+            const testData = {
+                gameState: { id: 'game1' } as GameState,
+                currentPlayer: 'player1',
+                availableMoves: [{ x: 1, y: 1 }],
+            };
+
+            service
+                .onTurnStarted()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    expect(data).toEqual(testData);
+                    done();
+                });
+
+            // Simulate socket event
+            const callback = findSocketCallback('turnStarted');
+            callback(testData);
+        });
+
+        it('should handle onMovementProcessed event with availableMoves', (done) => {
+            const testData = {
+                gameState: {
+                    id: 'game1',
+                    availableMoves: [{ x: 2, y: 2 }],
+                    board: [],
+                    turnCounter: 1,
+                    players: [],
+                    currentPlayer: 'player1',
+                    deletedPlayers: [],
+                    playerPositions: [],
+                    spawnPoints: [],
+                    currentPlayerMovementPoints: 0,
+                    currentPlayerActionPoints: 0,
+                    shortestMoves: [],
+                    debug: false,
+                } as GameState,
+                playerMoved: 'player1',
+                newPosition: { x: 1, y: 1 },
+            };
+
+            service
+                .onMovementProcessed()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    expect(data).toEqual(testData);
+                    done();
+                });
+
+            // Simulate socket event
+            const callback = findSocketCallback('movementProcessed');
+            callback(testData);
+        });
+
+        it('should handle onMovementProcessed event without availableMoves', (done) => {
+            // Create a complete GameState but with undefined availableMoves
+            const gameStateData: Partial<GameState> = {
+                id: 'game1',
+                board: [],
+                turnCounter: 1,
+                players: [],
+                currentPlayer: 'player1',
+                deletedPlayers: [],
+                playerPositions: [],
+                spawnPoints: [],
+                currentPlayerMovementPoints: 0,
+                currentPlayerActionPoints: 0,
+            };
+
+            // Remove the availableMoves property explicitly to test that case
+            const testData = {
+                gameState: gameStateData as GameState,
+                playerMoved: 'player1',
+                newPosition: { x: 1, y: 1 },
+            };
+
+            // We need to ensure availableMoves is undefined
+            (testData.gameState as any).availableMoves = undefined;
+
+            service
+                .onMovementProcessed()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    // Should add empty availableMoves array
+                    expect(data.gameState.availableMoves).toEqual([]);
+                    done();
+                });
+
+            // Simulate socket event
+            const callback = findSocketCallback('movementProcessed');
+            callback(testData);
+        });
+
+        it('should handle onBoardChanged event', (done) => {
+            const testData = { gameState: { id: 'game1' } as GameState };
+
+            service
+                .onBoardChanged()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    expect(data).toEqual(testData);
+                    done();
+                });
+
+            // Simulate socket event
+            const callback = findSocketCallback('boardModified');
+            callback(testData);
+        });
+
+        it('should handle onError event', (done) => {
+            const errorMessage = 'Test error message';
+
+            service
+                .onError()
+                .pipe(take(1))
+                .subscribe((error) => {
+                    expect(error).toEqual(errorMessage);
+                    done();
+                });
+
+            // Simulate socket event
+            const callback = findSocketCallback('error');
+            callback(errorMessage);
+        });
+
+        it('should handle onLobbyUpdated event', (done) => {
+            const testData = { lobby: { id: 'lobby1' } as GameLobby };
+
+            service
+                .onLobbyUpdated()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    expect(data).toEqual(testData);
+                    done();
+                });
+
+            // Simulate socket event
+            const callback = findSocketCallback('lobbyUpdated');
+            callback(testData);
+        });
+
+        it('should handle onHostDisconnected event', (done) => {
+            service
+                .onHostDisconnected()
+                .pipe(take(1))
+                .subscribe(() => {
+                    // Just verifying the event is received
+                    done();
+                });
+
+            // Simulate socket event
+            const callback = findSocketCallback('hostDisconnected');
+            callback();
+        });
+
+        it('should handle onAttackResult event', (done) => {
+            const testData = {
+                attackDice: 5,
+                defenseDice: 3,
+                attackRoll: 8,
+                defenseRoll: 5,
+                attackerHP: 10,
+                defenderHP: 7,
+                damage: 3,
+                attacker: { id: 'player1' } as Player,
+                defender: { id: 'player2' } as Player,
+            };
+
+            service
+                .onAttackResult()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    expect(data).toEqual(testData);
+                    done();
+                });
+
+            // Simulate socket event
+            const callback = findSocketCallback('attackResult');
+            callback(testData);
+        });
+
+        it('should handle onStartCombat event', (done) => {
+            const testData = { firstPlayer: { id: 'player1' } as Player };
+
+            service
+                .onStartCombat()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    expect(data).toEqual(testData);
+                    done();
+                });
+
+            // Simulate socket event
+            const callback = findSocketCallback('startCombat');
+            callback(testData);
+        });
+
+        it('should handle onCombatEnded event', (done) => {
+            const testData = { loser: { id: 'player2' } as Player };
+
+            service
+                .onCombatEnded()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    expect(data).toEqual(testData);
+                    done();
+                });
+
+            // Simulate socket event
+            const callback = findSocketCallback('combatEnded');
+            callback(testData);
+        });
+
+        it('should handle onGameOver event', (done) => {
+            const testData = { winner: 'Player 1' };
+
+            service
+                .onGameOver()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    expect(data).toEqual(testData);
+                    done();
+                });
+
+            // Simulate socket event
+            const callback = findSocketCallback('gameOver');
+            callback(testData);
+        });
+
+        it('should handle onFleeSuccess event', (done) => {
+            const testData = { fleeingPlayer: { id: 'player1' } as Player };
+
+            service
+                .onFleeSuccess()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    expect(data).toEqual(testData);
+                    done();
+                });
+
+            // Simulate socket event
+            const callback = findSocketCallback('fleeSuccess');
+            callback(testData);
+        });
+
+        it('should handle onFleeFailure event', (done) => {
+            const testData = { fleeingPlayer: { id: 'player1' } as Player };
+
+            service
+                .onFleeFailure()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    expect(data).toEqual(testData);
+                    done();
+                });
+
+            // Simulate socket event
+            const callback = findSocketCallback('fleeFailure');
+            callback(testData);
+        });
+    });
+
+    // Helper function to find the callback for a specific socket event
+    function findSocketCallback(eventName: string): Function {
+        // Configure socket.on spy to track calls with their arguments
+        if (!socketMock.on.calls) {
+            // Make sure we have access to the calls
+            socketMock.on = jasmine.createSpy('on');
+        }
+
+        // Subscribe to the event to ensure the socket.on is called
+        switch (eventName) {
+            case 'lobbyLocked':
+                service.onLobbyLocked().pipe(take(1)).subscribe();
+                break;
+            case 'gameStarted':
+                service.onGameStarted().pipe(take(1)).subscribe();
+                break;
+            case 'turnStarted':
+                service.onTurnStarted().pipe(take(1)).subscribe();
+                break;
+            case 'movementProcessed':
+                service.onMovementProcessed().pipe(take(1)).subscribe();
+                break;
+            case 'boardModified':
+                service.onBoardChanged().pipe(take(1)).subscribe();
+                break;
+            case 'error':
+                service.onError().pipe(take(1)).subscribe();
+                break;
+            case 'lobbyUpdated':
+                service.onLobbyUpdated().pipe(take(1)).subscribe();
+                break;
+            case 'hostDisconnected':
+                service.onHostDisconnected().pipe(take(1)).subscribe();
+                break;
+            case 'attackResult':
+                service.onAttackResult().pipe(take(1)).subscribe();
+                break;
+            case 'startCombat':
+                service.onStartCombat().pipe(take(1)).subscribe();
+                break;
+            case 'combatEnded':
+                service.onCombatEnded().pipe(take(1)).subscribe();
+                break;
+            case 'gameOver':
+                service.onGameOver().pipe(take(1)).subscribe();
+                break;
+            case 'fleeSuccess':
+                service.onFleeSuccess().pipe(take(1)).subscribe();
+                break;
+            case 'fleeFailure':
+                service.onFleeFailure().pipe(take(1)).subscribe();
+                break;
+            default:
+                throw new Error(`Event '${eventName}' not handled in findSocketCallback`);
+        }
+
+        // Find the registration for this event
+        const args = socketMock.on.calls.allArgs().find((args: any[]) => args[0] === eventName);
+
+        if (!args) {
+            throw new Error(`Event '${eventName}' not found in socket.on calls`);
+        }
+
+        return args[1];
+    }
 });

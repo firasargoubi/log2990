@@ -68,7 +68,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
                 this.getCurrentPlayer();
             } else {
-                this.router.navigate([PageUrl.Home, { replaceUrl: true }]);
+                this.router.navigate([PageUrl.Home], { replaceUrl: true });
             }
         });
 
@@ -86,7 +86,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         }
         const action = this.actionService.getActionType(tile, this.gameState);
         if (!action) return;
-
+        this.action = !this.action;
         if (action === 'openDoor') {
             this.lobbyService.openDoor(this.lobbyId, tile);
             return;
@@ -218,7 +218,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         const currentPlayer = this.lobbyService.getCurrentPlayer();
 
         if (!currentPlayer) {
-            this.router.navigate(['/home'], { replaceUrl: true });
             return;
         }
         this.currentPlayer = currentPlayer;
@@ -255,6 +254,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
             this.lobbyService.onCombatEnded().subscribe((data) => {
                 this.isInCombat = false;
+                this.currentPlayer.amountEscape = 0;
                 this.notificationService.showInfo(`La partie est terminée! ${data.loser.name} a perdu !`);
             }),
 
@@ -296,7 +296,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
             this.lobbyService.onFleeSuccess().subscribe((data) => {
                 this.isInCombat = false;
-                this.currentPlayer.life = this.currentPlayer.maxLife;
                 if (this.currentPlayer.name === data.fleeingPlayer.name) {
                     this.notificationService.showInfo('Vous avez fuit le combat.');
                     return;

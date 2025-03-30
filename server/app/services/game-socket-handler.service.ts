@@ -138,10 +138,6 @@ export class GameSocketHandlerService {
         }
     }
 
-    handleEndTurnInternally(gameState: GameState): GameState {
-        return this.boardService.handleEndTurn(gameState);
-    }
-
     closeDoor(socket: Socket, tile: Tile, lobbyId: string) {
         const gameState = this.getGameStateOrEmitError(socket, lobbyId);
         if (!gameState) return;
@@ -153,8 +149,6 @@ export class GameSocketHandlerService {
             board: newGameBoard,
             currentPlayerActionPoints: 0,
         };
-
-        console.log("Closed Door", updatedGameState);
 
         updatedGameState.players[currentPlayerIndex].currentAP = 0;
         const newGameState = this.boardService.handleBoardChange(updatedGameState);
@@ -184,13 +178,16 @@ export class GameSocketHandlerService {
     startBattle(lobbyId: string, currentPlayer: Player, opponent: Player) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
-
+        gameState.currentPlayerActionPoints = 0;
         currentPlayer.amountEscape = 0;
         opponent.amountEscape = 0;
         const currentPlayerIndex = gameState.players.findIndex((p) => p.id === currentPlayer.id);
         const opponentIndex = gameState.players.findIndex((p) => p.id === opponent.id);
 
-        if (currentPlayerIndex !== -1) gameState.players[currentPlayerIndex].amountEscape = 0;
+        if (currentPlayerIndex !== -1) {
+            gameState.players[currentPlayerIndex].amountEscape = 0;
+            gameState.players[currentPlayerIndex].currentAP = 0;
+        }
         if (opponentIndex !== -1) gameState.players[opponentIndex].amountEscape = 0;
 
         let firstPlayer = currentPlayer;
@@ -237,7 +234,7 @@ export class GameSocketHandlerService {
         const loserIndex = gameState.players.findIndex((p) => p.id === loser.id);
         if (winnerIndex === -1 || loserIndex === -1) return;
         const originalSpawn = gameState.spawnPoints[loserIndex];
-        const isInSpawnPoints = originalSpawn === gameState.playerPositions[loserIndex];
+        const isInSpawnPoints = JSON.stringify(originalSpawn) === JSON.stringify(gameState.playerPositions[loserIndex]);
         const occupiedPositions = new Set(gameState.playerPositions.map((pos) => JSON.stringify(pos)));
         let newSpawn = originalSpawn;
 
@@ -247,22 +244,23 @@ export class GameSocketHandlerService {
 
         winner.life = winner.maxLife;
         loser.life = loser.maxLife;
+        this.io.to(lobbyId).emit('combatEnded', { loser });
 
         gameState.playerPositions[loserIndex] = newSpawn;
         gameState.currentPlayerActionPoints = 0;
-        let newGameState = gameState;
+        gameState.players[winnerIndex] = winner;
+        gameState.players[winnerIndex].currentAP = 0;
+        gameState.players[loserIndex] = loser;
+        let newGameState;
         if (loser.id === gameState.currentPlayer) {
-            newGameState = this.handleEndTurnInternally(gameState);
-        } else {
-            newGameState = this.boardService.handleTurn(gameState);
+            newGameState = this.boardService.handleEndTurn(gameState);
+            this.startTurn(lobbyId);
+            return;
         }
-        newGameState.players[winnerIndex] = winner;
-        newGameState.players[winnerIndex].currentAP = 0;
-        newGameState.players[loserIndex] = loser;
-        this.gameStates.set(lobbyId, newGameState);
-
-        this.io.to(lobbyId).emit('combatEnded', { loser });
+        newGameState = this.boardService.handleTurn(gameState);
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
+
+        this.gameStates.set(lobbyId, newGameState);
     }
 
     handleSetDebug(socket: Socket, lobbyId: string, debug: boolean) {
@@ -292,17 +290,17 @@ export class GameSocketHandlerService {
         let attackDice = Math.floor(Math.random() * this.getDiceValue(attacker.bonus.attack)) + 1;
         let defenseDice = Math.floor(Math.random() * this.getDiceValue(defender.bonus.defense)) + 1;
 
-        if (gameState.debug) {
-            attackDice = attacker.attack;
-            defenseDice = 1;
-        }
-
         if (this.isPlayerOnIceTile(gameState, attacker)) {
             attackDice -= 2;
         }
 
         if (this.isPlayerOnIceTile(gameState, defender)) {
             defenseDice -= 2;
+        }
+
+        if (gameState.debug) {
+            attackDice = attacker.attack;
+            defenseDice = 1;
         }
         const damage = Math.max(0, attackDice + attacker.attack - defenseDice - defender.defense);
 
@@ -312,6 +310,9 @@ export class GameSocketHandlerService {
 
         if (defender.life <= 0) {
             attacker.winCount += 1;
+            for (const player of gameState.players) {
+                player.amountEscape = 0;
+            }
             if (attacker.winCount === MAX_WIN_COUNT) {
                 this.io.to(lobbyId).emit('gameOver', { winner: attacker.name });
                 return;
@@ -349,15 +350,18 @@ export class GameSocketHandlerService {
         }
 
         const FLEE_RATE = FLEE_RATE_PERCENT;
-        const isSuccessful = Math.random() * MAX_FLEE <= FLEE_RATE;
-
-        const opponent = gameState.players.find((p) => p.id !== fleeingPlayer.id);
-        if (opponent) {
-            gameState.currentPlayer = opponent.id;
+        let isSuccessful = Math.random() * MAX_FLEE <= FLEE_RATE;
+        if (gameState.debug) {
+            isSuccessful = true;
         }
 
         if (isSuccessful) {
+            for (const player of gameState.players) {
+                player.amountEscape = 0;
+            }
+            this.gameStates.set(lobbyId, gameState);
             this.io.to(lobbyId).emit(GameEvents.FleeSuccess, { fleeingPlayer, isSuccessful });
+            this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState });
         } else {
             this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
         }
