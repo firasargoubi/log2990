@@ -97,6 +97,16 @@ export class SocketService {
         socket.on('updateCombatTime', (data: { lobbyId: string; timeLeft: number }) => {
             this.gameSocketHandlerService.updateCombatTime(data.lobbyId, data.timeLeft);
         });
+
+        socket.on('joinChat', (lobbyId) => {
+            this.gameSocketHandlerService.handleJoinChat(socket, lobbyId);
+        });
+
+        // Gérer l'envoi de message de chat
+        socket.on('sendMessage', (lobbyId, message) => {
+            console.log('okidoki');
+            this.gameSocketHandlerService.handleChatMessage(socket, lobbyId, message);
+        });
     }
 
     private handleCreateLobby(socket: Socket, game: Game): void {

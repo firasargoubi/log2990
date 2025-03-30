@@ -13,4 +13,7 @@ export enum GameEvents {
     FleeFailure = 'fleeFailure',
     AttackEnd = 'attackEnd',
     ChangedSpawn = 'changedSpawnPoint',
+    ChatMessage = 'chatMessage',
+    PlayerJoinedChat = 'playerJoinedChat',
+    ChatJoined = 'chatJoined',
 }

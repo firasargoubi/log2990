@@ -1,21 +1,29 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms'; // Import FormsModule
 import { ChatService } from '@app/services/chat.service';
+
 @Component({
     selector: 'app-messages',
     templateUrl: './messages.component.html',
     styleUrls: ['./messages.component.scss'],
+    imports: [
+        FormsModule,
+        CommonModule, // Add FormsModule to imports
+    ],
 })
 export class MessagesComponent implements OnInit, OnDestroy {
     chatMessages = this.chatService.chatMessages;
     eventLog = this.chatService.eventLog;
     activeTab: string = 'chat';
+    newMessage: string = '';
 
     constructor(private chatService: ChatService) {}
 
     ngOnInit(): void {
-        // Écoute des messages entrants du serveur WebSocket
-        this.chatService.onMessage().subscribe((message: { playerName: string; content: string }) => {
-            this.chatService.addChatMessage(message.playerName, message.content);
+        // Listen for new chat messages
+        this.chatService.onMessage().subscribe((message) => {
+            console.log('New message received:', message);
         });
     }
 
@@ -25,6 +33,8 @@ export class MessagesComponent implements OnInit, OnDestroy {
 
     sendMessage(playerName: string, message: string): void {
         this.chatService.sendMessage(playerName, message);
+        this.chatService.addChatMessage(playerName, message);
+        this.newMessage = ''; // Clear input after sending message
     }
 
     addEvent(eventType: string, description: string, involvedPlayers: string[]): void {
