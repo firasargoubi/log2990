@@ -24,8 +24,8 @@
                 <li><strong>Rapidité:</strong> {{ currentPlayer.speed }}</li>
                 <li><strong>Attaque:</strong> D{{ currentPlayer.attack }}</li>
                 <li><strong>Défense:</strong> D{{ currentPlayer.defense }}</li>
-                <li><strong>Points de mouvement restants:</strong> {{ currentPlayer.currentMP || currentPlayer.speed }}</li>
-                <li><strong>Points d'Actions restants:</strong> {{ currentPlayer.currentAP || 1 }}</li>
+                <li><strong>Points de mouvement restants:</strong> {{ currentPlayer.currentMP ?? currentPlayer.speed }}</li>
+                <li><strong>Points d'Actions restants:</strong> {{ currentPlayer.currentAP ?? 1 }}</li>
             </ul>
         </div>
     </div>

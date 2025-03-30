@@ -74,7 +74,6 @@ describe('PlayingPageComponent', () => {
             'closeDoor',
             'startCombat',
             'setDebug',
-            'onGameStarted',
             'onStartCombat',
             'onCombatEnded',
             'onTurnStarted',
@@ -97,7 +96,6 @@ describe('PlayingPageComponent', () => {
         mockLobbyService.getSocketId.and.returnValue(mockPlayer.id);
 
         // Setup observable returns
-        mockLobbyService.onGameStarted.and.returnValue(of({ gameState: mockGameState }));
         mockLobbyService.onStartCombat.and.returnValue(of({ firstPlayer: mockPlayer }));
         mockLobbyService.onCombatEnded.and.returnValue(of({ loser: mockPlayer }));
         mockLobbyService.onTurnStarted.and.returnValue(of({ gameState: mockGameState, currentPlayer: mockPlayer.id, availableMoves: [] }));
@@ -131,6 +129,19 @@ describe('PlayingPageComponent', () => {
     });
 
     describe('Initialization', () => {
+        beforeEach(() => {
+            component.lobbyId = mockLobbyId;
+            component.currentPlayer = mockPlayer;
+            component.gameState = mockGameState;
+        });
+
+        it('should initialize with default values', () => {
+            fixture.detectChanges();
+            expect(component.action).toBe(false);
+            expect(component.isInCombat).toBe(false);
+            expect(component.opponent).toBeNull();
+        });
+
         it('should set up game listeners and get current player on init with valid lobbyId', () => {
             fixture.detectChanges();
 
@@ -165,10 +176,16 @@ describe('PlayingPageComponent', () => {
     describe('Player turn management', () => {
         beforeEach(() => {
             fixture.detectChanges();
-            component.gameState = mockGameState;
+            component.gameState = { ...mockGameState };
+            component.currentPlayer = { ...mockPlayer };
+            component.lobbyId = mockLobbyId;
         });
 
         it('should identify correctly if it is the current player turn', () => {
+            // Make sure currentPlayer and gameState are properly set
+            component.currentPlayer = { ...mockPlayer };
+            component.gameState = { ...mockGameState, currentPlayer: mockPlayer.id };
+
             expect(component.isCurrentPlayerTurn()).toBe(true);
 
             component.gameState.currentPlayer = 'other-player';
@@ -176,6 +193,11 @@ describe('PlayingPageComponent', () => {
         });
 
         it('should end turn when requested', () => {
+            // Make sure currentPlayer and gameState are properly set
+            component.currentPlayer = { ...mockPlayer };
+            component.gameState = { ...mockGameState, currentPlayer: mockPlayer.id };
+            component.lobbyId = mockLobbyId;
+
             component.onEndTurn();
 
             expect(mockLobbyService.requestEndTurn).toHaveBeenCalledWith(mockLobbyId);
@@ -192,10 +214,16 @@ describe('PlayingPageComponent', () => {
     describe('Movement', () => {
         beforeEach(() => {
             fixture.detectChanges();
-            component.gameState = mockGameState;
+            component.gameState = { ...mockGameState };
+            component.currentPlayer = { ...mockPlayer };
+            component.lobbyId = mockLobbyId;
         });
 
         it('should request movement with coordinates', () => {
+            // Make sure currentPlayer and gameState are properly set
+            component.currentPlayer = { ...mockPlayer };
+            component.gameState = { ...mockGameState, currentPlayer: mockPlayer.id };
+
             const coordinates: Coordinates[] = [{ x: 1, y: 1 }];
             component.onMoveRequest(coordinates);
 
@@ -217,7 +245,9 @@ describe('PlayingPageComponent', () => {
 
         beforeEach(() => {
             fixture.detectChanges();
-            component.gameState = mockGameState;
+            component.gameState = { ...mockGameState };
+            component.currentPlayer = { ...mockPlayer };
+            component.lobbyId = mockLobbyId;
             component.gameState.currentPlayerActionPoints = 1;
             mockActionService.getActionType.and.returnValue('');
         });
@@ -237,7 +267,9 @@ describe('PlayingPageComponent', () => {
         });
 
         it('should show error when player has no action points', () => {
-            component.gameState.currentPlayerActionPoints = 0;
+            // Make sure currentPlayer and gameState are properly set
+            component.gameState = { ...mockGameState, currentPlayer: mockPlayer.id, currentPlayerActionPoints: 0 };
+
             component.onActionRequest(mockTile);
 
             expect(mockNotificationService.showError).toHaveBeenCalled();
@@ -245,7 +277,9 @@ describe('PlayingPageComponent', () => {
         });
 
         it('should handle open door action', () => {
+            // Make sure getActionType returns the correct value
             mockActionService.getActionType.and.returnValue('openDoor');
+
             component.onActionRequest(mockTile);
 
             expect(mockLobbyService.openDoor).toHaveBeenCalledWith(mockLobbyId, mockTile);
@@ -253,6 +287,7 @@ describe('PlayingPageComponent', () => {
 
         it('should handle close door action', () => {
             mockActionService.getActionType.and.returnValue('closeDoor');
+
             component.onActionRequest(mockTile);
 
             expect(mockLobbyService.closeDoor).toHaveBeenCalledWith(mockLobbyId, mockTile);
@@ -261,6 +296,7 @@ describe('PlayingPageComponent', () => {
         it('should handle battle action with opponent', () => {
             mockActionService.getActionType.and.returnValue('battle');
             mockActionService.findOpponent.and.returnValue(mockOpponent);
+
             component.onActionRequest(mockTile);
 
             expect(component.isInCombat).toBe(true);
@@ -368,7 +404,7 @@ describe('PlayingPageComponent', () => {
     describe('Game status getters', () => {
         beforeEach(() => {
             fixture.detectChanges();
-            component.gameState = mockGameState;
+            component.gameState = { ...mockGameState };
         });
 
         it('should return correct game name', () => {
@@ -408,6 +444,7 @@ describe('PlayingPageComponent', () => {
         });
 
         it('should disconnect and navigate to home on abandon', () => {
+            component.gameState.animation = false;
             component.abandon();
 
             expect(mockLobbyService.disconnect).toHaveBeenCalled();

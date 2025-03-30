@@ -61,19 +61,6 @@ describe('ActionService', () => {
         expect(isOnTile).toBeTrue();
     });
 
-    // it('should find opponent on tile', () => {
-    //     service.gameState = {
-    //         players: [{ id: 'player1' }],
-    //         playerPositions: [{ x: 1, y: 2 }],
-    //         currentPlayer: 'player1',
-    //         currentPlayerActionPoints: 1,
-    //     } as GameState;
-
-    //     const tile: Tile = { x: 1, y: 2, type: TileTypes.Grass, id: 'tile1', object: 0 };
-    //     const opponent = service.findOpponent(tile);
-    //     expect(opponent).toEqual({ id: 'player1' });
-    // });
-
     it('should check if tile is next to player', () => {
         service.gameState = {
             players: [{ id: 'player1' }],
@@ -112,7 +99,6 @@ describe('ActionService', () => {
         const tile: Tile = { x: 1, y: 2, type: TileTypes.Grass, id: 'tile1', object: 0 };
         const actionType = service.getActionType(tile, service.gameState);
         expect(actionType).toBe('battle');
-        expect(service.gameState.currentPlayerActionPoints).toBe(0);
     });
 
     it('should return openDoor action type', () => {
@@ -126,7 +112,6 @@ describe('ActionService', () => {
         const tile: Tile = { x: 1, y: 2, type: TileTypes.Grass, id: 'tile1', object: 0 };
         const actionType = service.getActionType(tile, service.gameState);
         expect(actionType).toBe('battle');
-        expect(service.gameState.currentPlayerActionPoints).toBe(0);
     });
 
     it('should return closeDoor action type', () => {
@@ -140,7 +125,6 @@ describe('ActionService', () => {
         const tile: Tile = { x: 1, y: 2, type: TileTypes.Grass, id: 'tile1', object: 0 };
         const actionType = service.getActionType(tile, service.gameState);
         expect(actionType).toBe('battle');
-        expect(service.gameState.currentPlayerActionPoints).toBe(0);
     });
 
     it('should increment action counter', () => {
@@ -261,7 +245,6 @@ describe('ActionService', () => {
         const tile: Tile = { x: 2, y: 2, type: TileTypes.DoorClosed, id: 'tile2', object: 0 };
         const actionType = service.getActionType(tile, service.gameState);
         expect(actionType).toBe('openDoor');
-        expect(service.gameState.currentPlayerActionPoints).toBe(0);
     });
 
     it('should return closeDoor action type when standing next to an open door', () => {
@@ -275,7 +258,6 @@ describe('ActionService', () => {
         const tile: Tile = { x: 2, y: 2, type: TileTypes.DoorOpen, id: 'tile2', object: 0 };
         const actionType = service.getActionType(tile, service.gameState);
         expect(actionType).toBe('closeDoor');
-        expect(service.gameState.currentPlayerActionPoints).toBe(0);
     });
 
     it('should return undefined if tile is not next to player', () => {

@@ -15,7 +15,7 @@ import { NotificationService } from '@app/services/notification.service';
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
-import { ObjectsTypes } from '@common/game.interface';
+import { ObjectsTypes, TILE_DELIMITER, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
 import { Subscription } from 'rxjs';
@@ -249,10 +249,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
     private setupGameListeners() {
         this.subscriptions.push(
-            this.lobbyService.onGameStarted().subscribe((data) => {
-                this.updateGameState(data.gameState);
-            }),
-
             this.lobbyService.onStartCombat().subscribe(() => {
                 this.isInCombat = true;
             }),
@@ -269,6 +265,9 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
             this.lobbyService.onMovementProcessed().subscribe((data) => {
                 this.updateGameState(data.gameState);
+                if (!this.gameState.currentPlayerMovementPoints && !this.canPerformAction() && this.isCurrentPlayerTurn()) {
+                    this.lobbyService.requestEndTurn(this.lobbyId);
+                }
             }),
 
             this.lobbyService.onError().subscribe((error) => {
@@ -290,6 +289,9 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
             this.lobbyService.onBoardChanged().subscribe((data) => {
                 this.updateGameState(data.gameState);
+                if (!this.gameState.currentPlayerMovementPoints && !this.canPerformAction() && this.isCurrentPlayerTurn()) {
+                    this.lobbyService.requestEndTurn(this.lobbyId);
+                }
             }),
 
             this.lobbyService.onFleeSuccess().subscribe((data) => {
@@ -307,6 +309,35 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 this.notificationService.showInfo(`${data.winner} est vraiment le goat my god.`);
             }),
         );
+    }
+
+    private canPerformAction(): boolean {
+        if (this.gameState.currentPlayerActionPoints <= 0) {
+            return false;
+        }
+
+        const playerIndex = this.gameState.players.findIndex((p) => p.id === this.currentPlayer.id);
+        const playerPosition = this.gameState.playerPositions[playerIndex];
+
+        const adjacentTiles: Coordinates[] = [
+            { x: playerPosition.x, y: playerPosition.y - 1 }, // Up
+            { x: playerPosition.x, y: playerPosition.y + 1 }, // Down
+            { x: playerPosition.x - 1, y: playerPosition.y }, // Left
+            { x: playerPosition.x + 1, y: playerPosition.y }, // Right
+        ];
+        for (const tile of adjacentTiles) {
+            if (tile.x < 0 || tile.x >= this.gameState.board.length || tile.y < 0 || tile.y >= this.gameState.board[0].length) {
+                continue;
+            }
+            const tileType = this.gameState.board[tile.x][tile.y] % TILE_DELIMITER;
+            if (tileType === TileTypes.DoorClosed || tileType === TileTypes.DoorOpen) {
+                return true;
+            }
+            if (this.gameState.playerPositions.findIndex((p) => p.x === tile.x && p.y === tile.y) !== -1) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private updateGameState(newGameState: GameState): void {
