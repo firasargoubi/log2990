@@ -21,7 +21,7 @@ import { catchError, EMPTY, tap } from 'rxjs';
     selector: 'app-game-page',
     templateUrl: './edition-page.component.html',
     styleUrls: ['./edition-page.component.scss'],
-    imports: [FormsModule, BoardComponent, TileOptionsComponent, ObjectsComponent, RouterLink, DragDropModule],
+    imports: [FormsModule, BoardComponent, TileOptionsComponent, ObjectsComponent, DragDropModule, RouterLink],
 })
 export class EditionPageComponent implements OnInit {
     @ViewChild('board', { static: false }) boardElement: ElementRef;

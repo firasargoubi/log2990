@@ -26,9 +26,7 @@ export class GameListComponent {
         this.visibilityChange.emit(event);
     }
     openCreateDialog() {
-        const dialogRef = this.dialog.open(GameModeDialogComponent, {
-            width: '400px',
-        });
+        const dialogRef = this.dialog.open(GameModeDialogComponent, {});
 
         dialogRef.afterClosed().subscribe((result) => {
             if (result) {

@@ -1,4 +1,3 @@
-/* Global Styles */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -6,199 +5,185 @@
 }
 
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f0f8f0; /* Light greenish background */
-    color: #333;
+    font-family: 'Press Start 2P', cursive;
+    background-color: #143018;
+    color: #e8f0d8;
+    background-image: linear-gradient(rgba(20, 48, 24, 0.9), rgba(20, 48, 24, 0.8));
+    background-size: cover;
+    background-position: center;
 }
 
-/* Main Game Container */
 .game-container {
     display: flex;
     justify-content: space-between;
     padding: 20px;
     gap: 20px;
+    height: 100vh;
+    width: 100%;
 }
 
-/* Sidebar Left (Player Info) */
+.sidebar-left,
+.sidebar-right {
+    background-color: rgba(35, 75, 41, 0.9);
+    padding: 20px;
+    border-radius: 15px;
+    border: 3px solid #6a9c3c;
+    box-shadow:
+        0 0 20px rgba(105, 221, 82, 0.3),
+        inset 0 0 30px rgba(21, 56, 20, 0.6);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #75b94a #143018;
+}
+
 .sidebar-left {
     width: 25%;
-    background-color: #e8f5e9; /* Soft green background */
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.component-box {
-    background-color: #ffffff;
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-}
-
-/* Avatar and Stats List */
-ul {
-    list-style-type: none;
-}
-
-ul li {
-    margin-bottom: 10px;
-}
-
-ul li strong {
-    color: #4caf50; /* Green for emphasis */
-}
-
-/* Avatar Styling */
-img {
-    border-radius: 50%;
-    border: 2px solid #4caf50;
-}
-
-/* Bonus Section */
-ul li {
-    color: #616161;
-}
-
-ul li strong {
-    font-size: 1rem;
-    color: #4caf50;
-}
-
-/* Sidebar Right (Game Info, Chat, and Buttons) */
 .sidebar-right {
     width: 30%;
-    background-color: #e8f5e9;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Game Info */
-.app-game-info {
-    background-color: #ffffff;
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+.sidebar-left::-webkit-scrollbar,
+.sidebar-right::-webkit-scrollbar {
+    width: 8px;
 }
 
-.app-game-info p {
+.sidebar-left::-webkit-scrollbar-thumb,
+.sidebar-right::-webkit-scrollbar-thumb {
+    background-color: #75b94a;
+    border-radius: 10px;
+}
+
+.sidebar-left::-webkit-scrollbar-track,
+.sidebar-right::-webkit-scrollbar-track {
+    background-color: #143018;
+    border-radius: 10px;
+}
+
+h3,
+h4 {
+    background-color: #3a7d23;
+    color: #f8ffd0;
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
+    border: 2px solid #94c661;
+    position: relative;
+}
+
+ul li,
+.app-game-info p,
+.app-messages p {
+    color: #c5e0a5;
+    font-family: 'Courier New', monospace;
     margin-bottom: 10px;
+    line-height: 1.4;
 }
 
-.app-game-info strong {
-    color: #4caf50;
+ul li strong,
+.app-game-info strong,
+.app-countdown-timer h4 {
+    color: #94ff96;
 }
 
-/* Action Buttons */
+ul {
+    list-style-type: none;
+    padding-left: 5px;
+}
+
+img {
+    border-radius: 50%;
+    border: 3px solid #6a9c3c;
+    box-shadow: 0 0 15px rgba(105, 221, 82, 0.4);
+    display: block;
+    margin: 0 auto 15px auto;
+}
+
 .action-buttons {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     margin-top: 20px;
 }
 
 .action-buttons button {
-    padding: 10px;
-    color: rgb(0, 5, 1);
+    background-color: #4d8c3d;
+    color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 25px;
+    padding: 12px 15px;
     font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 0 #2d5f1a;
+    transition:
+        transform 0.1s,
+        box-shadow 0.1s,
+        background-color 0.2s;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 12px;
     cursor: pointer;
-    transition: background-color 0.3s;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.action-buttons button::before {
+    content: '⚡';
+    margin-right: 8px;
 }
 
 .action-buttons button:hover {
-    background-color: #388e3c; /* Darker green on hover */
+    background-color: #5da84a;
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #2d5f1a;
 }
 
 .action-buttons button:active {
-    transform: scale(0.98);
+    transform: translateY(4px);
+    box-shadow: none;
 }
 
 .selected {
-    background-color: #388e3c;
-    color: black;
+    background-color: #75b94a !important;
+    box-shadow: 0 0 10px rgba(148, 255, 150, 0.5) !important;
+    transform: translateY(2px);
 }
 
-/* Game Board Section */
 .main-content {
     width: 40%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .board-container {
     width: 100%;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    height: 100%;
+    background-color: #e9d8b6;
+    border-radius: 15px;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+    border: 8px solid #5d4037;
     background-size: cover;
     background-position: center;
-}
-
-/* Chat Section */
-.app-messages {
-    background-color: #ffffff;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-    margin-bottom: 20px;
-}
-
-/* Countdown Timer Styling */
-.app-countdown-timer {
-    background-color: #ffffff;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-    margin-bottom: 20px;
-}
-
-.app-countdown-timer h4 {
-    color: #4caf50;
-}
-
-/* Background Decorations */
-.game-container {
-    background-size: cover;
-    background-position: center;
-    border-radius: 10px;
-}
-
-/* Small paw print icon for decoration */
-.app-game-info:before,
-.app-messages:before {
-    content: '🐾';
-    font-size: 2rem;
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: -1;
-}
-
-/* Responsive Design for Mobile */
-@media (max-width: 768px) {
-    .game-container {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .sidebar-left,
-    .sidebar-right,
-    .main-content {
-        width: 100%;
-        margin-bottom: 20px;
-    }
-
-    .action-buttons button {
-        width: 100%;
-    }
+    overflow: hidden;
+    position: relative;
 }
 
 .debug-indicator {
-    background-color: yellow;
-    color: black;
+    background-color: #75b94a;
+    color: #143018;
     padding: 5px;
     text-align: center;
     font-weight: bold;
+    border: 2px solid #477a2d;
+    box-shadow: 0 0 10px rgba(148, 255, 150, 0.5);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
 }

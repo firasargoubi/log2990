@@ -47,10 +47,7 @@ describe('MainPageComponent', () => {
 
         component.openLobbyForm();
 
-        expect(dialogSpy).toHaveBeenCalledWith(LobbyFormComponent, {
-            width: '700px',
-            height: '400px',
-        });
+        expect(dialogSpy).toHaveBeenCalledWith(LobbyFormComponent, {});
     });
 
     it('should set message to "Salle Rejointe" when dialog is closed with a result', () => {

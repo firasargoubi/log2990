@@ -123,9 +123,7 @@ describe('GameListComponent', () => {
 
         component.openCreateDialog();
 
-        expect(dialogSpy).toHaveBeenCalledWith(GameModeDialogComponent, {
-            width: '400px',
-        });
+        expect(dialogSpy).toHaveBeenCalledWith(GameModeDialogComponent, {});
     });
 
     it('should navigate to edit page with correct query params when dialog is closed with result', () => {

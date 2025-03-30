@@ -5,7 +5,7 @@
     justify-content: center;
     height: 40px;
     width: 40px;
-    
+
     &.in-tile {
         height: 100%;
         width: 100%;
@@ -26,13 +26,11 @@ img {
     object-fit: contain;
     justify-self: center;
     cursor: grab;
-    
 
     height: 100%;
     width: 100%;
     max-height: 30px;
     max-width: 30px;
-
 }
 
 img:active {
