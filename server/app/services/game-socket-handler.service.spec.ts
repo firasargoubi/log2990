@@ -8,7 +8,7 @@
 import { BoardService } from '@app/services/board.service';
 import { GameSocketHandlerService, isTileValid, isWithinBounds } from '@app/services/game-socket-handler.service';
 import { LobbySocketHandlerService } from '@app/services/lobby-socket-handler.service';
-import { GameEvents } from '@common/events'; // Ensure this path is correct
+import { GameEvents } from '@common/events';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
 import { TileTypes } from '@common/game.interface';
@@ -438,12 +438,10 @@ describe('GameSocketHandlerService', () => {
         const opponent = { id: 'p2', amountEscape: 2 } as Player;
         const gameState = { players: [currentPlayer, opponent] } as GameState;
 
-        // Create dedicated stubs for the nested emit chain
         const emitStub = sandbox.stub();
         const toToStub = sandbox.stub().returns({ emit: emitStub });
         const toStub = sandbox.stub().returns({ to: toToStub });
 
-        // Replace the ioToStub with our new stub chain
         (service as any).io = { to: toStub };
 
         service.changeTurnEnd(currentPlayer, opponent, 'p1', gameState);
@@ -520,11 +518,11 @@ describe('GameSocketHandlerService', () => {
 
         gameStates.set('lobby1', gameState);
 
-        sandbox.stub(Math, 'random').returns(0.5); // 0.5 * 6 = 3 + 1 = 4 attack/defense dice
+        sandbox.stub(Math, 'random').returns(0.5);
 
         service.handleAttackAction('lobby1', attacker, defender);
 
-        expect(defender.life).to.be.lessThan(10); // Le défenseur perd de la vie
+        expect(defender.life).to.be.lessThan(10);
         expect(ioToStub.calledWith('lobby1')).to.be.true;
         const emit = ioToStub.returnValues[0].emit;
         expect(emit.calledWith('attackResult')).to.be.true;
@@ -662,7 +660,7 @@ describe('GameSocketHandlerService', () => {
             id: 'p1',
             life: 10,
             attack: 1,
-            bonus: { attack: 'D4', defense: 'D4' }, // <-- nécessaire
+            bonus: { attack: 'D4', defense: 'D4' },
             defense: 0,
         } as Player;
 
@@ -670,12 +668,12 @@ describe('GameSocketHandlerService', () => {
             id: 'p2',
             life: 10,
             defense: 5,
-            bonus: { attack: 'D4', defense: 'D4' }, // <-- nécessaire
+            bonus: { attack: 'D4', defense: 'D4' },
         } as Player;
 
         const gameState: GameState = {
             players: [attacker, defender],
-            board: [[TileTypes.Floor]],
+            board: [[TileTypes.Grass]],
             playerPositions: [
                 { x: 0, y: 0 },
                 { x: 0, y: 1 },
@@ -711,12 +709,10 @@ describe('GameSocketHandlerService', () => {
         const opponent = { id: 'p2', amountEscape: 0 } as Player;
         const gameState = { players: [currentPlayer, opponent] } as GameState;
 
-        // Create dedicated stubs for the nested emit chain
         const emitStub = sandbox.stub();
         const toToStub = sandbox.stub().returns({ emit: emitStub });
         const toStub = sandbox.stub().returns({ to: toToStub });
 
-        // Replace the ioToStub with our new stub chain
         (service as any).io = { to: toStub };
 
         service.changeTurnEnd(currentPlayer, opponent, 'p2', gameState);
@@ -757,7 +753,7 @@ describe('GameSocketHandlerService', () => {
         gameStates.set('lobby1', gameState);
 
         (boardService.handleMovement as any).callsFake((gs: GameState) => {
-            gs.availableMoves = []; // Force endTurn
+            gs.availableMoves = [];
             return gs;
         });
 
@@ -797,7 +793,6 @@ describe('GameSocketHandlerService', () => {
     });
 
     it('should trigger handleDefeat logic when defender life <= 0', () => {
-        // Set up players with all necessary properties
         const attacker = {
             id: 'p1',
             life: 10,
@@ -816,7 +811,6 @@ describe('GameSocketHandlerService', () => {
             bonus: { attack: 'D6', defense: 'D6' },
         } as Player;
 
-        // Create a complete GameState object
         const gameState = {
             players: [attacker, defender],
             playerPositions: [
@@ -837,10 +831,8 @@ describe('GameSocketHandlerService', () => {
 
         gameStates.set('lobby1', gameState);
 
-        // Stub the handleDefeat method to avoid actually calling it
         const handleDefeatSpy = sandbox.stub(service, 'handleDefeat').returns(undefined);
 
-        // Force dice roll to ensure defender will lose
         sandbox.stub(Math, 'random').returns(1);
 
         service.handleAttackAction('lobby1', attacker, defender);
@@ -928,11 +920,10 @@ describe('GameSocketHandlerService', () => {
 
     it('should handle teleport and emit boardModified', () => {
         const gameState: GameState = {
-            board: [[TileTypes.Floor]],
+            board: [[TileTypes.Grass]],
         } as any;
         gameStates.set('lobby1', gameState);
 
-        // Mock the handleTeleport method correctly
         boardService.handleTeleport = sandbox.stub().returns(gameState);
 
         service.handleTeleport(socket, 'lobby1', { x: 1, y: 1 });
@@ -1027,7 +1018,6 @@ describe('GameSocketHandlerService', () => {
 
         gameStates.set('lobby1', gameState);
 
-        // Control the random factor for predictable test results
         sandbox.stub(Math, 'random').returns(0.5);
 
         service.handleAttackAction('lobby1', attacker, defender);
@@ -1042,7 +1032,7 @@ describe('GameSocketHandlerService', () => {
         const attacker = {
             id: 'p1',
             life: 10,
-            attack: 10, // High attack
+            attack: 10,
             defense: 3,
             maxLife: 10,
             bonus: { attack: 'D6', defense: 'D6' },
@@ -1050,9 +1040,9 @@ describe('GameSocketHandlerService', () => {
 
         const defender = {
             id: 'p2',
-            life: 1, // Low health
+            life: 1,
             attack: 3,
-            defense: 0, // No defense
+            defense: 0,
             maxLife: 10,
             bonus: { attack: 'D6', defense: 'D6' },
         } as Player;
@@ -1077,7 +1067,7 @@ describe('GameSocketHandlerService', () => {
         gameStates.set('lobby1', gameState);
 
         const handleDefeatStub = sandbox.stub(service, 'handleDefeat').returns(undefined);
-        sandbox.stub(Math, 'random').returns(1); // Max value to guarantee defeating
+        sandbox.stub(Math, 'random').returns(1);
 
         service.handleAttackAction('lobby1', attacker, defender);
 
@@ -1108,7 +1098,7 @@ describe('GameSocketHandlerService', () => {
 
         const gameState = {
             players: [attacker, defender],
-            debug: true, // Enable debug mode
+            debug: true,
             playerPositions: [
                 { x: 0, y: 0 },
                 { x: 0, y: 0 },
@@ -1121,12 +1111,11 @@ describe('GameSocketHandlerService', () => {
 
         gameStates.set('lobby1', gameState);
 
-        // Should use fixed values in debug mode, not random
         const randomStub = sandbox.stub(Math, 'random');
 
         service.handleAttackAction('lobby1', attacker, defender);
 
-        expect(randomStub.called).to.be.false; // Random should not be called in debug
+        expect(randomStub.called).to.be.false;
         expect(ioToStub.calledWith('lobby1')).to.be.true;
         const emit = ioToStub.returnValues[0].emit;
         expect(emit.calledWith('attackResult')).to.be.true;
@@ -1136,7 +1125,7 @@ describe('GameSocketHandlerService', () => {
         const attacker = {
             id: 'p1',
             life: 10,
-            attack: 1, // Very low attack
+            attack: 1,
             defense: 3,
             maxLife: 10,
             bonus: { attack: 'D6', defense: 'D6' },
@@ -1146,7 +1135,7 @@ describe('GameSocketHandlerService', () => {
             id: 'p2',
             life: 10,
             attack: 3,
-            defense: 10, // High defense
+            defense: 10,
             maxLife: 10,
             bonus: { attack: 'D6', defense: 'D6' },
         } as Player;
@@ -1166,12 +1155,11 @@ describe('GameSocketHandlerService', () => {
 
         gameStates.set('lobby1', gameState);
 
-        // Low roll to ensure damage is 0
         sandbox.stub(Math, 'random').returns(0);
 
         service.handleAttackAction('lobby1', attacker, defender);
 
-        expect(defender.life).to.equal(10); // Life should not change
+        expect(defender.life).to.equal(10);
         expect(ioToStub.calledWith('lobby1')).to.be.true;
         const emit = ioToStub.returnValues[0].emit;
         expect(emit.calledWith('attackResult')).to.be.true;
@@ -1192,7 +1180,7 @@ describe('GameSocketHandlerService', () => {
         const gameState = { players: [player] } as GameState;
         gameStates.set('lobby1', gameState);
 
-        sandbox.stub(Math, 'random').returns(0.9); // Ensure failure (over 30%)
+        sandbox.stub(Math, 'random').returns(0.9);
         service.handleFlee('lobby1', player);
 
         expect(player.amountEscape).to.equal(2);
@@ -1211,7 +1199,7 @@ describe('GameSocketHandlerService', () => {
         } as GameState;
         gameStates.set('lobby1', gameState);
 
-        sandbox.stub(Math, 'random').returns(0.01); // Ensure success (under 30%)
+        sandbox.stub(Math, 'random').returns(0.01);
         service.handleFlee('lobby1', player);
 
         expect(player.amountEscape).to.equal(1);
@@ -1225,7 +1213,7 @@ describe('GameSocketHandlerService', () => {
         const gameState = { players: [player] } as GameState;
         gameStates.set('lobby1', gameState);
 
-        sandbox.stub(Math, 'random').returns(0.9); // Ensure failure (over 30%)
+        sandbox.stub(Math, 'random').returns(0.9);
         service.handleFlee('lobby1', player);
 
         expect(player.amountEscape).to.equal(1);

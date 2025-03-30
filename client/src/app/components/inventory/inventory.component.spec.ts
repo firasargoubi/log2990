@@ -20,7 +20,6 @@ describe('InventoryComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    // Tests pour pickUpItem
     it('should add an item to the first empty slot', () => {
         component.pickUpItem('Épée');
         expect(component.inventory).toEqual(['Épée (Ramassé)', 'Espace 2: Vide']);
@@ -38,7 +37,6 @@ describe('InventoryComponent', () => {
         expect(component.inventory).toEqual(['Épée (Ramassé)', 'Bouclier (Ramassé)']);
     });
 
-    // Tests pour resetInventory
     it('should reset the inventory to initial state', () => {
         component.inventory = ['Épée (Ramassé)', 'Bouclier (Ramassé)'];
         component.resetInventory();

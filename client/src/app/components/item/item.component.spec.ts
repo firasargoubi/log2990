@@ -15,36 +15,30 @@ describe('ItemComponent', () => {
     let itemCounterSubject: Subject<number>;
 
     beforeEach(async () => {
-        // Initialize subjects to simulate observable streams
         spawnCounterSubject = new Subject<number>();
         flagPlacedSubject = new Subject<boolean>();
         itemCounterSubject = new Subject<number>();
 
-        // Create a spy object for ObjectCounterService with mocked observables and methods
         objectCounterServiceSpy = jasmine.createSpyObj('ObjectCounterService', ['isItemPlaced', 'getItemCounter'], {
             spawnCounter$: spawnCounterSubject.asObservable(),
             flagPlaced$: flagPlacedSubject.asObservable(),
             itemCounter$: itemCounterSubject.asObservable(),
         });
 
-        // Configure the testing module
         await TestBed.configureTestingModule({
             imports: [ItemComponent],
             providers: [{ provide: ObjectCounterService, useValue: objectCounterServiceSpy }],
         }).compileComponents();
 
-        // Create the component instance and detect changes
         fixture = TestBed.createComponent(ItemComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });
 
-    // Basic creation test
     it('should create', () => {
         expect(component).toBeTruthy();
     });
 
-    // Test invalid type handling in getters
     it('should return "assets/objects/undefined.png" when type is invalid in image getter', () => {
         component.type = 999;
         expect(component.image).toBe(GAME_IMAGES.undefined);
@@ -60,77 +54,71 @@ describe('ItemComponent', () => {
         expect(component.description).toBe(OBJECTS_DESCRIPTION.undefined);
     });
 
-    // Test service initialization
     it('should initialize objectCounterService in constructor', () => {
         expect(component.objectCounterService).toBe(objectCounterServiceSpy);
     });
 
-    // Test SPAWN type behavior
     it('should set isPlaced correctly for SPAWN type', () => {
         component.type = ObjectsTypes.SPAWN;
         component.ngOnInit();
 
-        spawnCounterSubject.next(0); // No spawns active
+        spawnCounterSubject.next(0);
         fixture.detectChanges();
         expect(component.isPlaced).toBeTrue();
 
-        spawnCounterSubject.next(1); // One spawn active
+        spawnCounterSubject.next(1);
         fixture.detectChanges();
         expect(component.isPlaced).toBeFalse();
     });
 
-    // Test FLAG type behavior
     it('should set isPlaced correctly for FLAG type', () => {
         component.type = ObjectsTypes.FLAG;
         component.ngOnInit();
 
-        flagPlacedSubject.next(true); // Flag is placed
+        flagPlacedSubject.next(true);
         fixture.detectChanges();
         expect(component.isPlaced).toBeTrue();
 
-        flagPlacedSubject.next(false); // Flag is not placed
+        flagPlacedSubject.next(false);
         fixture.detectChanges();
         expect(component.isPlaced).toBeFalse();
     });
 
-    // Test RANDOM type behavior
     it('should set isPlaced correctly for RANDOM type', () => {
         component.type = ObjectsTypes.RANDOM;
         component.ngOnInit();
 
-        itemCounterSubject.next(0); // No items placed
+        itemCounterSubject.next(0);
         fixture.detectChanges();
         expect(component.isPlaced).toBeTrue();
 
-        itemCounterSubject.next(1); // One item placed
+        itemCounterSubject.next(1);
         fixture.detectChanges();
         expect(component.isPlaced).toBeFalse();
     });
 
-    // Test unique items behavior
     it('should set isPlaced correctly for unique items', () => {
         component.type = ObjectsTypes.BOOTS;
         objectCounterServiceSpy.isItemPlaced.and.returnValue(false);
-        objectCounterServiceSpy.getItemCounter.and.returnValue(1); // One item available
+        objectCounterServiceSpy.getItemCounter.and.returnValue(1);
         component.ngOnInit();
 
-        itemCounterSubject.next(1); // Trigger subscription
+        itemCounterSubject.next(1);
         fixture.detectChanges();
-        expect(component.isPlaced).toBeFalse(); // Not placed yet
+        expect(component.isPlaced).toBeFalse();
 
-        objectCounterServiceSpy.isItemPlaced.and.returnValue(true); // Item is placed
+        objectCounterServiceSpy.isItemPlaced.and.returnValue(true);
         itemCounterSubject.next(1);
         fixture.detectChanges();
         expect(component.isPlaced).toBeTrue();
 
         objectCounterServiceSpy.isItemPlaced.and.returnValue(false);
-        objectCounterServiceSpy.getItemCounter.and.returnValue(0); // No items available
+        objectCounterServiceSpy.getItemCounter.and.returnValue(0);
         itemCounterSubject.next(0);
         fixture.detectChanges();
-        expect(component.isPlaced).toBeTrue(); // Max items reached
+        expect(component.isPlaced).toBeTrue();
     });
 
-    // Test image getter for all types
     it('should return correct image path based on type', () => {
         component.type = ObjectsTypes.BOOTS;
         expect(component.image).toBe(GAME_IMAGES.boots);
@@ -163,7 +151,6 @@ describe('ItemComponent', () => {
         expect(component.image).toBe(GAME_IMAGES.undefined);
     });
 
-    // Test name getter for all types
     it('should return correct name based on type', () => {
         component.type = ObjectsTypes.BOOTS;
         expect(component.name).toBe(OBJECT_NAMES.boots);
@@ -196,7 +183,6 @@ describe('ItemComponent', () => {
         expect(component.name).toBe(OBJECT_NAMES.undefined);
     });
 
-    // Test description getter for all types
     it('should return correct description based on type', () => {
         component.type = ObjectsTypes.BOOTS;
         expect(component.description).toBe(OBJECTS_DESCRIPTION.boots);
@@ -229,7 +215,6 @@ describe('ItemComponent', () => {
         expect(component.description).toBe(OBJECTS_DESCRIPTION.undefined);
     });
 
-    // Test cleanup on destroy
     it('should properly unsubscribe on destroy', () => {
         component.type = ObjectsTypes.SPAWN;
         component.ngOnInit();

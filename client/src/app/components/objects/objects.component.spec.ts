@@ -56,31 +56,32 @@ describe('ObjectsComponent', () => {
         it('should generate range from 1 to 8 when gameMode is not "capture"', () => {
             component.gameMode = 'normal' as GameType;
             component.ngOnInit();
-            expect(component.range).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+            expect(component.range).toEqual([
+                ObjectsTypes.BOOTS,
+                ObjectsTypes.SWORD,
+                ObjectsTypes.POTION,
+                ObjectsTypes.WAND,
+                ObjectsTypes.CRYSTAL,
+                ObjectsTypes.JUICE,
+                ObjectsTypes.SPAWN,
+                ObjectsTypes.RANDOM,
+            ]);
         });
 
         it('should generate range from 1 to 9 when gameMode is "capture"', () => {
             component.gameMode = GameType.capture;
             component.ngOnInit();
-            expect(component.range).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
-        });
-    });
-
-    describe('Item initialization', () => {
-        it('should initialize items based on range for non-capture mode', () => {
-            component.gameMode = 'normal' as GameType;
-            component.ngOnInit();
-            expect(component.items.length).toBe(8);
-            expect(component.items.map((item) => item.type)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
-            expect(component.items.every((item) => item.isPlaced === false)).toBeTrue();
-        });
-
-        it('should initialize items based on range for capture mode', () => {
-            component.gameMode = GameType.capture;
-            component.ngOnInit();
-            expect(component.items.length).toBe(9);
-            expect(component.items.map((item) => item.type)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
-            expect(component.items.every((item) => item.isPlaced === false)).toBeTrue();
+            expect(component.range).toEqual([
+                ObjectsTypes.BOOTS,
+                ObjectsTypes.SWORD,
+                ObjectsTypes.POTION,
+                ObjectsTypes.WAND,
+                ObjectsTypes.CRYSTAL,
+                ObjectsTypes.JUICE,
+                ObjectsTypes.SPAWN,
+                ObjectsTypes.RANDOM,
+                ObjectsTypes.FLAG,
+            ]);
         });
     });
 

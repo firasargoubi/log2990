@@ -20,7 +20,6 @@ const MAX_FLEE = 100;
 @Service()
 export class GameSocketHandlerService {
     private io: Server;
-    // private combatTimes: Map<string, number> = new Map<string, number>();
     constructor(
         private lobbies: Map<string, GameLobby>,
         private gameStates: Map<string, GameState>,
