@@ -1,4 +1,5 @@
 export interface Player {
+    pendingItem: number;
     id: string;
     name: string;
     avatar: string;

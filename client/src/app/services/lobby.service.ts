@@ -434,6 +434,26 @@ export class LobbyService {
             });
         });
     }
+    onInventoryFull(): Observable<{ item: number; currentInventory: number[]; remainingPath: Coordinates[] }> {
+        return new Observable((observer) => {
+            this.socket.on('inventoryFull', (data) => {
+                observer.next(data);
+            });
+        });
+    }
+    resolveInventory(lobbyId: string, oldItem: number, newItem: number): void {
+        this.socket.emit('resolveInventory', { lobbyId, oldItem, newItem });
+    }
+    cancelInventoryChoice(lobbyId: string): void {
+        this.socket.emit('cancelInventoryChoice', { lobbyId });
+    }
+    onBoardModified(): Observable<unknown> {
+        return new Observable((observer) => {
+            this.socket.on('boardModified', (data) => {
+                observer.next(data);
+            });
+        });
+    }
 }
 function shareReplay<T>(bufferSize: number): import('rxjs').OperatorFunction<T, T> {
     return rxjsShareReplay(bufferSize);

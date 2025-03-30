@@ -32,6 +32,7 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
         attack: 0,
         defense: 0,
         winCount: 0,
+        pendingItem: 0,
     };
     hostId: string = WAITING_PAGE.defaultPlayerId;
     private subscriptions: Subscription[] = [];

@@ -76,23 +76,16 @@ export class BoardService {
 
     handleMovement(gameState: GameState, targetCoordinate: Coordinates): GameState {
         const indexPlayer = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
+        if (indexPlayer === -1) return gameState;
 
-        if (indexPlayer === -1) {
-            return gameState;
-        }
+        const player = gameState.players[indexPlayer];
         const playerPosition = gameState.playerPositions[indexPlayer];
-        if (!playerPosition) {
-            return gameState;
-        }
+        if (!playerPosition) return gameState;
 
-        const isValidMove =
-            gameState.availableMoves && gameState.availableMoves.some((move) => move.x === targetCoordinate.x && move.y === targetCoordinate.y);
+        const isValidMove = gameState.availableMoves.some((move) => move.x === targetCoordinate.x && move.y === targetCoordinate.y);
+        if (!isValidMove) return gameState;
 
-        if (!isValidMove) {
-            return gameState;
-        }
         const path = this.pathfindingService.findShortestPath(gameState, playerPosition, targetCoordinate, gameState.currentPlayerMovementPoints);
-
         if (!path || path.length < 2) {
             return gameState;
         }
@@ -102,23 +95,24 @@ export class BoardService {
             const tileCost = this.pathfindingService.getMovementCost(gameState, path[i]);
             movementCost += tileCost;
         }
-
         gameState.playerPositions[indexPlayer] = targetCoordinate;
+
         const tileValue = gameState.board[targetCoordinate.x][targetCoordinate.y];
         const item = Math.floor(tileValue / TILE_DELIMITER);
         const tile = tileValue % TILE_DELIMITER;
+
         if (item !== ObjectsTypes.EMPTY && item !== ObjectsTypes.SPAWN) {
-            gameState.players[indexPlayer].items ??= [];
-            gameState.players[indexPlayer].items.push(item);
-            gameState.board[targetCoordinate.x][targetCoordinate.y] = tile;
-            gameState.availableMoves = [];
-            gameState.shortestMoves = [];
-
-            return gameState;
+            player.items ??= [];
+            if (player.items.length >= 2) {
+                player.pendingItem = item;
+            } else {
+                player.items.push(item);
+                gameState.board[targetCoordinate.x][targetCoordinate.y] = tile;
+            }
         }
-        gameState.currentPlayerMovementPoints -= movementCost;
 
-        gameState.players[indexPlayer].currentMP = gameState.currentPlayerMovementPoints;
+        gameState.currentPlayerMovementPoints -= movementCost;
+        player.currentMP = gameState.currentPlayerMovementPoints;
 
         if (gameState.currentPlayerMovementPoints >= 0) {
             gameState.availableMoves = this.findAllPaths(gameState, targetCoordinate);

@@ -277,6 +277,7 @@ export class BoxFormDialogComponent implements OnDestroy {
             defense: formData.defense,
             bonus,
             winCount: 0,
+            pendingItem: 0,
         };
     }
 

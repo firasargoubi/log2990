@@ -1,11 +1,12 @@
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
-import { Game, Tile } from '@common/game.interface';
+import { Game, Tile, TILE_DELIMITER } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
+import { BoardService } from './board.service';
 import { DisconnectHandlerService } from './disconnect-handler.service';
 import { GameSocketHandlerService } from './game-socket-handler.service';
 import { LobbySocketHandlerService } from './lobby-socket-handler.service';
@@ -15,12 +16,14 @@ import { ValidationSocketHandlerService } from './validation-socket-handler.serv
 export class SocketService {
     private io: Server;
 
+    // eslint-disable-next-line max-params
     constructor(
         server: HttpServer,
         private lobbyHandler: LobbySocketHandlerService,
         private gameSocketHandlerService: GameSocketHandlerService,
         private validationSocketHandlerService: ValidationSocketHandlerService,
         private disconnectHandlerService: DisconnectHandlerService,
+        private boardService: BoardService,
     ) {
         this.io = new Server(server, {
             cors: {
@@ -97,8 +100,51 @@ export class SocketService {
         socket.on('updateCombatTime', (data: { lobbyId: string; timeLeft: number }) => {
             this.gameSocketHandlerService.updateCombatTime(data.lobbyId, data.timeLeft);
         });
-    }
+        socket.on('resolveInventory', (data: { lobbyId: string; oldItem: number; newItem: number }) => {
+            const gameState = this.gameSocketHandlerService.getGameStateOrEmitError(socket, data.lobbyId);
+            if (!gameState) return;
 
+            const playerIndex = gameState.players.findIndex((p) => p.id === socket.id);
+            if (playerIndex === -1) return;
+
+            const player = gameState.players[playerIndex];
+            const playerPosition = gameState.playerPositions[playerIndex];
+
+            if (player && player.items && playerPosition) {
+                const index = player.items.findIndex((item) => item === data.oldItem);
+                const tileValue = gameState.board[playerPosition.x][playerPosition.y] % TILE_DELIMITER;
+
+                if (index !== -1) {
+                    player.items.splice(index, 1, data.newItem);
+
+                    gameState.board[playerPosition.x][playerPosition.y] = data.oldItem * TILE_DELIMITER + tileValue;
+                }
+
+                player.pendingItem = 0;
+                gameState.availableMoves = this.boardService['findAllPaths'](gameState, playerPosition);
+                gameState.shortestMoves = this.boardService['calculateShortestMoves'](gameState, playerPosition, gameState.availableMoves);
+
+                this.io.to(data.lobbyId).emit('boardModified', { gameState });
+            }
+        });
+        socket.on('cancelInventoryChoice', (data: { lobbyId: string }) => {
+            const gameState = this.gameSocketHandlerService.getGameStateOrEmitError(socket, data.lobbyId);
+            if (!gameState) return;
+
+            const playerIndex = gameState.players.findIndex((p) => p.id === socket.id);
+            if (playerIndex === -1) return;
+
+            const player = gameState.players[playerIndex];
+            const playerPosition = gameState.playerPositions[playerIndex];
+
+            player.pendingItem = 0;
+
+            gameState.availableMoves = this.boardService['findAllPaths'](gameState, playerPosition);
+            gameState.shortestMoves = this.boardService['calculateShortestMoves'](gameState, playerPosition, gameState.availableMoves);
+
+            this.io.to(data.lobbyId).emit('boardModified', { gameState });
+        });
+    }
     private handleCreateLobby(socket: Socket, game: Game): void {
         if (!game) {
             socket.emit('error', 'Invalid game data');

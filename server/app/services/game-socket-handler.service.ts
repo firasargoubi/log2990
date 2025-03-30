@@ -92,18 +92,37 @@ export class GameSocketHandlerService {
         try {
             let updatedGameState = gameState;
             updatedGameState.animation = true;
+
             for (const [idx, coordinate] of coordinates.entries()) {
                 setTimeout(() => {
                     updatedGameState = this.boardService.handleMovement(updatedGameState, coordinate);
-                    if (idx === coordinates.length - 1) {
-                        updatedGameState.animation = false;
+
+                    const indexPlayer = updatedGameState.players.findIndex((p) => p.id === socket.id);
+                    if (indexPlayer !== -1) {
+                        const currentPlayer = updatedGameState.players[indexPlayer];
+                        if (idx === coordinates.length - 1) {
+                            updatedGameState.animation = false;
+
+                            if (currentPlayer.pendingItem !== 0) {
+                                // updatedGameState.animation = false;
+                                const remainingPath = coordinates.slice(idx + 1);
+                                socket.emit('inventoryFull', {
+                                    item: currentPlayer.pendingItem,
+                                    currentInventory: currentPlayer.items,
+                                    remainingPath,
+                                });
+                                return;
+                            }
+
+                            if (updatedGameState.availableMoves.length === 0) {
+                                this.handleEndTurn(socket, lobbyId);
+                            }
+                        }
                     }
+
                     this.gameStates.set(lobbyId, updatedGameState);
                     this.io.to(lobbyId).emit('movementProcessed', { gameState: updatedGameState });
-                    if (updatedGameState.availableMoves.length === 0) {
-                        this.handleEndTurn(socket, lobbyId);
-                    }
-                }, ANIMATION_DELAY_MS);
+                }, ANIMATION_DELAY_MS * idx);
             }
         } catch (error) {
             socket.emit(GameEvents.Error, `${gameSocketMessages.movementError}${error.message}`);
@@ -443,6 +462,14 @@ export class GameSocketHandlerService {
             players: gameState.players,
         });
     }
+    getGameStateOrEmitError(socket: Socket, lobbyId: string): GameState | null {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) {
+            socket.emit(GameEvents.Error, gameSocketMessages.gameNotFound);
+            return null;
+        }
+        return gameState;
+    }
 
     private getDiceValue(playerDice: string): number {
         if (playerDice === 'D4') {
@@ -453,14 +480,7 @@ export class GameSocketHandlerService {
         }
         return 0;
     }
-    private getGameStateOrEmitError(socket: Socket, lobbyId: string): GameState | null {
-        const gameState = this.gameStates.get(lobbyId);
-        if (!gameState) {
-            socket.emit(GameEvents.Error, gameSocketMessages.gameNotFound);
-            return null;
-        }
-        return gameState;
-    }
+
     private isPlayerOnIceTile(gameState: GameState, player: Player): boolean {
         const playerIndex = gameState.players.findIndex((p) => p.id === player.id);
         if (playerIndex === -1) return false;

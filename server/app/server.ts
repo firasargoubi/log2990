@@ -42,7 +42,7 @@ export class Server {
         const gameHandler = new GameSocketHandlerService(lobbyMap, gameStateMap, boardService, lobbyHandler);
         const validationHandler = new ValidationSocketHandlerService(lobbyMap);
         const disconnectHandler = new DisconnectHandlerService(lobbyMap, lobbyHandler);
-        this.socketManager = new SocketService(this.server, lobbyHandler, gameHandler, validationHandler, disconnectHandler);
+        this.socketManager = new SocketService(this.server, lobbyHandler, gameHandler, validationHandler, disconnectHandler, boardService);
         this.socketManager.init();
 
         this.server.on('error', (error: NodeJS.ErrnoException) => this.onError(error));
