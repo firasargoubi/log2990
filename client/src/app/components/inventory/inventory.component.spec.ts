@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { LobbyService } from '@app/services/lobby.service';
 import { Coordinates } from '@common/coordinates';
 import { GameState } from '@common/game-state';
@@ -10,7 +10,6 @@ describe('InventoryComponent', () => {
     let component: InventoryComponent;
     let fixture: ComponentFixture<InventoryComponent>;
     let lobbyServiceMock: jasmine.SpyObj<LobbyService>;
-    let confirmSpy: jasmine.Spy;
     let inventoryFullSubject: Subject<{ item: number; currentInventory: number[] }>;
     let movementProcessedSubject: Subject<{
         gameState: GameState;
@@ -44,8 +43,6 @@ describe('InventoryComponent', () => {
         component = fixture.componentInstance;
         component.lobbyId = 'lobby123';
         fixture.detectChanges();
-
-        confirmSpy = spyOn(window, 'confirm');
     });
 
     it('should create the component', () => {
@@ -53,33 +50,22 @@ describe('InventoryComponent', () => {
     });
 
     describe('ngOnInit - onInventoryFull', () => {
-        it('should do nothing if item is empty or inventory invalid', fakeAsync(() => {
+        it('should do nothing if item is EMPTY or inventory is invalid', fakeAsync(() => {
             inventoryFullSubject.next({ item: ObjectsTypes.EMPTY, currentInventory: [] });
             tick();
-            expect(lobbyServiceMock.resolveInventory).not.toHaveBeenCalled();
-            expect(lobbyServiceMock.cancelInventoryChoice).not.toHaveBeenCalled();
+            expect(component.showPopup).toBeFalse();
+            expect(component.pendingItem).toBe(0);
         }));
 
-        it('should resolve inventory when user confirms replacement', fakeAsync(() => {
-            confirmSpy.and.returnValue(true);
+        it('should set popup state and store inventory when valid item received', fakeAsync(() => {
             inventoryFullSubject.next({
                 item: ObjectsTypes.SWORD,
                 currentInventory: [ObjectsTypes.BOOTS, ObjectsTypes.POTION],
             });
             tick();
-            expect(lobbyServiceMock.resolveInventory).toHaveBeenCalledWith('lobby123', ObjectsTypes.BOOTS, ObjectsTypes.SWORD);
+            expect(component.pendingItem).toBe(ObjectsTypes.SWORD);
             expect(component.items).toEqual([ObjectsTypes.BOOTS, ObjectsTypes.POTION]);
-        }));
-
-        it('should cancel inventory choice when user declines', fakeAsync(() => {
-            confirmSpy.and.returnValue(false);
-            inventoryFullSubject.next({
-                item: ObjectsTypes.SWORD,
-                currentInventory: [ObjectsTypes.BOOTS, ObjectsTypes.POTION],
-            });
-            tick();
-            expect(lobbyServiceMock.cancelInventoryChoice).toHaveBeenCalledWith('lobby123');
-            expect(component.items).toEqual([ObjectsTypes.BOOTS, ObjectsTypes.POTION]);
+            expect(component.showPopup).toBeTrue();
         }));
     });
 
@@ -94,21 +80,7 @@ describe('InventoryComponent', () => {
                     players: [
                         {
                             id: mockPlayerId,
-                            items: [ObjectsTypes.SWORD, ObjectsTypes.POTION],
-                            pendingItem: 0,
-                            name: '',
-                            avatar: '',
-                            isHost: false,
-                            life: 0,
-                            maxLife: 0,
-                            speed: 0,
-                            attack: 0,
-                            defense: 0,
-                            winCount: 0,
-                        },
-                        {
-                            id: 'another',
-                            items: [],
+                            items: [ObjectsTypes.SWORD, ObjectsTypes.JUICE],
                             pendingItem: 0,
                             name: '',
                             avatar: '',
@@ -134,32 +106,17 @@ describe('InventoryComponent', () => {
                 newPosition: { x: 0, y: 0 },
             });
             tick();
-            expect(component.items).toEqual([ObjectsTypes.SWORD, ObjectsTypes.POTION]);
+            expect(component.items).toEqual([ObjectsTypes.SWORD, ObjectsTypes.JUICE]);
         }));
 
-        it('should default to empty array if no matching player found', fakeAsync(() => {
+        it('should set items to empty array if player not found', fakeAsync(() => {
             movementProcessedSubject.next({
                 gameState: {
                     id: 'game1',
                     board: [[]],
                     currentPlayer: '',
                     animation: false,
-                    players: [
-                        {
-                            id: 'another',
-                            items: [ObjectsTypes.CRYSTAL],
-                            pendingItem: 0,
-                            name: '',
-                            avatar: '',
-                            isHost: false,
-                            life: 0,
-                            maxLife: 0,
-                            speed: 0,
-                            attack: 0,
-                            defense: 0,
-                            winCount: 0,
-                        },
-                    ],
+                    players: [],
                     turnCounter: 0,
                     availableMoves: [],
                     shortestMoves: [],
@@ -176,18 +133,45 @@ describe('InventoryComponent', () => {
             expect(component.items).toEqual([]);
         }));
     });
-    describe('getItemImage()', () => {
-        it('should return correct image path for known items', () => {
-            expect(component.getItemImage(ObjectsTypes.BOOTS)).toBe('assets/objects/boots.png');
-            expect(component.getItemImage(ObjectsTypes.SWORD)).toBe('assets/objects/sword.png');
-            expect(component.getItemImage(ObjectsTypes.POTION)).toBe('assets/objects/potion.png');
-            expect(component.getItemImage(ObjectsTypes.WAND)).toBe('assets/objects/wand.png');
-            expect(component.getItemImage(ObjectsTypes.CRYSTAL)).toBe('assets/objects/crystal_ball.png');
-            expect(component.getItemImage(ObjectsTypes.JUICE)).toBe('assets/objects/berry-juice.png');
+
+    describe('Popup actions', () => {
+        beforeEach(() => {
+            component.items = [ObjectsTypes.BOOTS, ObjectsTypes.POTION];
+            component.pendingItem = ObjectsTypes.WAND;
+            component.showPopup = true;
         });
 
-        it('should return default image path for unknown item', () => {
+        it('handleConfirmReplace() should call resolveInventory and close popup', () => {
+            component.handleConfirmReplace();
+            expect(lobbyServiceMock.resolveInventory).toHaveBeenCalledWith('lobby123', ObjectsTypes.BOOTS, ObjectsTypes.WAND);
+            expect(component.showPopup).toBeFalse();
+        });
+
+        it('handleCancelReplace() should call cancelInventoryChoice and close popup', () => {
+            component.handleCancelReplace();
+            expect(lobbyServiceMock.cancelInventoryChoice).toHaveBeenCalledWith('lobby123');
+            expect(component.showPopup).toBeFalse();
+        });
+    });
+
+    describe('getItemImage()', () => {
+        it('should return correct path for known items', () => {
+            expect(component.getItemImage(ObjectsTypes.SWORD)).toBe('assets/objects/sword.png');
+            expect(component.getItemImage(ObjectsTypes.CRYSTAL)).toBe('assets/objects/crystal_ball.png');
+        });
+
+        it('should return fallback path for unknown item', () => {
             expect(component.getItemImage(999)).toBe('assets/items/unknown.png');
+        });
+    });
+
+    describe('getItemName()', () => {
+        it('should return correct name for known items', () => {
+            expect(component.getItemName(ObjectsTypes.JUICE)).toBe('Jus');
+        });
+
+        it('should return fallback name for unknown item', () => {
+            expect(component.getItemName(999)).toBe('Objet inconnu');
         });
     });
 });
