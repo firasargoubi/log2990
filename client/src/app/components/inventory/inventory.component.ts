@@ -39,7 +39,7 @@ export class InventoryComponent implements OnInit {
             this.items = gameState.players.find((p) => p.id === this.lobbyService.getSocketId())?.items ?? [];
         });
     }
-
+    /*
     pickUpItem(item: string): void {
         const emptySlotIndex = this.inventory.findIndex((slot) => slot.includes('Vide'));
         if (emptySlotIndex !== -1) {
@@ -50,6 +50,7 @@ export class InventoryComponent implements OnInit {
     resetInventory(): void {
         this.inventory = ['Espace 1: Vide', 'Espace 2: Vide'];
     }
+        */
 
     getItemName(item: number): string {
         switch (item) {

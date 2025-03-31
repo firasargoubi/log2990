@@ -138,6 +138,7 @@ describe('PlayingPageComponent', () => {
             fleeSuccessSubject,
             attackEndSubject,
             combatTimeUpdateSubject,
+            onInventoryFull: jasmine.createSpy('onInventoryFull').and.returnValue(of({})),
         };
 
         actionService = {
