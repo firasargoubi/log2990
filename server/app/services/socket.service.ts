@@ -97,15 +97,11 @@ export class SocketService {
         socket.on('updateCombatTime', (data: { lobbyId: string; timeLeft: number }) => {
             this.gameSocketHandlerService.updateCombatTime(data.lobbyId, data.timeLeft);
         });
-
-        socket.on('joinChat', (lobbyId) => {
-            this.gameSocketHandlerService.handleJoinChat(socket, lobbyId);
-        });
-
         // Gérer l'envoi de message de chat
-        socket.on('sendMessage', (lobbyId, message) => {
+        socket.on('sendMessage', (data: { lobbyId: string; message: string }) => {
             console.log('okidoki');
-            this.gameSocketHandlerService.handleChatMessage(socket, lobbyId, message);
+            console.log(data.lobbyId);
+            this.handleChatMessage(data.lobbyId, data.message);
         });
     }
 
@@ -139,6 +135,7 @@ export class SocketService {
     }
 
     private handleLockLobby(socket: Socket, lobbyId: string): void {
+        console.log('mon lobby :', lobbyId);
         if (!lobbyId) {
             socket.emit('error', 'Invalid lobby ID');
             return;
@@ -291,5 +288,9 @@ export class SocketService {
 
     private terminateAttack(lobbyId: string) {
         this.gameSocketHandlerService.handleTerminateAttack(lobbyId);
+    }
+
+    private handleChatMessage(lobbyId: string, message: string) {
+        this.gameSocketHandlerService.handleChatMessage(lobbyId, message);
     }
 }

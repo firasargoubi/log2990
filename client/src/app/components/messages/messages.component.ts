@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms'; // Import FormsModule
 import { ChatService } from '@app/services/chat.service';
 
@@ -13,10 +13,13 @@ import { ChatService } from '@app/services/chat.service';
     ],
 })
 export class MessagesComponent implements OnInit, OnDestroy {
+    @Input() lobbyId: string; // Accepte lobbyId comme une entrée
     chatMessages = this.chatService.chatMessages;
+
     eventLog = this.chatService.eventLog;
     activeTab: string = 'chat';
     newMessage: string = '';
+    player: string = ''; // Define the player property with an initial value
 
     constructor(private chatService: ChatService) {}
 

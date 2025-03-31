@@ -443,30 +443,14 @@ export class GameSocketHandlerService {
             players: gameState.players,
         });
     }
-    handleJoinChat(socket: Socket, lobbyId: string) {
-        const lobby = this.lobbies.get(lobbyId);
-        if (!lobby) {
-            socket.emit(GameEvents.Error, 'Lobby not found.');
-            return;
-        }
-
-        // Ajouter le joueur à un salon de chat
-        socket.join(lobbyId);
-        socket.emit(GameEvents.ChatJoined, { lobbyId, playerId: socket.id });
-
-        // Annoncer l'arrivée d'un nouveau joueur
-        this.io.to(lobbyId).emit(GameEvents.PlayerJoinedChat, {
-            playerId: socket.id,
-            message: `${socket.id} has joined the chat.`,
-        });
-    }
-    handleChatMessage(socket: Socket, lobbyId: string, message: string) {
+    handleChatMessage(lobbyId: string, message: string) {
+        console.log(lobbyId);
         // Emit the message to all players in the lobby
         this.io.to(lobbyId).emit(GameEvents.ChatMessage, {
             message,
         });
 
-        console.log(`Message sent from lobby ${lobbyId}: ${message}`);
+        console.log(`Message sent in lobby ${lobbyId}: ${message}`);
     }
 
     // Fonction pour gérer la connexion de nouveaux joueurs au chat

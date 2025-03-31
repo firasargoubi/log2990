@@ -9,7 +9,7 @@
     <div *ngIf="activeTab === 'chat'" class="chat">
         <div class="message-input">
             <input type="text" [(ngModel)]="newMessage" placeholder="Type your message..." />
-            <button (click)="sendMessage('Player1', newMessage)">Send</button>
+            <button (click)="sendMessage(player, newMessage)">Send</button>
         </div>
         <div class="messages" id="chatMessages">
             <div *ngFor="let message of chatMessages" class="message">

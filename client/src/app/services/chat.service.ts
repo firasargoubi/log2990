@@ -39,9 +39,6 @@ export class ChatService {
     }
 
     // Join a chat lobby
-    joinChat(lobbyId: string): void {
-        this.socket.emit('joinChat', lobbyId);
-    }
 
     // Add a message to the chat log
     addChatMessage(playerName: string, message: string): void {
