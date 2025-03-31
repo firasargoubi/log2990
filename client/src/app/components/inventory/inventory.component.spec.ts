@@ -50,8 +50,22 @@ describe('InventoryComponent', () => {
     });
 
     describe('ngOnInit - onInventoryFull', () => {
-        it('should do nothing if item is EMPTY or inventory is invalid', fakeAsync(() => {
-            inventoryFullSubject.next({ item: ObjectsTypes.EMPTY, currentInventory: [] });
+        it('should do nothing if item is EMPTY', fakeAsync(() => {
+            inventoryFullSubject.next({ item: ObjectsTypes.EMPTY, currentInventory: [1, 2] });
+            tick();
+            expect(component.showPopup).toBeFalse();
+            expect(component.pendingItem).toBe(0);
+        }));
+
+        it('should do nothing if currentInventory is empty', fakeAsync(() => {
+            inventoryFullSubject.next({ item: ObjectsTypes.SWORD, currentInventory: [] });
+            tick();
+            expect(component.showPopup).toBeFalse();
+            expect(component.pendingItem).toBe(0);
+        }));
+
+        it('should do nothing if currentInventory has less than 2 items', fakeAsync(() => {
+            inventoryFullSubject.next({ item: ObjectsTypes.SWORD, currentInventory: [1] });
             tick();
             expect(component.showPopup).toBeFalse();
             expect(component.pendingItem).toBe(0);
@@ -71,37 +85,39 @@ describe('InventoryComponent', () => {
 
     describe('ngOnInit - onMovementProcessed', () => {
         it('should update items based on game state for current player', fakeAsync(() => {
+            const mockGameState: GameState = {
+                id: 'game1',
+                board: [[]],
+                currentPlayer: '',
+                animation: false,
+                players: [
+                    {
+                        id: mockPlayerId,
+                        items: [ObjectsTypes.SWORD, ObjectsTypes.JUICE],
+                        pendingItem: 0,
+                        name: '',
+                        avatar: '',
+                        isHost: false,
+                        life: 0,
+                        maxLife: 0,
+                        speed: 0,
+                        attack: 0,
+                        defense: 0,
+                        winCount: 0,
+                    },
+                ],
+                turnCounter: 0,
+                availableMoves: [],
+                shortestMoves: [],
+                playerPositions: [],
+                spawnPoints: [],
+                currentPlayerMovementPoints: 0,
+                currentPlayerActionPoints: 0,
+                debug: false,
+            };
+
             movementProcessedSubject.next({
-                gameState: {
-                    id: 'game1',
-                    board: [[]],
-                    currentPlayer: '',
-                    animation: false,
-                    players: [
-                        {
-                            id: mockPlayerId,
-                            items: [ObjectsTypes.SWORD, ObjectsTypes.JUICE],
-                            pendingItem: 0,
-                            name: '',
-                            avatar: '',
-                            isHost: false,
-                            life: 0,
-                            maxLife: 0,
-                            speed: 0,
-                            attack: 0,
-                            defense: 0,
-                            winCount: 0,
-                        },
-                    ],
-                    turnCounter: 0,
-                    availableMoves: [],
-                    shortestMoves: [],
-                    playerPositions: [],
-                    spawnPoints: [],
-                    currentPlayerMovementPoints: 0,
-                    currentPlayerActionPoints: 0,
-                    debug: false,
-                },
+                gameState: mockGameState,
                 playerMoved: mockPlayerId,
                 newPosition: { x: 0, y: 0 },
             });
@@ -155,9 +171,13 @@ describe('InventoryComponent', () => {
     });
 
     describe('getItemImage()', () => {
-        it('should return correct path for known items', () => {
+        it('should return correct path for all known items', () => {
+            expect(component.getItemImage(ObjectsTypes.BOOTS)).toBe('assets/objects/boots.png');
             expect(component.getItemImage(ObjectsTypes.SWORD)).toBe('assets/objects/sword.png');
+            expect(component.getItemImage(ObjectsTypes.POTION)).toBe('assets/objects/potion.png');
+            expect(component.getItemImage(ObjectsTypes.WAND)).toBe('assets/objects/wand.png');
             expect(component.getItemImage(ObjectsTypes.CRYSTAL)).toBe('assets/objects/crystal_ball.png');
+            expect(component.getItemImage(ObjectsTypes.JUICE)).toBe('assets/objects/berry-juice.png');
         });
 
         it('should return fallback path for unknown item', () => {
@@ -166,12 +186,36 @@ describe('InventoryComponent', () => {
     });
 
     describe('getItemName()', () => {
-        it('should return correct name for known items', () => {
+        it('should return correct name for all known items', () => {
+            expect(component.getItemName(ObjectsTypes.BOOTS)).toBe('Bottes');
+            expect(component.getItemName(ObjectsTypes.SWORD)).toBe('Épée');
+            expect(component.getItemName(ObjectsTypes.POTION)).toBe('Potion');
+            expect(component.getItemName(ObjectsTypes.WAND)).toBe('Baguette');
+            expect(component.getItemName(ObjectsTypes.CRYSTAL)).toBe('Cristal');
             expect(component.getItemName(ObjectsTypes.JUICE)).toBe('Jus');
+            expect(component.getItemName(ObjectsTypes.RANDOM)).toBe('Objet aléatoire');
         });
 
         it('should return fallback name for unknown item', () => {
             expect(component.getItemName(999)).toBe('Objet inconnu');
+        });
+    });
+
+    describe('Input properties', () => {
+        it('should initialize with default values', () => {
+            expect(component.items).toEqual([]);
+            expect(component.lobbyId).toEqual('lobby123');
+        });
+
+        it('should accept input values', () => {
+            const testItems = [1, 2, 3];
+            const testLobbyId = 'testLobby';
+
+            component.items = testItems;
+            component.lobbyId = testLobbyId;
+
+            expect(component.items).toEqual(testItems);
+            expect(component.lobbyId).toEqual(testLobbyId);
         });
     });
 });
