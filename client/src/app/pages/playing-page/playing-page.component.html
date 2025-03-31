@@ -2,7 +2,7 @@
     <div class="sidebar-left">
         <div class="component-box">
             <app-game-info
-                [gameName]="getGameName()"
+                [gameName]="'Tile Bound'"
                 [mapSize]="getMapSize()"
                 [playerCount]="getPlayerCount()"
                 [activePlayer]="getActivePlayer()"
@@ -12,7 +12,7 @@
                 >
             </app-game-info>
             <div class="header">
-                @if (gameState && currentPlayer && currentPlayer.isHost && gameState.debug) {
+                @if (gameState && gameState.debug) {
                 <div class="debug-indicator">Mode Debug Activé</div>
                 }
             </div>
@@ -24,8 +24,8 @@
                 <li><strong>Rapidité:</strong> {{ currentPlayer.speed }}</li>
                 <li><strong>Attaque:</strong> D{{ currentPlayer.attack }}</li>
                 <li><strong>Défense:</strong> D{{ currentPlayer.defense }}</li>
-                <li><strong>Points de mouvement restants:</strong> {{ currentPlayer.currentMP || currentPlayer.speed }}</li>
-                <li><strong>Points d'Actions restants:</strong> {{ currentPlayer.currentAP || 1 }}</li>
+                <li><strong>Points de mouvement restants:</strong> {{ currentPlayer.currentMP ?? currentPlayer.speed }}</li>
+                <li><strong>Points d'Actions restants:</strong> {{ currentPlayer.currentAP ?? 1 }}</li>
             </ul>
         </div>
     </div>

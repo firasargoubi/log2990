@@ -54,15 +54,12 @@ export class ActionService {
         this.gameState = gameState;
         if (this.isTileNextToPlayer(tile)) {
             if (this.isPlayerOnTile(tile)) {
-                this.gameState.currentPlayerActionPoints--;
                 return 'battle';
             }
             if (tile.type === TileTypes.DoorClosed) {
-                this.gameState.currentPlayerActionPoints--;
                 return 'openDoor';
             }
             if (tile.type === TileTypes.DoorOpen) {
-                this.gameState.currentPlayerActionPoints--;
                 return 'closeDoor';
             }
         }

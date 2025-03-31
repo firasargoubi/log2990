@@ -1,1034 +1,647 @@
+/* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-/* eslint-disable max-lines */
-import { Component, Input, NO_ERRORS_SCHEMA } from '@angular/core';
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { PlayingPageComponent } from './playing-page.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CombatComponent } from '@app/components/combat/combat.component';
-import { CountdownPlayerComponent } from '@app/components/countdown-player/countdown-player.component';
 import { ActionService } from '@app/services/action.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
+import { BehaviorSubject, of } from 'rxjs';
 import { Coordinates } from '@common/coordinates';
+import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
-import { ObjectsTypes, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
-import { of, Subject, Subscription } from 'rxjs';
-import { PlayingPageComponent } from './playing-page.component';
-
-@Component({
-    selector: 'app-countdown-player',
-    template: '',
-})
-class MockCountdownPlayerComponent {
-    @Input() timeLeft: number = 0;
-}
-
-@Component({
-    selector: 'app-combat',
-    template: '',
-})
-class MockCombatComponent {
-    @Input() isPlayerTurn: boolean = false;
-    @Input() currentPlayer!: Player;
-    @Input() opponent!: Player;
-}
+import { PageUrl } from '@app/Consts/route-constants';
+import { PLAYING_PAGE, PLAYING_PAGE_DESCRIPTION } from '@app/Consts/app.constants';
+import { ObjectsTypes, TileTypes } from '@common/game.interface';
+import { CommonModule } from '@angular/common';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('PlayingPageComponent', () => {
     let component: PlayingPageComponent;
     let fixture: ComponentFixture<PlayingPageComponent>;
-    let lobbyService: any;
-    let actionService: any;
-    let notificationService: any;
-    let router: any;
-    let activatedRoute: any;
+    let mockLobbyService: jasmine.SpyObj<LobbyService>;
+    let mockActionService: jasmine.SpyObj<ActionService>;
+    let mockRouter: jasmine.SpyObj<Router>;
+    let mockNotificationService: jasmine.SpyObj<NotificationService>;
+    let mockActivatedRoute: { params: BehaviorSubject<any> };
 
-    const minimalGameState: GameState = {
-        board: [[]],
-        currentPlayer: '',
-        animation: false,
-        players: [],
-        id: '',
-        turnCounter: 0,
-        availableMoves: [],
-        shortestMoves: [],
-        playerPositions: [],
-        spawnPoints: [],
-        currentPlayerMovementPoints: 0,
-        currentPlayerActionPoints: 0,
-        debug: false,
-    };
-
-    const defaultPlayer: Player = {
+    // Mock data
+    const mockLobbyId = 'test-lobby-id';
+    const mockPlayer: Player = {
         id: 'player1',
-        name: 'Player One',
+        name: 'TestPlayer',
         isHost: true,
         life: 100,
         maxLife: 100,
-        avatar: '',
-        speed: 0,
-        attack: 0,
-        defense: 0,
-        winCount: 0,
         amountEscape: 0,
-    };
+    } as Player;
 
-    beforeEach(() => {
-        const combatUpdateSubject = new Subject<{ timeLeft: number }>();
-        const combatTimeUpdateSubject = new Subject<number>();
-        const interactionSubject = new Subject<{ isInCombat: boolean }>();
-        const startCombatSubject = new Subject<{ firstPlayer: Player }>();
-        const tileUpdateSubject = new Subject<{ newGameBoard: Tile[][] }>();
-        const combatEndedSubject = new Subject<any>();
-        const gameStartedSubject = new Subject<{ gameState: GameState }>();
-        const turnStartedSubject = new Subject<{ gameState: GameState; currentPlayer: string }>();
-        const turnEndedSubject = new Subject<{ gameState: GameState }>();
-        const movementProcessedSubject = new Subject<{ gameState: GameState }>();
-        const errorSubject = new Subject<string>();
-        const lobbyUpdatedSubject = new Subject<{ lobby: { id: string; players: Player[] } }>();
-        const boardChangedSubject = new Subject<{ gameState: GameState }>();
-        const fleeSuccessSubject = new Subject<{ fleeingPlayer: Player }>();
-        const attackEndSubject = new Subject<{ isInCombat: boolean }>();
+    const mockGameState: GameState = {
+        id: 'abc',
+        turnCounter: 0,
+        shortestMoves: [],
+        playerPositions: [{ x: 1, y: 1 }],
+        spawnPoints: [],
+        currentPlayerMovementPoints: 1,
+        debug: false,
+        players: [mockPlayer],
+        currentPlayer: 'player1',
+        board: [
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+        ],
+        deletedPlayers: [],
+        currentPlayerActionPoints: 1,
+        animation: false,
+        availableMoves: [],
+        combat: { isActive: false },
+    } as GameState;
 
-        lobbyService = {
-            onGameOver: jasmine.createSpy('onGameOver').and.returnValue(of({})),
-            onGameStarted: () => gameStartedSubject.asObservable(),
-            onTurnStarted: () => turnStartedSubject.asObservable(),
-            onCombatUpdate: () => combatUpdateSubject.asObservable(),
-            onInteraction: () => interactionSubject.asObservable(),
-            onStartCombat: () => startCombatSubject.asObservable(),
-            onTileUpdate: () => tileUpdateSubject.asObservable(),
-            onCombatEnded: () => combatEndedSubject.asObservable(),
-            onTurnEnded: () => turnEndedSubject.asObservable(),
-            onMovementProcessed: () => movementProcessedSubject.asObservable(),
-            onError: () => errorSubject.asObservable(),
-            onLobbyUpdated: () => lobbyUpdatedSubject.asObservable(),
-            onBoardChanged: () => boardChangedSubject.asObservable(),
-            onFleeSuccess: () => fleeSuccessSubject.asObservable(),
-            onAttackEnd: () => attackEndSubject.asObservable(),
-            onCombatTimeUpdate: () => combatTimeUpdateSubject.asObservable(),
-            getCurrentPlayer: jasmine.createSpy('getCurrentPlayer').and.returnValue(defaultPlayer),
-            getSocketId: jasmine.createSpy('getSocketId').and.returnValue('player1'),
-            executeAction: jasmine.createSpy('executeAction').and.returnValue(of({ newGameBoard: [[]] })),
-            initializeBattle: jasmine.createSpy('initializeBattle'),
-            disconnect: jasmine.createSpy('disconnect'),
-            setDebug: jasmine.createSpy('setDebug'),
-            updateCombatStatus: jasmine.createSpy('updateCombatStatus'),
-            requestMovement: jasmine.createSpy('requestMovement'),
-            requestEndTurn: jasmine.createSpy('requestEndTurn'),
-            updateCombatTime: jasmine.createSpy('updateCombatTime'),
-            setCurrentPlayer: jasmine.createSpy('setCurrentPlayer'),
-            disconnectFromRoom: jasmine.createSpy('disconnectFromRoom'),
-            updatePlayers: jasmine.createSpy('updatePlayers'),
-            handleAttack: jasmine.createSpy('handleAttack'),
-            gameStartedSubject,
-            turnStartedSubject,
-            combatUpdateSubject,
-            interactionSubject,
-            startCombatSubject,
-            tileUpdateSubject,
-            combatEndedSubject,
-            turnEndedSubject,
-            movementProcessedSubject,
-            errorSubject,
-            lobbyUpdatedSubject,
-            boardChangedSubject,
-            fleeSuccessSubject,
-            attackEndSubject,
-            combatTimeUpdateSubject,
-        };
+    const mockLobby: GameLobby = {
+        id: mockLobbyId,
+        players: [mockPlayer],
+    } as GameLobby;
 
-        actionService = {
-            getActionType: jasmine.createSpy('getActionType'),
-            findOpponent: jasmine.createSpy('findOpponent').and.returnValue({
-                ...defaultPlayer,
-                id: 'player2',
-                name: 'Player Two',
-                isHost: false,
-            }),
-        };
+    const mockTile: Tile = { x: 1, y: 1, type: 0, object: 0 } as Tile;
 
-        notificationService = {
-            showError: jasmine.createSpy('showError'),
-            showSuccess: jasmine.createSpy('showSuccess'),
-            showInfo: jasmine.createSpy('showInfo'),
-        };
+    function setupMocks() {
+        mockLobbyService = jasmine.createSpyObj('LobbyService', [
+            'getCurrentPlayer',
+            'getSocketId',
+            'setCurrentPlayer',
+            'disconnectFromRoom',
+            'updatePlayers',
+            'disconnect',
+            'requestMovement',
+            'requestEndTurn',
+            'openDoor',
+            'closeDoor',
+            'startCombat',
+            'setDebug',
+            'onStartCombat',
+            'onCombatEnded',
+            'onTurnStarted',
+            'onMovementProcessed',
+            'onError',
+            'onLobbyUpdated',
+            'onBoardChanged',
+            'onFleeSuccess',
+            'onGameOver',
+        ]);
 
-        router = {
-            navigate: jasmine.createSpy('navigate'),
-        };
+        mockActionService = jasmine.createSpyObj('ActionService', ['getActionType', 'findOpponent']);
+        mockRouter = jasmine.createSpyObj('Router', ['navigate']);
+        mockNotificationService = jasmine.createSpyObj('NotificationService', ['showError', 'showInfo', 'showSuccess']);
+        mockActivatedRoute = { params: new BehaviorSubject({ id: mockLobbyId }) };
 
-        activatedRoute = {
-            params: of({ id: 'lobby123' }),
-        };
+        // Setup default returns for mock methods
+        mockLobbyService.getCurrentPlayer.and.returnValue(mockPlayer);
+        mockLobbyService.getSocketId.and.returnValue(mockPlayer.id);
+
+        // Setup observable returns
+        mockLobbyService.onStartCombat.and.returnValue(of({ firstPlayer: mockPlayer }));
+        mockLobbyService.onCombatEnded.and.returnValue(of({ loser: mockPlayer }));
+        mockLobbyService.onTurnStarted.and.returnValue(of({ gameState: mockGameState, currentPlayer: mockPlayer.id, availableMoves: [] }));
+        mockLobbyService.onMovementProcessed.and.returnValue(
+            of({ gameState: mockGameState, playerMoved: mockPlayer.id, newPosition: { x: 1, y: 1 } }),
+        );
+        mockLobbyService.onError.and.returnValue(of('Test error'));
+        mockLobbyService.onLobbyUpdated.and.returnValue(of({ lobby: mockLobby }));
+        mockLobbyService.onBoardChanged.and.returnValue(of({ gameState: mockGameState }));
+        mockLobbyService.onFleeSuccess.and.returnValue(of({ fleeingPlayer: mockPlayer }));
+        mockLobbyService.onGameOver.and.returnValue(of({ winner: mockPlayer.name }));
 
         TestBed.configureTestingModule({
-            imports: [PlayingPageComponent],
+            imports: [CommonModule],
             providers: [
-                { provide: LobbyService, useValue: lobbyService },
-                { provide: ActionService, useValue: actionService },
-                { provide: NotificationService, useValue: notificationService },
-                { provide: Router, useValue: router },
-                { provide: ActivatedRoute, useValue: activatedRoute },
+                { provide: LobbyService, useValue: mockLobbyService },
+                { provide: ActionService, useValue: mockActionService },
+                { provide: Router, useValue: mockRouter },
+                { provide: NotificationService, useValue: mockNotificationService },
+                { provide: ActivatedRoute, useValue: mockActivatedRoute },
             ],
             schemas: [NO_ERRORS_SCHEMA],
-        })
-            .overrideComponent(PlayingPageComponent, {
-                remove: { imports: [CountdownPlayerComponent, CombatComponent] },
-                add: { imports: [MockCountdownPlayerComponent, MockCombatComponent] },
-            })
-            .compileComponents();
+        }).compileComponents();
 
         fixture = TestBed.createComponent(PlayingPageComponent);
         component = fixture.componentInstance;
-        component.gameState = { ...minimalGameState };
 
-        component.ngOnInit();
+        // Initialize component with default values for testing
+        component.lobbyId = mockLobbyId;
+        component.currentPlayer = { ...mockPlayer };
+        component.gameState = { ...mockGameState };
+    }
+
+    beforeEach(async () => {
+        await setupMocks();
     });
 
     afterEach(() => {
-        component.ngOnDestroy();
-        fixture.destroy();
-        if (component['interval']) {
-            clearInterval(component['interval']);
+        // Cleanup to prevent side effects between tests
+        if (component && component.ngOnDestroy) {
+            component.ngOnDestroy();
         }
     });
 
-    describe('Initialization', () => {
-        describe('Combat Status Updates', () => {
-            it('should update isInCombat from interaction listener', fakeAsync(() => {
-                lobbyService.interactionSubject.next({ isInCombat: true });
-                tick();
-                expect(component.isInCombat).toBeTrue();
-
-                lobbyService.interactionSubject.next({ isInCombat: false });
-                tick();
-                expect(component.isInCombat).toBeFalse();
-            }));
-
-            it('should update isInCombat from attack-end listener', fakeAsync(() => {
-                lobbyService.attackEndSubject.next({ isInCombat: true });
-                tick();
-                expect(component.isInCombat).toBeTrue();
-
-                lobbyService.attackEndSubject.next({ isInCombat: false });
-                tick();
-                expect(component.isInCombat).toBeFalse();
-            }));
-
-            it('should update isInCombat from combat End', fakeAsync(() => {
-                lobbyService.combatEndedSubject.next({});
-                tick();
-                expect(component.isInCombat).toBeFalse();
-            }));
-        });
-        it('should set lobbyId from route params and initialize', fakeAsync(() => {
-            fixture.detectChanges();
-            tick();
-            expect(component.lobbyId).toBe('lobby123');
-            expect(component.currentPlayer).toBeDefined();
-            expect(lobbyService.getCurrentPlayer).toHaveBeenCalled();
-        }));
-
-        it('should navigate to home if no lobbyId is provided', fakeAsync(() => {
-            activatedRoute.params = of({});
-            component.currentPlayer = { ...defaultPlayer };
-            fixture.detectChanges();
-            tick();
-            expect(router.navigate).toHaveBeenCalledWith(['/home', { replaceUrl: true }]);
-        }));
-
-        it('should update gameState board on tile update', fakeAsync(() => {
-            component.gameState = { ...minimalGameState, board: [[]] };
-            fixture.detectChanges();
-            lobbyService.tileUpdateSubject.next({ newGameBoard: [[TileTypes.Grass]] });
-            tick();
-            expect(component.gameState.board).toEqual([[TileTypes.Grass]]);
-        }));
-        it('should update remainingTime on combat update', fakeAsync(() => {
-            fixture.detectChanges();
-            lobbyService.combatUpdateSubject.next({ timeLeft: 20 });
-            tick();
-            expect(component['remainingTime']).toBe(20);
-        }));
-
-        it('should set isInCombat on interaction', fakeAsync(() => {
-            fixture.detectChanges();
-            lobbyService.interactionSubject.next({ isInCombat: true });
-            tick();
-            expect(component.isInCombat).toBe(true);
-            expect(lobbyService.updateCombatStatus).toHaveBeenCalledWith(true);
-        }));
-
-        it('should set combat state on start combat', fakeAsync(() => {
-            component.currentPlayer = { ...defaultPlayer };
-            fixture.detectChanges();
-            lobbyService.startCombatSubject.next({ firstPlayer: { id: 'player1' } });
-            tick();
-            expect(component.isInCombat).toBe(true);
-            expect(component.isPlayerTurn).toBe(true);
-        }));
-
-        it('should clear combat state on game end', fakeAsync(() => {
-            component.isInCombat = true;
-            fixture.detectChanges();
-
-            if (!lobbyService.gameEndedSubject) {
-                lobbyService.gameEndedSubject = new Subject<any>();
-            }
-
-            lobbyService.gameEndedSubject.next({});
-            tick();
-
-            expect(component.isInCombat).toBe(true);
-        }));
+    it('should create and initialize with default values', () => {
+        expect(component).toBeTruthy();
+        expect(component.action).toBe(false);
+        expect(component.isInCombat).toBe(false);
+        expect(component.opponent).toBeNull();
     });
 
-    describe('Player Actions', () => {
+    describe('Core functionality', () => {
         beforeEach(() => {
-            component.currentPlayer = { ...defaultPlayer };
-            component.gameState = {
-                ...minimalGameState,
-                currentPlayer: 'player1',
-                players: [{ ...defaultPlayer }, { ...defaultPlayer, id: 'player2', name: 'Player Two' }],
-            };
-        });
-        describe('Opponent Assignment', () => {
-            it('should update isInCombat when interaction events occur after battle initiation', () => {
-                const mockTile: Tile = { type: TileTypes.Grass, x: 0, y: 0, id: '', object: 0 };
-                const expectedOpponent = {
-                    ...defaultPlayer,
-                    id: 'player2',
-                    name: 'Player Two',
-                };
-
-                actionService.getActionType.and.returnValue('battle');
-                actionService.findOpponent.and.returnValue(expectedOpponent);
-
-                component.onActionRequest(mockTile);
-
-                lobbyService.interactionSubject.next({ isInCombat: true });
-                expect(component.isInCombat).toBeTrue();
-
-                lobbyService.interactionSubject.next({ isInCombat: false });
-                expect(component.isInCombat).toBeFalse();
-            });
-            it('should set opponent to null when findOpponent returns null', () => {
-                const mockTile: Tile = { type: TileTypes.Grass, x: 0, y: 0, id: '', object: 0 };
-                actionService.getActionType.and.returnValue('battle');
-                actionService.findOpponent.and.returnValue(null);
-
-                component.onActionRequest(mockTile);
-
-                expect(component.opponent).toBeNull();
-                expect(lobbyService.initializeBattle).not.toHaveBeenCalled();
-            });
-
-            it('should set opponent when findOpponent returns a player', () => {
-                const mockTile: Tile = { type: TileTypes.Grass, x: 0, y: 0, id: '', object: 0 };
-                const expectedOpponent = {
-                    ...defaultPlayer,
-                    id: 'player2',
-                    name: 'Player Two',
-                };
-                actionService.getActionType.and.returnValue('battle');
-                actionService.findOpponent.and.returnValue(expectedOpponent);
-
-                component.onActionRequest(mockTile);
-
-                expect(component.opponent).toEqual(expectedOpponent);
-                expect(lobbyService.initializeBattle).toHaveBeenCalledWith(component.currentPlayer, expectedOpponent, 'lobby123');
-            });
+            // Reset spies for each test
+            mockLobbyService.requestMovement.calls.reset();
+            mockLobbyService.requestEndTurn.calls.reset();
+            mockNotificationService.showError.calls.reset();
+            mockNotificationService.showInfo.calls.reset();
+            mockNotificationService.showSuccess.calls.reset();
         });
 
-        it('should execute action when conditions are met', () => {
-            const mockTile: Tile = { type: TileTypes.Grass, x: 0, y: 0, id: '', object: 0 };
-            actionService.getActionType.and.returnValue('move');
-            fixture.detectChanges();
-            component.onActionRequest(mockTile);
-            expect(lobbyService.executeAction).toHaveBeenCalledWith('move', mockTile, 'lobby123');
-            expect(component.action).toBe(true);
+        it('should handle route params and navigate to home if no lobbyId', () => {
+            mockActivatedRoute.params.next({});
+            component.ngOnInit();
+            expect(mockRouter.navigate).toHaveBeenCalledWith([PageUrl.Home], { replaceUrl: true });
         });
 
-        it('should initialize battle when action is "battle"', () => {
-            const mockTile: Tile = { type: TileTypes.Grass, x: 0, y: 0, id: '', object: 0 };
-            actionService.getActionType.and.returnValue('battle');
-            const expectedOpponent = {
-                ...defaultPlayer,
-                id: 'player2',
-                name: 'Player Two',
-                isHost: false,
-            };
-            actionService.findOpponent.and.returnValue(expectedOpponent);
-            fixture.detectChanges();
-            component.onActionRequest(mockTile);
-            expect(lobbyService.initializeBattle).toHaveBeenCalledWith(component.currentPlayer, expectedOpponent, 'lobby123');
+        it('should initialize correctly with lobbyId', () => {
+            // Initial setup is done in setupMocks
+            component.ngOnInit();
+            expect(component.lobbyId).toBe(mockLobbyId);
+            expect(mockLobbyService.getCurrentPlayer).toHaveBeenCalled();
         });
 
-        it('should not execute action if not current player', () => {
-            component.gameState.currentPlayer = 'player2';
-            const mockTile: Tile = { type: 1, x: 0, y: 0, id: '', object: 0 };
-            fixture.detectChanges();
-            component.onActionRequest(mockTile);
-            expect(lobbyService.executeAction).not.toHaveBeenCalled();
-        });
-
-        it('should not execute action if animation is active', () => {
-            component.gameState.animation = true;
-            const mockTile: Tile = { type: 1, x: 0, y: 0, id: '', object: 0 };
-            fixture.detectChanges();
-            component.onActionRequest(mockTile);
-            expect(lobbyService.executeAction).not.toHaveBeenCalled();
-        });
-
-        it('should request movement when conditions are met', () => {
-            const coordinates: Coordinates[] = [{ x: 1, y: 1 }];
-            fixture.detectChanges();
-            component.onMoveRequest(coordinates);
-            expect(lobbyService.requestMovement).toHaveBeenCalledWith('lobby123', coordinates);
-        });
-
-        it('should request end turn when conditions are met', () => {
-            fixture.detectChanges();
+        it('should handle player turn management', () => {
+            component.gameState.currentPlayer = mockPlayer.id;
+            expect(component.isCurrentPlayerTurn()).toBe(true);
             component.onEndTurn();
-            expect(lobbyService.requestEndTurn).toHaveBeenCalledWith('lobby123');
+            expect(mockLobbyService.requestEndTurn).toHaveBeenCalledWith(mockLobbyId);
+
+            // Not player's turn
+            component.gameState.currentPlayer = 'other-player';
+            expect(component.isCurrentPlayerTurn()).toBe(false);
+            component.onEndTurn();
+            expect(mockLobbyService.requestEndTurn.calls.count()).toBe(1); // No additional call
+        });
+
+        it('should handle movement requests', () => {
+            const coordinates: Coordinates[] = [{ x: 1, y: 1 }];
+
+            // Valid case
+            component.gameState.currentPlayer = mockPlayer.id;
+            component.onMoveRequest(coordinates);
+            expect(mockLobbyService.requestMovement).toHaveBeenCalledWith(mockLobbyId, coordinates);
+
+            // Not player's turn
+            mockLobbyService.requestMovement.calls.reset();
+            component.gameState.currentPlayer = 'other-player';
+            component.onMoveRequest(coordinates);
+            expect(mockLobbyService.requestMovement).not.toHaveBeenCalled();
+
+            // Missing gameState
+            mockLobbyService.requestMovement.calls.reset();
+            component.gameState = undefined as any;
+            component.onMoveRequest(coordinates);
+            expect(mockLobbyService.requestMovement).not.toHaveBeenCalled();
+
+            // Restore gameState for other tests
+            component.gameState = { ...mockGameState };
+        });
+
+        it('should handle actions like opening and closing doors', () => {
+            // Setup valid conditions
+            component.gameState.currentPlayer = mockPlayer.id;
+            component.gameState.currentPlayerActionPoints = 1;
+            component.gameState.animation = false;
+
+            // Test openDoor
+            mockActionService.getActionType.and.returnValue('openDoor');
+            component.onActionRequest(mockTile);
+            expect(mockLobbyService.openDoor).toHaveBeenCalledWith(mockLobbyId, mockTile);
+
+            // Test closeDoor
+            mockActionService.getActionType.and.returnValue('closeDoor');
+            component.onActionRequest(mockTile);
+            expect(mockLobbyService.closeDoor).toHaveBeenCalledWith(mockLobbyId, mockTile);
+
+            // No action points
+            component.gameState.currentPlayerActionPoints = 0;
+            component.onActionRequest(mockTile);
+            expect(mockNotificationService.showError).toHaveBeenCalled();
+
+            // Reset for next test
+            component.gameState.currentPlayerActionPoints = 1;
+            mockNotificationService.showError.calls.reset();
+
+            // During animation
+            component.gameState.animation = true;
+            component.onActionRequest(mockTile);
+            expect(mockLobbyService.closeDoor.calls.count()).toBe(1); // No additional call
+            expect(mockNotificationService.showError).not.toHaveBeenCalled();
+
+            // Reset animation state
+            component.gameState.animation = false;
+        });
+
+        it('should handle battle actions', () => {
+            // Setup for battle
+            component.gameState.currentPlayer = mockPlayer.id;
+            component.gameState.currentPlayerActionPoints = 1;
+            component.gameState.animation = false;
+            const opponent = { ...mockPlayer, id: 'opponent' };
+
+            mockActionService.getActionType.and.returnValue('battle');
+            mockActionService.findOpponent.and.returnValue(opponent);
+
+            component.onActionRequest(mockTile);
+            expect(component.isInCombat).toBe(true);
+            expect(mockLobbyService.startCombat).toHaveBeenCalledWith(mockLobbyId, mockPlayer, opponent);
+        });
+
+        it('should toggle action flag in handleAction method', () => {
+            component.action = false;
+            component.handleAction();
+            expect(component.action).toBe(true);
+
+            component.handleAction();
+            expect(component.action).toBe(false);
         });
     });
 
-    describe('Combat', () => {
-        beforeEach(() => {
-            component.currentPlayer = { ...defaultPlayer };
-            component.gameState = {
-                ...minimalGameState,
-                currentPlayer: 'player1',
-                id: '123',
-                players: [{ ...defaultPlayer, id: 'player2', name: 'Player Two' }],
-            };
+    describe('Information handling', () => {
+        it('should handle player info messages', () => {
+            component.onInfoSent('Player: TestPlayer');
+            expect(mockNotificationService.showInfo).toHaveBeenCalledWith(jasmine.stringContaining('Joueur: TestPlayer'));
         });
 
-        it('should decrement remainingTime in countdown', fakeAsync(() => {
-            component['remainingTime'] = 2;
-            fixture.detectChanges();
-            component.startTurnCountdown();
-            tick(1000);
-            expect(component['remainingTime']).toBe(1);
-            tick(1000);
-            expect(component['remainingTime']).toBe(0);
-        }));
+        it('should handle item info messages', () => {
+            component.onInfoSent(`Item: ${ObjectsTypes.SPAWN}`);
+            expect(mockNotificationService.showInfo).toHaveBeenCalledWith(jasmine.stringContaining('Point de départ'));
 
-        it('should not start countdown if remainingTime is 0', () => {
-            spyOn(window, 'setInterval');
-            component['remainingTime'] = 0;
-            fixture.detectChanges();
-            component.startTurnCountdown();
-            expect(window.setInterval).not.toHaveBeenCalled();
-        });
-    });
-
-    describe('Keyboard Events', () => {
-        beforeEach(() => {
-            component.currentPlayer = { ...defaultPlayer };
-            component.gameState = { ...minimalGameState };
+            mockNotificationService.showInfo.calls.reset();
+            component.onInfoSent('Item: 999');
+            expect(mockNotificationService.showInfo).toHaveBeenCalledWith(jasmine.stringContaining('Objet inconnu'));
         });
 
-        it('should toggle debug mode on "d" key press if host', () => {
-            fixture.detectChanges();
-            const event = new KeyboardEvent('keydown', { key: 'd' });
-            document.dispatchEvent(event);
-            expect(component['debug']).toBe(true);
-            expect(lobbyService.setDebug).toHaveBeenCalledWith('lobby123', true);
+        it('should handle tile type info messages', () => {
+            component.onInfoSent('Tile Type: 1');
+            expect(mockNotificationService.showInfo).toHaveBeenCalledWith(jasmine.stringContaining('Type de tuile: 1'));
         });
 
-        it('should not toggle debug mode if not host', () => {
-            lobbyService.getCurrentPlayer.and.returnValue({ ...defaultPlayer, isHost: false });
-            fixture.detectChanges();
-            const event = new KeyboardEvent('keydown', { key: 'd' });
-            document.dispatchEvent(event);
-            expect(component['debug']).toBe(false);
-            expect(lobbyService.setDebug).not.toHaveBeenCalled();
+        it('should handle empty or invalid info', () => {
+            component.onInfoSent('');
+            expect(mockNotificationService.showError).toHaveBeenCalled();
+
+            mockNotificationService.showInfo.calls.reset();
+            mockNotificationService.showError.calls.reset();
+            component.onInfoSent('Irrelevant info');
+            expect(mockNotificationService.showInfo).toHaveBeenCalledWith(jasmine.stringContaining('Aucune information pertinente'));
         });
     });
 
-    describe('Getters', () => {
-        beforeEach(() => {
-            component.currentPlayer = { ...defaultPlayer };
-            component.gameState = { ...minimalGameState };
-        });
+    describe('Game state and player management', () => {
+        it('should get current player information', () => {
+            // Reset current player
+            component.currentPlayer = undefined as any;
 
-        it('should return game name', () => {
-            fixture.detectChanges();
-            expect(component.getGameName()).toBe('Forest Adventure');
-        });
-    });
+            // Test with valid player
+            mockLobbyService.getCurrentPlayer.and.returnValue({ ...mockPlayer });
+            component.getCurrentPlayer();
+            expect(component.currentPlayer).toEqual(mockPlayer);
 
-    describe('Cleanup and Abandon', () => {
-        it('should call abandon and unsubscribe on destroy', () => {
-            spyOn(component, 'abandon');
-            component['subscriptions'] = [new Subscription()];
-            spyOn(component['subscriptions'][0], 'unsubscribe');
-            component.gameState = { ...minimalGameState };
-            component.currentPlayer = { ...defaultPlayer };
-            fixture.detectChanges();
-            component.ngOnDestroy();
-            expect(component.abandon).toHaveBeenCalled();
-            expect(component['subscriptions'][0].unsubscribe).toHaveBeenCalled();
-        });
+            // Test with different socket ID
+            const differentSocketId = 'different-socket-id';
+            mockLobbyService.getSocketId.and.returnValue(differentSocketId);
+            component.getCurrentPlayer();
+            expect(component.currentPlayer.id).toBe(differentSocketId);
 
-        it('should disconnect and navigate on abandon', () => {
-            component.currentPlayer = { ...defaultPlayer };
-            component.lobbyId = 'lobby123';
-            component.gameState = { ...minimalGameState, id: '123' };
-            fixture.detectChanges();
-            component.abandon();
-            expect(lobbyService.disconnect).toHaveBeenCalled();
-            expect(router.navigate).toHaveBeenCalledWith(['/home'], { replaceUrl: true });
-        });
-
-        it('should not disconnect if animation is active', () => {
-            component.currentPlayer = { ...defaultPlayer };
-            component.lobbyId = 'lobby123';
-            component.gameState = { ...minimalGameState, id: '123', animation: true };
-            fixture.detectChanges();
-            component.abandon();
-            expect(lobbyService.disconnect).not.toHaveBeenCalled();
-        });
-    });
-
-    describe('Utility Methods', () => {
-        beforeEach(() => {
-            component.currentPlayer = { ...defaultPlayer };
-            component.gameState = {
-                ...minimalGameState,
-                currentPlayer: 'player1',
-                players: [{ ...defaultPlayer }, { ...defaultPlayer, id: 'player2', name: 'Player Two' }],
-            };
+            // Test with no player
+            mockLobbyService.getCurrentPlayer.and.returnValue(null);
+            const prevPlayer = { ...component.currentPlayer };
+            component.getCurrentPlayer();
+            expect(component.currentPlayer).toEqual(prevPlayer); // Should keep previous value
         });
 
         it('should sync current player with game state', () => {
-            component.gameState.players[0].life = 50;
-            fixture.detectChanges();
-            component['syncCurrentPlayerWithGameState']();
-            expect(component.currentPlayer.life).toBe(50);
-            expect(lobbyService.setCurrentPlayer).toHaveBeenCalledWith(component.currentPlayer);
-        });
-
-        it('should notify player turn', () => {
-            fixture.detectChanges();
-            component['notifyPlayerTurn']('player1');
-            expect(notificationService.showSuccess).toHaveBeenCalledWith("C'est votre tour!");
-            component['notifyPlayerTurn']('player2');
-            expect(notificationService.showInfo).toHaveBeenCalledWith("C'est le tour de Player Two");
-        });
-
-        it('should emit remove event on remove player', () => {
-            component.player = { ...defaultPlayer };
-            spyOn(component.remove, 'emit');
-            fixture.detectChanges();
-            component.onRemovePlayer();
-            expect(component.remove.emit).toHaveBeenCalledWith('player1');
-        });
-    });
-    describe('isAnimated', () => {
-        it('should return true when gameState.animation is true', () => {
+            // Test with player in game state
+            const updatedPlayer = { ...mockPlayer, life: 80 };
             component.gameState = {
-                ...minimalGameState,
-                animation: true,
-            };
-            expect(component.isAnimated).toBeTrue();
-        });
-
-        it('should return false when gameState.animation is false', () => {
-            component.gameState = {
-                ...minimalGameState,
-                animation: false,
-            };
-            expect(component.isAnimated).toBeFalse();
-        });
-
-        it('should return false when gameState.animation is undefined', () => {
-            component.gameState = {
-                ...minimalGameState,
-                animation: undefined as unknown as boolean,
-            };
-            expect(component.isAnimated).toBeFalse();
-        });
-    });
-
-    it('should exit early and not execute action when action type is null', () => {
-        component.currentPlayer = {
-            id: 'player1',
-            name: 'Player One',
-            isHost: true,
-            life: 100,
-            maxLife: 100,
-            avatar: '',
-            speed: 0,
-            attack: 0,
-            defense: 0,
-            winCount: 0,
-            amountEscape: 0,
-        };
-        component.gameState = {
-            board: [[]],
-            currentPlayer: 'player1',
-            animation: false,
-            players: [component.currentPlayer],
-            id: 'game123',
-            turnCounter: 0,
-            availableMoves: [],
-            shortestMoves: [],
-            playerPositions: [],
-            spawnPoints: [],
-            currentPlayerMovementPoints: 0,
-            currentPlayerActionPoints: 1,
-            debug: false,
-        };
-        const mockTile: Tile = { type: TileTypes.Grass, x: 0, y: 0, id: '', object: 0 };
-        actionService.getActionType.and.returnValue(null);
-        fixture.detectChanges();
-
-        component.onActionRequest(mockTile);
-
-        expect(lobbyService.executeAction).not.toHaveBeenCalled();
-    });
-    describe('Move Request Validation', () => {
-        it('should not request movement if gameState is null', () => {
-            component.gameState = null as unknown as GameState;
-            component.currentPlayer = defaultPlayer;
-
-            component.onMoveRequest([{ x: 1, y: 1 }]);
-
-            expect(lobbyService.requestMovement).not.toHaveBeenCalled();
-        });
-
-        it('should not request movement if currentPlayer is null', () => {
-            component.gameState = minimalGameState;
-            component.currentPlayer = null as unknown as Player;
-
-            component.onMoveRequest([{ x: 1, y: 1 }]);
-
-            expect(lobbyService.requestMovement).not.toHaveBeenCalled();
-        });
-
-        it('should not request movement if not current player turn', () => {
-            component.gameState = { ...minimalGameState, currentPlayer: 'player999' };
-            component.currentPlayer = defaultPlayer;
-
-            component.onMoveRequest([{ x: 1, y: 1 }]);
-
-            expect(lobbyService.requestMovement).not.toHaveBeenCalled();
-        });
-
-        it('should request movement when all conditions are met', () => {
-            component.gameState = { ...minimalGameState, currentPlayer: 'player1' };
-            component.currentPlayer = defaultPlayer;
-
-            component.onMoveRequest([{ x: 1, y: 1 }]);
-
-            expect(lobbyService.requestMovement).toHaveBeenCalledWith('lobby123', [{ x: 1, y: 1 }]);
-        });
-    });
-
-    describe('End Turn Validation', () => {
-        it('should not request end turn if gameState is null', () => {
-            component.gameState = null as unknown as GameState;
-            component.currentPlayer = defaultPlayer;
-
-            component.onEndTurn();
-
-            expect(lobbyService.requestEndTurn).not.toHaveBeenCalled();
-        });
-
-        it('should not request end turn if currentPlayer is null', () => {
-            component.gameState = minimalGameState;
-            component.currentPlayer = null as unknown as Player;
-
-            component.onEndTurn();
-
-            expect(lobbyService.requestEndTurn).not.toHaveBeenCalled();
-        });
-
-        it('should not request end turn if not current player turn', () => {
-            component.gameState = { ...minimalGameState, currentPlayer: 'player999' };
-            component.currentPlayer = defaultPlayer;
-
-            component.onEndTurn();
-
-            expect(lobbyService.requestEndTurn).not.toHaveBeenCalled();
-        });
-
-        it('should request end turn when all conditions are met', () => {
-            component.gameState = { ...minimalGameState, currentPlayer: 'player1' };
-            component.currentPlayer = defaultPlayer;
-
-            component.onEndTurn();
-
-            expect(lobbyService.requestEndTurn).toHaveBeenCalledWith('lobby123');
-        });
-    });
-
-    describe('getMapSize', () => {
-        it('should return "Unknown" if gameState is undefined', () => {
-            component.gameState = null as unknown as GameState;
-            expect(component.getMapSize()).toBe('Unknown');
-        });
-
-        it('should return "small" for small maps (size <= 10)', () => {
-            component.gameState = { ...minimalGameState, board: Array(10).fill([]) };
-            expect(component.getMapSize()).toBe('small');
-        });
-
-        it('should return "large" when size is exactly 20', () => {
-            component.gameState = { ...minimalGameState, board: Array(20).fill([]) };
-            expect(component.getMapSize()).toBe('large');
-        });
-        it('should return "medium" when size is exactly 15', () => {
-            component.gameState = { ...minimalGameState, board: Array(15).fill([]) };
-            expect(component.getMapSize()).toBe('medium');
-        });
-
-        it('should return "large" for large maps (size > 20)', () => {
-            component.gameState = { ...minimalGameState, board: Array(21).fill([]) };
-            expect(component.getMapSize()).toBe('large');
-        });
-    });
-    describe('getActivePlayer', () => {
-        it('should return "Unknown" if gameState is undefined', () => {
-            component.gameState = null as unknown as GameState;
-            expect(component.getActivePlayer()).toBe('Unknown');
-        });
-
-        it('should return "Unknown" if currentPlayer is not found in players', () => {
-            component.gameState = {
-                ...minimalGameState,
-                currentPlayer: 'invalidPlayerId',
-                players: [{ ...defaultPlayer, id: 'player1' }],
-            };
-            expect(component.getActivePlayer()).toBe('Unknown');
-        });
-
-        it('should return the player name when currentPlayer exists', () => {
-            const expectedName = 'Active Player';
-            component.gameState = {
-                ...minimalGameState,
-                currentPlayer: 'player1',
-                players: [{ ...defaultPlayer, id: 'player1', name: expectedName }],
-            };
-            expect(component.getActivePlayer()).toBe(expectedName);
-        });
-    });
-
-    describe('isCurrentPlayerTurn', () => {
-        it('should return false when gameState is null', () => {
-            component.gameState = null as unknown as GameState;
-            component.currentPlayer = defaultPlayer;
-            expect(component.isCurrentPlayerTurn()).toBeFalse();
-        });
-
-        it('should return false when currentPlayer is null', () => {
-            component.gameState = minimalGameState;
-            component.currentPlayer = null as unknown as Player;
-            expect(component.isCurrentPlayerTurn()).toBeFalse();
-        });
-
-        it('should return false when gameState.currentPlayer does NOT match currentPlayer.id', () => {
-            component.gameState = { ...minimalGameState, currentPlayer: 'player2' };
-            component.currentPlayer = { ...defaultPlayer, id: 'player1' };
-            expect(component.isCurrentPlayerTurn()).toBeFalse();
-        });
-
-        it('should return true when gameState.currentPlayer matches currentPlayer.id', () => {
-            component.gameState = { ...minimalGameState, currentPlayer: 'player1' };
-            component.currentPlayer = { ...defaultPlayer, id: 'player1' };
-            expect(component.isCurrentPlayerTurn()).toBeTrue();
-        });
-    });
-
-    describe('getPlayers', () => {
-        it('should return empty array when gameState is undefined', () => {
-            component.gameState = null as unknown as GameState;
-            expect(component.getPlayers()).toEqual([]);
-        });
-
-        it('should return empty array when gameState.players is empty', () => {
-            component.gameState = { ...minimalGameState, players: [] };
-            expect(component.getPlayers()).toEqual([]);
-        });
-
-        it('should return players array when gameState has players', () => {
-            const players = [{ ...defaultPlayer }, { ...defaultPlayer, id: 'player2' }];
-            component.gameState = { ...minimalGameState, players };
-            expect(component.getPlayers()).toEqual(players);
-        });
-    });
-    describe('setupGameListeners', () => {
-        beforeEach(() => {
-            component.lobbyId = 'lobby123';
-            component.currentPlayer = { ...defaultPlayer, id: 'player1' };
-            component['setupGameListeners']();
-        });
-
-        it('should handle turn started event', () => {
-            const mockGameState = { ...minimalGameState, currentPlayer: 'player1' };
-            spyOn(component as any, 'notifyPlayerTurn');
-
-            lobbyService.turnStartedSubject.next({
-                gameState: mockGameState,
-                currentPlayer: 'player1',
-            });
-
-            expect(component.gameState).toEqual(mockGameState);
-            expect(component['notifyPlayerTurn']).toHaveBeenCalledWith('player1');
-        });
-
-        it('should handle error event', () => {
-            const errorMsg = 'Test error';
-            lobbyService.errorSubject.next(errorMsg);
-            expect(notificationService.showError).toHaveBeenCalledWith(errorMsg);
-        });
-
-        describe('onLobbyUpdated', () => {
-            it('should handle lobby update with matching ID and missing player', () => {
-                const mockLobby = {
-                    id: 'lobby123',
-                    players: [{ id: 'player2' }],
-                };
-
-                lobbyService.lobbyUpdatedSubject.next({ lobby: mockLobby });
-
-                expect(lobbyService.disconnectFromRoom).toHaveBeenCalledWith('lobby123');
-                expect(router.navigate).toHaveBeenCalledWith(['/home'], { replaceUrl: true });
-            });
-
-            it('should handle lobby update with matching ID and existing player', () => {
-                const mockLobby = {
-                    id: 'lobby123',
-                    players: [{ id: 'player1' }],
-                };
-
-                lobbyService.lobbyUpdatedSubject.next({ lobby: mockLobby });
-
-                expect(lobbyService.updatePlayers).toHaveBeenCalledWith('lobby123', mockLobby.players);
-            });
-        });
-
-        describe('onFleeSuccess', () => {
-            it('should handle current player fleeing', () => {
-                const fleeingPlayer = { ...defaultPlayer, name: 'Player One' };
-
-                lobbyService.fleeSuccessSubject.next({ fleeingPlayer });
-
-                expect(component.isInCombat).toBeFalse();
-                expect(notificationService.showInfo).toHaveBeenCalledWith('Vous avez fuit le combat.');
-            });
-            it('should handle other player fleeing', () => {
-                const fleeingPlayer = { ...defaultPlayer, name: 'Player Two' };
-
-                lobbyService.fleeSuccessSubject.next({ fleeingPlayer });
-
-                expect(notificationService.showInfo).toHaveBeenCalledWith('Player Two a fui le combat.');
-            });
-        });
-    });
-
-    it('should handle attack end event', fakeAsync(() => {
-        component.currentPlayer = { ...defaultPlayer, name: 'Player One' };
-        fixture.detectChanges();
-        lobbyService.attackEndSubject.next({ isInCombat: false });
-        tick();
-
-        expect(component.isInCombat).toBeFalse();
-        expect(notificationService.showInfo).toHaveBeenCalledWith('Player One a fini son combat');
-    }));
-
-    it('should handle turn ended event', fakeAsync(() => {
-        const mockGameState = { ...minimalGameState, turnCounter: 1 };
-        lobbyService.turnEndedSubject.next({ gameState: mockGameState });
-        tick();
-        expect(component.gameState.turnCounter).toEqual(1);
-    }));
-
-    it('should handle movement processed event', () => {
-        const mockGameState = { ...minimalGameState, playerPositions: [] };
-        lobbyService.movementProcessedSubject.next({ gameState: mockGameState });
-        expect(component.gameState).toEqual(mockGameState);
-    });
-
-    describe('getCurrentPlayer', () => {
-        it('should navigate to home if currentPlayer is null', fakeAsync(() => {
-            component.currentPlayer = {
-                id: 'player1',
-                name: 'Player One',
-                isHost: true,
-                life: 100,
-                maxLife: 100,
-                avatar: '',
-                speed: 0,
-                attack: 0,
-                defense: 0,
-                winCount: 0,
-                amountEscape: 0,
-            };
-
-            lobbyService.getCurrentPlayer.and.returnValue(null);
-
-            fixture.detectChanges();
-
-            tick();
-
-            expect(router.navigate).toHaveBeenCalledWith(['/home'], { replaceUrl: true });
-        }));
-
-        it('should update currentPlayer id to match socketId when different', () => {
-            const mockPlayer = { ...defaultPlayer, id: 'oldId' };
-            lobbyService.getCurrentPlayer.and.returnValue(mockPlayer);
-            lobbyService.getSocketId.and.returnValue('newSocketId');
-            component.getCurrentPlayer();
-            expect(component.currentPlayer.id).toBe('newSocketId');
-        });
-
-        it('should not change currentPlayer id if matches socketId', () => {
-            const mockPlayer = { ...defaultPlayer, id: 'socketId123' };
-            lobbyService.getCurrentPlayer.and.returnValue(mockPlayer);
-            lobbyService.getSocketId.and.returnValue('socketId123');
-            component.getCurrentPlayer();
-            expect(component.currentPlayer.id).toBe('socketId123');
-        });
-    });
-    describe('syncCurrentPlayerWithGameState', () => {
-        it('should exit early if gameState is null', () => {
-            component.gameState = null as unknown as GameState;
-            component.currentPlayer = { ...defaultPlayer };
-
-            component['syncCurrentPlayerWithGameState']();
-
-            expect(lobbyService.setCurrentPlayer).not.toHaveBeenCalled();
-        });
-
-        it('should exit early if currentPlayer is null', () => {
-            component.gameState = { ...minimalGameState };
-            component.currentPlayer = null as unknown as Player;
-
-            component['syncCurrentPlayerWithGameState']();
-
-            expect(lobbyService.setCurrentPlayer).not.toHaveBeenCalled();
-        });
-
-        it('should update game state and current player when game starts', fakeAsync(() => {
-            const mockGameState = {
-                ...minimalGameState,
-                players: [{ ...defaultPlayer, id: 'player1', life: 75 }],
-            };
-            spyOn(component, 'getCurrentPlayer');
-            fixture.detectChanges();
-
-            lobbyService.gameStartedSubject.next({ gameState: mockGameState });
-            tick();
-
-            expect(component.gameState).toEqual(mockGameState);
-            expect(component.getCurrentPlayer).toHaveBeenCalled();
-        }));
-
-        it('should update game state and current player when board changes', fakeAsync(() => {
-            const updatedPlayer = { ...defaultPlayer, id: 'player1', life: 80 };
-            const mockGameState = {
-                ...minimalGameState,
-                board: [
-                    [TileTypes.Grass, TileTypes.Water],
-                    [TileTypes.Grass, TileTypes.Water],
-                ],
+                ...mockGameState,
                 players: [updatedPlayer],
             };
-            component.currentPlayer = { ...defaultPlayer, id: 'player1' };
-            fixture.detectChanges();
-
-            lobbyService.boardChangedSubject.next({ gameState: mockGameState });
-            tick();
-
-            expect(component.gameState).toEqual(mockGameState);
+            component.currentPlayer = { ...mockPlayer };
+            component.syncCurrentPlayerWithGameState();
             expect(component.currentPlayer).toEqual(updatedPlayer);
-        }));
-    });
-    describe('onInfoSent', () => {
-        beforeEach(() => {
-            notificationService.showInfo.calls.reset();
-            notificationService.showError.calls.reset();
-            notificationService.showSuccess.calls.reset();
-        });
-        it('should parse item information correctly for unknown items', fakeAsync(() => {
-            const details = 'Item: 999\n';
-            component.onInfoSent(details);
-            tick();
-            expect(notificationService.showInfo).toHaveBeenCalledWith('Objet inconnu (ID: 999)\n');
-            expect(notificationService.showError).not.toHaveBeenCalled();
-        }));
+            expect(mockLobbyService.setCurrentPlayer).toHaveBeenCalledWith(updatedPlayer);
 
-        it('should show an error if details is empty', fakeAsync(() => {
-            component.onInfoSent('');
-            tick();
-            expect(notificationService.showError).toHaveBeenCalledWith('Aucune information disponible pour cette tuile.');
-            expect(notificationService.showInfo).not.toHaveBeenCalled();
-        }));
+            // Test with no matching player
+            mockLobbyService.setCurrentPlayer.calls.reset();
+            component.gameState.players = [{ ...mockPlayer, id: 'different-id' }];
+            component.syncCurrentPlayerWithGameState();
+            expect(mockLobbyService.setCurrentPlayer).not.toHaveBeenCalled();
 
-        it('should parse player information correctly', fakeAsync(() => {
-            const details = 'Player: JohnDoe\n';
-            component.onInfoSent(details);
-            tick();
-            expect(notificationService.showInfo).toHaveBeenCalledWith('Joueur: JohnDoe\n');
-            expect(notificationService.showError).not.toHaveBeenCalled();
-        }));
-
-        it('should parse item information correctly for known items', fakeAsync(() => {
-            const details = `Item: ${ObjectsTypes.SPAWN}\n`; // Use ObjectsTypes.SPAWN instead of hardcoding 1
-            component.onInfoSent(details);
-            tick();
-            expect(notificationService.showInfo).toHaveBeenCalledWith('Objet: Point de départ\n');
-            expect(notificationService.showError).not.toHaveBeenCalled();
-        }));
-
-        it('should parse item information correctly for unknown items', fakeAsync(() => {
-            const details = 'Item: 999\n';
-            component.onInfoSent(details);
-            tick();
-            expect(notificationService.showInfo).toHaveBeenCalledWith('Objet inconnu (ID: 999)\n');
-            expect(notificationService.showError).not.toHaveBeenCalled();
-        }));
-
-        it('should parse tile type information correctly', fakeAsync(() => {
-            const details = 'Tile Type: 5\n';
-            component.onInfoSent(details);
-            tick();
-            expect(notificationService.showInfo).toHaveBeenCalledWith('Type de tuile: 5\n');
-            expect(notificationService.showError).not.toHaveBeenCalled();
-        }));
-
-        it('should handle multiple lines of details', fakeAsync(() => {
-            const details = `Player: JohnDoe\nItem: ${ObjectsTypes.SPAWN}\nTile Type: 5\n`;
-            component.onInfoSent(details);
-            tick();
-            expect(notificationService.showInfo).toHaveBeenCalledWith('Joueur: JohnDoe\nObjet: Point de départ\nType de tuile: 5\n');
-            expect(notificationService.showError).not.toHaveBeenCalled();
-        }));
-
-        it('should show a default message if no relevant information is found', fakeAsync(() => {
-            const details = 'Random: Info\n';
-            component.onInfoSent(details);
-            tick();
-            expect(notificationService.showInfo).toHaveBeenCalledWith('Aucune information pertinente pour cette tuile.');
-            expect(notificationService.showError).not.toHaveBeenCalled();
-        }));
-    });
-
-    describe('getItemDescription', () => {
-        it('should return the correct description for a known item', () => {
-            const description = component['getItemDescription'](ObjectsTypes.SPAWN);
-            expect(description).toBe('Point de départ');
+            // Test with missing gameState
+            mockLobbyService.setCurrentPlayer.calls.reset();
+            component.gameState = undefined as any;
+            component.syncCurrentPlayerWithGameState();
+            expect(mockLobbyService.setCurrentPlayer).not.toHaveBeenCalled();
         });
 
-        it('should return "Vide" for an unknown item', () => {
-            const description = component['getItemDescription'](999);
-            expect(description).toBe('Vide');
+        it('should update game state with player info', () => {
+            // Test with active combat
+            const combatGameState = {
+                ...mockGameState,
+                combat: { isActive: true },
+            };
+            component.isInCombat = true;
+            component['updateGameState'](combatGameState);
+            expect(component.isInCombat).toBe(true);
+
+            // Test with inactive combat
+            const noCombatGameState = {
+                ...mockGameState,
+                combat: { isActive: false },
+            };
+            component['updateGameState'](noCombatGameState);
+            expect(component.isInCombat).toBe(false);
+        });
+
+        it('should notify players about turns', () => {
+            // Current player's turn
+            component['notifyPlayerTurn'](mockPlayer.id);
+            expect(mockNotificationService.showSuccess).toHaveBeenCalledWith(PLAYING_PAGE_DESCRIPTION.yourTurn);
+
+            // Other player's turn
+            mockNotificationService.showSuccess.calls.reset();
+            const otherPlayer = { ...mockPlayer, id: 'other-id', name: 'OtherPlayer' };
+            component.gameState.players = [mockPlayer, otherPlayer];
+            component['notifyPlayerTurn'](otherPlayer.id);
+            expect(mockNotificationService.showInfo).toHaveBeenCalledWith(jasmine.stringMatching(otherPlayer.name));
+
+            // Unknown player
+            mockNotificationService.showInfo.calls.reset();
+            mockNotificationService.showSuccess.calls.reset();
+            component['notifyPlayerTurn']('unknown-id');
+            expect(mockNotificationService.showInfo).not.toHaveBeenCalled();
+            expect(mockNotificationService.showSuccess).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('Game operations', () => {
+        it('should handle debug mode toggling', () => {
+            // Test for host player
+            component.currentPlayer.isHost = true;
+            const keyEvent = new KeyboardEvent('keydown', { key: PLAYING_PAGE.debugKey });
+            component.handleKeyboardEvent(keyEvent);
+            expect(mockLobbyService.setDebug).toHaveBeenCalledWith(mockLobbyId, true);
+
+            // Test toggle off
+            component.handleKeyboardEvent(keyEvent);
+            expect(mockLobbyService.setDebug).toHaveBeenCalledWith(mockLobbyId, false);
+
+            // Test for non-host player
+            mockLobbyService.setDebug.calls.reset();
+            component.currentPlayer.isHost = false;
+            component.handleKeyboardEvent(keyEvent);
+            expect(mockLobbyService.setDebug).not.toHaveBeenCalled();
+        });
+
+        it('should handle abandon game', () => {
+            // Normal case
+            component.gameState.animation = false;
+            component.abandon();
+            expect(mockLobbyService.disconnect).toHaveBeenCalled();
+            expect(mockRouter.navigate).toHaveBeenCalledWith([PageUrl.Home], { replaceUrl: true });
+
+            // During animation
+            mockLobbyService.disconnect.calls.reset();
+            mockRouter.navigate.calls.reset();
+            component.gameState.animation = true;
+            component.abandon();
+            expect(mockLobbyService.disconnect).not.toHaveBeenCalled();
+
+            // Without gameState
+            mockRouter.navigate.calls.reset();
+            component.gameState = undefined as any;
+            component.abandon();
+            expect(mockRouter.navigate).toHaveBeenCalledWith([PageUrl.Home], { replaceUrl: true });
+        });
+
+        it('should test ngOnDestroy', () => {
+            const abandonSpy = spyOn(component, 'abandon');
+            component.ngOnDestroy();
+            expect(abandonSpy).toHaveBeenCalled();
+        });
+    });
+
+    describe('Game abilities', () => {
+        it('should check for available actions', () => {
+            // With door
+            component.gameState.board = [
+                [0, 0, 0],
+                [0, 0, TileTypes.DoorClosed],
+                [0, 0, 0],
+            ];
+            component.gameState.playerPositions = [{ x: 1, y: 1 }];
+            component.gameState.currentPlayerActionPoints = 1;
+            expect(component['canPerformAction']()).toBe(true);
+
+            // With adjacent player
+            component.gameState.board = [
+                [0, 0, 0],
+                [0, 0, 0],
+                [0, 0, 0],
+            ];
+            component.gameState.playerPositions = [
+                { x: 1, y: 1 }, // Current player
+                { x: 1, y: 2 }, // Adjacent player
+            ];
+            expect(component['canPerformAction']()).toBe(true);
+
+            // No action points
+            component.gameState.currentPlayerActionPoints = 0;
+            expect(component['canPerformAction']()).toBe(false);
+
+            // No doors or adjacent players
+            component.gameState.currentPlayerActionPoints = 1;
+            component.gameState.playerPositions = [{ x: 1, y: 1 }];
+            expect(component['canPerformAction']()).toBe(false);
+
+            // Player at board edge
+            component.gameState.playerPositions = [{ x: 0, y: 0 }];
+            expect(component['canPerformAction']()).toBe(false);
+        });
+    });
+
+    describe('Game event subscriptions', () => {
+        it('should handle flee event', fakeAsync(() => {
+            // Setup
+            component.isInCombat = true;
+            const fleeEvent = { fleeingPlayer: mockPlayer };
+            mockLobbyService.onFleeSuccess.and.returnValue(of(fleeEvent));
+
+            // Run setupGameListeners
+            component['setupGameListeners']();
+            tick();
+
+            // Assertions
+            expect(component.isInCombat).toBe(false);
+            expect(mockNotificationService.showInfo).toHaveBeenCalledWith(jasmine.stringContaining('Vous avez fuit'));
+
+            // Test with other player
+            mockNotificationService.showInfo.calls.reset();
+            const otherPlayer = { ...mockPlayer, name: 'OtherPlayer' };
+            const otherFleeEvent = { fleeingPlayer: otherPlayer };
+            mockLobbyService.onFleeSuccess.and.returnValue(of(otherFleeEvent));
+
+            component['setupGameListeners']();
+            tick();
+
+            expect(mockNotificationService.showInfo).toHaveBeenCalledWith(jasmine.stringContaining('OtherPlayer a fui'));
+        }));
+
+        it('should handle lobby updated event', fakeAsync(() => {
+            // Test player found in updated lobby
+            const updatedLobby = {
+                ...mockLobby,
+                players: [{ ...mockPlayer, life: 80 }],
+            };
+            mockLobbyService.onLobbyUpdated.and.returnValue(of({ lobby: updatedLobby }));
+
+            component['setupGameListeners']();
+            tick();
+
+            expect(mockLobbyService.updatePlayers).toHaveBeenCalledWith(mockLobbyId, updatedLobby.players);
+
+            // Test player not found
+            mockLobbyService.updatePlayers.calls.reset();
+            const lobbyWithoutPlayer = {
+                ...mockLobby,
+                players: [{ ...mockPlayer, id: 'different-id' }],
+            };
+            mockLobbyService.onLobbyUpdated.and.returnValue(of({ lobby: lobbyWithoutPlayer }));
+
+            component['setupGameListeners']();
+            tick();
+
+            expect(mockLobbyService.disconnectFromRoom).toHaveBeenCalledWith(mockLobbyId);
+            expect(mockRouter.navigate).toHaveBeenCalledWith([PageUrl.Home], { replaceUrl: true });
+        }));
+
+        it('should handle game over event', fakeAsync(() => {
+            const abandonSpy = spyOn(component, 'abandon');
+            mockLobbyService.onGameOver.and.returnValue(of({ winner: 'Winner' }));
+
+            component['setupGameListeners']();
+            tick();
+
+            expect(abandonSpy).toHaveBeenCalled();
+            expect(mockNotificationService.showInfo).toHaveBeenCalledWith(jasmine.stringContaining('Winner'));
+        }));
+
+        it('should handle combat events', fakeAsync(() => {
+            // Test combat start
+            mockLobbyService.onStartCombat.and.returnValue(of({ firstPlayer: mockPlayer }));
+            component['setupGameListeners']();
+            tick();
+            expect(component.isInCombat).toBe(false);
+
+            // Test combat end
+            component.isInCombat = true;
+            mockLobbyService.onCombatEnded.and.returnValue(of({ loser: mockPlayer }));
+            component['setupGameListeners']();
+            tick();
+            expect(component.isInCombat).toBe(false);
+            expect(component.currentPlayer.amountEscape).toBe(0);
+        }));
+
+        it('should handle turn started event', fakeAsync(() => {
+            const notifyPlayerTurnSpy = spyOn<any>(component, 'notifyPlayerTurn');
+            const updateGameStateSpy = spyOn<any>(component, 'updateGameState');
+
+            mockLobbyService.onTurnStarted.and.returnValue(
+                of({
+                    gameState: mockGameState,
+                    currentPlayer: mockPlayer.id,
+                    availableMoves: [],
+                }),
+            );
+
+            component['setupGameListeners']();
+            tick();
+
+            expect(updateGameStateSpy).toHaveBeenCalledWith(mockGameState);
+            expect(notifyPlayerTurnSpy).toHaveBeenCalledWith(mockPlayer.id);
+        }));
+
+        it('should handle movement processed event', fakeAsync(() => {
+            const updateGameStateSpy = spyOn<any>(component, 'updateGameState');
+
+            // Set up for auto end turn
+            component.gameState = {
+                ...mockGameState,
+                currentPlayerMovementPoints: 0,
+                currentPlayerActionPoints: 0,
+            };
+            component.gameState.currentPlayer = mockPlayer.id;
+            component.currentPlayer = mockPlayer;
+
+            mockLobbyService.onMovementProcessed.and.returnValue(
+                of({
+                    gameState: component.gameState,
+                    playerMoved: mockPlayer.id,
+                    newPosition: { x: 1, y: 1 },
+                }),
+            );
+
+            component['setupGameListeners']();
+            tick();
+
+            expect(updateGameStateSpy).toHaveBeenCalledWith(component.gameState);
+            expect(mockLobbyService.requestEndTurn).toHaveBeenCalledWith(mockLobbyId);
+        }));
+    });
+
+    describe('Getters and properties', () => {
+        it('should return correct values from getters', () => {
+            // isAnimated getter
+            component.gameState.animation = true;
+            expect(component.isAnimated).toBe(true);
+            component.gameState.animation = false;
+            expect(component.isAnimated).toBe(false);
+
+            // isPlayerTurn getter
+            component.gameState.currentPlayer = mockPlayer.id;
+            expect(component.isPlayerTurn).toBe(true);
+            component.gameState.currentPlayer = 'other-id';
+            expect(component.isPlayerTurn).toBe(false);
+
+            // Game name
+            expect(component.getGameName()).toBe(PLAYING_PAGE_DESCRIPTION.gameName);
+
+            // Player count
+            expect(component.getPlayerCount()).toBe(1);
+
+            // Active player name
+            component.gameState.currentPlayer = mockPlayer.id;
+            expect(component.getActivePlayer()).toBe(mockPlayer.name);
+            component.gameState.currentPlayer = 'unknown';
+            expect(component.getActivePlayer()).toBe('Unknown');
+
+            // Players list
+            expect(component.getPlayers()).toBe(component.gameState.players);
+
+            // Deleted players
+            expect(component.getDeletedPlayers()).toEqual([]);
+            const deletedPlayer = { ...mockPlayer, id: 'deleted' };
+            component.gameState.deletedPlayers = [deletedPlayer];
+            expect(component.getDeletedPlayers()).toEqual([deletedPlayer]);
         });
     });
 });
