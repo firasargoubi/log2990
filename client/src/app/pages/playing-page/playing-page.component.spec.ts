@@ -980,7 +980,7 @@ describe('PlayingPageComponent', () => {
         }));
 
         it('should parse item information correctly for known items', fakeAsync(() => {
-            const details = `Item: ${ObjectsTypes.SPAWN}\n`; // Use ObjectsTypes.SPAWN instead of hardcoding 1
+            const details = `Item: ${ObjectsTypes.SPAWN}\n`;
             component.onInfoSent(details);
             tick();
             expect(notificationService.showInfo).toHaveBeenCalledWith('Objet: Point de départ\n');

@@ -4,11 +4,12 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ItemComponent } from '@app/components/item/item.component';
 import { GAME_IMAGES } from '@app/Consts/app.constants';
 import { DEFAULT_ITEMS } from '@app/interfaces/default-items';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { TileTypes } from '@common/game.interface';
 @Component({
     selector: 'app-tile',
-    imports: [CommonModule, CdkDropList, CdkDrag],
+    imports: [CommonModule, CdkDropList, CdkDrag, MatTooltipModule],
     templateUrl: './tile.component.html',
     styleUrl: './tile.component.scss',
 })
@@ -27,6 +28,7 @@ export class TileComponent implements OnInit {
             });
         }
     }
+
     get baseImage(): string {
         switch (this.type) {
             case TileTypes.Grass:
@@ -55,6 +57,7 @@ export class TileComponent implements OnInit {
             }
         }
     }
+
     refreshObject(): void {
         if (!this.placedItem.length || !this.objectID) {
             this.objectChanged.emit(0);
@@ -96,11 +99,10 @@ export class TileComponent implements OnInit {
         if (event.previousContainer.id !== 'objects-container' && !this.placedItem.length) {
             this.placedItem.push(draggedItem);
             event.previousContainer.data.splice(event.previousIndex, 1);
-        } else if (!this.placedItem.length) {
+        } else if (!this.placedItem.length && !this.counterService.isItemPlaced(draggedItem.type)) {
             this.placedItem.push(draggedItem);
-            this.decrementCounter(draggedItem);
+            this.counterService.decrementCounter(draggedItem.type);
         }
-
         this.objectID = draggedItem.type;
         this.objectMoved.emit(true);
     }

@@ -69,16 +69,17 @@ describe('GameTileComponent', () => {
             { object: ObjectsTypes.JUICE, expectedImage: GAME_IMAGES.berryJuice },
             { object: ObjectsTypes.SPAWN, expectedImage: GAME_IMAGES.vortex },
             { object: ObjectsTypes.RANDOM, expectedImage: GAME_IMAGES.gnome },
+            { object: ObjectsTypes.FLAG, expectedImage: GAME_IMAGES.flag },
             { object: 999, expectedImage: GAME_IMAGES.undefined },
         ];
 
         testCases.forEach((testCase) => {
+            component.tile = { ...component.tile, object: testCase.object };
+            fixture.detectChanges();
+
+            expect(component.getObjectImage()).toBe(testCase.expectedImage);
+
             if (testCase.object > 0) {
-                component.tile = { ...component.tile, object: testCase.object };
-                fixture.detectChanges();
-
-                expect(component.getObjectImage()).toBe(testCase.expectedImage);
-
                 const objectImgElement = fixture.debugElement.query(By.css('.object-image'));
                 expect(objectImgElement).toBeTruthy();
                 expect(objectImgElement.nativeElement.src).toContain(testCase.expectedImage.replace('assets/', ''));
@@ -213,6 +214,6 @@ describe('GameTileComponent', () => {
         component.tile = { ...component.tile, object: null as unknown as number };
         fixture.detectChanges();
 
-        expect(component.getObjectImage()).toBeNull();
+        expect(component.getObjectDescription()).toBeNull();
     });
 });

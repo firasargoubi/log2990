@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { TestBed } from '@angular/core/testing';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { SaveService } from './save.service';
-import { GameService } from './game.service';
-import { Game, GameSize, GameType } from '@common/game.interface';
-import { MapSize, TileTypes } from '@app/Consts/app.constants';
+import { TestBed } from '@angular/core/testing';
+import { MapSize } from '@app/Consts/app.constants';
+import { Game, GameSize, GameType, ObjectsTypes, TileTypes } from '@common/game.interface';
 import { Tile } from '@common/tile';
 import { of, throwError } from 'rxjs';
+import { GameService } from './game.service';
+import { SaveService } from './save.service';
 
 describe('SaveService', () => {
     let service: SaveService;
@@ -189,8 +189,8 @@ describe('SaveService', () => {
     describe('Spawn points verification', () => {
         it('should verify spawn points for a small map', () => {
             const board: Tile[][] = [
-                [{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 6 }],
-                [{ type: TileTypes.Grass, x: 1, y: 0, id: '2', object: 6 }],
+                [{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: ObjectsTypes.SPAWN }],
+                [{ type: TileTypes.Grass, x: 1, y: 0, id: '2', object: ObjectsTypes.SPAWN }],
             ];
 
             service.verifyBoard(board);
@@ -200,10 +200,10 @@ describe('SaveService', () => {
 
         it('should verify spawn points for a medium map', () => {
             const board: Tile[][] = [
-                [{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 6 }],
-                [{ type: TileTypes.Grass, x: 1, y: 0, id: '2', object: 6 }],
-                [{ type: TileTypes.Grass, x: 2, y: 0, id: '3', object: 6 }],
-                [{ type: TileTypes.Grass, x: 3, y: 0, id: '4', object: 6 }],
+                [{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: ObjectsTypes.SPAWN }],
+                [{ type: TileTypes.Grass, x: 1, y: 0, id: '2', object: ObjectsTypes.SPAWN }],
+                [{ type: TileTypes.Grass, x: 2, y: 0, id: '3', object: ObjectsTypes.SPAWN }],
+                [{ type: TileTypes.Grass, x: 3, y: 0, id: '4', object: ObjectsTypes.SPAWN }],
             ];
 
             service.verifyBoard(board);
@@ -213,12 +213,12 @@ describe('SaveService', () => {
 
         it('should verify spawn points for a large map', () => {
             const board: Tile[][] = [
-                [{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 6 }],
-                [{ type: TileTypes.Grass, x: 1, y: 0, id: '2', object: 6 }],
-                [{ type: TileTypes.Grass, x: 2, y: 0, id: '3', object: 6 }],
-                [{ type: TileTypes.Grass, x: 3, y: 0, id: '4', object: 6 }],
-                [{ type: TileTypes.Grass, x: 4, y: 0, id: '5', object: 6 }],
-                [{ type: TileTypes.Grass, x: 5, y: 0, id: '6', object: 6 }],
+                [{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: ObjectsTypes.SPAWN }],
+                [{ type: TileTypes.Grass, x: 1, y: 0, id: '2', object: ObjectsTypes.SPAWN }],
+                [{ type: TileTypes.Grass, x: 2, y: 0, id: '3', object: ObjectsTypes.SPAWN }],
+                [{ type: TileTypes.Grass, x: 3, y: 0, id: '4', object: ObjectsTypes.SPAWN }],
+                [{ type: TileTypes.Grass, x: 4, y: 0, id: '5', object: ObjectsTypes.SPAWN }],
+                [{ type: TileTypes.Grass, x: 5, y: 0, id: '6', object: ObjectsTypes.SPAWN }],
             ];
 
             service.verifyBoard(board);
@@ -235,6 +235,20 @@ describe('SaveService', () => {
         });
     });
 
+    describe('verifyFlag', () => {
+        it('should return false if flag is not on the board', () => {
+            const board: Tile[][] = [[{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 0 }]];
+            service.verifyBoard(board);
+
+            expect(service.verifyFlag()).toBeFalse();
+        });
+        it('should return true if flag is on the board', () => {
+            const board: Tile[][] = [[{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: 9 }]];
+            service.verifyBoard(board);
+
+            expect(service.verifyFlag()).toBeTrue();
+        });
+    });
     describe('Game saving operations', () => {
         it('should call createGame() if game has no ID', () => {
             const game: Game = {
