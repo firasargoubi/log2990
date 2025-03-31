@@ -92,27 +92,42 @@ export class GameSocketHandlerService {
         try {
             let updatedGameState = gameState;
             updatedGameState.animation = true;
+            let shouldStop = false;
 
             for (const [idx, coordinate] of coordinates.entries()) {
                 setTimeout(() => {
-                    updatedGameState = this.boardService.handleMovement(updatedGameState, coordinate);
+                    if (shouldStop) return;
+                    const result = this.boardService.handleMovement(updatedGameState, coordinate);
+                    updatedGameState = result.gameState;
 
                     const indexPlayer = updatedGameState.players.findIndex((p) => p.id === socket.id);
                     if (indexPlayer !== -1) {
                         const currentPlayer = updatedGameState.players[indexPlayer];
-                        if (idx === coordinates.length - 1) {
+
+                        if (result.shouldStop) {
+                            shouldStop = true;
                             updatedGameState.animation = false;
+                            updatedGameState.availableMoves = this.boardService.findAllPaths(updatedGameState, coordinate);
+                            updatedGameState.shortestMoves = this.boardService.calculateShortestMoves(
+                                updatedGameState,
+                                coordinate,
+                                updatedGameState.availableMoves,
+                            );
 
                             if (currentPlayer.pendingItem !== 0) {
-                                // updatedGameState.animation = false;
-                                const remainingPath = coordinates.slice(idx + 1);
+                                shouldStop = true;
                                 socket.emit('inventoryFull', {
                                     item: currentPlayer.pendingItem,
                                     currentInventory: currentPlayer.items,
-                                    remainingPath,
                                 });
+                                updatedGameState.animation = false;
+                                this.gameStates.set(lobbyId, updatedGameState);
+                                this.io.to(lobbyId).emit('movementProcessed', { gameState: updatedGameState });
                                 return;
                             }
+                        }
+                        if (idx === coordinates.length - 1) {
+                            updatedGameState.animation = false;
 
                             if (updatedGameState.availableMoves.length === 0) {
                                 this.handleEndTurn(socket, lobbyId);
@@ -123,6 +138,7 @@ export class GameSocketHandlerService {
                     this.gameStates.set(lobbyId, updatedGameState);
                     this.io.to(lobbyId).emit('movementProcessed', { gameState: updatedGameState });
                 }, ANIMATION_DELAY_MS * idx);
+                if (shouldStop) break;
             }
         } catch (error) {
             socket.emit(GameEvents.Error, `${gameSocketMessages.movementError}${error.message}`);

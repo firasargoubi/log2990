@@ -434,7 +434,7 @@ export class LobbyService {
             });
         });
     }
-    onInventoryFull(): Observable<{ item: number; currentInventory: number[]; remainingPath: Coordinates[] }> {
+    onInventoryFull(): Observable<{ item: number; currentInventory: number[] }> {
         return new Observable((observer) => {
             this.socket.on('inventoryFull', (data) => {
                 observer.next(data);

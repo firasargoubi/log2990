@@ -17,7 +17,7 @@ export class InventoryComponent implements OnInit {
     constructor(private lobbyService: LobbyService) {}
 
     ngOnInit(): void {
-        this.lobbyService.onInventoryFull().subscribe(({ item, currentInventory, remainingPath }) => {
+        this.lobbyService.onInventoryFull().subscribe(({ item, currentInventory }) => {
             if (!item || item === ObjectsTypes.EMPTY || !currentInventory || currentInventory.length < 2) {
                 return;
             }
@@ -28,13 +28,8 @@ export class InventoryComponent implements OnInit {
 
             const choice = confirm(`Tu as déjà 2 objets :\n1) ${item1Name}\n2) ${item2Name}\n\nSouhaites-tu remplacer le 1er par ${itemName} ?`);
 
-            if (choice) { 
+            if (choice) {
                 this.lobbyService.resolveInventory(this.lobbyId, currentInventory[0], item);
-                if (remainingPath && remainingPath.length > 0) {
-                    setTimeout(() => {
-                        this.lobbyService.requestMovement(this.lobbyId, remainingPath);
-                    }, 200);
-                }
             } else {
                 this.lobbyService.cancelInventoryChoice(this.lobbyId);
             }
