@@ -138,9 +138,20 @@ describe('GameSocketHandlerService', () => {
             currentPlayer: 'socket1',
             availableMoves: [{ x: 1, y: 1 }],
             playerPositions: new Map(),
+            board: [[0]],
+            players: [{ id: 'socket1' } as Player],
         } as unknown as GameState;
-        const updated = { currentPlayer: 'socket2', availableMoves: [], playerPositions: new Map() } as any;
-        (boardService.handleMovement as any).returns(updated);
+
+        const updated = {
+            currentPlayer: 'socket2',
+            availableMoves: [],
+            playerPositions: new Map(),
+            players: [{ id: 'socket2' } as Player],
+        } as any;
+        (boardService.handleMovement as any).returns({
+            gameState: updated,
+            shouldStop: false,
+        });
         (boardService.handleTurn as any).returns(updated);
         gameStates.set('lobby1', gs);
         service.handleRequestMovement(socket, 'lobby1', [{ x: 1, y: 1 }]);
@@ -749,12 +760,16 @@ describe('GameSocketHandlerService', () => {
             availableMoves: [{ x: 1, y: 1 }],
             playerPositions: new Map(),
             board: [[0]],
+            players: [{ id: 'socket1' } as Player],
         } as any;
         gameStates.set('lobby1', gameState);
 
         (boardService.handleMovement as any).callsFake((gs: GameState) => {
             gs.availableMoves = [];
-            return gs;
+            return {
+                gameState: gs,
+                shouldStop: false,
+            };
         });
 
         const endTurnSpy = sandbox.spy(service, 'handleEndTurn');

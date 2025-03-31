@@ -1,6 +1,7 @@
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { BoardSocketConstants } from '@app/constants/board-const';
 import { BoardService } from '@app/services/board.service';
 import { GameLobby } from '@common/game-lobby';
 
@@ -116,7 +117,7 @@ describe('BoardService', () => {
             playerPositions: [],
         } as any;
         const result = boardService.handleMovement(state, { x: 1, y: 1 });
-        expect(result).to.equal(state);
+        expect(result.gameState).to.deep.equal(state);
     });
 
     it('should handleMovement and update game state correctly', () => {
@@ -126,6 +127,10 @@ describe('BoardService', () => {
             playerPositions: [{ x: 0, y: 0 }],
             availableMoves: [{ x: 1, y: 1 }],
             currentPlayerMovementPoints: 5,
+            board: [
+                [0, 0],
+                [0, 0],
+            ],
         } as any;
 
         pathfindingService.findShortestPath.returns([
@@ -198,7 +203,7 @@ describe('BoardService', () => {
 
     it('should shuffle and assign spawn points', async () => {
         const gs = {
-            board: [[60, 0]],
+            board: [[ObjectsTypes.SPAWN * BoardSocketConstants.TileDivisor, 0]],
             players: [{ id: 'p1', speed: 2 }],
             playerPositions: [],
             spawnPoints: [],
@@ -311,9 +316,10 @@ describe('BoardService', () => {
     it('should clean up excess spawn points', async () => {
         const gs = {
             board: [
-                [60, 0],
-                [60, 0],
+                [ObjectsTypes.SPAWN * BoardSocketConstants.TileDivisor, 0],
+                [ObjectsTypes.SPAWN * BoardSocketConstants.TileDivisor, 0],
             ],
+
             players: [{ id: 'p1', speed: 2 }],
             playerPositions: [],
             spawnPoints: [],
@@ -323,7 +329,10 @@ describe('BoardService', () => {
         expect(gs.playerPositions).to.have.lengthOf(1);
         expect(gs.spawnPoints).to.have.lengthOf(1);
 
-        const remainingSpawnPoints = gs.board.flat().filter((tile: number) => Math.floor(tile / 10) === 6);
+        const remainingSpawnPoints = gs.board
+            .flat()
+            .filter((tile: number) => Math.floor(tile / BoardSocketConstants.TileDivisor) === ObjectsTypes.SPAWN);
+
         expect(remainingSpawnPoints).to.have.lengthOf(1);
     });
 
@@ -384,7 +393,7 @@ describe('BoardService', () => {
         } as any;
 
         const result = boardService.handleMovement(state, { x: 1, y: 1 });
-        expect(result).to.equal(state);
+        expect(result.gameState).to.equal(state);
     });
 
     it('should return unchanged state if invalid movement in handleMovement', () => {
@@ -397,7 +406,7 @@ describe('BoardService', () => {
         } as any;
 
         const result = boardService.handleMovement(state, { x: 1, y: 1 });
-        expect(result).to.equal(state);
+        expect(result.gameState).to.equal(state);
     });
 
     it('should return unchanged state if no path was found in handleMovement', () => {
@@ -412,7 +421,7 @@ describe('BoardService', () => {
         pathfindingService.findShortestPath.returns(null);
 
         const result = boardService.handleMovement(state, { x: 1, y: 1 });
-        expect(result).to.equal(state);
+        expect(result.gameState).to.equal(state);
     });
     /*
     it('should return empty list in available and shortest Path if movement cost is negative in handleMovement', () => {
