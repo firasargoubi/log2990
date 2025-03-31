@@ -39,6 +39,7 @@ export enum ObjectsTypes {
     RANDOM = 8,
     FLAG = 9,
     EMPTY = 0,
+    WALL,
 }
 
 export enum TileTypes {
@@ -48,6 +49,7 @@ export enum TileTypes {
     DoorClosed = 4,
     DoorOpen = 5,
     Wall = 6,
+    Floor,
 }
 
 export interface Tile {

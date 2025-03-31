@@ -2,6 +2,7 @@
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TestBed } from '@angular/core/testing';
+import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
 import { Game, ObjectsTypes, TileTypes } from '@common/game.interface';
@@ -9,7 +10,6 @@ import { Player } from '@common/player';
 import { Tile } from '@common/tile';
 import { environment } from 'src/environments/environment';
 import { LobbyService } from './lobby.service';
-import { Coordinates } from '@common/coordinates';
 
 describe('LobbyService', () => {
     let service: LobbyService;
@@ -112,6 +112,7 @@ describe('LobbyService', () => {
                 defense: 0,
                 maxLife: 0,
                 winCount: 0,
+                pendingItem: 0,
             };
             service.joinLobby(lobbyId, player);
             expect(mockSocket.emit).toHaveBeenCalledWith('joinLobby', { lobbyId, player });
@@ -184,6 +185,7 @@ describe('LobbyService', () => {
                     defense: 8,
                     maxLife: 0,
                     winCount: 0,
+                    pendingItem: 0,
                 },
                 {
                     name: 'player2',
@@ -196,6 +198,7 @@ describe('LobbyService', () => {
                     defense: 7,
                     maxLife: 0,
                     winCount: 0,
+                    pendingItem: 0,
                 },
             ];
 
@@ -455,6 +458,7 @@ describe('LobbyService', () => {
                 defense: 8,
                 maxLife: 0,
                 winCount: 0,
+                pendingItem: 0,
             };
 
             service.setCurrentPlayer(player);
@@ -512,6 +516,7 @@ describe('LobbyService', () => {
                 defense: 5,
                 maxLife: 100,
                 winCount: 0,
+                pendingItem: 0,
             };
             const opponent: Player = {
                 name: 'Bob',
@@ -524,6 +529,7 @@ describe('LobbyService', () => {
                 defense: 6,
                 maxLife: 90,
                 winCount: 0,
+                pendingItem: 0,
             };
             const lobbyId = 'lobby-123';
 
@@ -576,6 +582,7 @@ describe('LobbyService', () => {
                 defense: 5,
                 maxLife: 100,
                 winCount: 0,
+                pendingItem: 0,
             };
             const opponent: Player = {
                 name: 'Bob',
@@ -588,6 +595,7 @@ describe('LobbyService', () => {
                 defense: 6,
                 maxLife: 90,
                 winCount: 0,
+                pendingItem: 0,
             };
             const lobbyId = 'lobby-123';
             const gameState: GameState = { playerPositions: {} } as GameState;
@@ -610,6 +618,7 @@ describe('LobbyService', () => {
                 defense: 5,
                 maxLife: 100,
                 winCount: 0,
+                pendingItem: 0,
             };
             const opponent: Player = {
                 name: 'Bob',
@@ -622,6 +631,7 @@ describe('LobbyService', () => {
                 defense: 6,
                 maxLife: 90,
                 winCount: 0,
+                pendingItem: 0,
             };
             const playerTurn = 'Alice';
             const gameState: GameState = { playerPositions: {} } as GameState;
@@ -690,6 +700,7 @@ describe('LobbyService', () => {
                 defense: 0,
                 maxLife: 0,
                 winCount: 0,
+                pendingItem: 0,
             };
             const lobbyId = 'lobby-123';
             service.handleDefeat(player, lobbyId);
@@ -709,6 +720,7 @@ describe('LobbyService', () => {
                     defense: 5,
                     maxLife: 100,
                     winCount: 0,
+                    pendingItem: 0,
                 },
                 newSpawn: { x: 10, y: 20 },
             };
@@ -736,6 +748,7 @@ describe('LobbyService', () => {
                 defense: 4,
                 maxLife: 80,
                 winCount: 0,
+                pendingItem: 0,
             };
             const damage = 10;
             const opponentLife = 70;
@@ -756,6 +769,7 @@ describe('LobbyService', () => {
                     defense: 5,
                     maxLife: 50,
                     winCount: 0,
+                    pendingItem: 0,
                 },
                 remainingHealth: 40,
             };
@@ -785,6 +799,7 @@ describe('LobbyService', () => {
                     defense: 5,
                     maxLife: 100,
                     winCount: 0,
+                    pendingItem: 0,
                 },
             };
             service.onFleeSuccess().subscribe({
@@ -811,6 +826,7 @@ describe('LobbyService', () => {
                     defense: 4,
                     maxLife: 80,
                     winCount: 0,
+                    pendingItem: 0,
                 },
             };
             service.onFleeFailure().subscribe({
@@ -879,6 +895,7 @@ describe('LobbyService', () => {
                     defense: 8,
                     maxLife: 100,
                     winCount: 0,
+                    pendingItem: 0,
                 },
                 {
                     name: 'Mage',
@@ -891,6 +908,7 @@ describe('LobbyService', () => {
                     defense: 5,
                     maxLife: 80,
                     winCount: 0,
+                    pendingItem: 0,
                 },
             ];
 
@@ -966,6 +984,7 @@ describe('LobbyService', () => {
                 defense: 10,
                 maxLife: 100,
                 winCount: 0,
+                pendingItem: 0,
             };
             const defender: Player = {
                 name: 'Defender',
@@ -978,6 +997,7 @@ describe('LobbyService', () => {
                 defense: 8,
                 maxLife: 90,
                 winCount: 0,
+                pendingItem: 0,
             };
             service.attack(lobbyId, attacker, defender);
             expect(mockSocket.emit).toHaveBeenCalledWith('attack', { lobbyId, attacker, defender });
@@ -996,6 +1016,7 @@ describe('LobbyService', () => {
                 defense: 5,
                 maxLife: 50,
                 winCount: 0,
+                pendingItem: 0,
             };
             service.flee(lobbyId, player);
             expect(mockSocket.emit).toHaveBeenCalledWith('flee', { lobbyId, player });
@@ -1036,6 +1057,7 @@ describe('LobbyService', () => {
                 defense: 10,
                 maxLife: 100,
                 winCount: 0,
+                pendingItem: 0,
             };
             const opponent: Player = {
                 name: 'Opponent',
@@ -1048,6 +1070,7 @@ describe('LobbyService', () => {
                 defense: 8,
                 maxLife: 90,
                 winCount: 0,
+                pendingItem: 0,
             };
             const time = 30;
             service.startCombat(lobbyId, currentPlayer, opponent, time);

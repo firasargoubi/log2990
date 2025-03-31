@@ -13,6 +13,7 @@ import { expect } from 'chai';
 import { createServer, Server as HttpServer } from 'http';
 import { createSandbox, createStubInstance, SinonSandbox, SinonStubbedInstance } from 'sinon';
 import { Socket } from 'socket.io';
+import { BoardService } from './board.service';
 
 describe('SocketService', () => {
     let sandbox: SinonSandbox;
@@ -23,6 +24,7 @@ describe('SocketService', () => {
     let gameHandler: SinonStubbedInstance<GameSocketHandlerService>;
     let validationHandler: SinonStubbedInstance<ValidationSocketHandlerService>;
     let disconnectHandler: SinonStubbedInstance<DisconnectHandlerService>;
+    let boardService: SinonStubbedInstance<BoardService>;
 
     beforeEach(() => {
         sandbox = createSandbox();
@@ -32,8 +34,9 @@ describe('SocketService', () => {
         gameHandler = createStubInstance(GameSocketHandlerService);
         validationHandler = createStubInstance(ValidationSocketHandlerService);
         disconnectHandler = createStubInstance(DisconnectHandlerService);
+        boardService = createStubInstance(BoardService);
 
-        socketService = new SocketService(httpServer, lobbyHandler, gameHandler, validationHandler, disconnectHandler);
+        socketService = new SocketService(httpServer, lobbyHandler, gameHandler, validationHandler, disconnectHandler, boardService);
     });
 
     afterEach(() => {
@@ -657,7 +660,6 @@ describe('SocketService', () => {
         handler(data);
         expect(gameHandler.changeTurnEnd.calledWith(data.currentPlayer, data.opponent, data.playerTurn, data.gameState)).to.be.equal(true);
     });
-
 
     it('should call handleFlee when fleeCombat event is received', () => {
         const socketMock: any = { on: sandbox.spy() };

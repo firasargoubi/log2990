@@ -32,6 +32,7 @@ describe('GameBoardComponent', () => {
                 defense: 0,
                 maxLife: 0,
                 winCount: 0,
+                pendingItem: 0,
             },
             {
                 id: 'player2',
@@ -44,6 +45,7 @@ describe('GameBoardComponent', () => {
                 defense: 0,
                 maxLife: 0,
                 winCount: 0,
+                pendingItem: 0,
             },
         ],
         playerPositions: [

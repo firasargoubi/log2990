@@ -72,6 +72,7 @@ describe('PlayingPageComponent', () => {
         defense: 0,
         winCount: 0,
         amountEscape: 0,
+        pendingItem: 0,
     };
 
     beforeEach(() => {
@@ -568,6 +569,7 @@ describe('PlayingPageComponent', () => {
             defense: 0,
             winCount: 0,
             amountEscape: 0,
+            pendingItem: 0,
         };
         component.gameState = {
             board: [[]],
@@ -869,6 +871,7 @@ describe('PlayingPageComponent', () => {
                 defense: 0,
                 winCount: 0,
                 amountEscape: 0,
+                pendingItem: 0,
             };
 
             lobbyService.getCurrentPlayer.and.returnValue(null);
