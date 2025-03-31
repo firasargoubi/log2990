@@ -176,21 +176,18 @@ describe('InventoryComponent', () => {
             expect(component.items).toEqual([]);
         }));
     });
-
-    describe('getItemName()', () => {
-        it('should return correct item name', () => {
-            expect(component.getItemName(ObjectsTypes.BOOTS)).toBe('Bottes');
-            expect(component.getItemName(ObjectsTypes.SWORD)).toBe('Épée');
-            expect(component.getItemName(ObjectsTypes.POTION)).toBe('Potion');
-            expect(component.getItemName(ObjectsTypes.WAND)).toBe('Baguette');
-            expect(component.getItemName(ObjectsTypes.CRYSTAL)).toBe('Cristal');
-            expect(component.getItemName(ObjectsTypes.JUICE)).toBe('Jus');
-            expect(component.getItemName(ObjectsTypes.RANDOM)).toBe('Objet aléatoire');
+    describe('getItemImage()', () => {
+        it('should return correct image path for known items', () => {
+            expect(component.getItemImage(ObjectsTypes.BOOTS)).toBe('assets/objects/boots.png');
+            expect(component.getItemImage(ObjectsTypes.SWORD)).toBe('assets/objects/sword.png');
+            expect(component.getItemImage(ObjectsTypes.POTION)).toBe('assets/objects/potion.png');
+            expect(component.getItemImage(ObjectsTypes.WAND)).toBe('assets/objects/wand.png');
+            expect(component.getItemImage(ObjectsTypes.CRYSTAL)).toBe('assets/objects/crystal_ball.png');
+            expect(component.getItemImage(ObjectsTypes.JUICE)).toBe('assets/objects/berry-juice.png');
         });
 
-        it('should return "Objet inconnu" for unknown item id', () => {
-            // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-            expect(component.getItemName(999)).toBe('Objet inconnu');
+        it('should return default image path for unknown item', () => {
+            expect(component.getItemImage(999)).toBe('assets/items/unknown.png');
         });
     });
 });

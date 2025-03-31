@@ -1,6 +1,7 @@
 <div class="inventory">
-    <h3>Inventaire</h3>
-    <ul>
-        <li *ngFor="let item of items">{{ getItemName(item) }}</li>
-    </ul>
+    @for (item of items; track item; let i = $index) {
+    <div class="item-slot">
+        <img [src]="getItemImage(item)" alt="Item {{ i + 1 }}" />
+    </div>
+    }
 </div>
