@@ -98,12 +98,13 @@ export class GameSocketHandlerService {
                     continue;
                 }
                 const result = this.boardService.handleMovement(updatedGameState, coordinate);
-                updatedGameState = this.boardService.updatePlayerMoves(updatedGameState);
                 updatedGameState = result.gameState;
+                updatedGameState = this.boardService.updatePlayerMoves(updatedGameState);
 
                 if (result.shouldStop) {
                     if (currentPlayer.pendingItem !== 0) {
                         this.handleInventoryFull(updatedGameState, currentPlayer, socket, lobbyId);
+                        return;
                     }
                     updatedGameState.animation = false;
                     this.gameStates.set(lobbyId, updatedGameState);
@@ -404,9 +405,8 @@ export class GameSocketHandlerService {
         return gameState;
     }
 
-    private async delay(ms: number) {
+    private delay(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
-        // eslint-disable-next-line max-lines
     }
 
     private getDiceValue(playerDice: string): number {

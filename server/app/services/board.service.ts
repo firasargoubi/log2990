@@ -185,7 +185,7 @@ export class BoardService {
             return [];
         }
 
-        if (!gameState.currentPlayerMovementPoints || gameState.currentPlayerMovementPoints < 0) {
+        if (gameState.currentPlayerMovementPoints < 0) {
             return [];
         }
 

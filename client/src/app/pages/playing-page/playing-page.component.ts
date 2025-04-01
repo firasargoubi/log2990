@@ -267,7 +267,13 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.lobbyService.onMovementProcessed().subscribe((data) => {
                 this.updateGameState(data.gameState);
                 this.inventoryItems = this.currentPlayer?.items ?? [];
-                if (!this.gameState.currentPlayerMovementPoints && !this.canPerformAction() && this.isCurrentPlayerTurn() && !this.isAnimated) {
+                if (
+                    !this.gameState.availableMoves.length &&
+                    !this.canPerformAction() &&
+                    this.isCurrentPlayerTurn() &&
+                    !this.isAnimated &&
+                    !this.currentPlayer.pendingItem
+                ) {
                     this.lobbyService.requestEndTurn(this.lobbyId);
                 }
             }),
