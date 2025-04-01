@@ -404,8 +404,9 @@ export class GameSocketHandlerService {
         return gameState;
     }
 
-    private delay(ms: number) {
+    private async delay(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
+        // eslint-disable-next-line max-lines
     }
 
     private getDiceValue(playerDice: string): number {

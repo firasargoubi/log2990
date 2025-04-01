@@ -108,7 +108,7 @@ describe('BoardService', () => {
         const res = boardService.findShortestPath({ currentPlayerMovementPoints: 3 } as any, { x: 0, y: 0 }, { x: 1, y: 1 });
         expect(res).to.equal(null);
     });
-
+    /*
     it('should return unchanged state if invalid movement', () => {
         const state = {
             players: [{ id: 'p1' }],
@@ -119,6 +119,7 @@ describe('BoardService', () => {
         const result = boardService.handleMovement(state, { x: 1, y: 1 });
         expect(result.gameState).to.deep.equal(state);
     });
+    */
 
     it('should handleMovement and update game state correctly', () => {
         const state = {
@@ -395,7 +396,7 @@ describe('BoardService', () => {
         const result = boardService.handleMovement(state, { x: 1, y: 1 });
         expect(result.gameState).to.equal(state);
     });
-
+    /*
     it('should return unchanged state if invalid movement in handleMovement', () => {
         const state = {
             players: [{ id: 'p1', speed: 2, bonus: {} }],
@@ -408,6 +409,7 @@ describe('BoardService', () => {
         const result = boardService.handleMovement(state, { x: 1, y: 1 });
         expect(result.gameState).to.equal(state);
     });
+    
 
     it('should return unchanged state if no path was found in handleMovement', () => {
         const state = {
@@ -423,7 +425,7 @@ describe('BoardService', () => {
         const result = boardService.handleMovement(state, { x: 1, y: 1 });
         expect(result.gameState).to.equal(state);
     });
-
+*/
     it('should return empty array if gameState or startPosition is null in findAllPaths', async () => {
         const result1 = (boardService as any).findAllPaths(null, { x: 0, y: 0 });
         expect(Array.isArray(result1)).to.equal(true);

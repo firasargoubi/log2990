@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { LobbyService } from '@app/services/lobby.service';
 import { Coordinates } from '@common/coordinates';
