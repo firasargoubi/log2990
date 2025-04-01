@@ -98,6 +98,7 @@ export class GameSocketHandlerService {
                     continue;
                 }
                 const result = this.boardService.handleMovement(updatedGameState, coordinate);
+                updatedGameState = this.boardService.updatePlayerMoves(updatedGameState);
                 updatedGameState = result.gameState;
 
                 if (result.shouldStop) {
@@ -105,7 +106,6 @@ export class GameSocketHandlerService {
                         this.handleInventoryFull(updatedGameState, currentPlayer, socket, lobbyId);
                     }
                     updatedGameState.animation = false;
-                    updatedGameState = this.boardService.updatePlayerMoves(updatedGameState);
                     this.gameStates.set(lobbyId, updatedGameState);
                     this.io.to(lobbyId).emit('movementProcessed', { gameState: updatedGameState });
                     return;
@@ -113,7 +113,6 @@ export class GameSocketHandlerService {
 
                 if (idx === coordinates.length - 1) {
                     updatedGameState.animation = false;
-                    updatedGameState = this.boardService.updatePlayerMoves(updatedGameState);
                 }
 
                 this.gameStates.set(lobbyId, updatedGameState);
