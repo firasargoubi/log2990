@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
+import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/Consts/item-constants';
+import { DEFAULT_TILE_IMAGE, TILE_IMAGES } from '@app/Consts/tile-constants';
 import { Tile } from '@common/tile';
-import { ObjectsTypes, TileTypes } from '@common/game.interface';
 import html2canvas from 'html2canvas';
 
 @Injectable({
@@ -73,44 +74,10 @@ export class ImageService {
     }
 
     private getTileBackgroundUrl(tileType: number): string {
-        switch (tileType) {
-            case TileTypes.Grass:
-                return 'assets/tiles/grass.png';
-            case TileTypes.Water:
-                return 'assets/tiles/water.png';
-            case TileTypes.Ice:
-                return 'assets/tiles/ice2.png';
-            case TileTypes.DoorClosed:
-                return 'assets/tiles/door_c.png';
-            case TileTypes.DoorOpen:
-                return 'assets/tiles/door_o.png';
-            case TileTypes.Wall:
-                return 'assets/tiles/wall.png';
-            default:
-                return 'assets/tiles/grass.png';
-        }
+        return TILE_IMAGES[tileType] ?? DEFAULT_TILE_IMAGE;
     }
 
     private getObjectImageUrl(objectType: number): string {
-        switch (objectType) {
-            case ObjectsTypes.BOOTS:
-                return 'assets/objects/boots.png';
-            case ObjectsTypes.SWORD:
-                return 'assets/objects/sword.png';
-            case ObjectsTypes.POTION:
-                return 'assets/objects/potion.png';
-            case ObjectsTypes.WAND:
-                return 'assets/objects/wand.png';
-            case ObjectsTypes.CRYSTAL:
-                return 'assets/objects/crystal_ball.png';
-            case ObjectsTypes.JUICE:
-                return 'assets/objects/berry-juice.png';
-            case ObjectsTypes.SPAWN:
-                return 'assets/objects/vortex.png';
-            case ObjectsTypes.RANDOM:
-                return 'assets/objects/gnome.png';
-            default:
-                return 'assets/objects/undefined.png';
-        }
+        return ITEM_INFOS[objectType]?.image ?? UNKNOWN_ITEM.image;
     }
 }

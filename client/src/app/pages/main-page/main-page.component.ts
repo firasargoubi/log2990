@@ -3,8 +3,8 @@ import { Component, inject } from '@angular/core';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { RouterLink } from '@angular/router';
 import { LobbyFormComponent } from '@app/components/lobby-form/lobby-form.component';
+import { MAIN_PAGE_CONSTANTS } from '@app/Consts/app-constants';
 import { BehaviorSubject } from 'rxjs';
-import { MAIN_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 
 @Component({
     selector: 'app-main-page',

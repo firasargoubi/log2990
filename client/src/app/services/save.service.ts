@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/member-ordering */
 import { inject, Injectable } from '@angular/core';
-import { OBJECT_COUNT, OBJECT_MULTIPLIER } from '@app/Consts/app.constants';
+import { OBJECT_COUNT, OBJECT_MULTIPLIER } from '@app/Consts/app-constants';
 import { SaveMessage } from '@app/interfaces/save-message';
 import { Game, ObjectsTypes, TileTypes } from '@common/game.interface';
 import { Tile } from '@common/tile';

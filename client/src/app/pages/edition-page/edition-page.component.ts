@@ -5,7 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { BoardComponent } from '@app/components/board/board.component';
 import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
-import { EDITION_PAGE_CONSTANTS, GameSize, GameType, MapSize, OBJECT_COUNT } from '@app/Consts/app.constants';
+import { EDITION_PAGE_CONSTANTS, GameSize, GameType, MapSize, OBJECT_COUNT } from '@app/Consts/app-constants';
 import { BoardService } from '@app/services/board.service';
 import { ErrorService } from '@app/services/error.service';
 import { GameService } from '@app/services/game.service';

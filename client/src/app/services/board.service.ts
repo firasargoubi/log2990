@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/member-ordering */
 import { Injectable } from '@angular/core';
-import { MapSize, OBJECT_MULTIPLIER } from '@app/Consts/app.constants';
+import { MapSize, OBJECT_MULTIPLIER } from '@app/Consts/app-constants';
 import { Coordinates } from '@app/interfaces/coordinates';
 import { Game } from '@common/game.interface';
 import { Tile } from '@common/tile';

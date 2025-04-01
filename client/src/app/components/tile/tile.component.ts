@@ -1,10 +1,10 @@
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { ItemComponent } from '@app/components/item/item.component';
-import { GAME_IMAGES } from '@app/Consts/app.constants';
-import { DEFAULT_ITEMS } from '@app/interfaces/default-items';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ItemComponent } from '@app/components/item/item.component';
+import { DEFAULT_TILE_IMAGE, TILE_IMAGES } from '@app/Consts/tile-constants';
+import { DEFAULT_ITEMS } from '@app/interfaces/default-items';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { TileTypes } from '@common/game.interface';
 @Component({
@@ -30,22 +30,7 @@ export class TileComponent implements OnInit {
     }
 
     get baseImage(): string {
-        switch (this.type) {
-            case TileTypes.Grass:
-                return GAME_IMAGES.grass;
-            case TileTypes.Water:
-                return GAME_IMAGES.water;
-            case TileTypes.Ice:
-                return GAME_IMAGES.ice;
-            case TileTypes.Wall:
-                return GAME_IMAGES.wall;
-            case TileTypes.DoorClosed:
-                return GAME_IMAGES.doorClosed;
-            case TileTypes.DoorOpen:
-                return GAME_IMAGES.doorOpen;
-            default:
-                return GAME_IMAGES.default;
-        }
+        return TILE_IMAGES[this.type] ?? DEFAULT_TILE_IMAGE;
     }
 
     ngOnInit(): void {

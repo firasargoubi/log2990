@@ -2,19 +2,19 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BoardComponent } from './board.component';
 import { TileComponent } from '@app/components/tile/tile.component';
-import { MouseService } from '@app/services/mouse.service';
-import { TileService } from '@app/services/tile.service';
-import { SaveService } from '@app/services/save.service';
+import { MapSize } from '@app/Consts/app-constants';
+import { Coordinates } from '@app/interfaces/coordinates';
+import { BoardService } from '@app/services/board.service';
 import { ErrorService } from '@app/services/error.service';
 import { GameService } from '@app/services/game.service';
-import { BoardService } from '@app/services/board.service';
-import { of, Subject } from 'rxjs';
-import { Tile } from '@common/tile';
+import { MouseService } from '@app/services/mouse.service';
+import { SaveService } from '@app/services/save.service';
+import { TileService } from '@app/services/tile.service';
 import { Game, GameSize, GameType } from '@common/game.interface';
-import { Coordinates } from '@app/interfaces/coordinates';
-import { MapSize } from '@app/Consts/app.constants';
+import { Tile } from '@common/tile';
+import { of, Subject } from 'rxjs';
+import { BoardComponent } from './board.component';
 
 const MAP_SIZE = 10;
 const TILE_VALUE = 12;
