@@ -98,7 +98,6 @@ export class BoardService {
         const tileValue = gameState.board[targetCoordinate.x][targetCoordinate.y];
         const item = Math.floor(tileValue / TILE_DELIMITER);
         const tile = tileValue % TILE_DELIMITER;
-        // console.log('Player items:', player.items);
 
         if (item !== ObjectsTypes.EMPTY && item !== ObjectsTypes.SPAWN) {
             player.items ??= [];

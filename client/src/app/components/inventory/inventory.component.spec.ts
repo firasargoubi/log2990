@@ -178,6 +178,8 @@ describe('InventoryComponent', () => {
             expect(component.getItemImage(ObjectsTypes.WAND)).toBe('assets/objects/wand.png');
             expect(component.getItemImage(ObjectsTypes.CRYSTAL)).toBe('assets/objects/crystal_ball.png');
             expect(component.getItemImage(ObjectsTypes.JUICE)).toBe('assets/objects/berry-juice.png');
+            expect(component.getItemImage(ObjectsTypes.RANDOM)).toBe('assets/objects/gnome.png');
+            expect(component.getItemImage(ObjectsTypes.FLAG)).toBe('assets/objects/flag.png');
         });
 
         it('should return fallback path for unknown item', () => {
@@ -187,17 +189,45 @@ describe('InventoryComponent', () => {
 
     describe('getItemName()', () => {
         it('should return correct name for all known items', () => {
-            expect(component.getItemName(ObjectsTypes.BOOTS)).toBe('Bottes');
-            expect(component.getItemName(ObjectsTypes.SWORD)).toBe('Épée');
-            expect(component.getItemName(ObjectsTypes.POTION)).toBe('Potion');
-            expect(component.getItemName(ObjectsTypes.WAND)).toBe('Baguette');
-            expect(component.getItemName(ObjectsTypes.CRYSTAL)).toBe('Cristal');
-            expect(component.getItemName(ObjectsTypes.JUICE)).toBe('Jus');
-            expect(component.getItemName(ObjectsTypes.RANDOM)).toBe('Objet aléatoire');
+            expect(component.getItemName(ObjectsTypes.BOOTS)).toBe('Bottes de vitesse');
+            expect(component.getItemName(ObjectsTypes.SWORD)).toBe('Épée de puissance');
+            expect(component.getItemName(ObjectsTypes.POTION)).toBe('Potion de soin');
+            expect(component.getItemName(ObjectsTypes.WAND)).toBe('Baguette magique');
+            expect(component.getItemName(ObjectsTypes.CRYSTAL)).toBe('Boule de cristal');
+            expect(component.getItemName(ObjectsTypes.JUICE)).toBe('Jus de baies');
+            expect(component.getItemName(ObjectsTypes.RANDOM)).toBe('Gnome mystère');
+            expect(component.getItemName(ObjectsTypes.FLAG)).toBe('Drapeau');
         });
 
         it('should return fallback name for unknown item', () => {
             expect(component.getItemName(999)).toBe('Objet inconnu');
+        });
+    });
+
+    describe('getItemDescription()', () => {
+        it('should return correct name for all known items', () => {
+            expect(component.getItemDescription(ObjectsTypes.BOOTS)).toBe(
+                'Les bottes magiques vous permettront de vous déplacer à une vitesse SUPERSONIQUE!',
+            );
+            expect(component.getItemDescription(ObjectsTypes.SWORD)).toBe('Cette épée effectue plus de dégats sur vos ennemis!');
+            expect(component.getItemDescription(ObjectsTypes.POTION)).toBe(
+                'Figez le temps et profitez-en pour vous déplacer une fois de plus que vos adversaires...',
+            );
+            expect(component.getItemDescription(ObjectsTypes.WAND)).toBe(
+                "Cette mystérieuse baguette vous permet d'ensorceler un de vos adversaires et de le dérouter de son chemin!",
+            );
+            expect(component.getItemDescription(ObjectsTypes.CRYSTAL)).toBe(
+                "Vos talents de clairvoyance vous permettent d'identifier tous les points faibles d'un de vos ennemis.",
+            );
+            expect(component.getItemDescription(ObjectsTypes.JUICE)).toBe('Ne paniquez pas, ce nectar soignera toutes vos blessures!');
+            expect(component.getItemDescription(ObjectsTypes.RANDOM)).toBe('Ce petit gnome farceur a un cadeau pour vous. À vos risque et périls...');
+            expect(component.getItemDescription(ObjectsTypes.FLAG)).toBe(
+                "Cette relique à l'effigie de la reine de la forêt doit être sécurisé à tout prix.",
+            );
+        });
+
+        it('should return fallback name for unknown item', () => {
+            expect(component.getItemDescription(999)).toBe('Bravo, vous avez réussi à débloquer cet item spécial.');
         });
     });
 

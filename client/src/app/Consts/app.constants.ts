@@ -172,7 +172,7 @@ export const OBJECTS_DESCRIPTION = {
     vortex: "Cet objet indique l'endroit où une bataille épique est sur le point d'avoir lieu",
     gnome: 'Ce petit gnome farceur a un cadeau pour vous. À vos risque et périls...',
     flag: "Cette relique à l'effigie de la reine de la forêt doit être sécurisé à tout prix.",
-    undefined: 'Objet inconnu',
+    undefined: 'Bravo, vous avez réussi à débloquer cet item spécial.',
 };
 
 export const PLAYING_PAGE = {

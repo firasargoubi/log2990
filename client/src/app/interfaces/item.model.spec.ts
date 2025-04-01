@@ -75,7 +75,7 @@ describe('ItemModel', () => {
             { type: 7, expectedDescription: "Cet objet indique l'endroit où une bataille épique est sur le point d'avoir lieu" },
             { type: 8, expectedDescription: 'Ce petit gnome farceur a un cadeau pour vous. À vos risque et périls...' },
             { type: 9, expectedDescription: "Cette relique à l'effigie de la reine de la forêt doit être sécurisé à tout prix." },
-            { type: 999, expectedDescription: 'Objet inconnu' },
+            { type: 999, expectedDescription: 'Bravo, vous avez réussi à débloquer cet item spécial.' },
         ];
 
         testCases.forEach(({ type, expectedDescription }) => {
