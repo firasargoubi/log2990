@@ -62,13 +62,13 @@ export class BoardService {
     handleTurn(gameState: GameState): GameState {
         const playerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
         if (playerIndex === -1) return gameState;
-        return this.updatePlayerMoves(gameState, playerIndex);
+        return this.updatePlayerMoves(gameState);
     }
 
     handleBoardChange(gameState: GameState): GameState {
         const playerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
         if (playerIndex === -1) return gameState;
-        return this.updatePlayerMoves(gameState, playerIndex);
+        return this.updatePlayerMoves(gameState);
     }
 
     findShortestPath(gameState: GameState, start: Coordinates, end: Coordinates): Coordinates[] | null {
@@ -81,42 +81,17 @@ export class BoardService {
         if (indexPlayer === -1) {
             return gameState;
         }
+
         const playerPosition = gameState.playerPositions[indexPlayer];
         if (!playerPosition) {
             return gameState;
         }
 
-        const isValidMove =
-            gameState.availableMoves && gameState.availableMoves.some((move) => move.x === targetCoordinate.x && move.y === targetCoordinate.y);
-
-        if (!isValidMove) {
-            return gameState;
-        }
-        const path = this.pathfindingService.findShortestPath(gameState, playerPosition, targetCoordinate, gameState.currentPlayerMovementPoints);
-
-        if (!path || path.length < 2) {
-            return gameState;
-        }
-
-        let movementCost = 0;
-        for (let i = 1; i < path.length; i++) {
-            const tileCost = this.pathfindingService.getMovementCost(gameState, path[i]);
-            movementCost += tileCost;
-        }
-
         gameState.playerPositions[indexPlayer] = targetCoordinate;
 
-        gameState.currentPlayerMovementPoints -= movementCost;
+        gameState.currentPlayerMovementPoints -= this.pathfindingService.getMovementCost(gameState, targetCoordinate);
 
         gameState.players[indexPlayer].currentMP = gameState.currentPlayerMovementPoints;
-
-        if (gameState.currentPlayerMovementPoints >= 0) {
-            gameState.availableMoves = this.findAllPaths(gameState, targetCoordinate);
-            gameState.shortestMoves = this.calculateShortestMoves(gameState, targetCoordinate, gameState.availableMoves);
-        } else {
-            gameState.availableMoves = [];
-            gameState.shortestMoves = [];
-        }
 
         return gameState;
     }
@@ -141,7 +116,7 @@ export class BoardService {
 
         gameState.players[currentPlayerIndex].currentAP = gameState.currentPlayerActionPoints;
 
-        return this.handleTurn(gameState);
+        return gameState;
     }
 
     handleTeleport(gameState: GameState, targetCoordinate: Coordinates): GameState {
@@ -172,7 +147,11 @@ export class BoardService {
         return gameState;
     }
 
-    private updatePlayerMoves(gameState: GameState, playerIndex: number): GameState {
+    updatePlayerMoves(gameState: GameState): GameState {
+        const playerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
+        if (playerIndex === -1) {
+            return gameState;
+        }
         const playerPosition = gameState.playerPositions[playerIndex];
         gameState.availableMoves = [];
         gameState.shortestMoves = [];
@@ -182,7 +161,7 @@ export class BoardService {
         }
 
         const currentPlayer = gameState.players[playerIndex];
-        gameState.currentPlayerMovementPoints = this.getPlayerMovementPoints(currentPlayer);
+        gameState.currentPlayerMovementPoints = currentPlayer.currentMP ?? currentPlayer.speed;
 
         const availableMoves = this.findAllPaths(gameState, playerPosition);
         gameState.availableMoves = availableMoves;
