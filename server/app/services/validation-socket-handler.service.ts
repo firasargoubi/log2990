@@ -1,5 +1,7 @@
 import { GameLobby } from '@common/game-lobby';
 import { Socket } from 'socket.io';
+import { AVATARS } from '@common/avatars';
+import { VIRTUAL_PLAYER_NAMES } from '@app/constants/virtual-player-names';
 
 export class ValidationSocketHandlerService {
     constructor(private lobbies: Map<string, GameLobby>) {}
@@ -51,5 +53,41 @@ export class ValidationSocketHandlerService {
 
         const usedUsernames = lobby.players.map((player) => player.name);
         callback({ usernames: usedUsernames });
+    }
+
+    getAvailableAvatar(lobbyId: string): string {
+        const lobby = this.lobbies.get(lobbyId);
+        if (!lobby) return AVATARS.fawn;
+
+        const usedAvatars = new Set(lobby.players.map((player) => player.avatar));
+        const availableAvatars = Object.values(AVATARS).filter((avatarPath) => !usedAvatars.has(avatarPath));
+
+        if (availableAvatars.length === 0) return AVATARS.fawn;
+        const randomIndex = Math.floor(Math.random() * availableAvatars.length);
+        return availableAvatars[randomIndex];
+    }
+
+    getAvailableVirtualPlayerName(lobbyId: string): string {
+        const lobby = this.lobbies.get(lobbyId);
+        if (!lobby) return VIRTUAL_PLAYER_NAMES[0];
+
+        const usedNames = new Set(lobby.players.map((player) => player.name));
+        const availableNames = VIRTUAL_PLAYER_NAMES.filter((name) => !usedNames.has(name));
+
+        if (availableNames.length > 0) {
+            const randomIndex = Math.floor(Math.random() * availableNames.length);
+            return availableNames[randomIndex];
+        }
+
+        const randomName = VIRTUAL_PLAYER_NAMES[Math.floor(Math.random() * VIRTUAL_PLAYER_NAMES.length)];
+        let botName = `${randomName}Bot`;
+        let counter = 1;
+
+        while (usedNames.has(botName)) {
+            botName = `${randomName}Bot${counter}`;
+            counter++;
+        }
+
+        return botName;
     }
 }

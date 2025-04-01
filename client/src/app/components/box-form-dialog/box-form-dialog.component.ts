@@ -3,7 +3,8 @@ import { Component, inject, Inject, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
-import { CREATE_PAGE_CONSTANTS, GAME_IMAGES, MAIN_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { CREATE_PAGE_CONSTANTS, MAIN_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { AVATARS } from '@common/avatars';
 import { PageUrl } from '@app/Consts/route-constants';
 import { GameService } from '@app/services/game.service';
 import { LobbyService } from '@app/services/lobby.service';
@@ -25,18 +26,18 @@ export class BoxFormDialogComponent implements OnDestroy {
     gameList: Game[] = [];
     lobbyService = inject(LobbyService);
     avatars = [
-        GAME_IMAGES.fawn,
-        GAME_IMAGES.bear,
-        GAME_IMAGES.castor,
-        GAME_IMAGES.squirrel1,
-        GAME_IMAGES.owl,
-        GAME_IMAGES.rabbit,
-        GAME_IMAGES.squirrel2,
-        GAME_IMAGES.pigeon,
-        GAME_IMAGES.rat,
-        GAME_IMAGES.fox,
-        GAME_IMAGES.dear,
-        GAME_IMAGES.raccoon,
+        AVATARS.fawn,
+        AVATARS.bear,
+        AVATARS.castor,
+        AVATARS.squirrel1,
+        AVATARS.owl,
+        AVATARS.rabbit,
+        AVATARS.squirrel2,
+        AVATARS.pigeon,
+        AVATARS.rat,
+        AVATARS.fox,
+        AVATARS.dear,
+        AVATARS.raccoon,
     ];
 
     formValid$: boolean = false;

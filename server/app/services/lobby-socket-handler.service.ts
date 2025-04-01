@@ -4,11 +4,15 @@ import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
+import { ValidationSocketHandlerService } from '@app/services/validation-socket-handler.service';
 
 @Service()
 export class LobbySocketHandlerService {
     private io: Server;
-    constructor(private lobbies: Map<string, GameLobby>) {}
+    constructor(
+        private lobbies: Map<string, GameLobby>,
+        private validationService: ValidationSocketHandlerService,
+    ) {}
     setServer(server: Server) {
         this.io = server;
     }
@@ -41,7 +45,14 @@ export class LobbySocketHandlerService {
             return;
         }
 
-        player.id = socket.id;
+        if (player.virtualPlayerData) {
+            player.id = `virtual-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            player.avatar = this.validationService.getAvailableAvatar(lobbyId);
+            player.name = this.validationService.getAvailableVirtualPlayerName(lobbyId);
+        } else {
+            player.id = socket.id;
+        }
+
         player.isHost = lobby.players.length === 0;
         lobby.players.push(player);
 
