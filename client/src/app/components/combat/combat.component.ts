@@ -38,10 +38,17 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
     private notificationService = inject(NotificationService);
 
     ngOnInit() {
-        if (this.gameState && this.gameState.currentPlayer === this.currentPlayer.id) {
-            this.lobbyService.handleAttack(this.currentPlayer, this.opponent, this.lobbyId, this.gameState);
-        }
         this.setupSubscriptions();
+        if (this.currentPlayer.id !== this.gameState?.currentPlayer) {
+            this.playerTurn = this.gameState?.currentPlayer || '';
+            this.isPlayerTurn = false;
+            this.canAct = false;
+        } else {
+            this.canAct = true;
+        }
+
+        this.countDown = BASE_COUNTDOWN;
+        this.startCountdown();
     }
 
     ngOnChanges() {
@@ -67,7 +74,6 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
         this.countDownInterval = setInterval(() => {
             if (this.countDown > 0) {
                 this.countDown--;
-                this.lobbyService.updateCombatTime(this.countDown);
             } else {
                 if (this.canAct) {
                     this.onAttack();
@@ -141,30 +147,6 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
                 this.startCountdown();
             }),
 
-            this.lobbyService.onStartCombat().subscribe((data) => {
-                this.currentPlayer.amountEscape = 0;
-                this.canEscape = true;
-
-                if (this.currentPlayer.id !== data.firstPlayer.id) {
-                    this.playerTurn = data.firstPlayer.id;
-                    this.isPlayerTurn = false;
-                    this.canAct = false;
-                } else {
-                    this.canAct = true;
-                }
-
-                this.countDown = BASE_COUNTDOWN;
-                this.startCountdown();
-            }),
-
-            this.lobbyService.onCombatEnded().subscribe((data) => {
-                if (this.currentPlayer.id === data.loser.id) {
-                    this.notificationService.showInfo('Le combat est terminé! Vous avez perdu !');
-                    return;
-                }
-                this.notificationService.showInfo(`Le combat est terminé! ${data.loser.name} a perdu !`);
-            }),
-
             this.lobbyService.onFleeFailure().subscribe((data) => {
                 if (this.currentPlayer.id === data.fleeingPlayer.id) {
                     this.currentPlayer.amountEscape = data.fleeingPlayer.amountEscape;
@@ -182,22 +164,6 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
                 this.startCountdown();
 
                 this.notificationService.showInfo(`${data.fleeingPlayer.name} n'a pas réussi à fuir le combat.`);
-            }),
-
-            this.lobbyService.getCombatUpdate().subscribe((data) => {
-                const updatedCurrentPlayer = data.players.find((p) => p.id === this.currentPlayer.id);
-                const updatedOpponent = data.players.find((p) => p.id === this.opponent.id);
-
-                if (updatedCurrentPlayer) {
-                    this.currentPlayer.amountEscape = updatedCurrentPlayer.amountEscape;
-                    this.canEscape = (this.currentPlayer.amountEscape ?? 0) < 2;
-                }
-                if (updatedOpponent) {
-                    this.opponent.amountEscape = updatedOpponent.amountEscape;
-                    if (this.gameState) {
-                        this.gameState.players = this.gameState.players.map((p) => (p.id === updatedOpponent.id ? updatedOpponent : p));
-                    }
-                }
             }),
         );
     }

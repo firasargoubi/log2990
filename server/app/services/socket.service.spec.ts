@@ -1,42 +1,80 @@
-/* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DisconnectHandlerService } from '@app/services/disconnect-handler.service';
-import { GameSocketHandlerService } from '@app/services/game-socket-handler.service';
-import { LobbySocketHandlerService } from '@app/services/lobby-socket-handler.service';
-import { SocketService } from '@app/services/socket.service';
-import { ValidationSocketHandlerService } from '@app/services/validation-socket-handler.service';
+import { expect } from 'chai';
+import { createSandbox, SinonSandbox } from 'sinon';
+import { createServer, Server as HttpServer } from 'http';
+import { Socket } from 'socket.io';
+import { SocketService } from './socket.service';
 import { GameLobby } from '@common/game-lobby';
 import { Game, Tile } from '@common/game.interface';
 import { Player } from '@common/player';
-import { expect } from 'chai';
-import { createServer, Server as HttpServer } from 'http';
-import { createSandbox, createStubInstance, SinonSandbox, SinonStubbedInstance } from 'sinon';
-import { Socket } from 'socket.io';
-import { BoardService } from './board.service';
 
 describe('SocketService', () => {
     let sandbox: SinonSandbox;
     let httpServer: HttpServer;
     let socketService: SocketService;
-    let mockSocket: SinonStubbedInstance<Socket>;
-    let lobbyHandler: SinonStubbedInstance<LobbySocketHandlerService>;
-    let gameHandler: SinonStubbedInstance<GameSocketHandlerService>;
-    let validationHandler: SinonStubbedInstance<ValidationSocketHandlerService>;
-    let disconnectHandler: SinonStubbedInstance<DisconnectHandlerService>;
-    let boardService: SinonStubbedInstance<BoardService>;
+    let mockSocket: any;
+    let lobbyHandler: any;
+    let gameHandler: any;
+    let validationHandler: any;
+    let disconnectHandler: any;
+    let ioStub: any;
 
     beforeEach(() => {
         sandbox = createSandbox();
         httpServer = createServer();
-        mockSocket = createStubInstance<Socket>(Socket);
-        lobbyHandler = createStubInstance(LobbySocketHandlerService);
-        gameHandler = createStubInstance(GameSocketHandlerService);
-        validationHandler = createStubInstance(ValidationSocketHandlerService);
-        disconnectHandler = createStubInstance(DisconnectHandlerService);
-        boardService = createStubInstance(BoardService);
 
-        socketService = new SocketService(httpServer, lobbyHandler, gameHandler, validationHandler, disconnectHandler, boardService);
+        lobbyHandler = {
+            setServer: sandbox.stub(),
+            createLobby: sandbox.stub(),
+            handleJoinLobbyRequest: sandbox.stub(),
+            leaveLobby: sandbox.stub(),
+            leaveGame: sandbox.stub(),
+            lockLobby: sandbox.stub(),
+            getLobby: sandbox.stub(),
+            updateLobby: sandbox.stub(),
+        };
+
+        gameHandler = {
+            setServer: sandbox.stub(),
+            handleRequestStart: sandbox.stub(),
+            handleEndTurn: sandbox.stub(),
+            handleRequestMovement: sandbox.stub(),
+            handleTeleport: sandbox.stub(),
+            handleSetDebug: sandbox.stub(),
+            handlePlayersUpdate: sandbox.stub(),
+            openDoor: sandbox.stub(),
+            closeDoor: sandbox.stub(),
+            startBattle: sandbox.stub(),
+            handleAttackAction: sandbox.stub(),
+            handleFlee: sandbox.stub(),
+        };
+
+        validationHandler = {
+            verifyRoom: sandbox.stub(),
+            verifyAvatars: sandbox.stub(),
+            verifyUsername: sandbox.stub(),
+        };
+
+        disconnectHandler = {
+            handleDisconnect: sandbox.stub(),
+            handleDisconnectFromRoom: sandbox.stub(),
+        };
+
+        mockSocket = {
+            emit: sandbox.stub(),
+            on: sandbox.stub(),
+            id: 'socket1',
+        };
+
+        ioStub = {
+            on: sandbox.stub(),
+        };
+
+        socketService = new SocketService(httpServer, lobbyHandler as any, gameHandler as any, validationHandler as any, disconnectHandler as any);
+
+        // Override the io property
+        (socketService as any).io = ioStub;
     });
 
     afterEach(() => {
@@ -44,21 +82,24 @@ describe('SocketService', () => {
     });
 
     it('should set server instances in constructor', () => {
-        expect(lobbyHandler.setServer.calledOnce).to.be.equal(true);
-        expect(gameHandler.setServer.calledOnce).to.be.equal(true);
+        expect(lobbyHandler.setServer.calledOnce).to.equal(true);
+        expect(gameHandler.setServer.calledOnce).to.equal(true);
     });
 
-    it('should register all socket events on connection', () => {
-        const socketOn = sandbox.spy();
-        const ioOn = sandbox.stub();
-        (socketService as any).io = { on: ioOn };
-
-        ioOn.callsFake((event: string, cb: any) => {
-            if (event === 'connection') cb({ on: socketOn });
-        });
-
+    it('should register connection event on init', () => {
         socketService.init();
+        expect(ioStub.on.calledWith('connection')).to.equal(true);
+    });
 
+    it('should properly set up socket connection handlers', () => {
+        socketService.init();
+        expect(ioStub.on.calledWith('connection')).to.equal(true);
+
+        // Get connection handler
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        // Check that all event handlers are registered
         const expectedEvents = [
             'createLobby',
             'joinLobby',
@@ -73,779 +114,518 @@ describe('SocketService', () => {
             'requestStart',
             'endTurn',
             'requestMovement',
+            'teleport',
+            'setDebug',
             'updatePlayers',
             'openDoor',
             'closeDoor',
             'disconnect',
             'disconnectFromRoom',
+            'startBattle',
+            'attack',
+            'flee',
         ];
 
-        expectedEvents.forEach((evt) => {
-            const called = socketOn.getCalls().some((call) => call.args[0] === evt);
-            expect(called, `Missing event: ${evt}`).to.be.equal(true);
+        expectedEvents.forEach((event) => {
+            expect(mockSocket.on.calledWith(event)).to.equal(true, `Expected event ${event} to be registered`);
+        });
+    });
+
+    it('should handle createLobby event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const createLobbyHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'createLobby')?.args[1];
+        const game = { id: 'game1', name: 'Test Game' } as Game;
+        const lobby = { id: 'lobby1', gameId: 'game1' } as GameLobby;
+
+        lobbyHandler.createLobby.returns(lobby);
+
+        if (createLobbyHandler) {
+            createLobbyHandler(game);
+            expect(lobbyHandler.createLobby.calledWith(game)).to.equal(true);
+            expect(mockSocket.emit.calledWith('lobbyCreated', { lobby })).to.equal(true);
+
+            // Test with invalid data
+            mockSocket.emit.resetHistory();
+            createLobbyHandler(null);
+            expect(mockSocket.emit.calledWith('error', 'Invalid game data')).to.equal(true);
+        }
+    });
+
+    it('should handle joinLobby event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const joinLobbyHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'joinLobby')?.args[1];
+        const player = { id: 'player1', name: 'Player 1' } as Player;
+
+        if (joinLobbyHandler) {
+            joinLobbyHandler({ lobbyId: 'lobby1', player });
+            expect(lobbyHandler.handleJoinLobbyRequest.calledWith(mockSocket, 'lobby1', player)).to.equal(true);
+
+            // Test with invalid data
+            mockSocket.emit.resetHistory();
+            joinLobbyHandler(null);
+            expect(mockSocket.emit.calledWith('error', 'Invalid player data')).to.equal(true);
+
+            // Test with missing player
+            mockSocket.emit.resetHistory();
+            joinLobbyHandler({ lobbyId: 'lobby1', player: null });
+            expect(mockSocket.emit.calledWith('error', 'Invalid player data')).to.equal(true);
+        }
+    });
+
+    it('should handle leaveLobby event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const leaveLobbyHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'leaveLobby')?.args[1];
+
+        if (leaveLobbyHandler) {
+            leaveLobbyHandler({ lobbyId: 'lobby1', playerName: 'Player 1' });
+            expect(lobbyHandler.leaveLobby.calledWith(mockSocket, 'lobby1', 'Player 1')).to.equal(true);
+
+            // Test with invalid data
+            mockSocket.emit.resetHistory();
+            leaveLobbyHandler(null);
+            expect(mockSocket.emit.calledWith('error', 'Invalid lobby or player data')).to.equal(true);
+        }
+    });
+
+    it('should handle leaveGame event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const leaveGameHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'leaveGame')?.args[1];
+
+        if (leaveGameHandler) {
+            leaveGameHandler('lobby1', 'Player 1');
+            expect(lobbyHandler.leaveGame.calledWith(mockSocket, 'lobby1', 'Player 1')).to.equal(true);
+        }
+    });
+
+    it('should handle lockLobby event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const lockLobbyHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'lockLobby')?.args[1];
+
+        if (lockLobbyHandler) {
+            lockLobbyHandler('lobby1');
+            expect(lobbyHandler.lockLobby.calledWith(mockSocket, 'lobby1')).to.equal(true);
+
+            // Test with invalid lobby ID
+            mockSocket.emit.resetHistory();
+            lockLobbyHandler(null);
+            expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
+        }
+    });
+
+    it('should handle getLobby event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const getLobbyHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'getLobby')?.args[1];
+        const callbackStub = sandbox.stub();
+        const lobby = { id: 'lobby1', gameId: 'game1' } as GameLobby;
+
+        lobbyHandler.getLobby.returns(lobby);
+
+        if (getLobbyHandler) {
+            getLobbyHandler('lobby1', callbackStub);
+            expect(lobbyHandler.getLobby.calledWith('lobby1')).to.equal(true);
+            expect(callbackStub.calledWith(lobby)).to.equal(true);
+
+            // Test with invalid lobby ID
+            callbackStub.resetHistory();
+            mockSocket.emit.resetHistory();
+            getLobbyHandler(null, callbackStub);
+            expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
+            expect(callbackStub.calledWith(null)).to.equal(true);
+
+            // Test with non-existent lobby
+            callbackStub.resetHistory();
+            lobbyHandler.getLobby.returns(null);
+            getLobbyHandler('nonexistent', callbackStub);
+            expect(callbackStub.calledWith(null)).to.equal(true);
+        }
+    });
+
+    it('should handle getGameId event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const getGameIdHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'getGameId')?.args[1];
+        const callbackStub = sandbox.stub();
+        const lobby = { id: 'lobby1', gameId: 'game1' } as GameLobby;
+
+        lobbyHandler.getLobby.returns(lobby);
+
+        if (getGameIdHandler) {
+            getGameIdHandler('lobby1', callbackStub);
+            expect(lobbyHandler.getLobby.calledWith('lobby1')).to.equal(true);
+            expect(callbackStub.calledWith('game1')).to.equal(true);
+
+            // Test with invalid lobby ID
+            callbackStub.resetHistory();
+            mockSocket.emit.resetHistory();
+            getGameIdHandler(null, callbackStub);
+            expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
+            expect(callbackStub.calledWith(null)).to.equal(true);
+
+            // Test with lobby not having gameId
+            callbackStub.resetHistory();
+            lobbyHandler.getLobby.returns({ id: 'lobby2' } as GameLobby);
+            getGameIdHandler('lobby2', callbackStub);
+            expect(callbackStub.calledWith(null)).to.equal(true);
+
+            // Test with non-existent lobby
+            callbackStub.resetHistory();
+            lobbyHandler.getLobby.returns(null);
+            getGameIdHandler('nonexistent', callbackStub);
+            expect(callbackStub.calledWith(null)).to.equal(true);
+        }
+    });
+
+    it('should handle verifyRoom event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const verifyRoomHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'verifyRoom')?.args[1];
+        const callbackStub = sandbox.stub();
+
+        validationHandler.verifyRoom.callsFake(
+            (socket: Socket, gameId: string, callback: (response: { exists: boolean; isLocked?: boolean }) => void) => {
+                callback({ exists: true, isLocked: false });
+            },
+        );
+
+        if (verifyRoomHandler) {
+            verifyRoomHandler({ gameId: 'game1' }, callbackStub);
+            expect(validationHandler.verifyRoom.calledWith(mockSocket, 'game1')).to.equal(true);
+            expect(callbackStub.calledWith({ exists: true, isLocked: false })).to.equal(true);
+
+            // Test with null data
+            callbackStub.resetHistory();
+            validationHandler.verifyRoom.resetHistory();
+            verifyRoomHandler(null, callbackStub);
+            expect(mockSocket.emit.calledWith('error', 'Invalid game ID')).to.equal(true);
+            expect(callbackStub.calledWith({ exists: false })).to.equal(true);
+
+            // Test with undefined gameId
+            callbackStub.resetHistory();
+            mockSocket.emit.resetHistory();
+            verifyRoomHandler({ gameId: undefined }, callbackStub);
+            expect(mockSocket.emit.calledWith('error', 'Invalid game ID')).to.equal(true);
+            expect(callbackStub.calledWith({ exists: false })).to.equal(true);
+        }
+    });
+
+    it('should handle verifyAvatars event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const verifyAvatarsHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'verifyAvatars')?.args[1];
+        const callbackStub = sandbox.stub();
+
+        validationHandler.verifyAvatars.callsFake((socket: Socket, lobbyId: string, callback: (response: { avatars: string[] }) => void) => {
+            callback({ avatars: ['avatar1', 'avatar2'] });
         });
 
-        expect(ioOn.calledWith('connection')).to.be.equal(true);
+        if (verifyAvatarsHandler) {
+            verifyAvatarsHandler({ lobbyId: 'lobby1' }, callbackStub);
+            expect(validationHandler.verifyAvatars.calledWith(mockSocket, 'lobby1')).to.equal(true);
+            expect(callbackStub.calledWith({ avatars: ['avatar1', 'avatar2'] })).to.equal(true);
+
+            // Test with null data
+            callbackStub.resetHistory();
+            mockSocket.emit.resetHistory();
+            verifyAvatarsHandler(null, callbackStub);
+            expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
+            expect(callbackStub.calledWith({ avatars: [] })).to.equal(true);
+
+            // Test with undefined lobbyId
+            callbackStub.resetHistory();
+            mockSocket.emit.resetHistory();
+            verifyAvatarsHandler({ lobbyId: undefined }, callbackStub);
+            expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
+            expect(callbackStub.calledWith({ avatars: [] })).to.equal(true);
+        }
     });
 
-    it('should emit error for invalid createLobby data', () => {
-        socketService['handleCreateLobby'](mockSocket, null as any);
-        expect(mockSocket.emit.calledWith('error', 'Invalid game data')).to.be.equal(true);
+    it('should handle verifyUsername event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const verifyUsernameHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'verifyUsername')?.args[1];
+        const callbackStub = sandbox.stub();
+
+        validationHandler.verifyUsername.callsFake((socket: Socket, lobbyId: string, callback: (response: { usernames: string[] }) => void) => {
+            callback({ usernames: ['user1', 'user2'] });
+        });
+
+        if (verifyUsernameHandler) {
+            verifyUsernameHandler({ lobbyId: 'lobby1' }, callbackStub);
+            expect(validationHandler.verifyUsername.calledWith(mockSocket, 'lobby1')).to.equal(true);
+            expect(callbackStub.calledWith({ usernames: ['user1', 'user2'] })).to.equal(true);
+
+            // Test with null data
+            callbackStub.resetHistory();
+            mockSocket.emit.resetHistory();
+            verifyUsernameHandler(null, callbackStub);
+            expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
+            expect(callbackStub.calledWith({ usernames: [] })).to.equal(true);
+
+            // Test with undefined lobbyId
+            callbackStub.resetHistory();
+            mockSocket.emit.resetHistory();
+            verifyUsernameHandler({ lobbyId: undefined }, callbackStub);
+            expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
+            expect(callbackStub.calledWith({ usernames: [] })).to.equal(true);
+        }
     });
 
-    it('should create lobby and emit lobbyCreated', () => {
-        const gameLobby = { id: 'lobby123' } as GameLobby;
-        lobbyHandler.createLobby.returns(gameLobby);
+    it('should handle requestStart event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
 
-        socketService['handleCreateLobby'](mockSocket, {} as Game);
+        const requestStartHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'requestStart')?.args[1];
 
-        expect(mockSocket.emit.calledWith('lobbyCreated', { lobby: gameLobby })).to.equal(true);
+        if (requestStartHandler) {
+            requestStartHandler('lobby1');
+            expect(gameHandler.handleRequestStart.calledWith(mockSocket, 'lobby1')).to.equal(true);
+
+            // Test with invalid input
+            mockSocket.emit.resetHistory();
+            requestStartHandler(null);
+            expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
+        }
     });
 
-    it('should emit error for invalid joinLobby data', () => {
-        socketService['handleJoinLobby'](mockSocket, null as any);
-        expect(mockSocket.emit.calledWith('error', 'Invalid player data')).to.be.equal(true);
+    it('should handle endTurn event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const endTurnHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'endTurn')?.args[1];
+
+        if (endTurnHandler) {
+            endTurnHandler({ lobbyId: 'lobby1' });
+            expect(gameHandler.handleEndTurn.calledWith(mockSocket, 'lobby1')).to.equal(true);
+
+            // Test with invalid input
+            mockSocket.emit.resetHistory();
+            endTurnHandler(null);
+            expect(mockSocket.emit.calledWith('error', 'Game not found.')).to.equal(true);
+        }
     });
 
-    it('should handle valid joinLobby request', () => {
-        const data = { lobbyId: 'l1', player: {} as Player };
-        socketService['handleJoinLobby'](mockSocket, data);
-        expect(lobbyHandler.handleJoinLobbyRequest.calledWith(mockSocket, 'l1', data.player)).to.be.equal(true);
+    it('should handle requestMovement event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const requestMovementHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'requestMovement')?.args[1];
+
+        if (requestMovementHandler) {
+            const coordinates = [{ x: 1, y: 2 }];
+            requestMovementHandler({ lobbyId: 'lobby1', coordinates });
+            expect(gameHandler.handleRequestMovement.calledWith(mockSocket, 'lobby1', coordinates)).to.equal(true);
+
+            // Test with invalid coordinates
+            mockSocket.emit.resetHistory();
+            requestMovementHandler({ lobbyId: 'lobby1', coordinates: null });
+            expect(mockSocket.emit.calledWith('error', 'Invalid coordinates')).to.equal(true);
+        }
     });
 
-    it('should emit error for invalid leaveLobby data', () => {
-        socketService['handleLeaveLobby'](mockSocket, null as any);
-        expect(mockSocket.emit.calledWith('error', 'Invalid lobby or player data')).to.be.equal(true);
+    it('should handle teleport event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const teleportHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'teleport')?.args[1];
+
+        if (teleportHandler) {
+            const coordinates = { x: 3, y: 4 };
+            teleportHandler({ lobbyId: 'lobby1', coordinates });
+            expect(gameHandler.handleTeleport.calledWith(mockSocket, 'lobby1', coordinates)).to.equal(true);
+        }
     });
 
-    it('should handle valid leaveLobby', () => {
-        const data = { lobbyId: 'l1', playerName: 'p' };
-        socketService['handleLeaveLobby'](mockSocket, data);
-        expect(lobbyHandler.leaveLobby.calledWith(mockSocket, 'l1', 'p')).to.be.equal(true);
+    it('should handle openDoor event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const openDoorHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'openDoor')?.args[1];
+        const tile: Tile = { x: 1, y: 2, type: 1, object: 1 };
+
+        if (openDoorHandler) {
+            openDoorHandler({ lobbyId: 'lobby1', tile });
+            expect(gameHandler.openDoor.calledWith(mockSocket, tile, 'lobby1')).to.equal(true);
+
+            // Test with null data
+            mockSocket.emit.resetHistory();
+            openDoorHandler(null);
+            expect(mockSocket.emit.calledWith('error', 'Invalid door data')).to.equal(true);
+
+            // Test with null lobbyId
+            mockSocket.emit.resetHistory();
+            openDoorHandler({ lobbyId: null, tile });
+            expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
+
+            // Test with null tile
+            mockSocket.emit.resetHistory();
+            openDoorHandler({ lobbyId: 'lobby1', tile: null });
+            expect(mockSocket.emit.calledWith('error', 'Invalid tile data')).to.equal(true);
+        }
     });
 
-    it('should handle valid leaveGame', () => {
-        const data = { lobbyId: 'l1', playerName: 'p' };
-        socketService['handleLeaveGame'](mockSocket, data.lobbyId, data.playerName);
-        expect(lobbyHandler.leaveGame.calledWith(mockSocket, 'l1', 'p')).to.be.equal(true);
+    it('should handle closeDoor event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const closeDoorHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'closeDoor')?.args[1];
+        const tile: Tile = { x: 1, y: 2, type: 1, object: 1 };
+
+        if (closeDoorHandler) {
+            closeDoorHandler({ lobbyId: 'lobby1', tile });
+            expect(gameHandler.closeDoor.calledWith(mockSocket, tile, 'lobby1')).to.equal(true);
+
+            // Test with null data
+            mockSocket.emit.resetHistory();
+            closeDoorHandler(null);
+            expect(mockSocket.emit.calledWith('error', 'Invalid door data')).to.equal(true);
+
+            // Test with null lobbyId
+            mockSocket.emit.resetHistory();
+            closeDoorHandler({ lobbyId: null, tile });
+            expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
+
+            // Test with null tile
+            mockSocket.emit.resetHistory();
+            closeDoorHandler({ lobbyId: 'lobby1', tile: null });
+            expect(mockSocket.emit.calledWith('error', 'Invalid tile data')).to.equal(true);
+        }
     });
 
-    it('should handle lockLobby and emit error on invalid ID', () => {
-        socketService['handleLockLobby'](mockSocket, null as any);
-        expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.be.equal(true);
+    it('should handle setDebug event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const setDebugHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'setDebug')?.args[1];
+
+        if (setDebugHandler) {
+            setDebugHandler({ lobbyId: 'lobby1', debug: true });
+            expect(gameHandler.handleSetDebug.calledWith(mockSocket, 'lobby1', true)).to.equal(true);
+        }
     });
 
-    it('should lock valid lobby', () => {
-        socketService['handleLockLobby'](mockSocket, 'l1');
-        expect(lobbyHandler.lockLobby.calledWith(mockSocket, 'l1')).to.be.equal(true);
-    });
+    it('should handle updatePlayers event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
 
-    it('should get lobby and handle errors', () => {
-        const cb = sandbox.spy();
-        socketService['handleGetLobby'](mockSocket, null as any, cb);
-        expect(cb.calledWith(null)).to.be.equal(true);
-
-        lobbyHandler.getLobby.returns(undefined);
-        socketService['handleGetLobby'](mockSocket, 'l1', cb);
-        expect(cb.calledWith(null)).to.be.equal(true);
-    });
-
-    it('should get valid lobby', () => {
-        const lobby = {} as GameLobby;
-        lobbyHandler.getLobby.returns(lobby);
-        const cb = sandbox.spy();
-        socketService['handleGetLobby'](mockSocket, 'l1', cb);
-        expect(cb.calledWith(lobby)).to.be.equal(true);
-    });
-
-    it('should get gameId and handle error', () => {
-        const cb = sandbox.spy();
-        socketService['handleGetGameId'](mockSocket, null as any, cb);
-        expect(cb.calledWith(null)).to.be.equal(true);
-    });
-
-    it('should verify callback behavior in handleGetGameId', () => {
-        const callback = sandbox.spy();
-
-        socketService['handleGetGameId'](mockSocket, null as any, callback);
-        expect(callback.calledWith(null)).to.be.equal(true);
-        callback.resetHistory();
-
-        lobbyHandler.getLobby.returns(undefined);
-        socketService['handleGetGameId'](mockSocket, 'nonexistentLobby', callback);
-        expect(callback.calledWith(null)).to.be.equal(true);
-        callback.resetHistory();
-
-        lobbyHandler.getLobby.returns({} as GameLobby);
-        socketService['handleGetGameId'](mockSocket, 'lobbyWithoutGameId', callback);
-        expect(callback.calledWith(null)).to.be.equal(true);
-        callback.resetHistory();
-
-        lobbyHandler.getLobby.returns({ gameId: 'game123' } as GameLobby);
-        socketService['handleGetGameId'](mockSocket, 'validLobby', callback);
-        expect(callback.calledWith('game123')).to.be.equal(true);
-    });
-
-    it('should handle verifyRoom with and without gameId', () => {
-        const cb = sandbox.spy();
-        socketService['handleVerifyRoom'](mockSocket, null as any, cb);
-        expect(cb.calledWith({ exists: false })).to.be.equal(true);
-
-        const response = { exists: true };
-        validationHandler.verifyRoom.callsFake((s, id, c) => c(response));
-        socketService['handleVerifyRoom'](mockSocket, { gameId: 'g1' }, cb);
-        expect(cb.calledWith(response)).to.be.equal(true);
-    });
-
-    it('should handle verifyAvatars and fallback', () => {
-        const cb = sandbox.spy();
-        socketService['handleVerifyAvatars'](mockSocket, null as any, cb);
-        expect(cb.calledWith({ avatars: [] })).to.be.equal(true);
-
-        const res = { avatars: ['a'] };
-        validationHandler.verifyAvatars.callsFake((s, id, c) => c(res));
-        socketService['handleVerifyAvatars'](mockSocket, { lobbyId: 'l1' }, cb);
-        expect(cb.calledWith(res)).to.be.equal(true);
-    });
-
-    it('should handle verifyUsername and fallback', () => {
-        const cb = sandbox.spy();
-        socketService['handleVerifyUsername'](mockSocket, null as any, cb);
-        expect(cb.calledWith({ usernames: [] })).to.be.equal(true);
-
-        const res = { usernames: ['u'] };
-        validationHandler.verifyUsername.callsFake((s, id, c) => c(res));
-        socketService['handleVerifyUsername'](mockSocket, { lobbyId: 'l1' }, cb);
-        expect(cb.calledWith(res)).to.be.equal(true);
-    });
-
-    it('should handle requestStart and fallback', () => {
-        socketService['handleRequestStart'](mockSocket, null as any);
-        expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.be.equal(true);
-
-        socketService['handleRequestStart'](mockSocket, 'l1');
-        expect(gameHandler.handleRequestStart.calledWith(mockSocket, 'l1')).to.be.equal(true);
-    });
-
-    it('should handle endTurn and fallback', () => {
-        socketService['handleEndTurn'](mockSocket, null as any);
-        expect(mockSocket.emit.calledWith('error', 'Game not found.')).to.be.equal(true);
-
-        socketService['handleEndTurn'](mockSocket, { lobbyId: 'l1' });
-        expect(gameHandler.handleEndTurn.calledWith(mockSocket, 'l1')).to.be.equal(true);
-    });
-
-    it('should handle requestMovement and fallback', () => {
-        socketService['handleRequestMovement'](mockSocket, null as any);
-        expect(mockSocket.emit.calledWith('error', 'Invalid coordinates')).to.be.equal(true);
-
-        const data = { lobbyId: 'l1', coordinates: [{ x: 1, y: 1 }] };
-        socketService['handleRequestMovement'](mockSocket, data);
-        expect(gameHandler.handleRequestMovement.calledWith(mockSocket, 'l1', data.coordinates)).to.be.equal(true);
-    });
-
-    it('should handle openDoor and fallback', () => {
-        socketService['handleOpenDoor'](mockSocket, null as any);
-        expect(mockSocket.emit.calledWith('error', 'Invalid door data')).to.be.equal(true);
-
-        const tile: Tile = { x: 1, y: 1, type: 1, object: 1 };
-        socketService['handleOpenDoor'](mockSocket, { lobbyId: 'l1', tile });
-        expect(gameHandler.openDoor.calledWith(mockSocket, tile, 'l1')).to.be.equal(true);
-    });
-
-    it('should handle disconnectFromRoom', () => {
-        socketService['handleDisconnectFromRoom'](mockSocket, 'lobbyId123');
-        expect(disconnectHandler.handleDisconnectFromRoom.calledWith(mockSocket, 'lobbyId123')).to.be.equal(true);
-    });
-
-    it('should handle playersUpdate', () => {
+        const updatePlayersHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'updatePlayers')?.args[1];
         const players = [{ id: 'player1' }, { id: 'player2' }] as Player[];
-        socketService['handlePlayersUpdate'](mockSocket, 'lobbyId123', players);
-        expect(gameHandler.handlePlayersUpdate.calledWith(mockSocket, 'lobbyId123', players)).to.be.equal(true);
+
+        if (updatePlayersHandler) {
+            updatePlayersHandler('lobby1', players);
+            expect(gameHandler.handlePlayersUpdate.calledWith(mockSocket, 'lobby1', players)).to.equal(true);
+        }
     });
 
-    it('should handle closeDoor and fallback', () => {
-        socketService['handleCloseDoor'](mockSocket, null as any);
-        expect(mockSocket.emit.calledWith('error', 'Invalid door data')).to.be.equal(true);
-
-        const tile: Tile = { x: 2, y: 2, type: 2, object: 2 };
-        socketService['handleCloseDoor'](mockSocket, { lobbyId: 'l1', tile });
-        expect(gameHandler.closeDoor.calledWith(mockSocket, tile, 'l1')).to.be.equal(true);
-    });
-
-    it('should handle disconnect', () => {
-        socketService['handleDisconnect'](mockSocket);
-        expect(disconnectHandler.handleDisconnect.calledWith(mockSocket)).to.be.equal(true);
-    });
-    it('should emit error if openDoor data.tile is missing', () => {
-        socketService['handleOpenDoor'](mockSocket, { lobbyId: 'l1', tile: null } as any);
-        expect(mockSocket.emit.calledWith('error', 'Invalid tile data')).to.be.equal(true);
-    });
-    it('should get gameId from valid lobby', () => {
-        const lobby = { gameId: 'game1' } as GameLobby;
-        lobbyHandler.getLobby.returns(lobby);
-        const cb = sandbox.spy();
-        socketService['handleGetGameId'](mockSocket, 'l1', cb);
-        expect(cb.calledWith('game1')).to.be.equal(true);
-    });
-
-    it('should return null if lobby exists but gameId is missing', () => {
-        const lobby = {} as GameLobby;
-        lobbyHandler.getLobby.returns(lobby);
-        const cb = sandbox.spy();
-        socketService['handleGetGameId'](mockSocket, 'l1', cb);
-        expect(cb.calledWith(null)).to.be.equal(true);
-    });
-
-    it('should emit error if openDoor data.lobbyId is missing', () => {
-        const data: { lobbyId: string | null; tile: Tile } = { lobbyId: null, tile: {} as Tile };
-        socketService['handleOpenDoor'](mockSocket, data as any);
-        expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.be.equal(true);
-    });
-
-    it('should emit error if openDoor data.tile is missing', () => {
-        const data: { lobbyId: string; tile: Tile | null } = { lobbyId: 'l1', tile: null };
-        socketService['handleOpenDoor'](mockSocket, data as any);
-        expect(mockSocket.emit.calledWith('error', 'Invalid tile data')).to.be.equal(true);
-    });
-
-    it('should emit error if closeDoor data.lobbyId is missing', () => {
-        const data: { lobbyId: string | null; tile: Tile } = { lobbyId: null, tile: {} as Tile };
-        socketService['handleCloseDoor'](mockSocket, data as any);
-        expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.be.equal(true);
-    });
-
-    it('should emit error if closeDoor data.tile is missing', () => {
-        const data: { lobbyId: string; tile: Tile | null } = { lobbyId: 'l1', tile: null };
-        socketService['handleCloseDoor'](mockSocket, data as any);
-        expect(mockSocket.emit.calledWith('error', 'Invalid tile data')).to.be.equal(true);
-    });
-
-    it('should emit error if endTurn data.lobbyId is missing', () => {
-        socketService['handleEndTurn'](mockSocket, { lobbyId: null } as any);
-        expect(mockSocket.emit.calledWith('error', 'Game not found.')).to.be.equal(true);
-    });
-
-    it('should emit error if requestMovement data.coordinates is missing', () => {
-        const data: { lobbyId: string; coordinates: { x: number; y: number }[] | null } = { lobbyId: 'l1', coordinates: null };
-        socketService['handleRequestMovement'](mockSocket, data as any);
-        expect(mockSocket.emit.calledWith('error', 'Invalid coordinates')).to.be.equal(true);
-    });
-
-    it('should handle verifyAvatars with invalid lobbyId in data', () => {
-        const cb = sandbox.spy();
-        socketService['handleVerifyAvatars'](mockSocket, { lobbyId: null }, cb);
-        expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.be.equal(true);
-        expect(cb.calledWith({ avatars: [] })).to.be.equal(true);
-    });
-
-    it('should handle verifyUsername with invalid lobbyId in data', () => {
-        const cb = sandbox.spy();
-        socketService['handleVerifyUsername'](mockSocket, { lobbyId: null }, cb);
-        expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.be.equal(true);
-        expect(cb.calledWith({ usernames: [] })).to.be.equal(true);
-    });
-
-    it('should call handleVerifyUsername when verifyUsername event is received', () => {
-        const socketMock: any = { on: sandbox.spy(), emit: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, connectionHandler: any) => {
-            if (event === 'connection') connectionHandler(socketMock);
-        });
-
+    it('should handle startBattle event', () => {
         socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
 
-        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'verifyUsername')?.args[1];
-        const callback = sandbox.spy();
-
-        handler({ lobbyId: 'lobbyXYZ' }, callback);
-        expect(validationHandler.verifyUsername.calledWith(socketMock, 'lobbyXYZ', callback)).to.be.equal(true);
-    });
-    it('should call handleVerifyRoom when verifyRoom event is received', () => {
-        const socketMock: any = { on: sandbox.spy(), emit: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, connectionHandler: any) => {
-            if (event === 'connection') connectionHandler(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'verifyRoom')?.args[1];
-        const callback = sandbox.spy();
-
-        handler({ gameId: 'gameXYZ' }, callback);
-        expect(validationHandler.verifyRoom.calledWith(socketMock, 'gameXYZ', callback)).to.be.equal(true);
-    });
-    it('should call handleCreateLobby when createLobby event is received', () => {
-        const socketMock: any = { on: sandbox.spy(), emit: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, connectionHandler: any) => {
-            if (event === 'connection') connectionHandler(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'createLobby')?.args[1];
-        const game = { id: 'gameX' } as Game;
-
-        handler(game);
-        expect(lobbyHandler.createLobby.calledWith(game)).to.be.equal(true);
-    });
-    it('should call handleJoinLobby when joinLobby event is received', () => {
-        const socketMock: any = { on: sandbox.spy(), emit: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, connectionHandler: any) => {
-            if (event === 'connection') connectionHandler(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'joinLobby')?.args[1];
-        const data = { lobbyId: 'lobby123', player: { id: 'player1' } as Player };
-
-        handler(data);
-        expect(lobbyHandler.handleJoinLobbyRequest.calledWith(socketMock, data.lobbyId, data.player)).to.be.equal(true);
-    });
-    it('should call handleLeaveLobby when leaveLobby event is received', () => {
-        const socketMock: any = { on: sandbox.spy(), emit: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, connectionHandler: any) => {
-            if (event === 'connection') connectionHandler(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'leaveLobby')?.args[1];
-        const data = { lobbyId: 'lobby123', playerName: 'Rita' };
-
-        handler(data);
-        expect(lobbyHandler.leaveLobby.calledWith(socketMock, data.lobbyId, data.playerName)).to.be.equal(true);
-    });
-    it('should call handleLockLobby when lockLobby event is received', () => {
-        const socketMock: any = { on: sandbox.spy(), emit: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, connectionHandler: any) => {
-            if (event === 'connection') connectionHandler(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'lockLobby')?.args[1];
-        const lobbyId = 'lobbyXYZ';
-
-        handler(lobbyId);
-        expect(lobbyHandler.lockLobby.calledWith(socketMock, lobbyId)).to.be.equal(true);
-    });
-    it('should call handleGetLobby when getLobby event is received', () => {
-        const socketMock: any = { on: sandbox.spy(), emit: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, connectionHandler: any) => {
-            if (event === 'connection') connectionHandler(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'getLobby')?.args[1];
-        const callback = sandbox.spy();
-
-        lobbyHandler.getLobby.returns({ id: 'lobbyABC' } as GameLobby);
-
-        handler('lobbyABC', callback);
-        expect(callback.calledWith({ id: 'lobbyABC' })).to.be.equal(true);
-    });
-    it('should call handleGetGameId when getGameId event is received', () => {
-        const socketMock: any = { on: sandbox.spy(), emit: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, connectionHandler: any) => {
-            if (event === 'connection') connectionHandler(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'getGameId')?.args[1];
-        const callback = sandbox.spy();
-
-        lobbyHandler.getLobby.returns({ gameId: 'gameXYZ' } as GameLobby);
-
-        handler('lobbyABC', callback);
-        expect(callback.calledWith('gameXYZ')).to.be.equal(true);
-    });
-    it('should call handleRequestStart when requestStart event is received', () => {
-        const socketMock: any = { on: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, cb: any) => {
-            if (event === 'connection') cb(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'requestStart')?.args[1];
-        handler('lobbyABC');
-        expect(gameHandler.handleRequestStart.calledWith(socketMock, 'lobbyABC')).to.be.equal(true);
-    });
-    it('should call handleEndTurn when endTurn event is received', () => {
-        const socketMock: any = { on: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, cb: any) => {
-            if (event === 'connection') cb(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'endTurn')?.args[1];
-        handler({ lobbyId: 'lobbyXYZ' });
-        expect(gameHandler.handleEndTurn.calledWith(socketMock, 'lobbyXYZ')).to.be.equal(true);
-    });
-    it('should call handleRequestMovement when requestMovement event is received', () => {
-        const socketMock: any = { on: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, cb: any) => {
-            if (event === 'connection') cb(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'requestMovement')?.args[1];
-        const coords = [{ x: 1, y: 2 }];
-        handler({ lobbyId: 'lobbyXYZ', coordinates: coords });
-        expect(gameHandler.handleRequestMovement.calledWith(socketMock, 'lobbyXYZ', coords)).to.be.equal(true);
-    });
-    it('should call handleOpenDoor when openDoor event is received', () => {
-        const socketMock: any = { on: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, cb: any) => {
-            if (event === 'connection') cb(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'openDoor')?.args[1];
-        const tile = { x: 3, y: 3, type: 1, object: 1 };
-        handler({ lobbyId: 'lobbyXYZ', tile });
-        expect(gameHandler.openDoor.calledWith(socketMock, tile, 'lobbyXYZ')).to.be.equal(true);
-    });
-    it('should call handleCloseDoor when closeDoor event is received', () => {
-        const socketMock: any = { on: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, cb: any) => {
-            if (event === 'connection') cb(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'closeDoor')?.args[1];
-        const tile = { x: 5, y: 5, type: 2, object: 2 };
-        handler({ lobbyId: 'lobbyXYZ', tile });
-        expect(gameHandler.closeDoor.calledWith(socketMock, tile, 'lobbyXYZ')).to.be.equal(true);
-    });
-    it('should call handleDisconnect when disconnect event is received', () => {
-        const socketMock: any = { on: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, cb: any) => {
-            if (event === 'connection') cb(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'disconnect')?.args[1];
-        handler();
-        expect(disconnectHandler.handleDisconnect.calledWith(socketMock)).to.be.equal(true);
-    });
-    it('should call handleVerifyAvatars when verifyAvatars event is received', () => {
-        const socketMock: any = { on: sandbox.spy(), emit: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, callBack: any) => {
-            if (event === 'connection') callBack(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'verifyAvatars')?.args[1];
-        const callback = sandbox.spy();
-
-        handler({ lobbyId: 'lobbyABC' }, callback);
-        expect(validationHandler.verifyAvatars.calledWith(socketMock, 'lobbyABC', callback)).to.be.equal(true);
-    });
-    it('should call handleBattleInitialization when initializeBattle event is received', () => {
-        const socketMock: any = { on: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, cb: any) => {
-            if (event === 'connection') cb(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'initializeBattle')?.args[1];
-        const data = {
-            currentPlayer: { id: 'p1' },
-            opponent: { id: 'p2' },
-            lobbyId: 'lobby123',
-        };
-        handler(data);
-        expect(gameHandler.initializeBattle.calledWith(socketMock, data.currentPlayer, data.opponent)).to.be.equal(true);
-    });
-
-    it('should call handleStartBattle when startBattle event is received', () => {
-        const socketMock: any = { on: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, cb: any) => {
-            if (event === 'connection') cb(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'startBattle')?.args[1];
-        const data = {
+        const startBattleHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'startBattle')?.args[1];
+        const battleData = {
             lobbyId: 'lobby1',
-            currentPlayer: { id: 'p1' },
-            opponent: { id: 'p2' },
-            time: 5,
-        };
-        handler(data);
-        expect(gameHandler.startBattle.calledWith(data.lobbyId, data.currentPlayer, data.opponent, data.time)).to.be.equal(true);
-    });
-
-    it('should call handleChangeTurnEnd when changeTurnEndTimer event is received', () => {
-        const socketMock: any = { on: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, cb: any) => {
-            if (event === 'connection') cb(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'changeTurnEndTimer')?.args[1];
-        const data = {
-            currentPlayer: { id: 'p1' },
-            opponent: { id: 'p2' },
-            playerTurn: 'p1',
-            gameState: {} as any,
-        };
-        handler(data);
-        expect(gameHandler.changeTurnEnd.calledWith(data.currentPlayer, data.opponent, data.playerTurn, data.gameState)).to.be.equal(true);
-    });
-
-    it('should call handleFlee when fleeCombat event is received', () => {
-        const socketMock: any = { on: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, cb: any) => {
-            if (event === 'connection') cb(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'fleeCombat')?.args[1];
-        const data = {
-            lobbyId: 'lobby123',
-            player: { id: 'p1' },
-            success: true,
-        };
-        handler(data);
-        expect(gameHandler.handleFlee.calledWith(data.lobbyId, data.player)).to.be.equal(true);
-    });
-
-    it('should call terminateAttack when terminateAttack event is received', () => {
-        const socketMock: any = { on: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, cb: any) => {
-            if (event === 'connection') cb(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'terminateAttack')?.args[1];
-        const data = { lobbyId: 'lobbyXYZ' };
-        handler(data);
-        expect(gameHandler.handleTerminateAttack.calledWith(data.lobbyId)).to.be.equal(true);
-    });
-    it('should call handleAttackAction when attackAction event is received', () => {
-        const socketMock: any = { on: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, cb: any) => {
-            if (event === 'connection') cb(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: string[] }) => c.args[0] === 'attackAction')?.args[1];
-        const data = {
-            lobbyId: 'lobby123',
-            attacker: { id: 'p1' },
-            defender: { id: 'p2' },
-        };
-        handler(data);
-        expect(gameHandler.handleAttackAction.calledWith(data.lobbyId, data.attacker, data.defender)).to.be.equal(true);
-    });
-    it('should call handleAttackAction when attack event is received', () => {
-        const socketMock: any = { on: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, cb: any) => {
-            if (event === 'connection') cb(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: string[] }) => c.args[0] === 'attack')?.args[1];
-        const data = {
-            lobbyId: 'lobby456',
-            attacker: { id: 'p1' },
-            defender: { id: 'p2' },
-        };
-        handler(data);
-        expect(gameHandler.handleAttackAction.calledWith(data.lobbyId, data.attacker, data.defender)).to.be.equal(true);
-    });
-    it('should call handleFlee when flee event is received', () => {
-        const socketMock: any = { on: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, cb: any) => {
-            if (event === 'connection') cb(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: string[] }) => c.args[0] === 'flee')?.args[1];
-        const data = { lobbyId: 'lobbyXYZ', player: { id: 'p1' } };
-        handler(data);
-        expect(gameHandler.handleFlee.calledWith(data.lobbyId, data.player)).to.be.equal(true);
-    });
-    it('should call updateCombatTime when updateCombatTime event is received', () => {
-        const socketMock: any = { on: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, cb: any) => {
-            if (event === 'connection') cb(socketMock);
-        });
-
-        socketService.init();
-
-        const handler = socketMock.on.getCalls().find((c: { args: string[] }) => c.args[0] === 'updateCombatTime')?.args[1];
-        const data = { lobbyId: 'lobbyXYZ', timeLeft: 30 };
-        handler(data);
-        expect(gameHandler.updateCombatTime.calledWith(data.lobbyId, data.timeLeft)).to.be.equal(true);
-    });
-    it('should handle teleport and call gameSocketHandlerService.handleTeleport', () => {
-        const socketMock: any = { emit: sandbox.spy() };
-        const data = { lobbyId: 'lobby123', coordinates: { x: 5, y: 5 } };
-
-        socketService['handleTeleport'](socketMock, data);
-
-        expect(gameHandler.handleTeleport.calledWith(socketMock, data.lobbyId, data.coordinates)).to.be.equal(true);
-    });
-
-    it('should handle teleport with missing lobbyId and emit error', () => {
-        const socketMock: any = { emit: sandbox.spy() };
-        const data = { coordinates: { x: 5, y: 5 } };
-
-        socketService['handleTeleport'] = (socket, data) => {
-            if (!data || !data.lobbyId) {
-                socket.emit('error', 'Invalid lobby ID');
-                return;
-            }
-            gameHandler.handleTeleport(socket, data.lobbyId, data.coordinates);
+            currentPlayer: { id: 'player1' } as Player,
+            opponent: { id: 'player2' } as Player,
         };
 
-        socketService['handleTeleport'](socketMock, data as any);
-        expect(socketMock.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
+        if (startBattleHandler) {
+            startBattleHandler(battleData);
+            expect(gameHandler.startBattle.calledWith('lobby1', battleData.currentPlayer, battleData.opponent)).to.equal(true);
+        }
     });
 
-    it('should handle teleport with missing coordinates and emit error', () => {
-        const socketMock: any = { emit: sandbox.spy() };
-        const data = { lobbyId: 'lobby123' };
-
-        socketService['handleTeleport'] = (socket, data) => {
-            if (!data || !data.lobbyId) {
-                socket.emit('error', 'Invalid lobby ID');
-                return;
-            }
-            if (!data.coordinates) {
-                socket.emit('error', 'Invalid coordinates');
-                return;
-            }
-            gameHandler.handleTeleport(socket, data.lobbyId, data.coordinates);
-        };
-
-        socketService['handleTeleport'](socketMock, data as any);
-        expect(socketMock.emit.calledWith('error', 'Invalid coordinates')).to.equal(true);
-    });
-
-    it('should call handleSetDebug when setDebug event is received', () => {
-        const socketMock: any = { on: sandbox.spy(), emit: sandbox.spy() };
-        const ioOnSpy = sandbox.stub();
-        (socketService as any).io = { on: ioOnSpy };
-
-        ioOnSpy.callsFake((event: string, cb: any) => {
-            if (event === 'connection') cb(socketMock);
-        });
-
+    it('should handle attack event', () => {
         socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
 
-        const handler = socketMock.on.getCalls().find((c: { args: [string, any] }) => c.args[0] === 'setDebug')?.args[1];
-        const data = { lobbyId: 'lobby123', debug: true };
-
-        handler(data);
-        expect(gameHandler.handleSetDebug.calledWith(socketMock, data.lobbyId, data.debug)).to.be.equal(true);
-    });
-
-    it('should emit error if setDebug data.lobbyId is missing', () => {
-        const socketMock: any = { emit: sandbox.spy() };
-        const data = { debug: true };
-
-        socketService['handleSetDebug'] = (socket, data) => {
-            if (!data || !data.lobbyId) {
-                socket.emit('error', 'Invalid lobby ID');
-                return;
-            }
-            gameHandler.handleSetDebug(socket, data.lobbyId, data.debug);
+        const attackHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'attack')?.args[1];
+        const attackData = {
+            lobbyId: 'lobby1',
+            attacker: { id: 'player1' } as Player,
+            defender: { id: 'player2' } as Player,
         };
 
-        socketService['handleSetDebug'](socketMock, data as any);
-        expect(socketMock.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
+        if (attackHandler) {
+            attackHandler(attackData);
+            expect(gameHandler.handleAttackAction.calledWith('lobby1', attackData.attacker, attackData.defender)).to.equal(true);
+        }
+    });
+
+    it('should handle flee event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const fleeHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'flee')?.args[1];
+        const fleeData = {
+            lobbyId: 'lobby1',
+            player: { id: 'player1' } as Player,
+        };
+
+        if (fleeHandler) {
+            fleeHandler(fleeData);
+            expect(gameHandler.handleFlee.calledWith('lobby1', fleeData.player)).to.equal(true);
+        }
+    });
+
+    it('should handle disconnect event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const disconnHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'disconnect')?.args[1];
+
+        if (disconnHandler) {
+            disconnHandler();
+            expect(disconnectHandler.handleDisconnect.calledWith(mockSocket)).to.equal(true);
+        }
+    });
+
+    it('should handle disconnectFromRoom event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const disconnectFromRoomHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'disconnectFromRoom')?.args[1];
+
+        if (disconnectFromRoomHandler) {
+            disconnectFromRoomHandler('lobby1');
+            expect(disconnectHandler.handleDisconnectFromRoom.calledWith(mockSocket, 'lobby1')).to.equal(true);
+        }
     });
 });

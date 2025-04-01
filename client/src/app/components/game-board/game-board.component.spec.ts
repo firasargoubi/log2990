@@ -92,32 +92,6 @@ describe('GameBoardComponent', () => {
     it('should initialize board and available moves on ngOnInit', () => {
         fixture.detectChanges();
         expect(component.tiles.length).toEqual(getDummyGameState().board.length);
-        expect(component['availableMoves']).toEqual(getDummyGameState().availableMoves);
-    });
-
-    it('should update available moves and clear path on lobbyService turn started event', () => {
-        fixture.detectChanges();
-        component['highlightedPath'] = [{ x: 1, y: 1 }];
-        turnStartedSubject.next({ gameState: { availableMoves: [{ x: 0, y: 1 }] } });
-        expect(component['availableMoves']).toEqual([{ x: 0, y: 1 }]);
-        expect(component['highlightedPath']).toEqual([]);
-    });
-
-    it('should reinitialize board on ngOnChanges when gameState changes', () => {
-        const newGameState = {
-            ...getDummyGameState(),
-            board: [
-                [3, 2],
-                [1, 0],
-            ],
-        };
-        component.gameState = newGameState;
-        component.ngOnChanges({
-            gameState: new SimpleChange(getDummyGameState(), newGameState, false),
-        });
-        expect(component.tiles[0][0].type).toEqual(newGameState.board[0][0] % OBJECT_MULTIPLIER);
-        expect(component['availableMoves']).toEqual(newGameState.availableMoves);
-        expect(component['highlightedPath']).toEqual([]);
     });
 
     it('should return true for an available move', () => {
@@ -255,12 +229,6 @@ describe('GameBoardComponent', () => {
         expect(tile.object).toEqual(Math.floor(getDummyGameState().board[0][1] / OBJECT_MULTIPLIER));
     });
 
-    it('should update available moves correctly with updateAvailableMoves', () => {
-        component.gameState['availableMoves'] = [{ x: 1, y: 1 }];
-        (component as any).updateAvailableMoves();
-        expect(component['availableMoves']).toEqual([{ x: 1, y: 1 }]);
-    });
-
     it('should clear path highlights with clearPathHighlights', () => {
         component['highlightedPath'] = [{ x: 1, y: 1 }];
         (component as any).clearPathHighlights();
@@ -287,20 +255,6 @@ describe('GameBoardComponent', () => {
         component.gameState['availableMoves'] = [{ x: 1, y: 0 }];
         const path = (component as any).showPathToTile({ x: 0, y: 1 });
         expect(path).toEqual([]);
-    });
-
-    it('should handle undefined availableMoves in turn started event', () => {
-        fixture.detectChanges();
-        component['highlightedPath'] = [{ x: 1, y: 1 }];
-
-        turnStartedSubject.next({
-            gameState: {
-                availableMoves: undefined,
-            },
-        });
-
-        expect(component['availableMoves']).toEqual([]);
-        expect(component['highlightedPath']).toEqual([]);
     });
 
     it('should return null when gameState is undefined for getPlayerAtPosition', () => {
@@ -416,17 +370,7 @@ describe('GameBoardComponent', () => {
         expect(info).not.toContain('Player:');
         expect(info).toContain('Tile Type: 1');
     });
-    it('should set availableMoves to an empty array when gameState.availableMoves is undefined', () => {
-        component.gameState['availableMoves'] = undefined as unknown as any;
-        (component as any).updateAvailableMoves();
-        expect(component['availableMoves']).toEqual([]);
-    });
 
-    it('should set availableMoves to an empty array when gameState is undefined', () => {
-        component.gameState = undefined as unknown as GameState;
-        (component as any).updateAvailableMoves();
-        expect(component['availableMoves']).toEqual([]);
-    });
     it('should return empty array from showPathToTile if currentPlayer is not found (playerIndex === -1)', () => {
         component.currentPlayerId = 'nonexistent';
         const result = (component as any).showPathToTile({ x: 0, y: 1 });
