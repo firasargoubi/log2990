@@ -84,58 +84,46 @@ export class GameSocketHandlerService {
         }
     }
 
-    handleRequestMovement(socket: Socket, lobbyId: string, coordinates: Coordinates[]) {
+    async handleRequestMovement(socket: Socket, lobbyId: string, coordinates: Coordinates[]) {
         const gameState = this.getGameStateOrEmitError(socket, lobbyId);
+        const indexPlayer = gameState.players.findIndex((p) => p.id === socket.id);
+        const currentPlayer = gameState.players[indexPlayer];
         if (!gameState) return;
         try {
             let updatedGameState = gameState;
             updatedGameState.animation = true;
-            let shouldStop = false;
 
             for (const [idx, coordinate] of coordinates.entries()) {
                 if (!idx) {
                     continue;
                 }
-                setTimeout(() => {
-                    if (shouldStop) return;
+                const result = this.boardService.handleMovement(updatedGameState, coordinate);
+                updatedGameState = result.gameState;
 
-                    const result = this.boardService.handleMovement(updatedGameState, coordinate);
-                    updatedGameState = result.gameState;
-
-                    const indexPlayer = updatedGameState.players.findIndex((p) => p.id === socket.id);
-                    if (indexPlayer !== -1) {
-                        const currentPlayer = updatedGameState.players[indexPlayer];
-
-                        if (result.shouldStop) {
-                            ({ shouldStop, updatedGameState } = this.isShouldStop(updatedGameState, currentPlayer, coordinate, socket, lobbyId));
-                        }
-
-                        if (idx === coordinates.length - 1) {
-                            updatedGameState.animation = false;
-                            updatedGameState = this.boardService.updatePlayerMoves(updatedGameState);
-                        }
+                if (result.shouldStop) {
+                    if (currentPlayer.pendingItem !== 0) {
+                        this.handleInventoryFull(updatedGameState, currentPlayer, socket, lobbyId);
                     }
-
+                    updatedGameState.animation = false;
+                    updatedGameState = this.boardService.updatePlayerMoves(updatedGameState);
                     this.gameStates.set(lobbyId, updatedGameState);
                     this.io.to(lobbyId).emit('movementProcessed', { gameState: updatedGameState });
-                }, ANIMATION_DELAY_MS);
+                    return;
+                }
+
+                if (idx === coordinates.length - 1) {
+                    updatedGameState.animation = false;
+                    updatedGameState = this.boardService.updatePlayerMoves(updatedGameState);
+                }
+
+                this.gameStates.set(lobbyId, updatedGameState);
+                this.io.to(lobbyId).emit('movementProcessed', { gameState: updatedGameState });
+
+                await this.delay(ANIMATION_DELAY_MS);
             }
         } catch (error) {
             socket.emit(GameEvents.Error, `${gameSocketMessages.movementError}${error.message}`);
         }
-    }
-
-    isShouldStop(updatedGameState: GameState, currentPlayer: Player, coordinate: Coordinates, socket: Socket, lobbyId: string) {
-        const shouldStop = true;
-        updatedGameState.animation = false;
-        updatedGameState.availableMoves = this.boardService.findAllPaths(updatedGameState, coordinate);
-        updatedGameState.shortestMoves = this.boardService.calculateShortestMoves(updatedGameState, coordinate, updatedGameState.availableMoves);
-
-        if (currentPlayer.pendingItem !== 0) {
-            this.handleInventoryFull(updatedGameState, currentPlayer, socket, lobbyId);
-        }
-
-        return { shouldStop, updatedGameState };
     }
 
     handleInventoryFull(updatedGameState: GameState, currentPlayer: Player, socket: Socket, lobbyId: string) {
@@ -415,6 +403,10 @@ export class GameSocketHandlerService {
             return null;
         }
         return gameState;
+    }
+
+    private delay(ms: number) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
     }
 
     private getDiceValue(playerDice: string): number {

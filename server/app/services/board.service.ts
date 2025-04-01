@@ -80,9 +80,13 @@ export class BoardService {
         const playerPosition = gameState.playerPositions[indexPlayer];
         if (!playerPosition) return { gameState, shouldStop: false };
 
-        const player = gameState.players[indexPlayer];
-
         gameState.playerPositions[indexPlayer] = targetCoordinate;
+
+        gameState.currentPlayerMovementPoints -= this.pathfindingService.getMovementCost(gameState, targetCoordinate);
+
+        gameState.players[indexPlayer].currentMP = gameState.currentPlayerMovementPoints;
+
+        const player = gameState.players[indexPlayer];
 
         const tileValue = gameState.board[targetCoordinate.x][targetCoordinate.y];
         const item = Math.floor(tileValue / TILE_DELIMITER);
@@ -98,7 +102,8 @@ export class BoardService {
             }
             return { gameState, shouldStop: true };
         }
-        return { gameState, shouldStop : false};
+
+        return { gameState, shouldStop: false };
     }
 
     handleEndTurn(gameState: GameState): GameState {
@@ -197,6 +202,17 @@ export class BoardService {
         }
     }
 
+    calculateShortestMoves(gameState: GameState, playerPosition: Coordinates, availableMoves: Coordinates[]): Coordinates[][] {
+        const shortestMoves: Coordinates[][] = [];
+        for (const move of availableMoves) {
+            const path = this.pathfindingService.findShortestPath(gameState, playerPosition, move, gameState.currentPlayerMovementPoints);
+            if (path && path.length > 0) {
+                shortestMoves.push(path);
+            }
+        }
+        return shortestMoves;
+    }
+
     private getPlayerMovementPoints(player: Player): number {
         return player.speed || 0;
     }
@@ -244,17 +260,6 @@ export class BoardService {
             const speedB = b.speed + (b.bonus?.speed || 0);
             return speedB - speedA;
         });
-    }
-
-    private calculateShortestMoves(gameState: GameState, playerPosition: Coordinates, availableMoves: Coordinates[]): Coordinates[][] {
-        const shortestMoves: Coordinates[][] = [];
-        for (const move of availableMoves) {
-            const path = this.pathfindingService.findShortestPath(gameState, playerPosition, move, gameState.currentPlayerMovementPoints);
-            if (path && path.length > 0) {
-                shortestMoves.push(path);
-            }
-        }
-        return shortestMoves;
     }
 
     private isOccupied(gameState: GameState, position: Coordinates, index: number): boolean {

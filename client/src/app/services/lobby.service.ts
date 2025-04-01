@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
-import { Game } from '@common/game.interface';
+import { Game, Tile } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
@@ -283,5 +283,34 @@ export class LobbyService {
                 observer.next(data);
             });
         });
+    }
+
+    onInventoryFull(): Observable<{ item: number; currentInventory: number[] }> {
+        return new Observable((observer) => {
+            this.socket.on('inventoryFull', (data) => {
+                observer.next(data);
+            });
+        });
+    }
+    resolveInventory(lobbyId: string, oldItem: number, newItem: number): void {
+        this.socket.emit('resolveInventory', { lobbyId, oldItem, newItem });
+    }
+    cancelInventoryChoice(lobbyId: string): void {
+        this.socket.emit('cancelInventoryChoice', { lobbyId });
+    }
+    onBoardModified(): Observable<unknown> {
+        return new Observable((observer) => {
+            this.socket.on('boardModified', (data) => {
+                observer.next(data);
+            });
+        });
+    }
+
+    openDoor(lobbyId: string, tile: Tile): void {
+        this.socket.emit('openDoor', { lobbyId, tile });
+    }
+
+    closeDoor(lobbyId: string, tile: Tile): void {
+        this.socket.emit('closeDoor', { lobbyId, tile });
     }
 }
