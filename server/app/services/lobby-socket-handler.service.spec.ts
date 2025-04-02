@@ -14,6 +14,7 @@ import { Server, Socket } from 'socket.io';
 describe('LobbySocketHandlerService', () => {
     let sandbox: SinonSandbox;
     let service: LobbySocketHandlerService;
+    let validationServiceMock: any;
     let lobbies: Map<string, GameLobby>;
     let ioMock: { to: SinonSpy };
     let socketMock: Partial<Socket>;
@@ -28,7 +29,14 @@ describe('LobbySocketHandlerService', () => {
             leave: sandbox.stub(),
             emit: sandbox.stub(),
         };
-        service = new LobbySocketHandlerService(lobbies);
+        validationServiceMock = {
+            verifyRoom: sandbox.stub(),
+            verifyAvatars: sandbox.stub(),
+            verifyUsername: sandbox.stub(),
+            getAvailableAvatar: sandbox.stub(),
+            getAvailableVirtualPlayerName: sandbox.stub(),
+        };
+        service = new LobbySocketHandlerService(lobbies, validationServiceMock);
         service.setServer(ioMock as unknown as Server);
     });
 
@@ -507,5 +515,51 @@ describe('LobbySocketHandlerService', () => {
         const id1 = (service as any).generateId();
         const id2 = (service as any).generateId();
         expect(id1).to.not.equal(id2);
+    });
+    it('should assign virtual player id, avatar, and name when joining a lobby', () => {
+        const game: Game = {
+            id: 'game1',
+            mapSize: GameSize.small,
+            name: '',
+            mode: GameType.classic,
+            previewImage: '',
+            description: '',
+            lastModified: new Date(),
+            isVisible: false,
+            board: [],
+            objects: [],
+        };
+
+        const lobbyId = service.createLobby(game);
+
+        validationServiceMock.getAvailableAvatar.returns('virtual-avatar');
+        validationServiceMock.getAvailableVirtualPlayerName.returns('VirtualPlayer1');
+
+        const player: Player = {
+            id: '',
+            name: '',
+            avatar: '',
+            isHost: false,
+            life: 100,
+            speed: 10,
+            attack: 10,
+            defense: 10,
+            maxLife: 0,
+            winCount: 0,
+            pendingItem: 0,
+            virtualPlayerData: {
+                profile: 'aggressive',
+            },
+        };
+
+        service.handleJoinLobbyRequest(socketMock as Socket, lobbyId.id, player);
+
+        const updatedLobby = lobbies.get(lobbyId.id);
+        const addedPlayer = updatedLobby?.players.find((p) => p.name === 'VirtualPlayer1');
+
+        expect(addedPlayer).to.not.be.undefined;
+        expect(addedPlayer?.id).to.match(/^virtual-\d+-[a-z0-9]+$/); // Matches the generated ID pattern
+        expect(addedPlayer?.avatar).to.equal('virtual-avatar');
+        expect(addedPlayer?.name).to.equal('VirtualPlayer1');
     });
 });

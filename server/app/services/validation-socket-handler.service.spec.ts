@@ -4,6 +4,8 @@ import { GameLobby } from '@common/game-lobby';
 import { expect } from 'chai';
 import { createSandbox, SinonSandbox, SinonSpy } from 'sinon';
 import { Socket } from 'socket.io';
+import { AVATARS } from '@common/avatars';
+import { VIRTUAL_PLAYER_NAMES } from '@app/constants/virtual-player-names';
 
 describe('ValidationSocketHandlerService', () => {
     let sandbox: SinonSandbox;
@@ -131,5 +133,214 @@ describe('ValidationSocketHandlerService', () => {
         const callback = sandbox.spy();
         service.verifyUsername(socket, 'lobby1', callback);
         expect(callback.calledWith({ usernames: ['Alice'] })).to.equal(true);
+    });
+    it('should return the default avatar if lobby does not exist', () => {
+        const avatar = service.getAvailableAvatar('unknown');
+        expect(avatar).to.equal(AVATARS.fawn);
+    });
+
+    it('should return an available avatar if some avatars are unused', () => {
+        const lobby: GameLobby = {
+            id: 'lobby1',
+            players: [
+                {
+                    id: '1',
+                    name: 'Alice',
+                    avatar: AVATARS.fawn,
+                    isHost: false,
+                    life: 100,
+                    speed: 1,
+                    attack: 1,
+                    defense: 1,
+                    maxLife: 0,
+                    winCount: 0,
+                    pendingItem: 0,
+                },
+            ],
+            isLocked: false,
+            maxPlayers: 4,
+            gameId: 'g1',
+        };
+        lobbies.set('lobby1', lobby);
+
+        const avatar = service.getAvailableAvatar('lobby1');
+        expect(Object.values(AVATARS)).to.include(avatar);
+        expect(avatar).to.not.equal(AVATARS.fawn);
+    });
+
+    it('should return the default avatar if all avatars are used', () => {
+        const allAvatars = Object.values(AVATARS);
+        const lobby: GameLobby = {
+            id: 'lobby1',
+            players: allAvatars.map((av, index) => ({
+                id: `${index}`,
+                name: `Player${index}`,
+                avatar: av,
+                isHost: false,
+                life: 100,
+                speed: 1,
+                attack: 1,
+                defense: 1,
+                maxLife: 0,
+                winCount: 0,
+                pendingItem: 0,
+            })),
+            isLocked: false,
+            maxPlayers: allAvatars.length,
+            gameId: 'g1',
+        };
+        lobbies.set('lobby1', lobby);
+
+        const avatar = service.getAvailableAvatar('lobby1');
+        expect(avatar).to.equal(AVATARS.fawn);
+    });
+    it('should return the first virtual player name if lobby does not exist', () => {
+        const name = service.getAvailableVirtualPlayerName('unknown');
+        expect(name).to.equal(VIRTUAL_PLAYER_NAMES[0]);
+    });
+
+    it('should return an available virtual player name if some names are unused', () => {
+        const lobby: GameLobby = {
+            id: 'lobby1',
+            players: [
+                {
+                    id: '1',
+                    name: VIRTUAL_PLAYER_NAMES[0],
+                    avatar: AVATARS.fawn,
+                    isHost: false,
+                    life: 100,
+                    speed: 1,
+                    attack: 1,
+                    defense: 1,
+                    maxLife: 0,
+                    winCount: 0,
+                    pendingItem: 0,
+                },
+            ],
+            isLocked: false,
+            maxPlayers: 4,
+            gameId: 'g1',
+        };
+        lobbies.set('lobby1', lobby);
+
+        const name = service.getAvailableVirtualPlayerName('lobby1');
+        expect(VIRTUAL_PLAYER_NAMES).to.include(name);
+        expect(name).to.not.equal(VIRTUAL_PLAYER_NAMES[0]);
+    });
+
+    it('should append "Bot" to a name if all virtual names are used', () => {
+        const allNames = VIRTUAL_PLAYER_NAMES;
+        const lobby: GameLobby = {
+            id: 'lobby1',
+            players: allNames.map((username, index) => ({
+                id: `${index}`,
+                name: username,
+                avatar: AVATARS.fawn,
+                isHost: false,
+                life: 100,
+                speed: 1,
+                attack: 1,
+                defense: 1,
+                maxLife: 0,
+                winCount: 0,
+                pendingItem: 0,
+            })),
+            isLocked: false,
+            maxPlayers: allNames.length,
+            gameId: 'g1',
+        };
+        lobbies.set('lobby1', lobby);
+
+        const name = service.getAvailableVirtualPlayerName('lobby1');
+        expect(name).to.match(/Bot$/);
+    });
+
+    it('should generate a unique bot name if multiple bots are needed', () => {
+        const allNames = VIRTUAL_PLAYER_NAMES;
+        const lobby: GameLobby = {
+            id: 'lobby1',
+            players: [
+                ...allNames.map((username, index) => ({
+                    id: `${index}`,
+                    name: username,
+                    avatar: AVATARS.fawn,
+                    isHost: false,
+                    life: 100,
+                    speed: 1,
+                    attack: 1,
+                    defense: 1,
+                    maxLife: 0,
+                    winCount: 0,
+                    pendingItem: 0,
+                })),
+                {
+                    id: 'extra',
+                    name: `${VIRTUAL_PLAYER_NAMES[0]}Bot`,
+                    avatar: AVATARS.fawn,
+                    isHost: false,
+                    life: 100,
+                    speed: 1,
+                    attack: 1,
+                    defense: 1,
+                    maxLife: 0,
+                    winCount: 0,
+                    pendingItem: 0,
+                },
+            ],
+            isLocked: false,
+            maxPlayers: allNames.length + 1,
+            gameId: 'g1',
+        };
+        lobbies.set('lobby1', lobby);
+
+        const name = service.getAvailableVirtualPlayerName('lobby1');
+        expect(name).to.match(/Bot(\d+)?$/);
+    });
+    it('should enter the while loop and generate a unique bot name when the base bot name is taken', () => {
+        // Force Math.random to return 0 so that randomName is always VIRTUAL_PLAYER_NAMES[0]
+        const randomStub = sandbox.stub(Math, 'random').returns(0);
+        const randomName = VIRTUAL_PLAYER_NAMES[0];
+
+        // Setup lobby with all virtual names already used and include the base bot name
+        const lobby: GameLobby = {
+            id: 'lobby1',
+            players: [
+                ...VIRTUAL_PLAYER_NAMES.map((username, index) => ({
+                    id: `${index}`,
+                    name: username,
+                    avatar: AVATARS.fawn,
+                    isHost: false,
+                    life: 100,
+                    speed: 1,
+                    attack: 1,
+                    defense: 1,
+                    maxLife: 0,
+                    winCount: 0,
+                    pendingItem: 0,
+                })),
+                {
+                    id: 'extra',
+                    name: `${randomName}Bot`,
+                    avatar: AVATARS.fawn,
+                    isHost: false,
+                    life: 100,
+                    speed: 1,
+                    attack: 1,
+                    defense: 1,
+                    maxLife: 0,
+                    winCount: 0,
+                    pendingItem: 0,
+                },
+            ],
+            isLocked: false,
+            maxPlayers: VIRTUAL_PLAYER_NAMES.length + 1,
+            gameId: 'g1',
+        };
+        lobbies.set('lobby1', lobby);
+
+        const name = service.getAvailableVirtualPlayerName('lobby1');
+        expect(name).to.equal(`${randomName}Bot1`);
+
+        randomStub.restore();
     });
 });
