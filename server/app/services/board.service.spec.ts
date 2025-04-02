@@ -16,6 +16,7 @@ describe('BoardService', () => {
     let boardService: BoardService;
     let gameService: any;
     let pathfindingService: any;
+    let itemService: any;
 
     beforeEach(() => {
         sandbox = createSandbox();
@@ -25,7 +26,7 @@ describe('BoardService', () => {
             getMovementCost: sandbox.stub(),
             findReachablePositions: sandbox.stub(),
         };
-        boardService = new BoardService(gameService, pathfindingService);
+        boardService = new BoardService(gameService, pathfindingService, itemService);
     });
 
     afterEach(() => sandbox.restore());
