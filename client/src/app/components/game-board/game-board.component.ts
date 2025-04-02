@@ -34,28 +34,19 @@ export class GameBoardComponent implements OnInit, OnChanges {
     ngOnInit() {
         if (this.gameState) {
             this.initializeBoard();
-            this.updateAvailableMoves();
+            this.clearPathHighlights();
         }
-
-        this.lobbyService.onTurnStarted().subscribe((data) => {
-            if (data.gameState) {
-                this.availableMoves = data.gameState.availableMoves || [];
-
-                this.clearPathHighlights();
-            }
-        });
     }
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes['gameState'] && this.gameState) {
             this.initializeBoard();
-            this.updateAvailableMoves();
             this.clearPathHighlights();
         }
     }
 
     isAvailableMove(x: number, y: number): boolean {
-        return this.availableMoves.some((move) => move.x === x && move.y === y);
+        return this.gameState.availableMoves.some((move) => move.x === x && move.y === y);
     }
 
     isOnHighlightedPath(x: number, y: number): boolean {
@@ -154,14 +145,6 @@ export class GameBoardComponent implements OnInit, OnChanges {
 
     private getMapSize(gameState: GameState): number {
         return gameState.board.length;
-    }
-
-    private updateAvailableMoves() {
-        if (this.gameState && this.gameState.availableMoves) {
-            this.availableMoves = this.gameState.availableMoves;
-        } else {
-            this.availableMoves = [];
-        }
     }
 
     private clearPathHighlights() {

@@ -15,9 +15,9 @@ export interface GameState {
     currentPlayerMovementPoints: number;
     currentPlayerActionPoints: number;
     combat?: {
-        playerId: string;
-        isActive: boolean;
-        endTime: Date;
+        playerId?: string;
+        isActive?: boolean;
+        endTime?: Date;
     };
     debug: boolean;
     animation?: boolean;
