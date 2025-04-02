@@ -118,7 +118,7 @@ export class GameSocketHandlerService {
                 this.gameStates.set(lobbyId, updatedGameState);
                 this.io.to(lobbyId).emit('movementProcessed', { gameState: updatedGameState });
 
-                await this.delay(ANIMATION_DELAY_MS);
+                await this.delay(GameSocketConstants.AnimationDelayMs);
             }
         } catch (error) {
             socket.emit(GameEvents.Error, `${gameSocketMessages.movementError}${error.message}`);
