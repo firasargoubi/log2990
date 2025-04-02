@@ -46,7 +46,7 @@ export class LobbySocketHandlerService {
         }
 
         if (player.virtualPlayerData) {
-            player.id = `virtual-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            player.id = `virtual-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
             player.avatar = this.validationService.getAvailableAvatar(lobbyId);
             player.name = this.validationService.getAvailableVirtualPlayerName(lobbyId);
         } else {

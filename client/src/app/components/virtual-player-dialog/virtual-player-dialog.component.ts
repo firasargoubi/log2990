@@ -10,7 +10,7 @@ interface BonusConfig {
     attack?: 'D4' | 'D6';
     defense?: 'D4' | 'D6';
 }
-
+const RANDOM_THRESHOLD = 0.5;
 @Component({
     selector: 'app-virtual-player-dialog',
     templateUrl: './virtual-player-dialog.component.html',
@@ -56,9 +56,9 @@ export class VirtualPlayerDialogComponent implements OnInit {
         };
 
         const virtualPlayer: Player = {
-            id: '', // Server will assign
-            name: '', // Server will assign
-            avatar: '', // Server will assign
+            id: '',
+            name: '',
+            avatar: '',
             isHost: false,
             ...finalStats,
             maxLife: finalStats.life,
@@ -66,9 +66,9 @@ export class VirtualPlayerDialogComponent implements OnInit {
                 ...this.generatedBonuses,
             },
             winCount: 0,
+            pendingItem: 0,
             virtualPlayerData: {
                 profile: this.selectedProfile,
-                decisionDelay: Math.floor(Math.random() * 1500) + 500,
             },
         };
 
@@ -80,9 +80,9 @@ export class VirtualPlayerDialogComponent implements OnInit {
     }
 
     private generateRandomBonuses(): void {
-        const attribute = Math.random() < 0.5 ? 'life' : 'speed';
+        const attribute = Math.random() < RANDOM_THRESHOLD ? 'life' : 'speed';
 
-        const useD6ForAttack = Math.random() < 0.5;
+        const useD6ForAttack = Math.random() < RANDOM_THRESHOLD;
         const attackDice: 'D4' | 'D6' = useD6ForAttack ? 'D6' : 'D4';
         const defenseDice: 'D4' | 'D6' = useD6ForAttack ? 'D4' : 'D6';
 

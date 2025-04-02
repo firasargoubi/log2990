@@ -22,6 +22,5 @@ export interface Player {
     items?: number[];
     virtualPlayerData?: {
         profile: 'aggressive' | 'defensive';
-        decisionDelay: number;
     };
 }
