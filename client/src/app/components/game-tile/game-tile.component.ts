@@ -1,15 +1,14 @@
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/Consts/item-constants';
-import { DEFAULT_TILE_IMAGE, TILE_IMAGES } from '@app/Consts/tile-constants';
-import { Player } from '@common/player';
 import { Tile } from '@common/tile';
+import { Player } from '@common/player';
+import { GAME_IMAGES } from '@app/Consts/app.constants';
+import { TileTypes, ObjectsTypes } from '@common/game.interface';
 
 @Component({
     selector: 'app-game-tile',
     standalone: true,
-    imports: [CommonModule, MatTooltipModule],
+    imports: [CommonModule],
     templateUrl: './game-tile.component.html',
     styleUrls: ['./game-tile.component.scss'],
 })
@@ -21,17 +20,49 @@ export class GameTileComponent {
     @Output() tileClick = new EventEmitter<Tile>();
 
     getTileImage(): string {
-        return this.tile ? TILE_IMAGES[this.tile.type] ?? DEFAULT_TILE_IMAGE : DEFAULT_TILE_IMAGE;
+        if (!this.tile) return GAME_IMAGES.default;
+
+        switch (this.tile.type) {
+            case TileTypes.Grass:
+                return GAME_IMAGES.grass;
+            case TileTypes.Water:
+                return GAME_IMAGES.water;
+            case TileTypes.Ice:
+                return GAME_IMAGES.ice;
+            case TileTypes.DoorClosed:
+                return GAME_IMAGES.doorClosed;
+            case TileTypes.DoorOpen:
+                return GAME_IMAGES.doorOpen;
+            case TileTypes.Wall:
+                return GAME_IMAGES.wall;
+            default:
+                return GAME_IMAGES.default;
+        }
     }
 
     getObjectImage(): string | null {
         if (!this.tile || !this.tile.object) return null;
 
-        return this.tile?.object != null ? ITEM_INFOS[this.tile.object]?.image ?? UNKNOWN_ITEM.image : null;
-    }
-
-    getObjectDescription() {
-        return ITEM_INFOS[this.tile.object]?.description ?? UNKNOWN_ITEM.description;
+        switch (this.tile.object) {
+            case ObjectsTypes.BOOTS:
+                return GAME_IMAGES.boots;
+            case ObjectsTypes.SWORD:
+                return GAME_IMAGES.sword;
+            case ObjectsTypes.POTION:
+                return GAME_IMAGES.potion;
+            case ObjectsTypes.WAND:
+                return GAME_IMAGES.wand;
+            case ObjectsTypes.CRYSTAL:
+                return GAME_IMAGES.crystalBall;
+            case ObjectsTypes.JUICE:
+                return GAME_IMAGES.berryJuice;
+            case ObjectsTypes.SPAWN:
+                return GAME_IMAGES.vortex;
+            case ObjectsTypes.RANDOM:
+                return GAME_IMAGES.gnome;
+            default:
+                return GAME_IMAGES.undefined;
+        }
     }
 
     onClick(): void {

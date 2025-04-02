@@ -14,11 +14,9 @@
         />
     </div>
 
-    @if(errorMessage){
-        <div class="error-message">
-            {{ errorMessage }}
-        </div>
-    }
+    <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+    </div>
 
     <div>
         <button type="button" (click)="validateGameId()" [disabled]="isLoading || !lobbyId">

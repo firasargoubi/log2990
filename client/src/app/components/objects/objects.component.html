@@ -2,7 +2,7 @@
     <div class="object-container" id="objects-container" cdkDropList [cdkDropListData]="items" (cdkDropListDropped)="drop($event)">
         @for (item of items ; track item.type) {
         <div>
-            <app-item [type]="item.type" />
+            <app-item [type]="item.type" [isPlaced]="item.isPlaced"/>
         </div>
         }
     </div>

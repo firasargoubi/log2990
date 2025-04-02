@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { BoxFormDialogComponent } from '@app/components/box-form-dialog/box-form-dialog.component';
-import { MAIN_PAGE_CONSTANTS } from '@app/Consts/app-constants';
+import { MAIN_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 import { LobbyService } from '@app/services/lobby.service';
 
 @Component({

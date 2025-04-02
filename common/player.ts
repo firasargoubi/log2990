@@ -1,5 +1,4 @@
 export interface Player {
-    pendingItem: number;
     id: string;
     name: string;
     avatar: string;
@@ -19,5 +18,4 @@ export interface Player {
     currentMP?: number;
     currentAP?: number;
     winCount: number;
-    items?: number[];
 }

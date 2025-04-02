@@ -7,7 +7,7 @@ import { GameBoardComponent } from '@app/components/game-board/game-board.compon
 import { GameInfoComponent } from '@app/components/game-info/game-info.component';
 import { InventoryComponent } from '@app/components/inventory/inventory.component';
 import { MessagesComponent } from '@app/components/messages/messages.component';
-import { MAP_SIZES, MapSize, PLAYING_PAGE, PLAYING_PAGE_DESCRIPTION } from '@app/Consts/app-constants';
+import { MAP_SIZES, MapSize, PLAYING_PAGE, PLAYING_PAGE_DESCRIPTION } from '@app/Consts/app.constants';
 import { PageUrl } from '@app/Consts/route-constants';
 import { ActionService } from '@app/services/action.service';
 import { LobbyService } from '@app/services/lobby.service';
@@ -36,7 +36,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     tileInfo: Tile;
     isInCombat: boolean = false;
     lobby: GameLobby;
-    inventoryItems: number[] = [];
     private debug: boolean = false;
     private lobbyService = inject(LobbyService);
     private actionService = inject(ActionService);
@@ -266,14 +265,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
             this.lobbyService.onMovementProcessed().subscribe((data) => {
                 this.updateGameState(data.gameState);
-                this.inventoryItems = this.currentPlayer?.items ?? [];
-                if (
-                    !this.gameState.availableMoves.length &&
-                    !this.canPerformAction() &&
-                    this.isCurrentPlayerTurn() &&
-                    !this.isAnimated &&
-                    !this.currentPlayer.pendingItem
-                ) {
+                if (!this.gameState.currentPlayerMovementPoints && !this.canPerformAction() && this.isCurrentPlayerTurn()) {
                     this.lobbyService.requestEndTurn(this.lobbyId);
                 }
             }),

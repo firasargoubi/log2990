@@ -1,26 +1,24 @@
 /* eslint-disable @typescript-eslint/member-ordering */
 import { Injectable } from '@angular/core';
-import { ObjectsTypes } from '@common/game.interface';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { ObjectsTypes } from '@app/Consts/app.constants';
 
 @Injectable({
     providedIn: 'root',
 })
 export class ObjectCounterService {
-    private itemCounterSubject = new BehaviorSubject<number>(0);
+    private counterSubject = new BehaviorSubject<number>(0);
     private spawnCounterSubject = new BehaviorSubject<number>(0);
-    private flagPlacedSubject = new BehaviorSubject<boolean>(false);
-    private uniqueItemsPlaced: Set<number> = new Set();
+    private randomCounterSubject = new BehaviorSubject<number>(0);
 
-    itemCounter$: Observable<number> = this.itemCounterSubject.asObservable();
+    counter$: Observable<number> = this.counterSubject.asObservable();
     spawnCounter$: Observable<number> = this.spawnCounterSubject.asObservable();
-    flagPlaced$: Observable<boolean> = this.flagPlacedSubject.asObservable();
+    randomCounter$: Observable<number> = this.randomCounterSubject.asObservable();
 
     initializeCounter(initialValue: number): void {
-        this.itemCounterSubject.next(initialValue);
+        this.counterSubject.next(initialValue);
         this.spawnCounterSubject.next(initialValue);
-        this.flagPlacedSubject.next(false);
-        this.uniqueItemsPlaced.clear();
+        this.randomCounterSubject.next(initialValue);
     }
 
     incrementCounter(type: number): void {
@@ -28,15 +26,11 @@ export class ObjectCounterService {
             case ObjectsTypes.SPAWN:
                 this.spawnCounterSubject.next(this.spawnCounterSubject.value + 1);
                 break;
-            case ObjectsTypes.FLAG:
-                this.flagPlacedSubject.next(false);
-                break;
             case ObjectsTypes.RANDOM:
-                this.itemCounterSubject.next(this.itemCounterSubject.value + 1);
+                this.randomCounterSubject.next(this.randomCounterSubject.value + 1);
                 break;
             default:
-                this.uniqueItemsPlaced.delete(type);
-                this.itemCounterSubject.next(this.itemCounterSubject.value + 1);
+                this.counterSubject.next(this.counterSubject.value + 1);
                 break;
         }
     }
@@ -48,41 +42,28 @@ export class ObjectCounterService {
                     this.spawnCounterSubject.next(this.spawnCounterSubject.value - 1);
                 }
                 break;
-            case ObjectsTypes.FLAG:
-                this.flagPlacedSubject.next(true);
-                break;
             case ObjectsTypes.RANDOM:
-                if (this.itemCounterSubject.value > 0) {
-                    this.itemCounterSubject.next(this.itemCounterSubject.value - 1);
+                if (this.randomCounterSubject.value > 0) {
+                    this.randomCounterSubject.next(this.randomCounterSubject.value - 1);
                 }
                 break;
             default:
-                if (this.itemCounterSubject.value > 0) {
-                    this.uniqueItemsPlaced.add(type);
-                    this.itemCounterSubject.next(this.itemCounterSubject.value - 1);
+                if (this.counterSubject.value > 0) {
+                    this.counterSubject.next(this.counterSubject.value - 1);
                 }
                 break;
         }
-    }
-
-    isItemPlaced(type: number): boolean {
-        if (type === ObjectsTypes.SPAWN) {
-            return this.spawnCounterSubject.value <= 0;
-        }
-        if (type === ObjectsTypes.FLAG) {
-            return this.flagPlacedSubject.value;
-        }
-        if (type === ObjectsTypes.RANDOM) {
-            return this.itemCounterSubject.value <= 0;
-        }
-        return this.uniqueItemsPlaced.has(type);
     }
 
     getSpawnCounter(): number {
         return this.spawnCounterSubject.value;
     }
 
-    getItemCounter(): number {
-        return this.itemCounterSubject.value;
+    getRandomCounter(): number {
+        return this.randomCounterSubject.value;
+    }
+
+    getCounter(): number {
+        return this.counterSubject.value;
     }
 }

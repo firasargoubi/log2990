@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { GameMode, GameSize, GameType } from '@app/Consts/app-constants';
+import { GameMode, GameSize, GameType } from '@app/Consts/app.constants';
 
 @Component({
     selector: 'app-game-mode-dialog',

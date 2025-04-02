@@ -1,20 +1,22 @@
-@if (isPlaced) {
-    <div class="grey-item item" cdkDrag [cdkDragDisabled]="isPlaced">
-        <img [src]="image" [matTooltip]="description" matTooltipPosition="before">
-    </div>
-    <p [innerText]="name"></p>
+@if (isPlaced || type !== objectsTypes.SPAWN) {
+<div class="grey-item item" cdkDrag>
+    <img [src]="image" [matTooltip]="description" matTooltipPosition="before" />
+</div>
+<p [innerText]="name"></p>
 
-}
-@else {
-        <div class="item" cdkDrag>
-            <img [src]="image" [matTooltip]="description" matTooltipPosition="before">
-        </div>
-    <p [innerText]="name"></p>
+} @else { @if (type === objectsTypes.SPAWN) {
+<div class="item" cdkDrag>
+    <img [src]="image" [matTooltip]="description" matTooltipPosition="before" />
+</div>
+} @else {
+<div class="item">
+    <img [src]="image" [matTooltip]="description" matTooltipPosition="before" />
+</div>
 }
 
-@if (type === objectsTypes.SPAWN) {
-    <p class="counter">{{spawnCounter}}</p>
-}
-@else if (type === objectsTypes.RANDOM) {
-    <p class="counter">{{itemCounter}}</p>
+<p [innerText]="name"></p>
+} @if (type === objectsTypes.SPAWN) {
+<p class="counter">{{ objectCounterService.spawnCounter$ | async }}</p>
+} @if (type === objectsTypes.RANDOM) {
+<p class="counter">{{ objectCounterService.counter$ | async }}</p>
 }

@@ -1,13 +1,13 @@
 /* eslint-disable import/no-deprecated */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { GAME_SERVICE_CONSTANTS } from '@app/Consts/app-constants';
-import { ApiEndpoint, ApiRoutes } from '@common/api.endpoints';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { GameService } from './game.service';
 import { Game, GameSize, GameType } from '@common/game.interface';
 import { environment } from 'src/environments/environment';
-import { GameService } from './game.service';
+import { ApiEndpoint, ApiRoutes } from '@common/api.endpoints';
 import { NotificationService } from './notification.service';
+import { GAME_SERVICE_CONSTANTS } from '@app/Consts/app.constants';
 
 describe('GameService', () => {
     let service: GameService;
