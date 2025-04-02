@@ -6,7 +6,7 @@ import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testin
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
-import { CREATE_PAGE_CONSTANTS, GAME_IMAGES, MAIN_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { CREATE_PAGE_CONSTANTS, GAME_IMAGES, MAIN_PAGE_CONSTANTS } from '@app/Consts/app-constants';
 import { PageUrl } from '@app/Consts/route-constants';
 import { GameService } from '@app/services/game.service';
 import { LobbyService } from '@app/services/lobby.service';
@@ -166,6 +166,7 @@ describe('BoxFormDialogComponent', () => {
                         defense: 4,
                         maxLife: 0,
                         winCount: 0,
+                        pendingItem: 0,
                     },
                     {
                         id: 'p2',
@@ -178,6 +179,7 @@ describe('BoxFormDialogComponent', () => {
                         defense: 4,
                         maxLife: 0,
                         winCount: 0,
+                        pendingItem: 0,
                     },
                 ],
                 isLocked: false,
@@ -208,6 +210,7 @@ describe('BoxFormDialogComponent', () => {
                         defense: 4,
                         maxLife: 0,
                         winCount: 0,
+                        pendingItem: 0,
                     },
                 ],
                 isLocked: false,
@@ -279,6 +282,7 @@ describe('BoxFormDialogComponent', () => {
                         defense: 4,
                         maxLife: 0,
                         winCount: 0,
+                        pendingItem: 0,
                     },
                 ],
                 isLocked: false,
@@ -313,6 +317,7 @@ describe('BoxFormDialogComponent', () => {
                         defense: 4,
                         maxLife: 0,
                         winCount: 0,
+                        pendingItem: 0,
                     },
                     {
                         id: 'p2',
@@ -325,6 +330,7 @@ describe('BoxFormDialogComponent', () => {
                         defense: 4,
                         maxLife: 0,
                         winCount: 0,
+                        pendingItem: 0,
                     },
                 ],
                 isLocked: false,

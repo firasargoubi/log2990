@@ -2,7 +2,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TileOptionsComponent } from './tile-options.component';
 import { TileService } from '@app/services/tile.service';
-import { TileTypes } from '@app/Consts/app.constants';
+import { TileTypes } from '@common/game.interface';
 
 describe('TileOptionsComponent', () => {
     let component: TileOptionsComponent;
