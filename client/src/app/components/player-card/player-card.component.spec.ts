@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Player } from '@common/player';
 import { PlayerCardComponent } from './player-card.component';
+import { Player } from '@common/player';
 
 describe('PlayerCardComponent', () => {
     let component: PlayerCardComponent;
@@ -17,7 +17,6 @@ describe('PlayerCardComponent', () => {
         defense: 0,
         maxLife: 0,
         winCount: 0,
-        pendingItem: 0,
     };
 
     beforeEach(async () => {

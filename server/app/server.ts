@@ -13,7 +13,6 @@ import { GameService } from './services/game.service';
 import { LobbySocketHandlerService } from './services/lobby-socket-handler.service';
 import { PathfindingService } from './services/pathfinding.service';
 import { ValidationSocketHandlerService } from './services/validation-socket-handler.service';
-import { ItemService } from './services/item.service';
 const uri = 'mongodb+srv://admin:admin@log2990-perso.mf3fg.mongodb.net/?retryWrites=true&w=majority&appName=LOG2990-perso';
 @Service()
 export class Server {
@@ -36,15 +35,14 @@ export class Server {
         this.server = http.createServer(this.application.app);
         const gameService = new GameService();
         const pathfindingService = new PathfindingService();
-        const itemService = new ItemService();
-        const boardService = new BoardService(gameService, pathfindingService, itemService);
+        const boardService = new BoardService(gameService, pathfindingService);
         const lobbyMap = new Map<string, GameLobby>();
         const gameStateMap = new Map<string, GameState>();
         const lobbyHandler = new LobbySocketHandlerService(lobbyMap);
         const gameHandler = new GameSocketHandlerService(lobbyMap, gameStateMap, boardService, lobbyHandler, pathfindingService);
         const validationHandler = new ValidationSocketHandlerService(lobbyMap);
         const disconnectHandler = new DisconnectHandlerService(lobbyMap, lobbyHandler);
-        this.socketManager = new SocketService(this.server, lobbyHandler, gameHandler, validationHandler, disconnectHandler, boardService);
+        this.socketManager = new SocketService(this.server, lobbyHandler, gameHandler, validationHandler, disconnectHandler);
         this.socketManager.init();
 
         this.server.on('error', (error: NodeJS.ErrnoException) => this.onError(error));

@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/Consts/item-constants';
-import { DEFAULT_TILE_IMAGE, TILE_IMAGES } from '@app/Consts/tile-constants';
+import { By } from '@angular/platform-browser';
+import { GAME_IMAGES } from '@app/Consts/app.constants';
 import { ObjectsTypes, TileTypes } from '@common/game.interface';
+import { Player } from '@common/player';
 import { Tile } from '@common/tile';
 import { GameTileComponent } from './game-tile.component';
 
@@ -32,62 +33,186 @@ describe('GameTileComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    describe('getTileImage()', () => {
-        it('should return image from TILE_IMAGES for known tile', () => {
-            component.tile = { ...component.tile, type: TileTypes.Water };
-            expect(component.getTileImage()).toBe(TILE_IMAGES[TileTypes.Water]);
-        });
+    it('should render the correct tile image based on tile type', () => {
+        const testCases = [
+            { type: TileTypes.Grass, expectedImage: GAME_IMAGES.grass },
+            { type: TileTypes.Water, expectedImage: GAME_IMAGES.water },
+            { type: TileTypes.Ice, expectedImage: GAME_IMAGES.ice },
+            { type: TileTypes.DoorClosed, expectedImage: GAME_IMAGES.doorClosed },
+            { type: TileTypes.DoorOpen, expectedImage: GAME_IMAGES.doorOpen },
+            { type: TileTypes.Wall, expectedImage: GAME_IMAGES.wall },
+            { type: 999, expectedImage: GAME_IMAGES.default },
+        ];
 
-        it('should return DEFAULT_TILE_IMAGE for unknown tile', () => {
-            component.tile = { ...component.tile, type: 999 };
-            expect(component.getTileImage()).toBe(DEFAULT_TILE_IMAGE);
-        });
+        testCases.forEach((testCase) => {
+            component.tile = { ...component.tile, type: testCase.type };
+            fixture.detectChanges();
 
-        it('should return DEFAULT_TILE_IMAGE if tile is undefined', () => {
-            component.tile = undefined as unknown as Tile;
-            expect(component.getTileImage()).toBe(DEFAULT_TILE_IMAGE);
+            expect(component.getTileImage()).toBe(testCase.expectedImage);
+
+            const imgElement = fixture.debugElement.query(By.css('.tile-image'));
+            expect(imgElement.nativeElement.src).toContain(testCase.expectedImage.replace('assets/', ''));
         });
     });
 
-    describe('getObjectImage()', () => {
-        it('should return correct object image for known object', () => {
-            component.tile = { ...component.tile, object: ObjectsTypes.BOOTS };
-            expect(component.getObjectImage()).toBe(ITEM_INFOS[ObjectsTypes.BOOTS].image);
-        });
+    it('should render the correct object image based on object type', () => {
+        component.tile = { ...component.tile, object: 0 };
+        fixture.detectChanges();
+        expect(component.getObjectImage()).toBeNull();
 
-        it('should return UNKNOWN_ITEM.image for unknown object', () => {
-            component.tile = { ...component.tile, object: 999 };
-            expect(component.getObjectImage()).toBe(UNKNOWN_ITEM.image);
-        });
+        const testCases = [
+            { object: ObjectsTypes.BOOTS, expectedImage: GAME_IMAGES.boots },
+            { object: ObjectsTypes.SWORD, expectedImage: GAME_IMAGES.sword },
+            { object: ObjectsTypes.POTION, expectedImage: GAME_IMAGES.potion },
+            { object: ObjectsTypes.WAND, expectedImage: GAME_IMAGES.wand },
+            { object: ObjectsTypes.CRYSTAL, expectedImage: GAME_IMAGES.crystalBall },
+            { object: ObjectsTypes.JUICE, expectedImage: GAME_IMAGES.berryJuice },
+            { object: ObjectsTypes.SPAWN, expectedImage: GAME_IMAGES.vortex },
+            { object: ObjectsTypes.RANDOM, expectedImage: GAME_IMAGES.gnome },
+            { object: 999, expectedImage: GAME_IMAGES.undefined },
+        ];
 
-        it('should return null when tile is undefined', () => {
-            component.tile = undefined as unknown as Tile;
-            expect(component.getObjectImage()).toBeNull();
-        });
+        testCases.forEach((testCase) => {
+            if (testCase.object > 0) {
+                component.tile = { ...component.tile, object: testCase.object };
+                fixture.detectChanges();
 
-        it('should return null when tile has no object', () => {
-            component.tile = { ...component.tile, object: 0 };
-            expect(component.getObjectImage()).toBeNull();
+                expect(component.getObjectImage()).toBe(testCase.expectedImage);
+
+                const objectImgElement = fixture.debugElement.query(By.css('.object-image'));
+                expect(objectImgElement).toBeTruthy();
+                expect(objectImgElement.nativeElement.src).toContain(testCase.expectedImage.replace('assets/', ''));
+            }
         });
     });
 
-    describe('getObjectDescription()', () => {
-        it('should return correct description for known object', () => {
-            component.tile = { ...component.tile, object: ObjectsTypes.SWORD };
-            expect(component.getObjectDescription()).toBe(ITEM_INFOS[ObjectsTypes.SWORD].description);
-        });
+    it('should emit tileClick event when clicked', () => {
+        const spy = spyOn(component.tileClick, 'emit');
+        const tileElement = fixture.debugElement.query(By.css('.board-tile'));
 
-        it('should return UNKNOWN_ITEM.description for unknown object', () => {
-            component.tile = { ...component.tile, object: 999 };
-            expect(component.getObjectDescription()).toBe(UNKNOWN_ITEM.description);
-        });
+        tileElement.triggerEventHandler('click', null);
+
+        expect(spy).toHaveBeenCalledWith(component.tile);
     });
 
-    describe('onClick()', () => {
-        it('should emit tileClick event with current tile', () => {
-            const spy = spyOn(component.tileClick, 'emit');
-            component.onClick();
-            expect(spy).toHaveBeenCalledWith(component.tile);
-        });
+    it('should apply overlay-available-move class to tile-overlay when isAvailableMove is true', () => {
+        component.isAvailableMove = true;
+        fixture.detectChanges();
+
+        const overlayElement = fixture.debugElement.query(By.css('.tile-overlay'));
+        expect(overlayElement.classes['overlay-available-move']).toBeTrue();
+    });
+
+    it('should apply overlay-path-highlighted class to tile-overlay when isPathHighlighted is true', () => {
+        component.isPathHighlighted = true;
+        fixture.detectChanges();
+
+        const overlayElement = fixture.debugElement.query(By.css('.tile-overlay'));
+        expect(overlayElement.classes['overlay-path-highlighted']).toBeTrue();
+    });
+
+    it('should display player marker when player is provided', () => {
+        expect(fixture.debugElement.query(By.css('.player-marker'))).toBeNull();
+
+        const mockPlayer: Player = {
+            id: 'player1',
+            name: 'Test Player',
+            avatar: 'assets/avatar/1.jpg',
+        } as Player;
+
+        component.player = {
+            player: mockPlayer,
+            isCurrentPlayer: false,
+            isLocalPlayer: false,
+        };
+
+        fixture.detectChanges();
+
+        const playerMarker = fixture.debugElement.query(By.css('.player-marker'));
+        expect(playerMarker).toBeTruthy();
+
+        const avatarImg = playerMarker.query(By.css('.avatar-image'));
+        expect(avatarImg.nativeElement.src).toContain(mockPlayer.avatar.replace('assets/', ''));
+    });
+
+    it('should apply correct classes for current player', () => {
+        const mockPlayer: Player = {
+            id: 'player1',
+            name: 'Test Player',
+            avatar: 'assets/avatar/1.jpg',
+        } as Player;
+
+        component.player = {
+            player: mockPlayer,
+            isCurrentPlayer: true,
+            isLocalPlayer: false,
+        };
+
+        fixture.detectChanges();
+
+        const playerMarker = fixture.debugElement.query(By.css('.player-marker'));
+        expect(playerMarker.classes['current-player']).toBeTrue();
+        expect(playerMarker.classes['local-player']).toBeFalsy();
+    });
+
+    it('should apply correct classes for local player', () => {
+        const mockPlayer: Player = {
+            id: 'player1',
+            name: 'Test Player',
+            avatar: 'assets/avatar/1.jpg',
+        } as Player;
+
+        component.player = {
+            player: mockPlayer,
+            isCurrentPlayer: false,
+            isLocalPlayer: true,
+        };
+
+        fixture.detectChanges();
+
+        const playerMarker = fixture.debugElement.query(By.css('.player-marker'));
+        expect(playerMarker.classes['current-player']).toBeFalsy();
+        expect(playerMarker.classes['local-player']).toBeTrue();
+    });
+
+    it('should apply both classes for player who is both current and local', () => {
+        const mockPlayer: Player = {
+            id: 'player1',
+            name: 'Test Player',
+            avatar: 'assets/avatar/1.jpg',
+        } as Player;
+
+        component.player = {
+            player: mockPlayer,
+            isCurrentPlayer: true,
+            isLocalPlayer: true,
+        };
+
+        fixture.detectChanges();
+
+        const playerMarker = fixture.debugElement.query(By.css('.player-marker'));
+        expect(playerMarker.classes['current-player']).toBeTrue();
+        expect(playerMarker.classes['local-player']).toBeTrue();
+    });
+
+    it('should handle undefined tile gracefully', () => {
+        component.tile = undefined as unknown as Tile;
+        fixture.detectChanges();
+
+        expect(component.getTileImage()).toBe(GAME_IMAGES.default);
+        expect(component.getObjectImage()).toBeNull();
+
+        const spy = spyOn(component.tileClick, 'emit');
+        const tileElement = fixture.debugElement.query(By.css('.board-tile'));
+        tileElement.triggerEventHandler('click', null);
+
+        expect(spy).toHaveBeenCalled();
+    });
+
+    it('should handle null object gracefully', () => {
+        component.tile = { ...component.tile, object: null as unknown as number };
+        fixture.detectChanges();
+
+        expect(component.getObjectImage()).toBeNull();
     });
 });

@@ -1,21 +1,21 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CommonModule } from '@angular/common';
-import { ComponentFixture, TestBed, discardPeriodicTasks, fakeAsync, tick } from '@angular/core/testing';
-import { ReactiveFormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
+import { ComponentFixture, TestBed, fakeAsync, tick, discardPeriodicTasks } from '@angular/core/testing';
+import { CreatePageComponent } from './create-page.component';
+import { GameService } from '@app/services/game.service';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { of, BehaviorSubject, throwError } from 'rxjs';
+import { Game, GameSize, GameType } from '@common/game.interface';
 import { BoxFormDialogComponent } from '@app/components/box-form-dialog/box-form-dialog.component';
 import { GameCreationCardComponent } from '@app/components/game-creation-card/game-creation-card.component';
-import { CREATE_PAGE_CONSTANTS } from '@app/Consts/app-constants';
-import { GameService } from '@app/services/game.service';
-import { LobbyService } from '@app/services/lobby.service';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatCardModule } from '@angular/material/card';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { NotificationService } from '@app/services/notification.service';
-import { Game, GameSize, GameType } from '@common/game.interface';
-import { BehaviorSubject, of, throwError } from 'rxjs';
-import { CreatePageComponent } from './create-page.component';
+import { CREATE_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { LobbyService } from '@app/services/lobby.service';
 
 describe('CreatePageComponent', () => {
     let component: CreatePageComponent;

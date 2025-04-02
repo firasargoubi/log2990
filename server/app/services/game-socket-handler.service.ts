@@ -84,56 +84,30 @@ export class GameSocketHandlerService {
         }
     }
 
-    async handleRequestMovement(socket: Socket, lobbyId: string, coordinates: Coordinates[]) {
+    handleRequestMovement(socket: Socket, lobbyId: string, coordinates: Coordinates[]) {
         const gameState = this.getGameStateOrEmitError(socket, lobbyId);
-        const indexPlayer = gameState.players.findIndex((p) => p.id === socket.id);
-        const currentPlayer = gameState.players[indexPlayer];
         if (!gameState) return;
+
         try {
             let updatedGameState = gameState;
             updatedGameState.animation = true;
-
             for (const [idx, coordinate] of coordinates.entries()) {
                 if (!idx) {
                     continue;
                 }
-                const result = this.boardService.handleMovement(updatedGameState, coordinate);
-                updatedGameState = result.gameState;
-                updatedGameState = this.boardService.updatePlayerMoves(updatedGameState);
-
-                if (result.shouldStop) {
-                    if (currentPlayer.pendingItem !== 0) {
-                        this.handleInventoryFull(updatedGameState, currentPlayer, socket, lobbyId);
-                        return;
+                setTimeout(() => {
+                    updatedGameState = this.boardService.handleMovement(updatedGameState, coordinate);
+                    if (idx === coordinates.length - 1) {
+                        updatedGameState.animation = false;
+                        updatedGameState = this.boardService.updatePlayerMoves(updatedGameState);
                     }
-                    updatedGameState.animation = false;
                     this.gameStates.set(lobbyId, updatedGameState);
                     this.io.to(lobbyId).emit('movementProcessed', { gameState: updatedGameState });
-                    return;
-                }
-
-                if (idx === coordinates.length - 1) {
-                    updatedGameState.animation = false;
-                }
-
-                this.gameStates.set(lobbyId, updatedGameState);
-                this.io.to(lobbyId).emit('movementProcessed', { gameState: updatedGameState });
-
-                await this.delay(ANIMATION_DELAY_MS);
+                }, ANIMATION_DELAY_MS);
             }
         } catch (error) {
             socket.emit(GameEvents.Error, `${gameSocketMessages.movementError}${error.message}`);
         }
-    }
-
-    handleInventoryFull(updatedGameState: GameState, currentPlayer: Player, socket: Socket, lobbyId: string) {
-        socket.emit('inventoryFull', {
-            item: currentPlayer.pendingItem,
-            currentInventory: currentPlayer.items,
-        });
-        updatedGameState.animation = false;
-        this.gameStates.set(lobbyId, updatedGameState);
-        this.io.to(lobbyId).emit('movementProcessed', { gameState: updatedGameState });
     }
 
     handleTeleport(socket: Socket, lobbyId: string, coordinates: Coordinates) {
@@ -341,11 +315,9 @@ export class GameSocketHandlerService {
             }
             if (attacker.winCount === MAX_WIN_COUNT) {
                 this.io.to(lobbyId).emit('gameOver', { winner: attacker.name });
-                // eslint-disable-next-line max-lines
                 return;
             }
             this.handleDefeat(lobbyId, attacker, defender);
-            // eslint-disable-next-line max-lines
             return;
         }
         this.io.to(lobbyId).emit('attackResult', {
@@ -396,19 +368,6 @@ export class GameSocketHandlerService {
 
         this.gameStates.set(lobbyId, gameState);
     }
-    getGameStateOrEmitError(socket: Socket, lobbyId: string): GameState | null {
-        const gameState = this.gameStates.get(lobbyId);
-        if (!gameState) {
-            socket.emit(GameEvents.Error, gameSocketMessages.gameNotFound);
-            return null;
-        }
-        return gameState;
-    }
-
-    private async delay(ms: number) {
-        return new Promise((resolve) => setTimeout(resolve, ms));
-        // eslint-disable-next-line max-lines
-    }
 
     private getDiceValue(playerDice: string): number {
         if (playerDice === 'D4') {
@@ -419,7 +378,14 @@ export class GameSocketHandlerService {
         }
         return 0;
     }
-
+    private getGameStateOrEmitError(socket: Socket, lobbyId: string): GameState | null {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) {
+            socket.emit(GameEvents.Error, gameSocketMessages.gameNotFound);
+            return null;
+        }
+        return gameState;
+    }
     private isPlayerOnIceTile(gameState: GameState, player: Player): boolean {
         const playerIndex = gameState.players.findIndex((p) => p.id === player.id);
         if (playerIndex === -1) return false;

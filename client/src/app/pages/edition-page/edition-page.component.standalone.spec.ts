@@ -1,25 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable max-classes-per-file */
-import { Component, Input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, provideRouter, Routes } from '@angular/router';
+import { Component, Input } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { of, Subject, throwError } from 'rxjs';
+import { EditionPageComponent } from './edition-page.component';
+import { Game, GameSize, GameType } from '@common/game.interface';
+import { ErrorService } from '@app/services/error.service';
+import { GameService } from '@app/services/game.service';
+import { SaveService } from '@app/services/save.service';
+import { NotificationService } from '@app/services/notification.service';
+import { ImageService } from '@app/services/image.service';
+import { ObjectCounterService } from '@app/services/objects-counter.service';
+import { ValidationService } from '@app/services/validation.service';
 import { BoardComponent } from '@app/components/board/board.component';
 import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
-import { EDITION_PAGE_CONSTANTS } from '@app/Consts/app-constants';
+import { EDITION_PAGE_CONSTANTS } from '@app/Consts/app.constants';
 import { BoardService } from '@app/services/board.service';
-import { ErrorService } from '@app/services/error.service';
-import { GameService } from '@app/services/game.service';
-import { ImageService } from '@app/services/image.service';
-import { NotificationService } from '@app/services/notification.service';
-import { ObjectCounterService } from '@app/services/objects-counter.service';
-import { SaveService } from '@app/services/save.service';
-import { ValidationService } from '@app/services/validation.service';
-import { Game, GameSize, GameType } from '@common/game.interface';
-import { of, Subject, throwError } from 'rxjs';
-import { EditionPageComponent } from './edition-page.component';
 
 const routes: Routes = [];
 

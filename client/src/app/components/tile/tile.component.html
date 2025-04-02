@@ -1,14 +1,16 @@
-<div
-    class="tile"
+<div 
+    class = "tile" 
     cdkDropList
     [cdkDropListData]="placedItem"
-    [ngStyle]="{ 'background-image': 'url(' + baseImage + ')' }"
+    [ngStyle]="{'background-image': 'url(' + baseImage + ')'}"
     (cdkDropListDropped)="drop($event)"
     (contextmenu)="deleteTile()"
->
+    >
     @if (placedItem.length === 0) {
-    <img class="transparent" src="assets/transparent.png" />
-    } @else { @for (item of placedItem; track item) {
-    <img class="item-image" [src]="item.image" [matTooltip]="item.description" matTooltipPosition="below" cdkDrag />
-    } }
+        <img class = "transparent" src = "assets/transparent.png"/>
+    } @else {
+        @for (item of placedItem; track item) {
+            <img class ="item-image" [src]="item.image" cdkDrag/>
+        }
+    }
 </div>

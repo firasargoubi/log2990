@@ -2,8 +2,9 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ItemComponent } from '@app/components/item/item.component';
+import { ObjectsTypes } from '@app/Consts/app.constants';
+import { TileTypes } from '@app/interfaces/tile-types';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
-import { ObjectsTypes, TileTypes } from '@common/game.interface';
 import { of } from 'rxjs';
 import { TileComponent } from './tile.component';
 
@@ -14,11 +15,9 @@ describe('TileComponent', () => {
     let counterService: jasmine.SpyObj<ObjectCounterService>;
 
     beforeEach(async () => {
-        const counterServiceSpy = jasmine.createSpyObj('ObjectCounterService', ['decrementCounter', 'incrementCounter', 'isItemPlaced'], {
+        const counterServiceSpy = jasmine.createSpyObj('ObjectCounterService', ['decrementCounter', 'incrementCounter'], {
             spawnCounter$: of(SPAWN_COUNTER),
         });
-
-        counterServiceSpy.isItemPlaced.and.returnValue(false);
 
         await TestBed.configureTestingModule({
             imports: [TileComponent],

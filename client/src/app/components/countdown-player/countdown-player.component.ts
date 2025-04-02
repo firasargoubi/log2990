@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
-import { TIMEOUT_START_COMBAT, TURN_START_TIME } from '@app/Consts/app-constants';
+import { Component, Input, OnDestroy, OnInit, OnChanges } from '@angular/core';
+import { TIMEOUT_START_COMBAT, TURN_START_TIME } from '@app/Consts/app.constants';
 import { LobbyService } from '@app/services/lobby.service';
 
 @Component({

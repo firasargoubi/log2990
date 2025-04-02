@@ -29,16 +29,16 @@ export interface Game {
 }
 
 export enum ObjectsTypes {
-    BOOTS = 1,
-    SWORD = 2,
-    POTION = 3,
-    WAND = 4,
-    CRYSTAL = 5,
-    JUICE = 6,
-    SPAWN = 7,
-    RANDOM = 8,
-    FLAG = 9,
     EMPTY = 0,
+    SWORD = 1,
+    POTION = 2,
+    WAND = 3,
+    CRYSTAL = 4,
+    JUICE = 5,
+    SPAWN = 6,
+    RANDOM = 7,
+    BOOTS = 8,
+    TRAP,
     WALL,
 }
 
@@ -50,6 +50,7 @@ export enum TileTypes {
     DoorOpen = 5,
     Wall = 6,
     Floor,
+    Empty,
 }
 
 export interface Tile {
@@ -60,15 +61,3 @@ export interface Tile {
 }
 
 export const TILE_DELIMITER = 10;
-
-interface Effect {
-    attack?: number;
-    defense?: number;
-    speed?: number;
-    life?: number;
-}
-
-export const ITEM_EFFECTS: Partial<Record<ObjectsTypes, Effect>>  = {
-    [ObjectsTypes.BOOTS]: { speed: 2, attack: -1 },
-    [ObjectsTypes.SWORD]: { attack: 1, defense: -1 },
-};

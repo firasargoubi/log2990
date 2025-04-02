@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-import { CommonModule } from '@angular/common';
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { FormsModule } from '@angular/forms';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { MAIN_PAGE_CONSTANTS } from '@app/Consts/app-constants';
-import { BoxFormDialogComponent } from '@app/components/box-form-dialog/box-form-dialog.component';
-import { LobbyService } from '@app/services/lobby.service';
-import { GameLobby } from '@common/game-lobby';
-import { Player } from '@common/player';
-import { of } from 'rxjs';
-import { delay } from 'rxjs/operators';
 import { LobbyFormComponent } from './lobby-form.component';
+import { LobbyService } from '@app/services/lobby.service';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
+import { of } from 'rxjs';
+import { MAIN_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { BoxFormDialogComponent } from '@app/components/box-form-dialog/box-form-dialog.component';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Player } from '@common/player';
+import { delay } from 'rxjs/operators';
+import { GameLobby } from '@common/game-lobby';
 
 describe('LobbyFormComponent', () => {
     let component: LobbyFormComponent;
@@ -53,7 +53,6 @@ describe('LobbyFormComponent', () => {
             defense: 8,
             maxLife: 0,
             winCount: 0,
-            pendingItem: 0,
         };
         const mockLobby: GameLobby = {
             id: '123',
@@ -92,7 +91,6 @@ describe('LobbyFormComponent', () => {
             defense: 8,
             maxLife: 0,
             winCount: 0,
-            pendingItem: 0,
         };
         const mockLobby: GameLobby = {
             id: '123',
@@ -143,7 +141,6 @@ describe('LobbyFormComponent', () => {
             defense: 8,
             maxLife: 0,
             winCount: 0,
-            pendingItem: 0,
         };
         const mockLobby: GameLobby = {
             id: '123',
@@ -176,7 +173,6 @@ describe('LobbyFormComponent', () => {
             defense: 8,
             maxLife: 0,
             winCount: 0,
-            pendingItem: 0,
         };
         const mockLobby: GameLobby = {
             id: '123',
@@ -212,7 +208,6 @@ describe('LobbyFormComponent', () => {
             defense: 8,
             maxLife: 0,
             winCount: 0,
-            pendingItem: 0,
         };
         const mockLobby: GameLobby = {
             id: '123',

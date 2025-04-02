@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/member-ordering */
 import { inject, Injectable } from '@angular/core';
-import { OBJECT_COUNT, OBJECT_MULTIPLIER } from '@app/Consts/app-constants';
+import { OBJECT_COUNT, OBJECT_MULTIPLIER, ObjectsTypes } from '@app/Consts/app.constants';
+import { Game } from '@common/game.interface';
 import { SaveMessage } from '@app/interfaces/save-message';
-import { Game, ObjectsTypes, TileTypes } from '@common/game.interface';
 import { Tile } from '@common/tile';
+import { TileTypes } from '@app/interfaces/tile-types';
 import { Subject } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { GameService } from './game.service';
@@ -71,7 +72,6 @@ export class SaveService {
             minTerrain: this.verifyTilePercentage(),
             accessible: this.verifyAccessible(),
             allSpawnPoints: this.verifySpawnPoints(this.board.length),
-            ctfPlaced: this.verifyFlag(),
         };
     }
 
@@ -82,6 +82,7 @@ export class SaveService {
             lastModified: new Date(),
             isVisible: false,
         };
+
         if (!game.id) {
             this.gameService.createGame(gameData).subscribe();
         } else {
@@ -113,15 +114,6 @@ export class SaveService {
             default:
                 return count === OBJECT_COUNT.small;
         }
-    }
-
-    verifyFlag(): boolean {
-        for (const row of this.board) {
-            for (const tile of row) {
-                if (tile.object === ObjectsTypes.FLAG) return true;
-            }
-        }
-        return false;
     }
 
     verifyDoors(): boolean {

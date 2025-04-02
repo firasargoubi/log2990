@@ -4,7 +4,10 @@ body {
     color: #ffffff;
     background: url('../../../assets/images/water3.jpg') no-repeat center center;
     background-size: cover;
+    //filter: saturate(1.5);
+    /* Ajoute de la clarté et de la saturation */
     background-size: cover;
+    /* Fait en sorte que l'image occupe tout l'écran */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -20,6 +23,7 @@ body {
     max-width: 600px;
     width: 80%;
 
+    /* From https://css.glass */
     background: rgba(255, 255, 255, 0.37);
     border-radius: 16px;
     box-shadow: 0 4px 30px rgba(255, 255, 255, 0.1);

@@ -1,13 +1,13 @@
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { expect } from 'chai';
+import { createSandbox, SinonSandbox } from 'sinon';
+import { createServer, Server as HttpServer } from 'http';
+import { Socket } from 'socket.io';
+import { SocketService } from './socket.service';
 import { GameLobby } from '@common/game-lobby';
 import { Game, Tile } from '@common/game.interface';
 import { Player } from '@common/player';
-import { expect } from 'chai';
-import { createServer, Server as HttpServer } from 'http';
-import { createSandbox, SinonSandbox } from 'sinon';
-import { Socket } from 'socket.io';
-import { SocketService } from './socket.service';
 
 describe('SocketService', () => {
     let sandbox: SinonSandbox;
@@ -18,7 +18,6 @@ describe('SocketService', () => {
     let gameHandler: any;
     let validationHandler: any;
     let disconnectHandler: any;
-    let boardService: any;
     let ioStub: any;
 
     beforeEach(() => {
@@ -61,10 +60,6 @@ describe('SocketService', () => {
             handleDisconnect: sandbox.stub(),
             handleDisconnectFromRoom: sandbox.stub(),
         };
-        boardService = {
-            findAllPaths: sandbox.stub(),
-            calculateShortestMoves: sandbox.stub(),
-        };
 
         mockSocket = {
             emit: sandbox.stub(),
@@ -76,14 +71,7 @@ describe('SocketService', () => {
             on: sandbox.stub(),
         };
 
-        socketService = new SocketService(
-            httpServer,
-            lobbyHandler as any,
-            gameHandler as any,
-            validationHandler as any,
-            disconnectHandler as any,
-            boardService as any,
-        );
+        socketService = new SocketService(httpServer, lobbyHandler as any, gameHandler as any, validationHandler as any, disconnectHandler as any);
 
         // Override the io property
         (socketService as any).io = ioStub;

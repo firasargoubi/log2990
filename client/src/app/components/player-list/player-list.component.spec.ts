@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DebugElement } from '@angular/core';
+import { PlayerListComponent } from './player-list.component';
 import { By } from '@angular/platform-browser';
 import { PlayerCardComponent } from '@app/components/player-card/player-card.component';
 import { Player } from '@common/player';
-import { PlayerListComponent } from './player-list.component';
+import { DebugElement } from '@angular/core';
 
 describe('PlayerListComponent', () => {
     let component: PlayerListComponent;
@@ -24,7 +24,6 @@ describe('PlayerListComponent', () => {
                 defense: 0,
                 maxLife: 0,
                 winCount: 0,
-                pendingItem: 0,
             },
             {
                 id: '2',
@@ -37,7 +36,6 @@ describe('PlayerListComponent', () => {
                 defense: 0,
                 maxLife: 0,
                 winCount: 0,
-                pendingItem: 0,
             },
         ];
 
