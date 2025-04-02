@@ -2,10 +2,11 @@ import { BoardSocketConstants, ERROR_MESSAGES } from '@app/constants/board-const
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
-import { Game, ObjectsTypes, TILE_DELIMITER, TileTypes } from '@common/game.interface';
+import { Game, ITEM_EFFECTS, ObjectsTypes, TILE_DELIMITER, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Service } from 'typedi';
 import { GameService } from './game.service';
+import { ItemService } from './item.service';
 import { PathfindingService } from './pathfinding.service';
 
 @Service()
@@ -13,6 +14,7 @@ export class BoardService {
     constructor(
         private gameService: GameService,
         private pathfindingService: PathfindingService,
+        private itemService: ItemService,
     ) {}
 
     async getGameFromId(gameId: string): Promise<Game> {
@@ -99,6 +101,9 @@ export class BoardService {
             } else {
                 player.items.push(item);
                 gameState.board[targetCoordinate.x][targetCoordinate.y] = tile;
+            }
+            if (ITEM_EFFECTS[item as ObjectsTypes]) {
+                this.itemService.applyEffect(player, item);
             }
             return { gameState, shouldStop: true };
         }

@@ -13,6 +13,7 @@ import { GameService } from './services/game.service';
 import { LobbySocketHandlerService } from './services/lobby-socket-handler.service';
 import { PathfindingService } from './services/pathfinding.service';
 import { ValidationSocketHandlerService } from './services/validation-socket-handler.service';
+import { ItemService } from './services/item.service';
 const uri = 'mongodb+srv://admin:admin@log2990-perso.mf3fg.mongodb.net/?retryWrites=true&w=majority&appName=LOG2990-perso';
 @Service()
 export class Server {
@@ -35,7 +36,8 @@ export class Server {
         this.server = http.createServer(this.application.app);
         const gameService = new GameService();
         const pathfindingService = new PathfindingService();
-        const boardService = new BoardService(gameService, pathfindingService);
+        const itemService = new ItemService();
+        const boardService = new BoardService(gameService, pathfindingService, itemService);
         const lobbyMap = new Map<string, GameLobby>();
         const gameStateMap = new Map<string, GameState>();
         const lobbyHandler = new LobbySocketHandlerService(lobbyMap);
