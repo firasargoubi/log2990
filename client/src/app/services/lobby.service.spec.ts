@@ -389,6 +389,7 @@ describe('LobbyService', () => {
                     currentPlayerActionPoints: 0,
                     shortestMoves: [],
                     debug: false,
+                    gameMode: 'default', // Add the missing gameMode property
                 } as GameState,
                 playerMoved: 'player1',
                 newPosition: { x: 1, y: 1 },
@@ -614,6 +615,35 @@ describe('LobbyService', () => {
             callback(testData);
         });
     });
+    describe('Team management', () => {
+        it('should handle teamCreated event', (done) => {
+            const testData = {
+                team1Server: [{ id: 'player1', name: 'Player 1' } as Player],
+                team2Server: [{ id: 'player2', name: 'Player 2' } as Player],
+            };
+
+            service
+                .teamCreated()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    expect(data).toEqual(testData);
+                    done();
+                });
+
+            // Simulate socket event
+            const callback = findSocketCallback('teamsCreated');
+            callback(testData);
+        });
+    });
+    describe('Team management', () => {
+        it('should create teams', () => {
+            const players: Player[] = [{ id: 'player1', name: 'Player 1' } as Player, { id: 'player2', name: 'Player 2' } as Player];
+
+            service.createTeams('lobby1', players);
+
+            expect(socketMock.emit).toHaveBeenCalledWith('createTeams', { lobbyId: 'lobby1', players });
+        });
+    });
 
     // Helper function to find the callback for a specific socket event
     function findSocketCallback(eventName: string): Function {
@@ -666,6 +696,9 @@ describe('LobbyService', () => {
                 break;
             case 'fleeFailure':
                 service.onFleeFailure().pipe(take(1)).subscribe();
+                break;
+            case 'teamsCreated':
+                service.teamCreated().pipe(take(1)).subscribe();
                 break;
             default:
                 throw new Error(`Event '${eventName}' not handled in findSocketCallback`);

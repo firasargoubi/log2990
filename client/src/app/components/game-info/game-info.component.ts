@@ -42,7 +42,7 @@ export class GameInfoComponent {
     }
 
     getTeam(player: Player): string {
-        if (!this.gameState?.teams) return 'Aucune';
+        if (!this.gameState?.teams) return '';
         return this.gameState.teams.team1.some((p) => p.id === player.id) ? 'Red' : 'Blue';
     }
 }

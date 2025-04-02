@@ -1,4 +1,5 @@
-import { gameSocketMessages } from '@app/constants/game-socket-handler-const';
+/* eslint-disable max-lines */
+import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
 import { Coordinates } from '@common/coordinates';
 import { GameEvents } from '@common/events';
 import { GameLobby } from '@common/game-lobby';
@@ -8,21 +9,12 @@ import { Player } from '@common/player';
 import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
 import { BoardService } from './board.service';
-// import { GameService } from './game.service';
 import { LobbySocketHandlerService } from './lobby-socket-handler.service';
 import { PathfindingService } from './pathfinding.service';
 
-const ANIMATION_DELAY_MS = 150;
-const MAX_WIN_COUNT = 3;
-const FLEE_RATE_PERCENT = 30;
-const D4_VALUE = 4;
-const D6_VALUE = 6;
-// const MAX_ESCAPE_ATTEMPTS = 2;
-const MAX_FLEE = 100;
 @Service()
 export class GameSocketHandlerService {
     private io: Server;
-    // private gameService: GameService;
     constructor(
         private lobbies: Map<string, GameLobby>,
         private gameStates: Map<string, GameState>,
@@ -36,18 +28,11 @@ export class GameSocketHandlerService {
 
     async handleRequestStart(socket: Socket, lobbyId: string) {
         const lobby = this.lobbies.get(lobbyId);
-        // const game = await this.gameService.getGameById(lobby.gameId);
         const gameState = await this.boardService.initializeGameState(lobby);
-        // if (!game) {
-        //     socket.emit(GameEvents.Error, gameSocketMessages.gameNotFound);
-        //     return;
-        // }
-
         if (!lobby) {
             socket.emit(GameEvents.Error, gameSocketMessages.lobbyNotFound);
             return;
         }
-
         const player = lobby.players.find((p) => p.id === socket.id);
         if (!player || !player.isHost) {
             socket.emit(GameEvents.Error, gameSocketMessages.onlyHostStart);
@@ -117,7 +102,7 @@ export class GameSocketHandlerService {
                     }
                     this.gameStates.set(lobbyId, updatedGameState);
                     this.io.to(lobbyId).emit('movementProcessed', { gameState: updatedGameState });
-                }, ANIMATION_DELAY_MS);
+                }, GameSocketConstants.AnimationDelayMs);
             }
         } catch (error) {
             socket.emit(GameEvents.Error, `${gameSocketMessages.movementError}${error.message}`);
@@ -294,11 +279,24 @@ export class GameSocketHandlerService {
     }
 
     createTeams(lobbyId: string, players: Player[]) {
-        const shuffledPlayers = [...players].sort(() => Math.random() - 0.5);
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) return;
+        if (gameState.teams) {
+            return;
+        }
+        const shuffledPlayers = [...players].sort(() => Math.random() - GameSocketConstants.PlayerTeamConst);
         const half = Math.ceil(players.length / 2);
-        const team1: Player[] = shuffledPlayers.slice(0, half).map((player) => ({ ...player, team: 'Red' }));
-        const team2: Player[] = shuffledPlayers.slice(half).map((player) => ({ ...player, team: 'Blue' }));
-        this.io.to(lobbyId).emit(GameEvents.TeamsCreated, { team1, team2 });
+        const team1Server: Player[] = shuffledPlayers.slice(0, half).map((player) => ({ ...player, team: 'Red' }));
+        const team2Server: Player[] = shuffledPlayers.slice(half).map((player) => ({ ...player, team: 'Blue' }));
+        const updatedGameState = {
+            ...gameState,
+            teams: {
+                team1: team1Server,
+                team2: team2Server,
+            },
+        };
+        this.gameStates.set(lobbyId, updatedGameState);
+        this.io.to(lobbyId).emit(GameEvents.TeamsCreated, { team1Server, team2Server });
     }
 
     handleAttackAction(lobbyId: string, attacker: Player, defender: Player) {
@@ -335,7 +333,7 @@ export class GameSocketHandlerService {
             for (const player of gameState.players) {
                 player.amountEscape = 0;
             }
-            if (attacker.winCount === MAX_WIN_COUNT) {
+            if (attacker.winCount === GameSocketConstants.MaxWinCount) {
                 this.io.to(lobbyId).emit('gameOver', { winner: attacker.name });
                 return;
             }
@@ -371,8 +369,8 @@ export class GameSocketHandlerService {
             gameState.players[playerIndex].amountEscape = fleeingPlayer.amountEscape;
         }
 
-        const FLEE_RATE = FLEE_RATE_PERCENT;
-        let isSuccessful = Math.random() * MAX_FLEE <= FLEE_RATE;
+        const FLEE_RATE = GameSocketConstants.FleeRatePercent;
+        let isSuccessful = Math.random() * GameSocketConstants.MaxFlee <= FLEE_RATE;
         if (gameState.debug) {
             isSuccessful = true;
         }
@@ -393,13 +391,14 @@ export class GameSocketHandlerService {
 
     private getDiceValue(playerDice: string): number {
         if (playerDice === 'D4') {
-            return D4_VALUE;
+            return GameSocketConstants.D4Value;
         }
         if (playerDice === 'D6') {
-            return D6_VALUE;
+            return GameSocketConstants.D6Value;
         }
         return 0;
     }
+
     private getGameStateOrEmitError(socket: Socket, lobbyId: string): GameState | null {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) {
@@ -413,7 +412,6 @@ export class GameSocketHandlerService {
         if (playerIndex === -1) return false;
         const position = gameState.playerPositions[playerIndex];
         if (!position) return false;
-
         const tile = gameState.board[position.x][position.y];
         return tile === TileTypes.Ice;
     }

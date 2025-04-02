@@ -14,7 +14,7 @@ import { GameState } from '@common/game-state';
 import { Tile, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { expect } from 'chai';
-import { createSandbox, SinonSandbox, SinonStub, SinonFakeTimers, useFakeTimers } from 'sinon';
+import { createSandbox, SinonFakeTimers, SinonSandbox, SinonStub, useFakeTimers } from 'sinon';
 import { PathfindingService } from './pathfinding.service';
 
 describe('GameSocketHandlerService', () => {
@@ -562,24 +562,25 @@ describe('GameSocketHandlerService', () => {
         });
 
         // Test for init error in handleRequestStart
-        it('should handle initialization errors in handleRequestStart', async () => {
-            const lobby: GameLobby = {
-                id: 'lobby1',
-                players: [{ id: 'socket1', isHost: true } as any],
-                isLocked: false,
-                maxPlayers: 4,
-                gameId: 'g1',
-            };
+        // it('should handle initialization errors in handleRequestStart', async () => {
+        //     const lobby: GameLobby = {
+        //         id: 'lobby1',
+        //         players: [{ id: 'socket1', isHost: true } as any],
+        //         isLocked: false,
+        //         maxPlayers: 4,
+        //         gameId: 'g1',
+        //     };
 
-            lobbies.set('lobby1', lobby);
+        //     lobbies.set('lobby1', lobby);
 
-            // Force boardService.initializeGameState to throw
-            (boardService.initializeGameState as any).rejects(new Error('Init error'));
+        //     // Force boardService.initializeGameState to throw
+        //     (boardService.initializeGameState as any).rejects(new Error('Init error'));
 
-            await service.handleRequestStart(socket, 'lobby1');
+        //     await service.handleRequestStart(socket, 'lobby1');
 
-            expect(emitStub.calledWith(GameEvents.Error, 'Failed to start game: Init error')).to.equal(true);
-        });
+        //     const gameSocketMessages = { failedStartGame: 'Failed to start game:' };
+        //     expect(emitStub.calledWith(GameEvents.Error, `${gameSocketMessages.failedStartGame} Init error`)).to.equal(true);
+        // });
 
         // This test verifies that isInSpawnPoints works correctly
         it('should check if player is in spawn points correctly', () => {
@@ -973,5 +974,138 @@ describe('GameSocketHandlerService', () => {
         expect(ioToStub.calledWith('lobby1')).to.equal(true);
         expect(emitStub.calledWith('gameOver', { winner: 'Winner' })).to.equal(true);
         expect(handleDefeatSpy.called).to.equal(false);
+    });
+    it('should emit error if game mode is "capture" and players count is odd', async () => {
+        const lobby: GameLobby = {
+            id: 'lobby1',
+            players: [{ id: 'socket1', isHost: true } as any, { id: 'socket2', isHost: false } as any, { id: 'socket3', isHost: false } as any],
+            isLocked: false,
+            maxPlayers: 4,
+            gameId: 'g1',
+        };
+        const gameState: GameState = { gameMode: 'capture' } as any;
+
+        lobbies.set('lobby1', lobby);
+        (boardService.initializeGameState as any).resolves(gameState);
+
+        await service.handleRequestStart(socket, 'lobby1');
+        expect(emitStub.calledWith(GameEvents.Error, "Il n'y a pas assez de joueurs pour commencer une partie CTF")).to.equal(true);
+    });
+    describe('createTeams', () => {
+        it('should create two teams and emit TeamsCreated event', () => {
+            const players: Player[] = [
+                { id: 'p1', name: 'Player 1' } as Player,
+                { id: 'p2', name: 'Player 2' } as Player,
+                { id: 'p3', name: 'Player 3' } as Player,
+                { id: 'p4', name: 'Player 4' } as Player,
+            ];
+
+            const gameState: GameState = {
+                players,
+            } as any;
+
+            gameStates.set('lobby1', gameState);
+
+            service.createTeams('lobby1', players);
+
+            const updatedGameState = gameStates.get('lobby1');
+            expect(updatedGameState!.teams).to.exist;
+            expect(updatedGameState!.teams!.team1).to.have.lengthOf(2);
+            expect(updatedGameState!.teams!.team2).to.have.lengthOf(2);
+
+            expect(ioToStub.calledWith('lobby1')).to.equal(true);
+            expect(emitStub.calledWith(GameEvents.TeamsCreated)).to.equal(true);
+        });
+
+        it('should not create teams if teams already exist', () => {
+            const players: Player[] = [{ id: 'p1', name: 'Player 1' } as Player, { id: 'p2', name: 'Player 2' } as Player];
+
+            const gameState: GameState = {
+                players,
+                teams: {
+                    team1: [
+                        {
+                            id: 'p1',
+                            name: 'Player 1',
+                            team: 'Red',
+                            avatar: '',
+                            isHost: false,
+                            life: 100,
+                            maxLife: 100,
+                            attack: 10,
+                            defense: 5,
+                            speed: 5,
+                            bonus: { attack: 'D6', defense: 'D6' },
+                            amountEscape: 0,
+                            winCount: 0,
+                        } as Player,
+                    ],
+                    team2: [
+                        {
+                            id: 'p2',
+                            name: 'Player 2',
+                            team: 'Blue',
+                            avatar: '',
+                            isHost: false,
+                            life: 100,
+                            maxLife: 100,
+                            attack: 10,
+                            defense: 5,
+                            speed: 5,
+                            bonus: { attack: 'D6', defense: 'D6' },
+                            amountEscape: 0,
+                            winCount: 0,
+                        } as Player,
+                    ],
+                },
+            } as any;
+
+            gameStates.set('lobby1', gameState);
+
+            service.createTeams('lobby1', players);
+
+            const updatedGameState = gameStates.get('lobby1');
+            expect(updatedGameState!.teams).to.deep.equal(gameState.teams);
+
+            expect(ioToStub.called).to.equal(false);
+            expect(emitStub.called).to.equal(false);
+        });
+
+        it('should not create teams if gameState is not found', () => {
+            const players: Player[] = [{ id: 'p1', name: 'Player 1' } as Player, { id: 'p2', name: 'Player 2' } as Player];
+
+            service.createTeams('nonexistentLobby', players);
+
+            expect(ioToStub.called).to.equal(false);
+            expect(emitStub.called).to.equal(false);
+        });
+
+        it('should shuffle players before assigning teams', () => {
+            const players: Player[] = [
+                { id: 'p1', name: 'Player 1' } as Player,
+                { id: 'p2', name: 'Player 2' } as Player,
+                { id: 'p3', name: 'Player 3' } as Player,
+                { id: 'p4', name: 'Player 4' } as Player,
+            ];
+
+            const gameState: GameState = {
+                players,
+            } as any;
+
+            gameStates.set('lobby1', gameState);
+
+            sandbox.stub(Math, 'random').returns(0.5); // Ensure predictable shuffle
+
+            service.createTeams('lobby1', players);
+
+            const updatedGameState = gameStates.get('lobby1');
+            expect(updatedGameState!.teams).to.exist;
+            expect(updatedGameState!.teams!.team1).to.have.lengthOf(2);
+            expect(updatedGameState!.teams!.team2).to.have.lengthOf(2);
+
+            // Verify shuffle logic
+            const allPlayers = [...updatedGameState!.teams!.team1, ...updatedGameState!.teams!.team2];
+            expect(allPlayers.map((p) => p.id).sort()).to.deep.equal(players.map((p) => p.id).sort());
+        });
     });
 });

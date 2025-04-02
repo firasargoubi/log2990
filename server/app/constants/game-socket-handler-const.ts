@@ -1,6 +1,13 @@
 export enum GameSocketConstants {
     DefaultCountdown = 5,
     EscapeCountdown = 3,
+    AnimationDelayMs = 150,
+    MaxWinCount = 3,
+    FleeRatePercent = 30,
+    D4Value = 4,
+    D6Value = 6,
+    MaxFlee = 100,
+    PlayerTeamConst = 0.5,
 }
 
 export const gameSocketMessages = {

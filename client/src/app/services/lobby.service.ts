@@ -269,7 +269,7 @@ export class LobbyService {
         });
     }
 
-    teamCreated(): Observable<{ team1: Player[]; team2: Player[] }> {
+    teamCreated(): Observable<{ team1Server: Player[]; team2Server: Player[] }> {
         return new Observable((observer) => {
             this.socket.on('teamsCreated', (data) => {
                 observer.next(data);
@@ -299,6 +299,7 @@ export class LobbyService {
     closeDoor(lobbyId: string, tile: Tile): void {
         this.socket.emit('closeDoor', { lobbyId, tile });
     }
+
     createTeams(lobbyId: string, players: Player[]): void {
         this.socket.emit('createTeams', { lobbyId, players });
     }

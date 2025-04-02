@@ -260,12 +260,14 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             }),
 
             this.lobbyService.onTurnStarted().subscribe((data) => {
-                this.updateGameState(data.gameState);
+                this.gameState = data.gameState;
                 if (this.gameState.gameMode === PLAYING_PAGE.ctf) {
-                    console.log('MIAWWWWW');
                     this.isCTF = true;
-                    this.lobbyService.createTeams(this.lobbyId, this.gameState.players);
+                    if (!this.gameState.teams) {
+                        this.lobbyService.createTeams(this.lobbyId, this.gameState.players);
+                    }
                 }
+                this.syncCurrentPlayerWithGameState();
                 this.notifyPlayerTurn(data.currentPlayer);
             }),
 
@@ -319,8 +321,8 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                     this.gameState = {
                         ...this.gameState,
                         teams: {
-                            team1: data.team1,
-                            team2: data.team2,
+                            team1: data.team1Server,
+                            team2: data.team2Server,
                         },
                     };
                 }

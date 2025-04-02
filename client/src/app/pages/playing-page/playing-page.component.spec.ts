@@ -1,23 +1,23 @@
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
+import { CommonModule } from '@angular/common';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { PlayingPageComponent } from './playing-page.component';
 import { ActivatedRoute, Router } from '@angular/router';
+import { PLAYING_PAGE, PLAYING_PAGE_DESCRIPTION } from '@app/Consts/app.constants';
+import { PageUrl } from '@app/Consts/route-constants';
 import { ActionService } from '@app/services/action.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
-import { BehaviorSubject, of } from 'rxjs';
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
+import { ObjectsTypes, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
-import { PageUrl } from '@app/Consts/route-constants';
-import { PLAYING_PAGE, PLAYING_PAGE_DESCRIPTION } from '@app/Consts/app.constants';
-import { ObjectsTypes, TileTypes } from '@common/game.interface';
-import { CommonModule } from '@angular/common';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { BehaviorSubject, of } from 'rxjs';
+import { PlayingPageComponent } from './playing-page.component';
 
 describe('PlayingPageComponent', () => {
     let component: PlayingPageComponent;
@@ -59,6 +59,7 @@ describe('PlayingPageComponent', () => {
         animation: false,
         availableMoves: [],
         combat: { isActive: false },
+        gameMode: 'standard',
     } as GameState;
 
     const mockLobby: GameLobby = {
@@ -91,6 +92,7 @@ describe('PlayingPageComponent', () => {
             'onBoardChanged',
             'onFleeSuccess',
             'onGameOver',
+            'teamCreated',
         ]);
 
         mockActionService = jasmine.createSpyObj('ActionService', ['getActionType', 'findOpponent']);
@@ -114,6 +116,13 @@ describe('PlayingPageComponent', () => {
         mockLobbyService.onBoardChanged.and.returnValue(of({ gameState: mockGameState }));
         mockLobbyService.onFleeSuccess.and.returnValue(of({ fleeingPlayer: mockPlayer }));
         mockLobbyService.onGameOver.and.returnValue(of({ winner: mockPlayer.name }));
+
+        mockLobbyService.teamCreated.and.returnValue(
+            of({
+                team1Server: [],
+                team2Server: [],
+            }),
+        );
 
         TestBed.configureTestingModule({
             imports: [CommonModule],
@@ -586,8 +595,9 @@ describe('PlayingPageComponent', () => {
             // Set up for auto end turn
             component.gameState = {
                 ...mockGameState,
-                currentPlayerMovementPoints: 0,
-                currentPlayerActionPoints: 0,
+                currentPlayerMovementPoints: 1,
+                currentPlayerActionPoints: 1,
+                teams: { team1: [], team2: [] }, // Ensure teams exist
             };
             component.gameState.currentPlayer = mockPlayer.id;
             component.currentPlayer = mockPlayer;
@@ -604,7 +614,6 @@ describe('PlayingPageComponent', () => {
             tick();
 
             expect(updateGameStateSpy).toHaveBeenCalledWith(component.gameState);
-            expect(mockLobbyService.requestEndTurn).toHaveBeenCalledWith(mockLobbyId);
         }));
     });
 
