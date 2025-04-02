@@ -52,7 +52,6 @@ describe('CombatComponent', () => {
         startCombatSubject = new BehaviorSubject({ firstPlayer: { id: 'player1' } as Player });
         combatEndedSubject = new BehaviorSubject({ loser: { name: 'Joueur 2' } as Player });
 
-        // Create spies for services
         mockLobbyService = jasmine.createSpyObj('LobbyService', [
             'attack',
             'flee',
@@ -63,7 +62,6 @@ describe('CombatComponent', () => {
         ]);
         mockNotificationService = jasmine.createSpyObj('NotificationService', ['showInfo']);
 
-        // Assign observables to mocked methods
         mockLobbyService.onAttackResult.and.returnValue(attackResultSubject.asObservable());
         mockLobbyService.onFleeFailure.and.returnValue(fleeFailureSubject.asObservable());
         mockLobbyService.onStartCombat.and.returnValue(startCombatSubject.asObservable());
@@ -82,7 +80,6 @@ describe('CombatComponent', () => {
         fixture = TestBed.createComponent(CombatComponent);
         component = fixture.componentInstance;
 
-        // Default setup
         component.currentPlayer = { id: 'player1', name: 'Joueur 1', amountEscape: 0 } as Player;
         component.opponent = { id: 'player2', name: 'Joueur 2' } as Player;
         component.lobbyId = 'testLobby';
@@ -96,7 +93,6 @@ describe('CombatComponent', () => {
         jasmine.clock().uninstall();
     });
 
-    // **Initialization Tests**
     it('should be created', () => {
         expect(component).toBeTruthy();
     });
@@ -180,7 +176,6 @@ describe('CombatComponent', () => {
         expect(component.countDown).toBe(3);
     });
 
-    // **Subscription Tests**
     it('should handle onAttackResult() correctly', () => {
         component.ngOnInit();
 
@@ -268,7 +263,6 @@ describe('CombatComponent', () => {
 
     describe('ngOnChanges', () => {
         it('should set currentPlayer from gameState when currentPlayer is undefined', () => {
-            // Arrange: currentPlayer is undefined and playerTurn matches a player in gameState.
             component.currentPlayer = undefined as any;
             component.playerTurn = 'player1';
             component.gameState = {
@@ -280,10 +274,8 @@ describe('CombatComponent', () => {
                 currentPlayer: 'player1',
             } as GameState;
 
-            // Act
             component.ngOnChanges();
 
-            // Assert: currentPlayer is set from gameState.
             expect(component.currentPlayer).toEqual(jasmine.objectContaining({ id: 'player1' }));
         });
 
@@ -450,9 +442,7 @@ describe('CombatComponent', () => {
 
     describe('Additional Branch Coverage', () => {
         it('should set countDown to 3 when canEscape is false in onAttackResult', () => {
-            // Set canEscape to false to force the branch where countDown becomes 3.
             component.canEscape = false;
-            // Trigger an attack result event where currentPlayer is the attacker.
             attackResultSubject.next({
                 attackRoll: 4,
                 defenseRoll: 2,
@@ -465,10 +455,8 @@ describe('CombatComponent', () => {
                 defender: component.opponent,
             });
             fixture.detectChanges();
-            // Since canEscape is false, countDown should be set to 3.
             expect(component.canAct).toBeFalse();
             expect(component.countDown).toBe(3);
-            // Stop the countdown to clean up.
             component.endTimer();
         });
 

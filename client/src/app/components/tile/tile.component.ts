@@ -1,14 +1,15 @@
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ItemComponent } from '@app/components/item/item.component';
-import { GAME_IMAGES, ObjectsTypes } from '@app/Consts/app.constants';
+import { DEFAULT_TILE_IMAGE, TILE_IMAGES } from '@app/Consts/tile-constants';
 import { DEFAULT_ITEMS } from '@app/interfaces/default-items';
-import { TileTypes } from '@app/interfaces/tile-types';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
+import { TileTypes } from '@common/game.interface';
 @Component({
     selector: 'app-tile',
-    imports: [CommonModule, CdkDropList, CdkDrag],
+    imports: [CommonModule, CdkDropList, CdkDrag, MatTooltipModule],
     templateUrl: './tile.component.html',
     styleUrl: './tile.component.scss',
 })
@@ -27,23 +28,9 @@ export class TileComponent implements OnInit {
             });
         }
     }
+
     get baseImage(): string {
-        switch (this.type) {
-            case TileTypes.Grass:
-                return GAME_IMAGES.grass;
-            case TileTypes.Water:
-                return GAME_IMAGES.water;
-            case TileTypes.Ice:
-                return GAME_IMAGES.ice;
-            case TileTypes.Wall:
-                return GAME_IMAGES.wall;
-            case TileTypes.DoorClosed:
-                return GAME_IMAGES.doorClosed;
-            case TileTypes.DoorOpen:
-                return GAME_IMAGES.doorOpen;
-            default:
-                return GAME_IMAGES.default;
-        }
+        return TILE_IMAGES[this.type] ?? DEFAULT_TILE_IMAGE;
     }
 
     ngOnInit(): void {
@@ -55,6 +42,7 @@ export class TileComponent implements OnInit {
             }
         }
     }
+
     refreshObject(): void {
         if (!this.placedItem.length || !this.objectID) {
             this.objectChanged.emit(0);
@@ -96,11 +84,10 @@ export class TileComponent implements OnInit {
         if (event.previousContainer.id !== 'objects-container' && !this.placedItem.length) {
             this.placedItem.push(draggedItem);
             event.previousContainer.data.splice(event.previousIndex, 1);
-        } else if (!this.placedItem.length && this.count && draggedItem.type === ObjectsTypes.SPAWN) {
+        } else if (!this.placedItem.length && !this.counterService.isItemPlaced(draggedItem.type)) {
             this.placedItem.push(draggedItem);
-            this.decrementCounter(draggedItem);
+            this.counterService.decrementCounter(draggedItem.type);
         }
-
         this.objectID = draggedItem.type;
         this.objectMoved.emit(true);
     }

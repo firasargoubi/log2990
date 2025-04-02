@@ -27,7 +27,6 @@
     position: relative;
   }
   
-  /* Ajout d'une petite icône de chronomètre avant le texte */
   p::before {
     content: "";
     display: inline-block;
@@ -39,7 +38,6 @@
     background-position: center;
   }
   
-  /* Styles pour les boutons */
   button {
     margin: 0 8px;
     padding: 12px 20px;

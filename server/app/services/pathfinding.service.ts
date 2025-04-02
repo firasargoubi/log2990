@@ -117,7 +117,7 @@ export class PathfindingService {
     }
 
     findReachablePositions(gameState: GameState, startPosition: Coordinates, movementPoints: number): Coordinates[] {
-        if (!startPosition || movementPoints <= 0) {
+        if (!startPosition || movementPoints < 0) {
             return [];
         }
 
