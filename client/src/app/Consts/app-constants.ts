@@ -5,27 +5,7 @@ export const APP_CONSTANTS = {
     actionLabel: 'Fermer',
 };
 
-export enum ObjectsTypes {
-    BOOTS = 0,
-    SWORD = 1,
-    POTION = 2,
-    WAND = 3,
-    CRYSTAL = 4,
-    JUICE = 5,
-    SPAWN = 6,
-    RANDOM = 7,
-}
-
 export { GameSize, GameType };
-
-export enum TileTypes {
-    Grass = 1,
-    Water = 2,
-    Ice = 3,
-    DoorClosed = 4,
-    DoorOpen = 5,
-    Wall = 6,
-}
 
 export enum MapSize {
     SMALL = 10,
@@ -46,7 +26,6 @@ export interface GameMode {
 
 export const DEFAULT_STAT_VALUE = 4;
 export const SIX_VALUE_DICE = 6;
-export const MAX_OBJECTS = 7;
 export const MAX_TILE = 6;
 export const PULLING_INTERVAL = 5000;
 export const WANTED_TILE_PERCENTAGE = 0.5;
@@ -103,6 +82,7 @@ export const EDITION_PAGE_CONSTANTS = {
     successGameLoaded: 'Jeu chargé avec succès.',
     errorGameLoad: 'Impossible de charger le jeu.',
     successGameSaved: 'Jeu sauvegardé avec succès.',
+    missingFlag: 'Il faut placer un drapeau en mode ctf!',
 };
 export const WAITING_PAGE_CONSTANTS = {
     gameLocked: 'La partie est verrouillée',
@@ -142,6 +122,7 @@ export const GAME_IMAGES = {
     berryJuice: 'assets/objects/berry-juice.png',
     vortex: 'assets/objects/vortex.png',
     gnome: 'assets/objects/gnome.png',
+    flag: 'assets/objects/flag.png',
     undefined: 'assets/objects/undefined.png',
 };
 
@@ -175,8 +156,9 @@ export const OBJECT_NAMES = {
     wand: 'Baguette magique',
     crystalBall: 'Boule de cristal',
     berryJuice: 'Jus de baies',
-    vortex: 'Vortex',
-    gnome: 'Gnome',
+    vortex: 'Point de départ',
+    gnome: 'Gnome mystère',
+    flag: 'Drapeau',
     undefined: 'Objet inconnu',
 };
 
@@ -189,7 +171,8 @@ export const OBJECTS_DESCRIPTION = {
     berryJuice: 'Ne paniquez pas, ce nectar soignera toutes vos blessures!',
     vortex: "Cet objet indique l'endroit où une bataille épique est sur le point d'avoir lieu",
     gnome: 'Ce petit gnome farceur a un cadeau pour vous. À vos risque et périls...',
-    undefined: 'Objet inconnu',
+    flag: "Cette relique à l'effigie de la reine de la forêt doit être sécurisé à tout prix.",
+    undefined: 'Bravo, vous avez réussi à débloquer cet item spécial.',
 };
 
 export const PLAYING_PAGE = {

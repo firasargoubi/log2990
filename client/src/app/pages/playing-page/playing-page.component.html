@@ -71,7 +71,8 @@
         <app-countdown-player [countdown]="60" [isPlayerTurn]="false" [isInCombat]="isInCombat" [isTransitioning]="false"> </app-countdown-player>
         }
 
-        <app-inventory></app-inventory>
+        <app-inventory [items]="inventoryItems" [lobbyId]="lobbyId"></app-inventory>
+
         @if (isInCombat) {
 
         <div class="action-buttons">

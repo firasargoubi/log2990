@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
-import { WAITING_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { WAITING_PAGE_CONSTANTS } from '@app/Consts/app-constants';
 import { PageUrl } from '@app/Consts/route-constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
@@ -34,6 +34,7 @@ describe('WaitingPageComponent', () => {
                 defense: 5,
                 maxLife: 0,
                 winCount: 0,
+                pendingItem: 0,
             },
             {
                 id: mockPlayerId,
@@ -46,6 +47,7 @@ describe('WaitingPageComponent', () => {
                 defense: 5,
                 maxLife: 0,
                 winCount: 0,
+                pendingItem: 0,
             },
         ],
         maxPlayers: 0,
@@ -73,7 +75,7 @@ describe('WaitingPageComponent', () => {
             lockLobby: undefined,
             requestStartGame: undefined,
             setCurrentPlayer: undefined,
-            disconnectFromRoom: undefined, // if your component calls disconnectFromRoom
+            disconnectFromRoom: undefined,
         });
 
         mockNotificationService = jasmine.createSpyObj<NotificationService>('NotificationService', ['showError', 'showSuccess']);
@@ -244,7 +246,7 @@ describe('WaitingPageComponent', () => {
     it('should navigate to Home if player is not found in lobby', fakeAsync(() => {
         const modifiedLobby = {
             ...mockLobby,
-            players: [mockLobby.players[0]], // testPlayer absent
+            players: [mockLobby.players[0]],
         };
 
         mockLobbyService.getLobby.and.returnValue(of(modifiedLobby));
