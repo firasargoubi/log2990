@@ -1,16 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Input, OnInit, QueryList, ViewChildren, ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { TileComponent } from '@app/components/tile/tile.component';
+import { RIGHT_CLICK } from '@app/Consts/app-constants';
 import { Coordinates } from '@app/interfaces/coordinates';
-import { Game, GameSize, GameType } from '@common/game.interface';
-import { Tile } from '@common/tile';
 import { BoardService } from '@app/services/board.service';
 import { MouseService } from '@app/services/mouse.service';
 import { SaveService } from '@app/services/save.service';
 import { TileService } from '@app/services/tile.service';
-import { RIGHT_CLICK } from '@app/Consts/app.constants';
+import { Game, GameSize, GameType } from '@common/game.interface';
+import { Tile } from '@common/tile';
 
 @Component({
     selector: 'app-board',

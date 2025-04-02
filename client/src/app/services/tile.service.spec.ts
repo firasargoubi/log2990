@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { TileService } from './tile.service';
 import { Tile } from '@common/tile';
-import { TileTypes } from '@app/interfaces/tile-types';
+import { TileTypes } from '@common/game.interface';
 
 describe('TileService', () => {
     let service: TileService;
