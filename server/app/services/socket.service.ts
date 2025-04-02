@@ -298,6 +298,4 @@ export class SocketService {
     private handleFlee(lobbyId: string, player: Player) {
         this.gameSocketHandlerService.handleFlee(lobbyId, player);
     }
-
-    
 }
