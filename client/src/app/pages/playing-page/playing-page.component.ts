@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -402,7 +403,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         const itemDescriptions: Record<number, { name: string; description: string }> = {
             [ObjectsTypes.SPAWN]: { name: 'Point de départ', description: 'Le point de départ du jeu' },
         };
-
         return itemDescriptions[itemId]?.name || 'Vide';
     }
 }

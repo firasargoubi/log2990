@@ -52,6 +52,7 @@ describe('GameInfoComponent', () => {
             attack: 5,
             defense: 3,
             winCount: 0,
+            pendingItem: 0, // Added the missing property
         };
         component.gameState = {
             id: 'game1',
@@ -91,6 +92,7 @@ describe('GameInfoComponent', () => {
             attack: 6,
             defense: 4,
             winCount: 0,
+            pendingItem: 0, // Added the missing property
         };
         component.gameState = {
             id: 'game1',
@@ -130,6 +132,7 @@ describe('GameInfoComponent', () => {
             attack: 3,
             defense: 1,
             winCount: 0,
+            pendingItem: 0, // Added the missing property
         };
         component.gameState = undefined;
         expect(component.getTeam(player)).toBe('');
