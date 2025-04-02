@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { GameTileComponent } from '@app/components/game-tile/game-tile.component';
-import { OBJECT_MULTIPLIER } from '@app/Consts/app.constants';
+import { OBJECT_MULTIPLIER } from '@app/Consts/app-constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { Coordinates } from '@common/coordinates';
 import { GameState } from '@common/game-state';

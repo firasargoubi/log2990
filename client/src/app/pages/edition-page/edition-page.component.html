@@ -51,7 +51,7 @@
         <div class="section-header">ITEMS</div>
         <div class="items-grid">
             @if (gameLoaded) {
-            <app-objects [mapSize]="game.mapSize"></app-objects>
+            <app-objects [mapSize]="game.mapSize" [gameMode]="game.mode"></app-objects>
             }
         </div>
     </div>

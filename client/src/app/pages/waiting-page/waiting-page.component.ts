@@ -4,7 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { GameControlsComponent } from '@app/components/game-controls/game-controls.component';
 import { MessagesComponent } from '@app/components/messages/messages.component';
 import { PlayerListComponent } from '@app/components/player-list/player-list.component';
-import { WAITING_PAGE, WAITING_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { WAITING_PAGE, WAITING_PAGE_CONSTANTS } from '@app/Consts/app-constants';
 import { AVATARS } from '@common/avatars';
 import { PageUrl } from '@app/Consts/route-constants';
 import { LobbyService } from '@app/services/lobby.service';
@@ -33,6 +33,7 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
         attack: 0,
         defense: 0,
         winCount: 0,
+        pendingItem: 0,
     };
     hostId: string = WAITING_PAGE.defaultPlayerId;
     private subscriptions: Subscription[] = [];
