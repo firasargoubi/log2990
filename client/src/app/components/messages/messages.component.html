@@ -9,13 +9,11 @@
     <div *ngIf="activeTab === 'chat'" class="chat">
         <div class="message-input">
             <input type="text" [(ngModel)]="newMessage" placeholder="Type your message..." />
-            <button (click)="sendMessage(player, newMessage)">Send</button>
+            <button (click)="sendMessage(playerName, newMessage)">Send</button>
         </div>
         <div class="messages" id="chatMessages">
-            <div *ngFor="let message of chatMessages" class="message">
-                <span class="timestamp">{{ message.timestamp }}</span>
-                <span class="player-name">{{ message.playerName }}:</span>
-                <span class="message-content">{{ message.message }}</span>
+            <div *ngFor="let msg of chatMessages">
+                <strong>{{ msg.playerName }}</strong> [{{ msg.timestamp }}] : {{ msg.message }}
             </div>
         </div>
 

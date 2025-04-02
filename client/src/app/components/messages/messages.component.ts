@@ -14,19 +14,22 @@ import { ChatService } from '@app/services/chat.service';
 })
 export class MessagesComponent implements OnInit, OnDestroy {
     @Input() lobbyId: string; // Accepte lobbyId comme une entrée
+    @Input() playerName: string = '';
     chatMessages = this.chatService.chatMessages;
 
     eventLog = this.chatService.eventLog;
     activeTab: string = 'chat';
     newMessage: string = '';
-    player: string = ''; // Define the player property with an initial value
 
     constructor(private chatService: ChatService) {}
 
     ngOnInit(): void {
-        // Listen for new chat messages
-        this.chatService.onMessage().subscribe((message) => {
-            console.log('New message received:', message);
+        if (this.lobbyId) {
+            this.chatService.joinLobby(this.lobbyId); // ⬅️ Rejoindre le chat du lobby
+        }
+
+        this.chatService.onMessage().subscribe(() => {
+            this.chatMessages = [...this.chatService.chatMessages]; // ✅ forcer la maj locale
         });
     }
 
@@ -35,9 +38,9 @@ export class MessagesComponent implements OnInit, OnDestroy {
     }
 
     sendMessage(playerName: string, message: string): void {
-        this.chatService.sendMessage(playerName, message);
-        this.chatService.addChatMessage(playerName, message);
-        this.newMessage = ''; // Clear input after sending message
+        this.chatService.sendMessage(this.lobbyId, this.playerName, message); // ✅ utiliser this.lobbyId
+        // this.chatService.addChatMessage(this.playerName, message);
+        this.newMessage = '';
     }
 
     addEvent(eventType: string, description: string, involvedPlayers: string[]): void {

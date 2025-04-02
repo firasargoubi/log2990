@@ -18,23 +18,41 @@ export class ChatService {
     private messageSubject = new Subject<Message>();
 
     constructor() {
-        this.socket = io('http://localhost:3000'); // Replace with your actual server URL
+        this.socket = io('http://localhost:3000', { autoConnect: false });
 
-        // Listen for chat messages
-        this.socket.on(GameEvents.ChatMessage, (data: { playerName: string; message: string }) => {
-            console.log(`${data.playerName}: ${data.message}`);
-            // this.addChatMessage(data.playerName, data.message);
+        this.socket.on('connect', () => {
+            console.log('Socket connected');
+
+            // Important : ajouter l’écoute APRÈS connexion
+            this.socket.on(GameEvents.ChatMessage, (data: { playerName: string; message: string }) => {
+                console.log('reçu du serveur : ', data);
+                this.addChatMessage(data.playerName, data.message);
+            });
         });
+
+        this.socket.connect(); // démarre la connexion
     }
 
+    joinLobby(lobbyId: string): void {
+        if (this.socket.connected) {
+            this.socket.emit('joinLobby', lobbyId);
+            console.log(`Joined lobby ${lobbyId}`);
+        } else {
+            console.error('WebSocket not connected when trying to join lobby');
+        }
+    }
     // Send a message to the server
-    sendMessage(lobbyId: string, message: string): void {
+    sendMessage(lobbyId: string, playerName: string, message: string): void {
         if (this.socket.connected) {
             console.log('ouiii connected');
-            this.socket.emit('sendMessage', lobbyId, message);
+            this.socket.emit('sendMessage', {
+                lobbyId,
+                playerName,
+                message,
+            });
         } else {
             console.error('WebSocket is not connected!');
-            this.socket.connect(); // Reconnect if necessary
+            this.socket.connect();
         }
     }
 

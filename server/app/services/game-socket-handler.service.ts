@@ -368,14 +368,13 @@ export class GameSocketHandlerService {
 
         this.gameStates.set(lobbyId, gameState);
     }
-    handleChatMessage(lobbyId: string, message: string) {
-        console.log(lobbyId);
-        // Emit the message to all players in the lobby
+    handleChatMessage(lobbyId: string, playerName: string, message: string) {
+        console.log(`Message sent in lobby ${lobbyId} by ${playerName}: ${message}`);
+
         this.io.to(lobbyId).emit(GameEvents.ChatMessage, {
+            playerName,
             message,
         });
-
-        console.log(`Message sent in lobby ${lobbyId}: ${message}`);
     }
 
     // Fonction pour gérer la connexion de nouveaux joueurs au chat

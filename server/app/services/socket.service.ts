@@ -37,7 +37,22 @@ export class SocketService {
 
     private onConnection(socket: Socket) {
         socket.on('createLobby', (game: Game) => this.handleCreateLobby(socket, game));
-        socket.on('joinLobby', (data: { lobbyId: string; player: Player }) => this.handleJoinLobby(socket, data));
+        // Chat uniquement : client envoie un simple string = lobbyId
+        socket.on('joinLobby', (data: string | { lobbyId: string; player: Player }) => {
+            if (typeof data === 'string') {
+                // 👈 C'est un simple lobbyId, on l'utilise pour le chat
+                socket.join(data);
+                console.log(`✅ [Chat] Socket ${socket.id} joined lobby: ${data}`);
+            } else if (typeof data === 'object' && data.lobbyId && data.player) {
+                // 👈 Appel complet avec player, pour les autres fonctionnalités du jeu
+                this.handleJoinLobby(socket, data);
+                socket.join(data.lobbyId);
+                console.log(`✅ [Game] Socket ${socket.id} joined lobby: ${data.lobbyId}`);
+            } else {
+                console.warn('⚠️ joinLobby: invalid data received', data);
+            }
+        });
+
         socket.on('leaveLobby', (data: { lobbyId: string; playerName: string }) => this.handleLeaveLobby(socket, data));
         socket.on('leaveGame', (lobbyId: string, playerName: string) => this.handleLeaveGame(socket, lobbyId, playerName));
         socket.on('lockLobby', (lobbyId: string) => this.handleLockLobby(socket, lobbyId));
@@ -76,10 +91,9 @@ export class SocketService {
             this.handleFlee(data.lobbyId, data.player);
         });
 
-        socket.on('sendMessage', (data: { lobbyId: string; message: string }) => {
-            console.log('okidoki');
-            console.log(data.lobbyId);
-            this.handleChatMessage(data.lobbyId, data.message);
+        // ✅ Corrigé : maintenant on reçoit aussi playerName
+        socket.on('sendMessage', (data: { lobbyId: string; playerName: string; message: string }) => {
+            this.handleChatMessage(data.lobbyId, data.playerName, data.message);
         });
     }
 
@@ -113,7 +127,6 @@ export class SocketService {
     }
 
     private handleLockLobby(socket: Socket, lobbyId: string): void {
-        console.log('mon lobby :', lobbyId);
         if (!lobbyId) {
             socket.emit('error', 'Invalid lobby ID');
             return;
@@ -197,32 +210,16 @@ export class SocketService {
     }
 
     private handleOpenDoor(socket: Socket, data: { lobbyId: string; tile: Tile }): void {
-        if (!data) {
-            socket.emit('error', 'Invalid door data');
-            return;
-        }
-        if (!data.lobbyId) {
-            socket.emit('error', 'Invalid lobby ID');
-            return;
-        }
-        if (!data.tile) {
-            socket.emit('error', 'Invalid tile data');
+        if (!data || !data.lobbyId || !data.tile) {
+            socket.emit('error', 'Invalid door or lobby data');
             return;
         }
         this.gameSocketHandlerService.openDoor(socket, data.tile, data.lobbyId);
     }
 
     private handleCloseDoor(socket: Socket, data: { lobbyId: string; tile: Tile }): void {
-        if (!data) {
-            socket.emit('error', 'Invalid door data');
-            return;
-        }
-        if (!data.lobbyId) {
-            socket.emit('error', 'Invalid lobby ID');
-            return;
-        }
-        if (!data.tile) {
-            socket.emit('error', 'Invalid tile data');
+        if (!data || !data.lobbyId || !data.tile) {
+            socket.emit('error', 'Invalid door or lobby data');
             return;
         }
         this.gameSocketHandlerService.closeDoor(socket, data.tile, data.lobbyId);
@@ -256,7 +253,8 @@ export class SocketService {
         this.gameSocketHandlerService.handleFlee(lobbyId, player);
     }
 
-    private handleChatMessage(lobbyId: string, message: string) {
-        this.gameSocketHandlerService.handleChatMessage(lobbyId, message);
+    // ✅ Mise à jour pour inclure playerName
+    private handleChatMessage(lobbyId: string, playerName: string, message: string) {
+        this.gameSocketHandlerService.handleChatMessage(lobbyId, playerName, message);
     }
 }
