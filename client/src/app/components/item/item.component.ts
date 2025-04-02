@@ -19,6 +19,8 @@ export class ItemComponent implements OnInit, OnDestroy {
 
     objectsTypes = ObjectsTypes;
     uniqueCounter = 1;
+    spawnCounter = 0;
+    itemCounter = 0;
     private subscriptions: Subscription[] = [];
 
     constructor(public objectCounterService: ObjectCounterService) {}
@@ -38,6 +40,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         if (this.type === ObjectsTypes.SPAWN) {
             const subscription = this.objectCounterService.spawnCounter$.subscribe((value) => {
+                this.spawnCounter = value;
                 this.isPlaced = value > 0 ? false : true;
             });
             this.subscriptions.push(subscription);
@@ -50,6 +53,7 @@ export class ItemComponent implements OnInit, OnDestroy {
         } else if (this.type === ObjectsTypes.RANDOM) {
             this.subscriptions.push(
                 this.objectCounterService.itemCounter$.subscribe((value) => {
+                    this.itemCounter = value;
                     this.isPlaced = value > 0 ? false : true;
                 }),
             );

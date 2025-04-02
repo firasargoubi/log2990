@@ -48,6 +48,11 @@ export const ITEM_INFOS: Record<number, ItemInfo> = {
         description: OBJECTS_DESCRIPTION.flag,
         name: OBJECT_NAMES.flag,
     },
+    [ObjectsTypes.SPAWN]: {
+        image: GAME_IMAGES.vortex,
+        description: OBJECTS_DESCRIPTION.vortex,
+        name: OBJECT_NAMES.vortex,
+    },
 };
 
 export const UNKNOWN_ITEM: ItemInfo = {

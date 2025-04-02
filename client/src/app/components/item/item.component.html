@@ -13,8 +13,8 @@
 }
 
 @if (type === objectsTypes.SPAWN) {
-    <p class="counter">{{objectCounterService.spawnCounter$ | async}}</p>
+    <p class="counter">{{spawnCounter}}</p>
 }
-@else if (type !== objectsTypes.FLAG) {
-    <p class="counter">{{objectCounterService.itemCounter$ | async}}</p>
+@else if (type === objectsTypes.RANDOM) {
+    <p class="counter">{{itemCounter}}</p>
 }
