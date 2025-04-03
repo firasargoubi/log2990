@@ -217,12 +217,14 @@ export class GameSocketHandlerService {
     startBattle(lobbyId: string, currentPlayer: Player, opponent: Player) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
-        const isSameTeam =
-            (gameState.teams.team1.some((p) => p.id === currentPlayer.id) && gameState.teams.team1.some((p) => p.id === opponent.id)) ||
-            (gameState.teams.team2.some((p) => p.id === currentPlayer.id) && gameState.teams.team2.some((p) => p.id === opponent.id));
-        if (isSameTeam) {
-            this.io.to(currentPlayer.id).to(opponent.id).emit(GameEvents.Error, gameSocketMessages.sameTeam);
-            return;
+        if (gameState.gameMode === 'capture') {
+            const isSameTeam =
+                (gameState.teams.team1.some((p) => p.id === currentPlayer.id) && gameState.teams.team1.some((p) => p.id === opponent.id)) ||
+                (gameState.teams.team2.some((p) => p.id === currentPlayer.id) && gameState.teams.team2.some((p) => p.id === opponent.id));
+            if (isSameTeam) {
+                this.io.to(currentPlayer.id).to(opponent.id).emit(GameEvents.Error, gameSocketMessages.sameTeam);
+                return;
+            }
         }
         gameState.currentPlayerActionPoints = 0;
         currentPlayer.amountEscape = 0;
