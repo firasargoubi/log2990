@@ -9,7 +9,7 @@
     <ul>
         @for (player of deletedPlayers; track player) {
         <li>
-            <del>{{ player.name }}</del>
+            <del>{{ player.name }}{{ player.virtualPlayerData ? ' 💻' : '' }}</del>
         </li>
         }
     </ul>
@@ -17,7 +17,7 @@
     <p><strong>Joueurs:</strong></p>
     <ul>
         @for (player of players; track player.id) {
-        <li>{{ player.name }}</li>
+        <li>{{ player.name }}{{ player.virtualPlayerData ? ' 💻' : '' }}</li>
         }
     </ul>
 </div>
