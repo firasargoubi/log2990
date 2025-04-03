@@ -618,8 +618,9 @@ describe('LobbyService', () => {
     describe('Team management', () => {
         it('should handle teamCreated event', (done) => {
             const testData = {
-                team1Server: [{ id: 'player1', name: 'Player 1' } as Player],
-                team2Server: [{ id: 'player2', name: 'Player 2' } as Player],
+                team1Server: [] as Player[],
+                team2Server: [] as Player[],
+                updatedGameState: {} as GameState,
             };
 
             service

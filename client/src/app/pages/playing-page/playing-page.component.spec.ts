@@ -121,6 +121,7 @@ describe('PlayingPageComponent', () => {
             of({
                 team1Server: [],
                 team2Server: [],
+                updatedGameState: {} as GameState,
             }),
         );
 
