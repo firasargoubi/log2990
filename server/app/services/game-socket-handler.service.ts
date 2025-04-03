@@ -4,7 +4,7 @@ import { Coordinates } from '@common/coordinates';
 import { GameEvents } from '@common/events';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
-import { Tile, TILE_DELIMITER, TileTypes } from '@common/game.interface';
+import { ObjectsTypes, Tile, TILE_DELIMITER, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
@@ -115,6 +115,12 @@ export class GameSocketHandlerService {
 
                 if (idx === coordinates.length - 1) {
                     updatedGameState.animation = false;
+                    const hasFlag = currentPlayer.items?.includes(ObjectsTypes.FLAG);
+                    const originalSpawn = gameState.spawnPoints[indexPlayer];
+                    const isInSpawnPoints = JSON.stringify(originalSpawn) === JSON.stringify(gameState.playerPositions[indexPlayer]);
+                    if (hasFlag && isInSpawnPoints) {
+                        this.io.to(lobbyId).emit('gameOver', { winner: currentPlayer?.team });
+                    }
                 }
 
                 this.gameStates.set(lobbyId, updatedGameState);
