@@ -104,6 +104,9 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             const isSameTeam = opponent ? this.isSameTeam(this.currentPlayer, opponent) : false;
             if (isSameTeam) {
                 this.isInCombat = false;
+                if (opponent) {
+                    this.lobbyService.startCombat(this.lobbyId, this.currentPlayer, opponent);
+                }
                 return;
             }
             this.isInCombat = true;
