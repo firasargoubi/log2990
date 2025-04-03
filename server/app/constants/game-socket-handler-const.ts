@@ -20,4 +20,5 @@ export const gameSocketMessages = {
     movementError: 'Movement error: ',
     turnError: 'Turn error:',
     notEnoughPlayers: "Il n'y a pas assez de joueurs pour commencer une partie CTF",
+    sameTeam: 'Vous ne pouvez pas commencer un combat contre un membre de votre équipe',
 };

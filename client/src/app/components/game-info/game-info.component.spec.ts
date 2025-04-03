@@ -28,9 +28,12 @@ describe('GameInfoComponent', () => {
                 avatar: 'avatar1.png',
                 isHost: false,
                 life: 100,
+                maxLife: 100,
                 speed: 10,
                 attack: 5,
                 defense: 3,
+                winCount: 0,
+                pendingItem: 0,
             },
         ];
         component.deletedPlayers = deletedPlayers;
