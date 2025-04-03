@@ -146,10 +146,6 @@ describe('GameSocketHandlerService', () => {
     });
 
     describe('handleRequestMovement', () => {
-        beforeEach(() => {
-            sandbox.stub(service, 'emitMovementUpdate').returns(undefined);
-        });
-
         it('should emit error if game not found', () => {
             service.handleRequestMovement(socket, 'lobbyX', [{ x: 0, y: 0 }]);
             expect(socket.emit.calledWith(GameEvents.Error, 'Game not found.')).to.equal(true);

@@ -19,6 +19,7 @@ describe('SocketService', () => {
     let validationHandler: any;
     let disconnectHandler: any;
     let boardService: any;
+    let itemService: any;
     let ioStub: any;
 
     beforeEach(() => {
@@ -83,6 +84,7 @@ describe('SocketService', () => {
             validationHandler as any,
             disconnectHandler as any,
             boardService as any,
+            itemService as any,
         );
 
         // Override the io property
