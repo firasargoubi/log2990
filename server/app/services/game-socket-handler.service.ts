@@ -4,7 +4,7 @@ import { Coordinates } from '@common/coordinates';
 import { GameEvents } from '@common/events';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
-import { ObjectsTypes, Tile, TILE_DELIMITER, TileTypes } from '@common/game.interface';
+import { Tile, TILE_DELIMITER, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
@@ -89,6 +89,7 @@ export class GameSocketHandlerService {
         const indexPlayer = gameState.players.findIndex((p) => p.id === socket.id);
         const currentPlayer = gameState.players[indexPlayer];
         if (!gameState) return;
+
         try {
             let updatedGameState = gameState;
             updatedGameState.animation = true;
@@ -377,28 +378,6 @@ export class GameSocketHandlerService {
             // eslint-disable-next-line max-lines
             return;
         }
-        const playerIndex = gameState.players.findIndex((p) => p.id === player.id);
-        const player = gameState.players[playerIndex];
-        const playerPosition = gameState.playerPositions[playerIndex];
-        const spawnPoint = gameState.spawnPoints[playerIndex];
-
-        const hasFlag = player.items?.includes(ObjectsTypes.FLAG);
-        const isOnSpawn = playerPosition.x === spawnPoint.x && playerPosition.y === spawnPoint.y;
-
-        if (gameState.gameMode === 'capture') {
-            if (hasFlag && isOnSpawn) {
-                const winningTeam = player.team;
-                const winners = gameState.players.filter((p) => p.team === winningTeam);
-
-                this.io.to(lobbyId).emit('gameOver', {
-                    winner: winningTeam,
-                    players: winners.map((p) => p.name),
-                });
-
-                return;
-            }
-        }
-
         this.io.to(lobbyId).emit('attackResult', {
             attackRoll: attackDice + attacker.attack,
             defenseRoll: defenseDice + defender.defense,
@@ -479,16 +458,4 @@ export class GameSocketHandlerService {
         const tile = gameState.board[position.x][position.y];
         return tile === TileTypes.Ice;
     }
-
-    // private isCTFVictory(gameState: GameState, player: Player): boolean {
-    //     const index = gameState.players.findIndex((p) => p.id === player.id);
-    //     const playerPos = gameState.playerPositions[index];
-    //     const playerSpawn = gameState.spawnPoints[index];
-
-    //     return player.hasFlag && playerPos.x === playerSpawn.x && playerPos.y === playerSpawn.y;
-    // }
-
-    // private getTeamOfPlayer(gameState: GameState, player: Player): string {
-    //     return player.team;
-    // }
 }
