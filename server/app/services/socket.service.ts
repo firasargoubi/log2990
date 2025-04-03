@@ -78,51 +78,55 @@ export class SocketService {
         socket.on('flee', (data: { lobbyId: string; player: Player }) => {
             this.handleFlee(data.lobbyId, data.player);
         });
-        socket.on('resolveInventory', (data: { lobbyId: string; oldItem: number; newItem: number }) => {
-            const gameState = this.gameSocketHandlerService.getGameStateOrEmitError(socket, data.lobbyId);
-            if (!gameState) return;
+        socket.on('resolveInventory', (data) => this.handleResolveInventory(socket, data));
+        socket.on('cancelInventoryChoice', (data) => this.handleCancelInventoryChoice(socket, data));
+    }
 
-            const playerIndex = gameState.players.findIndex((p) => p.id === socket.id);
-            if (playerIndex === -1) return;
+    private handleResolveInventory(socket: Socket, data: { lobbyId: string; oldItem: number; newItem: number }) {
+        const gameState = this.gameSocketHandlerService.getGameStateOrEmitError(socket, data.lobbyId);
+        if (!gameState) return;
 
-            const player = gameState.players[playerIndex];
-            const playerPosition = gameState.playerPositions[playerIndex];
+        const playerIndex = gameState.players.findIndex((p) => p.id === socket.id);
+        if (playerIndex === -1) return;
 
-            if (player && player.items && playerPosition) {
-                const index = player.items.findIndex((item) => item === data.oldItem);
-                const tileValue = gameState.board[playerPosition.x][playerPosition.y] % TILE_DELIMITER;
+        const player = gameState.players[playerIndex];
+        const playerPosition = gameState.playerPositions[playerIndex];
 
-                if (index !== -1) {
-                    player.items.splice(index, 1, data.newItem);
+        if (player && player.items && playerPosition) {
+            const index = player.items.findIndex((item) => item === data.oldItem);
+            const tileValue = gameState.board[playerPosition.x][playerPosition.y] % TILE_DELIMITER;
 
-                    gameState.board[playerPosition.x][playerPosition.y] = data.oldItem * TILE_DELIMITER + tileValue;
-                }
+            if (index !== -1) {
+                player.items.splice(index, 1, data.newItem);
 
-                player.pendingItem = 0;
-                gameState.availableMoves = this.boardService['findAllPaths'](gameState, playerPosition);
-                gameState.shortestMoves = this.boardService['calculateShortestMoves'](gameState, playerPosition, gameState.availableMoves);
-
-                this.io.to(data.lobbyId).emit('boardModified', { gameState });
+                gameState.board[playerPosition.x][playerPosition.y] = data.oldItem * TILE_DELIMITER + tileValue;
             }
-        });
-        socket.on('cancelInventoryChoice', (data: { lobbyId: string }) => {
-            const gameState = this.gameSocketHandlerService.getGameStateOrEmitError(socket, data.lobbyId);
-            if (!gameState) return;
-
-            const playerIndex = gameState.players.findIndex((p) => p.id === socket.id);
-            if (playerIndex === -1) return;
-
-            const player = gameState.players[playerIndex];
-            const playerPosition = gameState.playerPositions[playerIndex];
 
             player.pendingItem = 0;
-
             gameState.availableMoves = this.boardService['findAllPaths'](gameState, playerPosition);
             gameState.shortestMoves = this.boardService['calculateShortestMoves'](gameState, playerPosition, gameState.availableMoves);
 
             this.io.to(data.lobbyId).emit('boardModified', { gameState });
-        });
+        }
     }
+    private handleCancelInventoryChoice(socket: Socket, data: { lobbyId: string }) {
+        const gameState = this.gameSocketHandlerService.getGameStateOrEmitError(socket, data.lobbyId);
+        if (!gameState) return;
+
+        const playerIndex = gameState.players.findIndex((p) => p.id === socket.id);
+        if (playerIndex === -1) return;
+
+        const player = gameState.players[playerIndex];
+        const playerPosition = gameState.playerPositions[playerIndex];
+
+        player.pendingItem = 0;
+
+        gameState.availableMoves = this.boardService['findAllPaths'](gameState, playerPosition);
+        gameState.shortestMoves = this.boardService['calculateShortestMoves'](gameState, playerPosition, gameState.availableMoves);
+
+        this.io.to(data.lobbyId).emit('boardModified', { gameState });
+    }
+
     private handleCreateLobby(socket: Socket, game: Game): void {
         if (!game) {
             socket.emit('error', 'Invalid game data');

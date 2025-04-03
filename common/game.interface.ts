@@ -61,4 +61,17 @@ export interface Tile {
 
 export const TILE_DELIMITER = 10;
 
+interface Effect {
+    attack?: number;
+    defense?: number;
+    speed?: number;
+    life?: number;
+}
+
+export const ITEM_EFFECTS: Partial<Record<ObjectsTypes, Effect>>  = {
+    [ObjectsTypes.BOOTS]: { speed: 2, attack: -1 },
+    [ObjectsTypes.SWORD]: { attack: 1, defense: -1 },
+};
+
+
 export const RANDOM_SPEED = 4;
