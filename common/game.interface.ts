@@ -61,4 +61,4 @@ export interface Tile {
 
 export const TILE_DELIMITER = 10;
 
-export const RANDOM_SPEED = 8;
+export const RANDOM_SPEED = 4;

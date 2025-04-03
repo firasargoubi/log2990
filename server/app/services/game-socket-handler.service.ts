@@ -155,7 +155,6 @@ export class GameSocketHandlerService {
         if (!gameState) return;
         try {
             const updatedGameState = this.boardService.handleTurn(gameState);
-
             this.gameStates.set(lobbyId, updatedGameState);
 
             this.io.to(lobbyId).emit(GameEvents.TurnStarted, { gameState: updatedGameState });

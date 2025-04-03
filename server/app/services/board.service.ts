@@ -114,21 +114,14 @@ export class BoardService {
         const currentPlayerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
         if (currentPlayerIndex === -1) return gameState;
 
+        gameState.players[currentPlayerIndex].currentMP = this.getPlayerMovementPoints(gameState.players[currentPlayerIndex]);
+
         const nextPlayerIndex = (currentPlayerIndex + 1) % gameState.players.length;
 
         gameState.currentPlayer = gameState.players[nextPlayerIndex].id;
 
-        let hasOrb = false;
+        const hasOrb = this.verifyOrb(gameState);
 
-        for (const player of gameState.players) {
-            if (!player.items) continue;
-            for (const item of player.items) {
-                if (item === ObjectsTypes.CRYSTAL) {
-                    hasOrb = true;
-                    break;
-                }
-            }
-        }
         gameState.currentPlayerMovementPoints = this.getPlayerMovementPoints(gameState.players[nextPlayerIndex], hasOrb);
 
         gameState.players[currentPlayerIndex].currentMP = gameState.currentPlayerMovementPoints;
@@ -181,9 +174,6 @@ export class BoardService {
             return gameState;
         }
 
-        const currentPlayer = gameState.players[playerIndex];
-        gameState.currentPlayerMovementPoints = currentPlayer.currentMP ?? currentPlayer.speed;
-
         const availableMoves = this.findAllPaths(gameState, playerPosition);
         gameState.availableMoves = availableMoves;
         gameState.shortestMoves = this.calculateShortestMoves(gameState, playerPosition, availableMoves);
@@ -226,8 +216,10 @@ export class BoardService {
 
     private getPlayerMovementPoints(player: Player, hasOrb: boolean = false): number {
         if (hasOrb) {
+            console.log("Modified Speed for ", player.name);
             return Math.floor(Math.random() * RANDOM_SPEED) + 1;
         }
+        console.log("Player speed : ", player.speed, " for ", player.name);
         return player.speed || 0;
     }
 
@@ -294,6 +286,21 @@ export class BoardService {
             return true;
         }
 
+        return false;
+    }
+
+    private verifyOrb(gameState: GameState): boolean {
+        for (const player of gameState.players) {
+            if (!player.items) continue;
+            for (const item of player.items) {
+                if (item === ObjectsTypes.CRYSTAL) {
+                    if (player.id === gameState.currentPlayer) {
+                        return false;
+                    }
+                    return true;
+                }
+            }
+        }
         return false;
     }
 }
