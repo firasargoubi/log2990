@@ -20,4 +20,5 @@ export interface Player {
     currentAP?: number;
     winCount: number;
     items?: number[];
+    team?: string;
 }

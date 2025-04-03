@@ -101,8 +101,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
         if (action === 'battle') {
             const opponent = this.actionService.findOpponent(tile);
-            const isSameTeam = opponent ? this.isSameTeam(this.currentPlayer, opponent) : false;
-            if (isSameTeam) {
+            if (this.currentPlayer?.team === opponent?.team) {
                 this.isInCombat = false;
                 if (opponent) {
                     this.lobbyService.startCombat(this.lobbyId, this.currentPlayer, opponent);
@@ -334,6 +333,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             }),
 
             this.lobbyService.teamCreated().subscribe((data) => {
+                this.updateGameState(data.updatedGameState);
                 if (data) {
                     this.gameState = {
                         ...this.gameState,
@@ -344,17 +344,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                     };
                 }
             }),
-        );
-    }
-
-    private isSameTeam(player1: Player, player2: Player): boolean {
-        if (!this.gameState || !this.gameState.teams) {
-            return false;
-        }
-        const { team1, team2 } = this.gameState.teams;
-        return (
-            (team1.some((player) => player.id === player1.id) && team1.some((player) => player.id === player2.id)) ||
-            (team2.some((player) => player.id === player1.id) && team2.some((player) => player.id === player2.id))
         );
     }
 

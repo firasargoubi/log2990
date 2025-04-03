@@ -269,7 +269,7 @@ export class LobbyService {
         });
     }
 
-    teamCreated(): Observable<{ team1Server: Player[]; team2Server: Player[] }> {
+    teamCreated(): Observable<{ team1Server: Player[]; team2Server: Player[]; updatedGameState: GameState }> {
         return new Observable((observer) => {
             this.socket.on('teamsCreated', (data) => {
                 observer.next(data);

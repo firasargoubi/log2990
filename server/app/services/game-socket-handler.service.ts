@@ -203,10 +203,7 @@ export class GameSocketHandlerService {
     startBattle(lobbyId: string, currentPlayer: Player, opponent: Player) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
-        const isSameTeam =
-            (gameState.teams.team1.some((p) => p.id === currentPlayer.id) && gameState.teams.team1.some((p) => p.id === opponent.id)) ||
-            (gameState.teams.team2.some((p) => p.id === currentPlayer.id) && gameState.teams.team2.some((p) => p.id === opponent.id));
-        if (isSameTeam) {
+        if (currentPlayer?.team === opponent?.team) {
             this.io.to(currentPlayer.id).to(opponent.id).emit(GameEvents.Error, gameSocketMessages.sameTeam);
             return;
         }
@@ -321,15 +318,19 @@ export class GameSocketHandlerService {
         const half = Math.ceil(players.length / 2);
         const team1Server: Player[] = shuffledPlayers.slice(0, half).map((player) => ({ ...player, team: 'Red' }));
         const team2Server: Player[] = shuffledPlayers.slice(half).map((player) => ({ ...player, team: 'Blue' }));
+        shuffledPlayers.forEach((player, index) => {
+            player.team = index < half ? 'Red' : 'Blue';
+        });
         const updatedGameState = {
             ...gameState,
+            players: shuffledPlayers,
             teams: {
                 team1: team1Server,
                 team2: team2Server,
             },
         };
         this.gameStates.set(lobbyId, updatedGameState);
-        this.io.to(lobbyId).emit(GameEvents.TeamsCreated, { team1Server, team2Server });
+        this.io.to(lobbyId).emit(GameEvents.TeamsCreated, { team1Server, team2Server, updatedGameState });
     }
 
     handleAttackAction(lobbyId: string, attacker: Player, defender: Player) {
