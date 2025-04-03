@@ -1,15 +1,14 @@
-<div class="popup-backdrop">
-    <div class="popup-container">
-        <h3>Inventaire plein</h3>
-        <p>Tu as déjà 2 objets :</p>
-        <ul>
-            <li>1- {{ item1Name }}</li>
-            <li>2- {{ item2Name }}</li>
-        </ul>
-        <p>Souhaites-tu remplacer le 1er par {{ newItemName }} ?</p>
-        <div class="popup-buttons">
-            <button (click)="onConfirm()">Oui</button>
-            <button (click)="onCancel()">Non</button>
+<div class="popup">
+    <h3>Choisissez 2 objets à garder</h3>
+    <div class="item-grid">
+        <div class="item" *ngFor="let item of items" [class.selected]="selectedItems.has(item)" (click)="toggleSelection(item)">
+            <img [src]="getItemImage(item)" [alt]="getItemName(item)" />
+            <div class="item-name">{{ getItemName(item) }}</div>
         </div>
+    </div>
+
+    <div class="actions">
+        <button (click)="confirm()" [disabled]="selectedItems.size !== maxSelection">Confirmer</button>
+        <button (click)="cancel()">Annuler</button>
     </div>
 </div>

@@ -129,7 +129,7 @@ export class GameSocketHandlerService {
     handleInventoryFull(updatedGameState: GameState, currentPlayer: Player, socket: Socket, lobbyId: string) {
         socket.emit('inventoryFull', {
             item: currentPlayer.pendingItem,
-            currentInventory: currentPlayer.items,
+            currentInventory: [...currentPlayer.items],
         });
         updatedGameState.animation = false;
         this.gameStates.set(lobbyId, updatedGameState);

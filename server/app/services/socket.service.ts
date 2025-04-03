@@ -84,7 +84,7 @@ export class SocketService {
         socket.on('cancelInventoryChoice', (data) => this.handleCancelInventoryChoice(socket, data));
     }
 
-    private handleResolveInventory(socket: Socket, data: { lobbyId: string; oldItem: number; newItem: number }) {
+    private handleResolveInventory(socket: Socket, data: { lobbyId: string; keptItems: number[] }) {
         const gameState = this.gameSocketHandlerService.getGameStateOrEmitError(socket, data.lobbyId);
         if (!gameState) return;
 
@@ -94,24 +94,29 @@ export class SocketService {
         const player = gameState.players[playerIndex];
         const playerPosition = gameState.playerPositions[playerIndex];
 
-        if (player && player.items && playerPosition) {
-            const index = player.items.findIndex((item) => item === data.oldItem);
-            const tileValue = gameState.board[playerPosition.x][playerPosition.y] % TILE_DELIMITER;
+        const fullList = [...player.items];
+        if (player.pendingItem !== 0) fullList.push(player.pendingItem);
 
-            if (index !== -1) {
-                this.itemService.removeEffect(player, data.oldItem);
-                player.items.splice(index, 1, data.newItem);
+        const refusedItem = fullList.find((item) => !data.keptItems.includes(item));
+        const tileValue = gameState.board[playerPosition.x][playerPosition.y] % TILE_DELIMITER;
 
-                gameState.board[playerPosition.x][playerPosition.y] = data.oldItem * TILE_DELIMITER + tileValue;
-            }
-
-            player.pendingItem = 0;
-            gameState.availableMoves = this.boardService['findAllPaths'](gameState, playerPosition);
-            gameState.shortestMoves = this.boardService['calculateShortestMoves'](gameState, playerPosition, gameState.availableMoves);
-
-            this.io.to(data.lobbyId).emit('boardModified', { gameState });
+        if (refusedItem && player.items.includes(refusedItem)) {
+            this.itemService.removeEffect(player, refusedItem);
         }
+
+        player.items = data.keptItems;
+        player.pendingItem = 0;
+
+        if (refusedItem !== undefined) {
+            gameState.board[playerPosition.x][playerPosition.y] = refusedItem * TILE_DELIMITER + tileValue;
+        }
+
+        gameState.availableMoves = this.boardService['findAllPaths'](gameState, playerPosition);
+        gameState.shortestMoves = this.boardService['calculateShortestMoves'](gameState, playerPosition, gameState.availableMoves);
+
+        this.io.to(data.lobbyId).emit('boardModified', { gameState });
     }
+
     private handleCancelInventoryChoice(socket: Socket, data: { lobbyId: string }) {
         const gameState = this.gameSocketHandlerService.getGameStateOrEmitError(socket, data.lobbyId);
         if (!gameState) return;
