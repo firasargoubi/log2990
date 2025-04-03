@@ -21,7 +21,7 @@
             {{ player.name }}
             <ul>
                 @if (isCTF) {
-                <li><strong>Équipe:</strong> {{ player?.team }}</li>
+                <li><strong>Équipe:</strong> {{ getTeam(player) }}</li>
                 } @if ((player?.items ?? []).length > 0) { @if (player.items?.includes(objectTypes.FLAG)) {
                 <li>
                     <strong>🏳️</strong>

@@ -26,4 +26,9 @@ export class GameInfoComponent {
     getPlayersDeleted(): Player[] {
         return this.deletedPlayers;
     }
+
+    getTeam(player: Player): string {
+        if (!this.gameState?.teams) return '';
+        return this.gameState.teams.team1.some((p) => p.id === player.id) ? 'Red' : 'Blue';
+    }
 }
