@@ -3,7 +3,7 @@ import { Coordinates } from '@common/coordinates';
 import { GameEvents } from '@common/events';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
-import { Tile, TILE_DELIMITER, TileTypes } from '@common/game.interface';
+import { ObjectsTypes, Tile, TILE_DELIMITER, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
@@ -175,8 +175,9 @@ export class GameSocketHandlerService {
             board: newGameBoard,
             currentPlayerActionPoints: 0,
         };
-
-        updatedGameState.players[currentPlayerIndex].currentAP = 0;
+        if (currentPlayerIndex !== -1) {
+            updatedGameState.players[currentPlayerIndex].currentAP = 0;
+        }
         const newGameState = this.boardService.handleBoardChange(updatedGameState);
         this.gameStates.set(lobbyId, newGameState);
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
@@ -193,9 +194,9 @@ export class GameSocketHandlerService {
             board: newGameBoard,
             currentPlayerActionPoints: 0,
         };
-
-        updatedGameState.players[currentPlayerIndex].currentAP = 0;
-
+        if (currentPlayerIndex !== -1) {
+            updatedGameState.players[currentPlayerIndex].currentAP = 0;
+        }
         const newGameState = this.boardService.handleBoardChange(updatedGameState);
         this.gameStates.set(lobbyId, newGameState);
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
@@ -330,9 +331,13 @@ export class GameSocketHandlerService {
         }
         const damage = Math.max(0, attackDice + attacker.attack - defenseDice - defender.defense);
 
+        this.applyPotionEffect(attacker, defender);
+
         if (damage > 0) {
             defender.life -= damage;
         }
+
+        this.applyJuiceEffect(defender);
 
         if (defender.life <= 0) {
             attacker.winCount += 1;
@@ -341,7 +346,6 @@ export class GameSocketHandlerService {
             }
             if (attacker.winCount === MAX_WIN_COUNT) {
                 this.io.to(lobbyId).emit('gameOver', { winner: attacker.name });
-                // eslint-disable-next-line max-lines
                 return;
             }
             this.handleDefeat(lobbyId, attacker, defender);
@@ -393,7 +397,6 @@ export class GameSocketHandlerService {
         } else {
             this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
         }
-
         this.gameStates.set(lobbyId, gameState);
     }
     getGameStateOrEmitError(socket: Socket, lobbyId: string): GameState | null {
@@ -403,6 +406,18 @@ export class GameSocketHandlerService {
             return null;
         }
         return gameState;
+    }
+
+    private applyPotionEffect(attacker: Player, defender: Player): void {
+        if (defender.life - attacker.life >= 3 && attacker.items?.includes(ObjectsTypes.POTION)) {
+            defender.life -= 1;
+        }
+    }
+
+    private applyJuiceEffect(defender: Player): void {
+        if (defender.life === 1 && defender.items?.includes(ObjectsTypes.JUICE)) {
+            defender.life = Math.min(defender.life + 3, defender.maxLife);
+        }
     }
 
     private async delay(ms: number) {
