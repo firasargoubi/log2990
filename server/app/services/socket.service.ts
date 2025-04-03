@@ -8,6 +8,7 @@ import { Service } from 'typedi';
 import { BoardService } from './board.service';
 import { DisconnectHandlerService } from './disconnect-handler.service';
 import { GameSocketHandlerService } from './game-socket-handler.service';
+import { ItemService } from './item.service';
 import { LobbySocketHandlerService } from './lobby-socket-handler.service';
 import { ValidationSocketHandlerService } from './validation-socket-handler.service';
 
@@ -23,6 +24,7 @@ export class SocketService {
         private validationSocketHandlerService: ValidationSocketHandlerService,
         private disconnectHandlerService: DisconnectHandlerService,
         private boardService: BoardService,
+        private itemService: ItemService,
     ) {
         this.io = new Server(server, {
             cors: {
@@ -97,6 +99,7 @@ export class SocketService {
             const tileValue = gameState.board[playerPosition.x][playerPosition.y] % TILE_DELIMITER;
 
             if (index !== -1) {
+                this.itemService.removeEffect(player, data.oldItem);
                 player.items.splice(index, 1, data.newItem);
 
                 gameState.board[playerPosition.x][playerPosition.y] = data.oldItem * TILE_DELIMITER + tileValue;
