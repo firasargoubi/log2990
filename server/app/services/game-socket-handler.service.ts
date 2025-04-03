@@ -3,11 +3,12 @@ import { Coordinates } from '@common/coordinates';
 import { GameEvents } from '@common/events';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
-import { ObjectsTypes, Tile, TILE_DELIMITER, TileTypes } from '@common/game.interface';
+import { Tile, TILE_DELIMITER, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
 import { BoardService } from './board.service';
+import { ItemService } from './item.service';
 import { LobbySocketHandlerService } from './lobby-socket-handler.service';
 import { PathfindingService } from './pathfinding.service';
 
@@ -27,7 +28,10 @@ export class GameSocketHandlerService {
         private boardService: BoardService,
         private lobbySocketHandlerService: LobbySocketHandlerService,
         private pathfindingService: PathfindingService,
-    ) {}
+        private itemService: ItemService,
+    ) {
+        this.itemService = new ItemService(this.pathfindingService);
+    }
     setServer(server: Server) {
         this.io = server;
     }
@@ -271,6 +275,7 @@ export class GameSocketHandlerService {
 
         winner.life = winner.maxLife;
         loser.life = loser.maxLife;
+        this.itemService.dropItems(loserIndex, gameState);
         this.io.to(lobbyId).emit('combatEnded', { loser });
 
         gameState.playerPositions[loserIndex] = newSpawn;
@@ -331,13 +336,13 @@ export class GameSocketHandlerService {
         }
         const damage = Math.max(0, attackDice + attacker.attack - defenseDice - defender.defense);
 
-        this.applyPotionEffect(attacker, defender);
+        this.itemService.applyPotionEffect(attacker, defender);
 
         if (damage > 0) {
             defender.life -= damage;
         }
 
-        this.applyJuiceEffect(defender);
+        this.itemService.applyJuiceEffect(defender);
 
         if (defender.life <= 0) {
             attacker.winCount += 1;
@@ -406,18 +411,6 @@ export class GameSocketHandlerService {
             return null;
         }
         return gameState;
-    }
-
-    private applyPotionEffect(attacker: Player, defender: Player): void {
-        if (defender.life - attacker.life >= 3 && attacker.items?.includes(ObjectsTypes.POTION)) {
-            defender.life -= 1;
-        }
-    }
-
-    private applyJuiceEffect(defender: Player): void {
-        if (defender.life === 1 && defender.items?.includes(ObjectsTypes.JUICE)) {
-            defender.life = Math.min(defender.life + 3, defender.maxLife);
-        }
     }
 
     private async delay(ms: number) {

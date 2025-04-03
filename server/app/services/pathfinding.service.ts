@@ -293,8 +293,10 @@ export class PathfindingService {
 
     private isTileValid(tile: Coordinates, gameState: GameState, occupiedPositions: Set<string>): boolean {
         const isOccupiedByPlayer = occupiedPositions.has(JSON.stringify(tile));
-        const isGrassTile = gameState.board[tile.x]?.[tile.y] === 0; // Example: 0 represents a valid grass tile
-        return !isOccupiedByPlayer && isGrassTile;
+        const tileType = gameState.board[tile.x]?.[tile.y];
+        const isValidTile =
+            tileType === TileTypes.Grass || tileType === TileTypes.Water || tileType === TileTypes.Ice || tileType === TileTypes.DoorOpen;
+        return !isOccupiedByPlayer && isValidTile;
     }
 
     private isWithinBounds(tile: Coordinates, board: number[][]): boolean {

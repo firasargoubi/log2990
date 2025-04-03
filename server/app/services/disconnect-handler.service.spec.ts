@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable no-unused-expressions */
+import { GameLobby } from '@common/game-lobby';
 import { expect } from 'chai';
 import { createSandbox, SinonStubbedInstance } from 'sinon';
+import { Socket } from 'socket.io';
 import { DisconnectHandlerService } from './disconnect-handler.service';
 import { LobbySocketHandlerService } from './lobby-socket-handler.service';
-import { GameLobby } from '@common/game-lobby';
-import { Socket } from 'socket.io';
+import { PathfindingService } from './pathfinding.service';
+import { ItemService } from './item.service';
+import { GameState } from '@common/game-state';
 
 describe('DisconnectHandlerService', () => {
     const sandbox = createSandbox();
@@ -25,7 +28,17 @@ describe('DisconnectHandlerService', () => {
             ['lobby2', { players: [{ id: 'socket2', name: 'Player2' }] } as GameLobby],
         ]);
 
-        disconnectHandlerService = new DisconnectHandlerService(lobbiesMock, lobbySocketHandlerMock);
+        const gameStatesMock = new Map<string, GameState>();
+        const pathFindingServiceMock = sandbox.createStubInstance(PathfindingService);
+        const itemServiceMock = sandbox.createStubInstance(ItemService);
+
+        disconnectHandlerService = new DisconnectHandlerService(
+            lobbiesMock,
+            lobbySocketHandlerMock,
+            gameStatesMock,
+            pathFindingServiceMock,
+            itemServiceMock,
+        );
     });
 
     afterEach(() => {
