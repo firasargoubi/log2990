@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { GameState } from '@common/game-state';
-import { Player } from '@common/player';
 import { ObjectsTypes } from '@common/game.interface';
+import { Player } from '@common/player';
 
 @Component({
     selector: 'app-game-info',
@@ -25,10 +25,5 @@ export class GameInfoComponent {
 
     getPlayersDeleted(): Player[] {
         return this.deletedPlayers;
-    }
-
-    getTeam(player: Player): string {
-        if (!this.gameState?.teams) return '';
-        return this.gameState.teams.team1.some((p) => p.id === player.id) ? 'Red' : 'Blue';
     }
 }
