@@ -109,18 +109,6 @@ describe('BoardService', () => {
         const res = boardService.findShortestPath({ currentPlayerMovementPoints: 3 } as any, { x: 0, y: 0 }, { x: 1, y: 1 });
         expect(res).to.equal(null);
     });
-    /*
-    it('should return unchanged state if invalid movement', () => {
-        const state = {
-            players: [{ id: 'p1' }],
-            currentPlayer: 'p1',
-            availableMoves: [],
-            playerPositions: [],
-        } as any;
-        const result = boardService.handleMovement(state, { x: 1, y: 1 });
-        expect(result.gameState).to.deep.equal(state);
-    });
-    */
 
     it('should handleMovement and update game state correctly', () => {
         const state = {
@@ -397,36 +385,7 @@ describe('BoardService', () => {
         const result = boardService.handleMovement(state, { x: 1, y: 1 });
         expect(result.gameState).to.equal(state);
     });
-    /*
-    it('should return unchanged state if invalid movement in handleMovement', () => {
-        const state = {
-            players: [{ id: 'p1', speed: 2, bonus: {} }],
-            currentPlayer: 'p1',
-            playerPositions: [{ x: 0, y: 0 }],
-            availableMoves: [],
-            currentPlayerMovementPoints: 5,
-        } as any;
 
-        const result = boardService.handleMovement(state, { x: 1, y: 1 });
-        expect(result.gameState).to.equal(state);
-    });
-    
-
-    it('should return unchanged state if no path was found in handleMovement', () => {
-        const state = {
-            players: [{ id: 'p1', speed: 2, bonus: {} }],
-            currentPlayer: 'p1',
-            playerPositions: [{ x: 0, y: 0 }],
-            availableMoves: [{ x: 1, y: 1 }],
-            currentPlayerMovementPoints: 5,
-        } as any;
-
-        pathfindingService.findShortestPath.returns(null);
-
-        const result = boardService.handleMovement(state, { x: 1, y: 1 });
-        expect(result.gameState).to.equal(state);
-    });
-*/
     it('should return empty array if gameState or startPosition is null in findAllPaths', async () => {
         const result1 = (boardService as any).findAllPaths(null, { x: 0, y: 0 });
         expect(Array.isArray(result1)).to.equal(true);
@@ -737,5 +696,66 @@ describe('BoardService', () => {
 
         const result = (boardService as any).isOccupied(state, { x: 0, y: 0 }, 0);
         expect(result).to.equal(false);
+    });
+    it('should replace RANDOM tiles with a random object type', () => {
+        const gameState: GameState = {
+            board: [[ObjectsTypes.RANDOM * TILE_DELIMITER + TileTypes.Floor], [0, 0]],
+        } as any;
+
+        (boardService as any).randomizeItem(gameState);
+
+        const newTile = gameState.board[0][0];
+        const objectValue = Math.floor(newTile / TILE_DELIMITER);
+        const tileType = newTile % TILE_DELIMITER;
+
+        expect([ObjectsTypes.BOOTS, ObjectsTypes.SWORD, ObjectsTypes.POTION, ObjectsTypes.WAND, ObjectsTypes.JUICE, ObjectsTypes.CRYSTAL]).to.include(
+            objectValue,
+        );
+        expect(tileType).to.equal(TileTypes.Floor);
+    });
+
+    it('should not modify non-RANDOM tiles', () => {
+        const gameState: GameState = {
+            board: [[ObjectsTypes.SPAWN * TILE_DELIMITER + TileTypes.Floor], [ObjectsTypes.BOOTS * TILE_DELIMITER + TileTypes.Wall]],
+        } as any;
+
+        (boardService as any).randomizeItem(gameState);
+
+        expect(gameState.board[0][0]).to.equal(ObjectsTypes.SPAWN * TILE_DELIMITER + TileTypes.Floor);
+        expect(gameState.board[1][0]).to.equal(ObjectsTypes.BOOTS * TILE_DELIMITER + TileTypes.Wall);
+    });
+
+    it('should handle empty board without errors', () => {
+        const gameState: GameState = { board: [] } as any;
+
+        expect(() => (boardService as any).randomizeItem(gameState)).to.not.throw();
+        expect(gameState.board).to.deep.equal([]);
+    });
+
+    it('should exclude already present object types from randomization', () => {
+        const gameState: GameState = {
+            board: [[ObjectsTypes.BOOTS * TILE_DELIMITER + TileTypes.Floor], [ObjectsTypes.RANDOM * TILE_DELIMITER + TileTypes.Floor]],
+        } as any;
+
+        (boardService as any).randomizeItem(gameState);
+
+        const newTile = gameState.board[1][0];
+        const objectValue = Math.floor(newTile / TILE_DELIMITER);
+
+        expect(objectValue).to.not.equal(ObjectsTypes.BOOTS);
+        expect([ObjectsTypes.SWORD, ObjectsTypes.POTION, ObjectsTypes.WAND, ObjectsTypes.JUICE, ObjectsTypes.CRYSTAL]).to.include(objectValue);
+    });
+
+    it('should preserve tile type when replacing RANDOM', () => {
+        const gameState: GameState = {
+            board: [[ObjectsTypes.RANDOM * TILE_DELIMITER + TileTypes.Wall]],
+        } as any;
+
+        (boardService as any).randomizeItem(gameState);
+
+        const newTile = gameState.board[0][0];
+        const tileType = newTile % TILE_DELIMITER;
+
+        expect(tileType).to.equal(TileTypes.Wall);
     });
 });

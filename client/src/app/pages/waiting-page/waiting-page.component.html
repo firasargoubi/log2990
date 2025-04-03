@@ -16,7 +16,7 @@
             </p>
 
             @if (lobby.players.length >= 2 && currentPlayer.isHost) {
-            <button (click)="startGame()" [disabled]="!lobby || !currentPlayer || !lobby.isLocked">Start Game</button>
+            <button (click)="startGame()" [disabled]="!lobby || !currentPlayer || !lobby.isLocked">Commencer la partie</button>
             }
 
             <app-player-list [currentPlayer]="currentPlayer" [players]="lobby.players" [hostId]="hostId" (removePlayer)="removePlayer($event)">
