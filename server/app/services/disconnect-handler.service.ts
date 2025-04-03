@@ -1,14 +1,22 @@
 import { GameLobby } from '@common/game-lobby';
+import { GameState } from '@common/game-state';
 import { Socket } from 'socket.io';
 import { Service } from 'typedi';
+import { ItemService } from './item.service';
 import { LobbySocketHandlerService } from './lobby-socket-handler.service';
+import { PathfindingService } from './pathfinding.service';
 
 @Service()
 export class DisconnectHandlerService {
     constructor(
         private lobbies: Map<string, GameLobby>,
         private lobbySocketHandler: LobbySocketHandlerService,
-    ) {}
+        private gameStates: Map<string, GameState>,
+        private pathFindingService: PathfindingService,
+        private itemService: ItemService,
+    ) {
+        this.itemService = new ItemService(this.pathFindingService);
+    }
 
     handleDisconnect(socket: Socket) {
         for (const [lobbyId, lobby] of this.lobbies.entries()) {
@@ -16,6 +24,9 @@ export class DisconnectHandlerService {
 
             if (playerIndex !== -1) {
                 const player = lobby.players[playerIndex];
+                const gameState = this.gameStates.get(lobbyId);
+                console.log(gameState);
+                this.itemService.dropItems(playerIndex, gameState);
                 this.lobbySocketHandler.leaveGame(socket, lobbyId, player.name);
                 this.lobbySocketHandler.leaveLobby(socket, lobbyId, player.name);
             }

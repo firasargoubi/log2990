@@ -36,14 +36,14 @@ export class Server {
         this.server = http.createServer(this.application.app);
         const gameService = new GameService();
         const pathfindingService = new PathfindingService();
-        const itemService = new ItemService();
+        const itemService = new ItemService(pathfindingService);
         const boardService = new BoardService(gameService, pathfindingService, itemService);
         const lobbyMap = new Map<string, GameLobby>();
         const gameStateMap = new Map<string, GameState>();
         const lobbyHandler = new LobbySocketHandlerService(lobbyMap);
-        const gameHandler = new GameSocketHandlerService(lobbyMap, gameStateMap, boardService, lobbyHandler, pathfindingService);
+        const gameHandler = new GameSocketHandlerService(lobbyMap, gameStateMap, boardService, lobbyHandler, pathfindingService, itemService);
         const validationHandler = new ValidationSocketHandlerService(lobbyMap);
-        const disconnectHandler = new DisconnectHandlerService(lobbyMap, lobbyHandler);
+        const disconnectHandler = new DisconnectHandlerService(lobbyMap, lobbyHandler, gameStateMap, pathfindingService, itemService);
         this.socketManager = new SocketService(
             this.server,
             lobbyHandler,

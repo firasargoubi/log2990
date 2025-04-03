@@ -10,6 +10,7 @@ import { ObjectsTypes, Tile, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { expect } from 'chai';
 import { createSandbox, match, SinonFakeTimers, SinonSandbox, SinonStub, useFakeTimers } from 'sinon';
+import { ItemService } from './item.service';
 import { PathfindingService } from './pathfinding.service';
 
 describe('GameSocketHandlerService', () => {
@@ -20,6 +21,7 @@ describe('GameSocketHandlerService', () => {
     let boardService: BoardService;
     let lobbySocketHandlerService: LobbySocketHandlerService;
     let pathfindingService: PathfindingService;
+    let itemService: ItemService;
     let socket: any;
     let ioStub: any;
     let clock: SinonFakeTimers;
@@ -43,7 +45,7 @@ describe('GameSocketHandlerService', () => {
         lobbySocketHandlerService = { updateLobby: sandbox.stub() } as any;
         pathfindingService = { findClosestAvailableSpot: sandbox.stub() } as any;
 
-        service = new GameSocketHandlerService(lobbies, gameStates, boardService, lobbySocketHandlerService, pathfindingService);
+        service = new GameSocketHandlerService(lobbies, gameStates, boardService, lobbySocketHandlerService, pathfindingService, itemService);
 
         socket = { id: 'socket1', emit: sandbox.stub() };
         ioStub = {
@@ -146,8 +148,11 @@ describe('GameSocketHandlerService', () => {
     });
 
     describe('handleRequestMovement', () => {
+        let emitMovementUpdateStub: SinonStub;
+
         beforeEach(() => {
-            sandbox.stub(service, 'emitMovementUpdate').returns(undefined);
+            emitMovementUpdateStub = sandbox.stub().returns(undefined);
+            (service as any).emitMovementUpdate = emitMovementUpdateStub;
         });
 
         it('should emit error if game not found', () => {
