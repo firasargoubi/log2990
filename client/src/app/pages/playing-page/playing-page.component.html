@@ -2,14 +2,15 @@
     <div class="sidebar-left">
         <div class="component-box">
             <app-game-info
+                [gameState]="gameState"
                 [gameName]="'Tile Bound'"
                 [mapSize]="getMapSize()"
                 [playerCount]="getPlayerCount()"
                 [activePlayer]="getActivePlayer()"
                 [players]="getPlayers()"
                 [deletedPlayers]="getDeletedPlayers()"
+                [isCTF]="isCTF"
             >
-                >
             </app-game-info>
             <div class="header">
                 @if (gameState && gameState.debug) {
@@ -70,9 +71,9 @@
         <app-countdown-player [countdown]="60" [isPlayerTurn]="false" [isInCombat]="isInCombat" [isTransitioning]="false"> </app-countdown-player>
         }
 
-        <app-inventory></app-inventory>
-        @if (isInCombat) {
+        <app-inventory [items]="inventoryItems" [lobbyId]="lobbyId"></app-inventory>
 
+        @if (isInCombat) {
         <div class="action-buttons">
             <app-combat [gameState]="gameState" [currentPlayer]="currentPlayer!" [opponent]="opponent!" [lobbyId]="lobbyId"></app-combat>
         </div>

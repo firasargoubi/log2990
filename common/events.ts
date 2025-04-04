@@ -16,4 +16,5 @@ export enum GameEvents {
     ChatMessage = 'chatMessage',
     PlayerJoinedChat = 'playerJoinedChat',
     ChatJoined = 'chatJoined',
+    TeamsCreated = 'teamsCreated',
 }

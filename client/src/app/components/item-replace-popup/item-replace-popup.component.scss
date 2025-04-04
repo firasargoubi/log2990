@@ -1,0 +1,119 @@
+.popup-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.popup-container {
+    background-color: #e8dfc2;
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 380px;
+    width: 90%;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    position: relative;
+    border: 4px solid #5a7d44;
+}
+
+.popup-container h3 {
+    color: white;
+    font-size: 18px;
+    margin: -20px -20px 15px -20px;
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #4b8046;
+    padding: 10px;
+    border-radius: 6px 6px 0 0;
+}
+
+.popup-container p {
+    color: #3c5434;
+    font-size: 15px;
+    line-height: 1.4;
+    margin-bottom: 12px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.popup-container ul {
+    list-style-type: none;
+    padding: 0;
+    margin-bottom: 15px;
+    background-color: rgba(75, 128, 70, 0.15);
+    border-radius: 5px;
+    padding: 10px;
+    border: 1px solid #5a7d44;
+}
+
+.popup-container li {
+    padding: 6px 8px;
+    margin-bottom: 4px;
+    color: #3c5434;
+    font-size: 15px;
+    position: relative;
+    padding-left: 25px;
+    border-bottom: 1px solid rgba(90, 125, 68, 0.3);
+}
+
+.popup-container li:last-child {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
+.popup-container li::before {
+    content: '→';
+    position: absolute;
+    left: 8px;
+    color: #4b8046;
+}
+
+/* Boutons */
+.popup-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+}
+
+.popup-buttons button {
+    background-color: #4b8046;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.popup-buttons button:hover {
+    background-color: #5a9654;
+}
+
+.popup-buttons button:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes buttonPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(75, 128, 70, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 6px rgba(75, 128, 70, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(75, 128, 70, 0);
+    }
+}
+
+.popup-buttons button {
+    animation: buttonPulse 2s infinite;
+}

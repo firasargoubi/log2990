@@ -4,7 +4,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-lines */
 import { TestBed } from '@angular/core/testing';
-import { LobbyService } from './lobby.service';
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
@@ -12,13 +11,13 @@ import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
 import { take } from 'rxjs/operators';
+import { LobbyService } from './lobby.service';
 
 describe('LobbyService', () => {
     let service: LobbyService;
     let socketMock: any;
 
     beforeEach(() => {
-        // Create a mock for socket.io
         socketMock = {
             id: 'socket-id-123',
             connected: true,
@@ -28,7 +27,6 @@ describe('LobbyService', () => {
             connect: jasmine.createSpy('connect'),
         };
 
-        // Mock the io function
         (window as any).io = jasmine.createSpy('io').and.returnValue(socketMock);
 
         TestBed.configureTestingModule({
@@ -36,7 +34,6 @@ describe('LobbyService', () => {
         });
 
         service = TestBed.inject(LobbyService);
-        // Replace the socket with our mock
         (service as any).socket = socketMock;
     });
 
@@ -313,7 +310,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate the socket.on callback being triggered
             const callArgs = socketMock.on.calls.allArgs().find((args: any[]) => args[0] === 'lobbyCreated');
             if (callArgs) {
                 const onLobbyCreatedCallback = callArgs[1];
@@ -332,7 +328,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('lobbyLocked');
             callback(testData);
         });
@@ -348,7 +343,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('gameStarted');
             callback(testData);
         });
@@ -368,7 +362,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('turnStarted');
             callback(testData);
         });
@@ -389,6 +382,7 @@ describe('LobbyService', () => {
                     currentPlayerActionPoints: 0,
                     shortestMoves: [],
                     debug: false,
+                    gameMode: 'default',
                 } as GameState,
                 playerMoved: 'player1',
                 newPosition: { x: 1, y: 1 },
@@ -402,13 +396,11 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('movementProcessed');
             callback(testData);
         });
 
         it('should handle onMovementProcessed event without availableMoves', (done) => {
-            // Create a complete GameState but with undefined availableMoves
             const gameStateData: Partial<GameState> = {
                 id: 'game1',
                 board: [],
@@ -422,26 +414,22 @@ describe('LobbyService', () => {
                 currentPlayerActionPoints: 0,
             };
 
-            // Remove the availableMoves property explicitly to test that case
             const testData = {
                 gameState: gameStateData as GameState,
                 playerMoved: 'player1',
                 newPosition: { x: 1, y: 1 },
             };
 
-            // We need to ensure availableMoves is undefined
             (testData.gameState as any).availableMoves = undefined;
 
             service
                 .onMovementProcessed()
                 .pipe(take(1))
                 .subscribe((data) => {
-                    // Should add empty availableMoves array
                     expect(data.gameState.availableMoves).toEqual([]);
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('movementProcessed');
             callback(testData);
         });
@@ -457,7 +445,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('boardModified');
             callback(testData);
         });
@@ -473,7 +460,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('error');
             callback(errorMessage);
         });
@@ -489,7 +475,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('lobbyUpdated');
             callback(testData);
         });
@@ -499,11 +484,9 @@ describe('LobbyService', () => {
                 .onHostDisconnected()
                 .pipe(take(1))
                 .subscribe(() => {
-                    // Just verifying the event is received
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('hostDisconnected');
             callback();
         });
@@ -529,7 +512,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('attackResult');
             callback(testData);
         });
@@ -545,7 +527,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('startCombat');
             callback(testData);
         });
@@ -561,7 +542,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('combatEnded');
             callback(testData);
         });
@@ -577,7 +557,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('gameOver');
             callback(testData);
         });
@@ -593,7 +572,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('fleeSuccess');
             callback(testData);
         });
@@ -609,21 +587,90 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('fleeFailure');
             callback(testData);
         });
     });
+    describe('Team management', () => {
+        it('should handle teamCreated event', (done) => {
+            const testData = {
+                team1Server: [] as Player[],
+                team2Server: [] as Player[],
+                updatedGameState: {} as GameState,
+            };
 
-    // Helper function to find the callback for a specific socket event
+            service
+                .teamCreated()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    expect(data).toEqual(testData);
+                    done();
+                });
+
+            const callback = findSocketCallback('teamsCreated');
+            callback(testData);
+        });
+    });
+    describe('Team management', () => {
+        it('should create teams', () => {
+            const players: Player[] = [{ id: 'player1', name: 'Player 1' } as Player, { id: 'player2', name: 'Player 2' } as Player];
+
+            service.createTeams('lobby1', players);
+
+            expect(socketMock.emit).toHaveBeenCalledWith('createTeams', { lobbyId: 'lobby1', players });
+        });
+    });
+    describe('Inventory management', () => {
+        it('should handle inventoryFull event', (done) => {
+            const MAX_INVENTORY_SIZE = 3;
+            const MAX_ITEM_VALUE = 4;
+            const testData = { item: 1, currentInventory: [2, MAX_INVENTORY_SIZE, MAX_ITEM_VALUE] };
+
+            service
+                .onInventoryFull()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    expect(data).toEqual(testData);
+                    done();
+                });
+
+            const callback = findSocketCallback('inventoryFull');
+            callback(testData);
+        });
+
+        it('should resolve inventory', () => {
+            service.resolveInventory('lobby1', 1, 2);
+            expect(socketMock.emit).toHaveBeenCalledWith('resolveInventory', { lobbyId: 'lobby1', oldItem: 1, newItem: 2 });
+        });
+
+        it('should cancel inventory choice', () => {
+            service.cancelInventoryChoice('lobby1');
+            expect(socketMock.emit).toHaveBeenCalledWith('cancelInventoryChoice', { lobbyId: 'lobby1' });
+        });
+    });
+
+    describe('Board management', () => {
+        it('should handle boardModified event', (done) => {
+            const testData = { board: [] };
+
+            service
+                .onBoardModified()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    expect(data).toEqual(testData);
+                    done();
+                });
+
+            const callback = findSocketCallback('boardModified');
+            callback(testData);
+        });
+    });
+
     function findSocketCallback(eventName: string): Function {
-        // Configure socket.on spy to track calls with their arguments
         if (!socketMock.on.calls) {
-            // Make sure we have access to the calls
             socketMock.on = jasmine.createSpy('on');
         }
 
-        // Subscribe to the event to ensure the socket.on is called
         switch (eventName) {
             case 'lobbyLocked':
                 service.onLobbyLocked().pipe(take(1)).subscribe();
@@ -667,11 +714,16 @@ describe('LobbyService', () => {
             case 'fleeFailure':
                 service.onFleeFailure().pipe(take(1)).subscribe();
                 break;
+            case 'teamsCreated':
+                service.teamCreated().pipe(take(1)).subscribe();
+                break;
+            case 'inventoryFull':
+                service.onInventoryFull().pipe(take(1)).subscribe();
+                break;
             default:
                 throw new Error(`Event '${eventName}' not handled in findSocketCallback`);
         }
 
-        // Find the registration for this event
         const args = socketMock.on.calls.allArgs().find((args: any[]) => args[0] === eventName);
 
         if (!args) {

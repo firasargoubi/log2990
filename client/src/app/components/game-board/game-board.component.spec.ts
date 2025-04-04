@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { SimpleChange } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { OBJECT_MULTIPLIER } from '@app/Consts/app.constants';
+import { OBJECT_MULTIPLIER } from '@app/Consts/app-constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { GameState } from '@common/game-state';
 import { Subject } from 'rxjs';
@@ -32,6 +32,7 @@ describe('GameBoardComponent', () => {
                 defense: 0,
                 maxLife: 0,
                 winCount: 0,
+                pendingItem: 0,
             },
             {
                 id: 'player2',
@@ -44,6 +45,7 @@ describe('GameBoardComponent', () => {
                 defense: 0,
                 maxLife: 0,
                 winCount: 0,
+                pendingItem: 0,
             },
         ],
         playerPositions: [
@@ -67,6 +69,7 @@ describe('GameBoardComponent', () => {
         currentPlayerMovementPoints: 0,
         currentPlayerActionPoints: 0,
         debug: false,
+        gameMode: 'default',
     });
 
     beforeEach(async () => {
