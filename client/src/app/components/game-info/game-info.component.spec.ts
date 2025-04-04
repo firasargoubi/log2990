@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { GameState } from '@common/game-state';
-import { GameInfoComponent } from './game-info.component';
 import { Player } from '@common/player';
+import { GameInfoComponent } from './game-info.component';
 
 describe('GameInfoComponent', () => {
     let component: GameInfoComponent;
@@ -55,7 +55,7 @@ describe('GameInfoComponent', () => {
             attack: 5,
             defense: 3,
             winCount: 0,
-            pendingItem: 0, // Added the missing property
+            pendingItem: 0,
         };
         component.gameState = {
             id: 'game1',
@@ -95,7 +95,7 @@ describe('GameInfoComponent', () => {
             attack: 6,
             defense: 4,
             winCount: 0,
-            pendingItem: 0, // Added the missing property
+            pendingItem: 0,
         };
         component.gameState = {
             id: 'game1',
@@ -135,7 +135,7 @@ describe('GameInfoComponent', () => {
             attack: 3,
             defense: 1,
             winCount: 0,
-            pendingItem: 0, // Added the missing property
+            pendingItem: 0,
         };
         component.gameState = undefined;
         expect(component.getTeam(player)).toBe('');

@@ -115,7 +115,7 @@ describe('InventoryComponent', () => {
                 currentPlayerMovementPoints: 0,
                 currentPlayerActionPoints: 0,
                 debug: false,
-                gameMode: 'default', // Add appropriate value for gameMode
+                gameMode: 'default',
             };
 
             movementProcessedSubject.next({
@@ -143,7 +143,7 @@ describe('InventoryComponent', () => {
                     currentPlayerMovementPoints: 0,
                     currentPlayerActionPoints: 0,
                     debug: false,
-                    gameMode: 'default', // Add appropriate value for gameMode
+                    gameMode: 'default',
                 },
                 playerMoved: 'another',
                 newPosition: { x: 0, y: 0 },
