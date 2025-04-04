@@ -4,7 +4,6 @@
 import { BoardSocketConstants } from '@app/constants/board-const';
 import { BoardService } from '@app/services/board.service';
 import { GameLobby } from '@common/game-lobby';
-
 import { GameState } from '@common/game-state';
 import { Game, ObjectsTypes, TILE_DELIMITER, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
@@ -690,7 +689,7 @@ describe('BoardService', () => {
     });
     it('should return false in isOccupied if position not occupied and item is SPAWN or EMPTY and tile not wall/door', () => {
         const state: GameState = {
-            board: [[ObjectsTypes.SPAWN * TILE_DELIMITER + TileTypes.Floor]],
+            board: [[ObjectsTypes.SPAWN * TILE_DELIMITER + TileTypes.Grass]],
             playerPositions: [{ x: 1, y: 1 }],
         } as any;
 
@@ -699,7 +698,7 @@ describe('BoardService', () => {
     });
     it('should replace RANDOM tiles with a random object type', () => {
         const gameState: GameState = {
-            board: [[ObjectsTypes.RANDOM * TILE_DELIMITER + TileTypes.Floor], [0, 0]],
+            board: [[ObjectsTypes.RANDOM * TILE_DELIMITER + TileTypes.Grass], [0, 0]],
         } as any;
 
         (boardService as any).randomizeItem(gameState);
@@ -711,17 +710,17 @@ describe('BoardService', () => {
         expect([ObjectsTypes.BOOTS, ObjectsTypes.SWORD, ObjectsTypes.POTION, ObjectsTypes.WAND, ObjectsTypes.JUICE, ObjectsTypes.CRYSTAL]).to.include(
             objectValue,
         );
-        expect(tileType).to.equal(TileTypes.Floor);
+        expect(tileType).to.equal(TileTypes.Grass);
     });
 
     it('should not modify non-RANDOM tiles', () => {
         const gameState: GameState = {
-            board: [[ObjectsTypes.SPAWN * TILE_DELIMITER + TileTypes.Floor], [ObjectsTypes.BOOTS * TILE_DELIMITER + TileTypes.Wall]],
+            board: [[ObjectsTypes.SPAWN * TILE_DELIMITER + TileTypes.Grass], [ObjectsTypes.BOOTS * TILE_DELIMITER + TileTypes.Wall]],
         } as any;
 
         (boardService as any).randomizeItem(gameState);
 
-        expect(gameState.board[0][0]).to.equal(ObjectsTypes.SPAWN * TILE_DELIMITER + TileTypes.Floor);
+        expect(gameState.board[0][0]).to.equal(ObjectsTypes.SPAWN * TILE_DELIMITER + TileTypes.Grass);
         expect(gameState.board[1][0]).to.equal(ObjectsTypes.BOOTS * TILE_DELIMITER + TileTypes.Wall);
     });
 
@@ -734,7 +733,7 @@ describe('BoardService', () => {
 
     it('should exclude already present object types from randomization', () => {
         const gameState: GameState = {
-            board: [[ObjectsTypes.BOOTS * TILE_DELIMITER + TileTypes.Floor], [ObjectsTypes.RANDOM * TILE_DELIMITER + TileTypes.Floor]],
+            board: [[ObjectsTypes.BOOTS * TILE_DELIMITER + TileTypes.Grass], [ObjectsTypes.RANDOM * TILE_DELIMITER + TileTypes.Grass]],
         } as any;
 
         (boardService as any).randomizeItem(gameState);

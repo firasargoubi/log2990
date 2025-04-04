@@ -19,6 +19,7 @@ describe('SocketService', () => {
     let validationHandler: any;
     let disconnectHandler: any;
     let boardService: any;
+    let itemService: any;
     let ioStub: any;
 
     beforeEach(() => {
@@ -83,9 +84,9 @@ describe('SocketService', () => {
             validationHandler as any,
             disconnectHandler as any,
             boardService as any,
+            itemService as any,
         );
 
-        // Override the io property
         (socketService as any).io = ioStub;
     });
 
@@ -107,11 +108,9 @@ describe('SocketService', () => {
         socketService.init();
         expect(ioStub.on.calledWith('connection')).to.equal(true);
 
-        // Get connection handler
         const connectionHandler = ioStub.on.firstCall.args[1];
         connectionHandler(mockSocket);
 
-        // Check that all event handlers are registered
         const expectedEvents = [
             'createLobby',
             'joinLobby',
@@ -159,7 +158,6 @@ describe('SocketService', () => {
             expect(lobbyHandler.createLobby.calledWith(game)).to.equal(true);
             expect(mockSocket.emit.calledWith('lobbyCreated', { lobby })).to.equal(true);
 
-            // Test with invalid data
             mockSocket.emit.resetHistory();
             createLobbyHandler(null);
             expect(mockSocket.emit.calledWith('error', 'Invalid game data')).to.equal(true);
@@ -178,12 +176,10 @@ describe('SocketService', () => {
             joinLobbyHandler({ lobbyId: 'lobby1', player });
             expect(lobbyHandler.handleJoinLobbyRequest.calledWith(mockSocket, 'lobby1', player)).to.equal(true);
 
-            // Test with invalid data
             mockSocket.emit.resetHistory();
             joinLobbyHandler(null);
             expect(mockSocket.emit.calledWith('error', 'Invalid player data')).to.equal(true);
 
-            // Test with missing player
             mockSocket.emit.resetHistory();
             joinLobbyHandler({ lobbyId: 'lobby1', player: null });
             expect(mockSocket.emit.calledWith('error', 'Invalid player data')).to.equal(true);
@@ -201,7 +197,6 @@ describe('SocketService', () => {
             leaveLobbyHandler({ lobbyId: 'lobby1', playerName: 'Player 1' });
             expect(lobbyHandler.leaveLobby.calledWith(mockSocket, 'lobby1', 'Player 1')).to.equal(true);
 
-            // Test with invalid data
             mockSocket.emit.resetHistory();
             leaveLobbyHandler(null);
             expect(mockSocket.emit.calledWith('error', 'Invalid lobby or player data')).to.equal(true);
@@ -232,7 +227,6 @@ describe('SocketService', () => {
             lockLobbyHandler('lobby1');
             expect(lobbyHandler.lockLobby.calledWith(mockSocket, 'lobby1')).to.equal(true);
 
-            // Test with invalid lobby ID
             mockSocket.emit.resetHistory();
             lockLobbyHandler(null);
             expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
@@ -255,14 +249,12 @@ describe('SocketService', () => {
             expect(lobbyHandler.getLobby.calledWith('lobby1')).to.equal(true);
             expect(callbackStub.calledWith(lobby)).to.equal(true);
 
-            // Test with invalid lobby ID
             callbackStub.resetHistory();
             mockSocket.emit.resetHistory();
             getLobbyHandler(null, callbackStub);
             expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
             expect(callbackStub.calledWith(null)).to.equal(true);
 
-            // Test with non-existent lobby
             callbackStub.resetHistory();
             lobbyHandler.getLobby.returns(null);
             getLobbyHandler('nonexistent', callbackStub);
@@ -286,20 +278,17 @@ describe('SocketService', () => {
             expect(lobbyHandler.getLobby.calledWith('lobby1')).to.equal(true);
             expect(callbackStub.calledWith('game1')).to.equal(true);
 
-            // Test with invalid lobby ID
             callbackStub.resetHistory();
             mockSocket.emit.resetHistory();
             getGameIdHandler(null, callbackStub);
             expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
             expect(callbackStub.calledWith(null)).to.equal(true);
 
-            // Test with lobby not having gameId
             callbackStub.resetHistory();
             lobbyHandler.getLobby.returns({ id: 'lobby2' } as GameLobby);
             getGameIdHandler('lobby2', callbackStub);
             expect(callbackStub.calledWith(null)).to.equal(true);
 
-            // Test with non-existent lobby
             callbackStub.resetHistory();
             lobbyHandler.getLobby.returns(null);
             getGameIdHandler('nonexistent', callbackStub);
@@ -326,14 +315,12 @@ describe('SocketService', () => {
             expect(validationHandler.verifyRoom.calledWith(mockSocket, 'game1')).to.equal(true);
             expect(callbackStub.calledWith({ exists: true, isLocked: false })).to.equal(true);
 
-            // Test with null data
             callbackStub.resetHistory();
             validationHandler.verifyRoom.resetHistory();
             verifyRoomHandler(null, callbackStub);
             expect(mockSocket.emit.calledWith('error', 'Invalid game ID')).to.equal(true);
             expect(callbackStub.calledWith({ exists: false })).to.equal(true);
 
-            // Test with undefined gameId
             callbackStub.resetHistory();
             mockSocket.emit.resetHistory();
             verifyRoomHandler({ gameId: undefined }, callbackStub);
@@ -359,14 +346,12 @@ describe('SocketService', () => {
             expect(validationHandler.verifyAvatars.calledWith(mockSocket, 'lobby1')).to.equal(true);
             expect(callbackStub.calledWith({ avatars: ['avatar1', 'avatar2'] })).to.equal(true);
 
-            // Test with null data
             callbackStub.resetHistory();
             mockSocket.emit.resetHistory();
             verifyAvatarsHandler(null, callbackStub);
             expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
             expect(callbackStub.calledWith({ avatars: [] })).to.equal(true);
 
-            // Test with undefined lobbyId
             callbackStub.resetHistory();
             mockSocket.emit.resetHistory();
             verifyAvatarsHandler({ lobbyId: undefined }, callbackStub);
@@ -392,14 +377,12 @@ describe('SocketService', () => {
             expect(validationHandler.verifyUsername.calledWith(mockSocket, 'lobby1')).to.equal(true);
             expect(callbackStub.calledWith({ usernames: ['user1', 'user2'] })).to.equal(true);
 
-            // Test with null data
             callbackStub.resetHistory();
             mockSocket.emit.resetHistory();
             verifyUsernameHandler(null, callbackStub);
             expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
             expect(callbackStub.calledWith({ usernames: [] })).to.equal(true);
 
-            // Test with undefined lobbyId
             callbackStub.resetHistory();
             mockSocket.emit.resetHistory();
             verifyUsernameHandler({ lobbyId: undefined }, callbackStub);
@@ -419,7 +402,6 @@ describe('SocketService', () => {
             requestStartHandler('lobby1');
             expect(gameHandler.handleRequestStart.calledWith(mockSocket, 'lobby1')).to.equal(true);
 
-            // Test with invalid input
             mockSocket.emit.resetHistory();
             requestStartHandler(null);
             expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
@@ -437,7 +419,6 @@ describe('SocketService', () => {
             endTurnHandler({ lobbyId: 'lobby1' });
             expect(gameHandler.handleEndTurn.calledWith(mockSocket, 'lobby1')).to.equal(true);
 
-            // Test with invalid input
             mockSocket.emit.resetHistory();
             endTurnHandler(null);
             expect(mockSocket.emit.calledWith('error', 'Game not found.')).to.equal(true);
@@ -456,7 +437,6 @@ describe('SocketService', () => {
             requestMovementHandler({ lobbyId: 'lobby1', coordinates });
             expect(gameHandler.handleRequestMovement.calledWith(mockSocket, 'lobby1', coordinates)).to.equal(true);
 
-            // Test with invalid coordinates
             mockSocket.emit.resetHistory();
             requestMovementHandler({ lobbyId: 'lobby1', coordinates: null });
             expect(mockSocket.emit.calledWith('error', 'Invalid coordinates')).to.equal(true);
@@ -489,17 +469,14 @@ describe('SocketService', () => {
             openDoorHandler({ lobbyId: 'lobby1', tile });
             expect(gameHandler.openDoor.calledWith(mockSocket, tile, 'lobby1')).to.equal(true);
 
-            // Test with null data
             mockSocket.emit.resetHistory();
             openDoorHandler(null);
             expect(mockSocket.emit.calledWith('error', 'Invalid door data')).to.equal(true);
 
-            // Test with null lobbyId
             mockSocket.emit.resetHistory();
             openDoorHandler({ lobbyId: null, tile });
             expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
 
-            // Test with null tile
             mockSocket.emit.resetHistory();
             openDoorHandler({ lobbyId: 'lobby1', tile: null });
             expect(mockSocket.emit.calledWith('error', 'Invalid tile data')).to.equal(true);
@@ -518,17 +495,14 @@ describe('SocketService', () => {
             closeDoorHandler({ lobbyId: 'lobby1', tile });
             expect(gameHandler.closeDoor.calledWith(mockSocket, tile, 'lobby1')).to.equal(true);
 
-            // Test with null data
             mockSocket.emit.resetHistory();
             closeDoorHandler(null);
             expect(mockSocket.emit.calledWith('error', 'Invalid door data')).to.equal(true);
 
-            // Test with null lobbyId
             mockSocket.emit.resetHistory();
             closeDoorHandler({ lobbyId: null, tile });
             expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
 
-            // Test with null tile
             mockSocket.emit.resetHistory();
             closeDoorHandler({ lobbyId: 'lobby1', tile: null });
             expect(mockSocket.emit.calledWith('error', 'Invalid tile data')).to.equal(true);

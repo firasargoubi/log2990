@@ -34,7 +34,6 @@ describe('CombatComponent', () => {
     beforeEach(async () => {
         jasmine.clock().install();
 
-        // Initialize subjects with default values
         attackResultSubject = new BehaviorSubject({
             attackRoll: 5,
             defenseRoll: 3,
@@ -97,7 +96,6 @@ describe('CombatComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    // **Countdown Management Tests**
     it('should start the countdown and decrement the time', () => {
         component.countDown = 3;
         component.startCountdown();
@@ -179,13 +177,10 @@ describe('CombatComponent', () => {
     it('should handle onAttackResult() correctly', () => {
         component.ngOnInit();
 
-        // Reset the timer to avoid interference
         component.endTimer();
 
-        // Ensure canEscape is true to get the correct countdown value
         component.canEscape = true;
 
-        // Trigger the attack result event
         attackResultSubject.next({
             attackRoll: 5,
             defenseRoll: 3,
@@ -200,17 +195,14 @@ describe('CombatComponent', () => {
 
         fixture.detectChanges();
 
-        // Verify all expected changes
         expect(component.attackDice).toBe(5);
         expect(component.defenceDice).toBe(3);
         expect(component.damage).toBe(2);
         expect(component.canAct).toBeFalse();
 
-        // The countdown should be 5 if canEscape is true (BASE_COUNTDOWN)
         expect(component.countDown).toBe(5);
         expect(component.isCountdownActive()).toBeTrue();
 
-        // Clean up
         component.endTimer();
     });
 
@@ -230,8 +222,6 @@ describe('CombatComponent', () => {
     });
 
     it('should display a notification when the combat ends', () => {
-        // First, set up the onCombatEnded subscription since it's missing in the component
-        // We need to manually add the missing subscription
         component['subscriptions'].push(
             mockLobbyService.onCombatEnded().subscribe((data) => {
                 component.combatEnded = true;
@@ -239,14 +229,11 @@ describe('CombatComponent', () => {
             }),
         );
 
-        // Reset call history to ensure we only see new calls
         mockNotificationService.showInfo.calls.reset();
 
-        // Trigger the combat ended event
         combatEndedSubject.next({ loser: { name: 'Joueur 2' } as Player });
         fixture.detectChanges();
 
-        // Now verify that the notification was shown with the correct message
         expect(mockNotificationService.showInfo).toHaveBeenCalledWith('La partie est terminée! Joueur 2 a perdu !');
     });
 
@@ -410,7 +397,6 @@ describe('CombatComponent', () => {
         });
 
         it('should handle onStartCombat if branch correctly', () => {
-            // Add the missing subscription for onStartCombat
             component['subscriptions'].push(
                 mockLobbyService.onStartCombat().subscribe((data) => {
                     component.playerTurn = data.firstPlayer.id;
@@ -419,11 +405,9 @@ describe('CombatComponent', () => {
                 }),
             );
 
-            // Trigger the onStartCombat event
             startCombatSubject.next({ firstPlayer: { id: 'player2', name: 'Joueur 2' } as Player });
             fixture.detectChanges();
 
-            // Verify the expected state changes
             expect(component.playerTurn).toBe('player2');
             expect(component.isPlayerTurn).toBeFalse();
             expect(component.canAct).toBeFalse();
@@ -475,15 +459,11 @@ describe('CombatComponent', () => {
         });
 
         it('should evaluate canEscape as true when currentPlayer.amountEscape is undefined (using ?? 0)', () => {
-            // We need to manually set the property since canEscape is set in onFlee
             component.ngOnInit();
             component.currentPlayer.amountEscape = undefined;
 
-            // The real implementation has this logic: this.canEscape = (this.currentPlayer.amountEscape ?? 0) < 2;
-            // So we need to set it manually to simulate the correct behavior
             component.canEscape = true;
 
-            // Verify canEscape is true (which it should be when amountEscape is undefined)
             expect(component.canEscape).toBeTrue();
             component.endTimer();
         });

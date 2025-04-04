@@ -20,10 +20,14 @@ export class ItemService {
     dropItems(loserIndex: number, gameState: GameState): void {
         const playerCoordinates = gameState.playerPositions[loserIndex];
         const player = gameState.players[loserIndex];
-        for (const item of player.items) {
+        const itemsToDrop = [...player.items];
+        player.items = [];
+
+        for (const item of itemsToDrop) {
             const tileCoordinate = this.pathFindingService.findClosestAvailableSpot(gameState, playerCoordinates);
-            gameState.board[tileCoordinate.x][tileCoordinate.y] += item * 10;
-            player.items = player.items.filter((i) => i !== item);
+            if (tileCoordinate.x !== -1 && tileCoordinate.y !== -1) {
+                gameState.board[tileCoordinate.x][tileCoordinate.y] += item * 10;
+            }
         }
     }
 

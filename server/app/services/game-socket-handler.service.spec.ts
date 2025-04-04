@@ -232,7 +232,7 @@ describe('GameSocketHandlerService', () => {
         });
 
         it('should teleport successfully', () => {
-            const gameState = { board: [[TileTypes.Floor]] } as GameState;
+            const gameState = { board: [[TileTypes.Grass]] } as GameState;
             gameStates.set('lobby1', gameState);
             (boardService.handleTeleport as SinonStub).returns(gameState);
 
@@ -243,7 +243,7 @@ describe('GameSocketHandlerService', () => {
         });
 
         it('should handle teleport error', () => {
-            const gameState = { board: [[TileTypes.Floor]] } as GameState;
+            const gameState = { board: [[TileTypes.Grass]] } as GameState;
             gameStates.set('lobby1', gameState);
             (boardService.handleTeleport as SinonStub).throws(new Error('Teleport error'));
 
@@ -557,7 +557,7 @@ describe('GameSocketHandlerService', () => {
 
             gameState = {
                 players: [attacker, defender],
-                board: [[TileTypes.Floor]],
+                board: [[TileTypes.Grass]],
                 playerPositions: [
                     { x: 0, y: 0 },
                     { x: 0, y: 1 },
@@ -577,16 +577,16 @@ describe('GameSocketHandlerService', () => {
         it('should handle zero damage', () => {
             attacker.attack = 1;
             defender.defense = 10;
-            sandbox.stub(Math, 'random').returns(0); // Low rolls
+            sandbox.stub(Math, 'random').returns(0);
             service.handleAttackAction('lobby1', attacker, defender);
-            expect(defender.life).to.equal(4); // Juice effect
+            expect(defender.life).to.equal(4);
             expect(socket.emit.calledWith('attackResult', match({ damage: 0 }))).to.equal(true);
         });
 
         it('should end game if winCount reaches MAX_WIN_COUNT', () => {
             attacker.winCount = 2;
             defender.life = 1;
-            sandbox.stub(Math, 'random').returns(0.99); // High roll to ensure defeat
+            sandbox.stub(Math, 'random').returns(0.99);
             service.handleAttackAction('lobby1', attacker, defender);
             expect(attacker.winCount).to.equal(3);
             expect(socket.emit.calledWith('gameOver', { winner: 'Attacker' })).to.equal(true);
