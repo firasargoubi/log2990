@@ -173,7 +173,7 @@ describe('ItemService - dropItems', () => {
     });
 });
 
-describe('ItemService - applyPotionEffect', () => {
+describe('ItemService - applyPotionEffect & applyJuiceEffect', () => {
     let itemService: ItemService;
     let attacker: Player;
     let defender: Player;
@@ -207,7 +207,7 @@ describe('ItemService - applyPotionEffect', () => {
             defense: 1,
             winCount: 0,
             pendingItem: 0,
-            items: [],
+            items: [ObjectsTypes.JUICE],
         };
     });
 
@@ -261,5 +261,29 @@ describe('ItemService - applyPotionEffect', () => {
         defender.life = 7;
         itemService.applyPotionEffect(attacker, defender);
         expect(defender.life).to.equal(7);
+    });
+
+    it('should increase defender life by 3 if conditions are met', () => {
+        defender.life = 1;
+        itemService.applyJuiceEffect(defender);
+        expect(defender.life).to.equal(4);
+    });
+
+    it('should not change defender life if life is other than 1', () => {
+        defender.life = 2;
+        itemService.applyJuiceEffect(defender);
+        expect(defender.life).to.equal(2);
+    });
+
+    it('should not change defender life if defender does not have a potion', () => {
+        defender.items = [];
+        itemService.applyJuiceEffect(defender);
+        expect(defender.life).to.equal(9);
+    });
+
+    it('should not throw error if defender has undefined items', () => {
+        defender.items = undefined;
+        expect(() => itemService.applyJuiceEffect(defender)).not.to.throw();
+        expect(defender.life).to.equal(9);
     });
 });

@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable no-unused-expressions */
 import { GameLobby } from '@common/game-lobby';
+import { GameState } from '@common/game-state';
 import { expect } from 'chai';
 import { createSandbox, SinonStubbedInstance } from 'sinon';
 import { Socket } from 'socket.io';
 import { DisconnectHandlerService } from './disconnect-handler.service';
-import { LobbySocketHandlerService } from './lobby-socket-handler.service';
-import { PathfindingService } from './pathfinding.service';
 import { ItemService } from './item.service';
-import { GameState } from '@common/game-state';
+import { LobbySocketHandlerService } from './lobby-socket-handler.service';
 
 describe('DisconnectHandlerService', () => {
     const sandbox = createSandbox();
@@ -28,17 +27,13 @@ describe('DisconnectHandlerService', () => {
             ['lobby2', { players: [{ id: 'socket2', name: 'Player2' }] } as GameLobby],
         ]);
 
-        const gameStatesMock = new Map<string, GameState>();
-        const pathFindingServiceMock = sandbox.createStubInstance(PathfindingService);
+        const gameStatesMock = new Map<string, GameState>([
+            ['lobby1', { playerPositions: [] } as GameState],
+            ['lobby2', { playerPositions: [] } as GameState],
+        ]);
         const itemServiceMock = sandbox.createStubInstance(ItemService);
 
-        disconnectHandlerService = new DisconnectHandlerService(
-            lobbiesMock,
-            lobbySocketHandlerMock,
-            gameStatesMock,
-            pathFindingServiceMock,
-            itemServiceMock,
-        );
+        disconnectHandlerService = new DisconnectHandlerService(lobbiesMock, lobbySocketHandlerMock, gameStatesMock, itemServiceMock);
     });
 
     afterEach(() => {
