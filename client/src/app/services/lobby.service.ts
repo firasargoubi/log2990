@@ -269,6 +269,14 @@ export class LobbyService {
         });
     }
 
+    teamCreated(): Observable<{ team1Server: Player[]; team2Server: Player[]; updatedGameState: GameState }> {
+        return new Observable((observer) => {
+            this.socket.on('teamsCreated', (data) => {
+                observer.next(data);
+            });
+        });
+    }
+
     onFleeSuccess(): Observable<{ fleeingPlayer: Player }> {
         return new Observable((observer) => {
             this.socket.on('fleeSuccess', (data) => {
@@ -312,5 +320,9 @@ export class LobbyService {
 
     closeDoor(lobbyId: string, tile: Tile): void {
         this.socket.emit('closeDoor', { lobbyId, tile });
+    }
+
+    createTeams(lobbyId: string, players: Player[]): void {
+        this.socket.emit('createTeams', { lobbyId, players });
     }
 }

@@ -167,6 +167,7 @@ export const PLAYING_PAGE = {
     lobbyIdParam: 'id',
     homeRoute: '/home',
     defaultActionPoints: 1,
+    ctf: 'capture',
 };
 
 export const PLAYING_PAGE_DESCRIPTION = {

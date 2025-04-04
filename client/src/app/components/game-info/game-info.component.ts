@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
+import { GameState } from '@common/game-state';
+import { ObjectsTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 
 @Component({
@@ -17,7 +19,16 @@ export class GameInfoComponent {
     @Input() activePlayer: string = '';
     @Input() players: Player[] = [];
     @Input() deletedPlayers: Player[] = [];
+    @Input() isCTF: boolean = false;
+    @Input() gameState: GameState | undefined;
+    objectTypes = ObjectsTypes;
+
     getPlayersDeleted(): Player[] {
         return this.deletedPlayers;
+    }
+
+    getTeam(player: Player): string {
+        if (!this.gameState?.teams) return '';
+        return this.gameState.teams.team1.some((p) => p.id === player.id) ? 'Red' : 'Blue';
     }
 }
