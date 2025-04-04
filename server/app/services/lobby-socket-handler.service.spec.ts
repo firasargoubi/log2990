@@ -558,7 +558,7 @@ describe('LobbySocketHandlerService', () => {
         const addedPlayer = updatedLobby?.players.find((p) => p.name === 'VirtualPlayer1');
 
         expect(addedPlayer).to.not.be.undefined;
-        expect(addedPlayer?.id).to.match(/^virtual-\d+-[a-z0-9]+$/); // Matches the generated ID pattern
+        expect(addedPlayer?.id).to.match(/^virtual-\d+-[a-z0-9]+$/);
         expect(addedPlayer?.avatar).to.equal('virtual-avatar');
         expect(addedPlayer?.name).to.equal('VirtualPlayer1');
     });

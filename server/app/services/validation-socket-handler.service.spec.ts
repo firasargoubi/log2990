@@ -297,11 +297,9 @@ describe('ValidationSocketHandlerService', () => {
         expect(name).to.match(/Bot(\d+)?$/);
     });
     it('should enter the while loop and generate a unique bot name when the base bot name is taken', () => {
-        // Force Math.random to return 0 so that randomName is always VIRTUAL_PLAYER_NAMES[0]
         const randomStub = sandbox.stub(Math, 'random').returns(0);
         const randomName = VIRTUAL_PLAYER_NAMES[0];
 
-        // Setup lobby with all virtual names already used and include the base bot name
         const lobby: GameLobby = {
             id: 'lobby1',
             players: [
