@@ -450,6 +450,14 @@ export class GameSocketHandlerService {
 
     // Fonction pour gérer la connexion de nouveaux joueurs au chat
 
+    getGameStateOrEmitError(socket: Socket, lobbyId: string): GameState | null {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) {
+            socket.emit(GameEvents.Error, gameSocketMessages.gameNotFound);
+            return null;
+        }
+        return gameState;
+    }
     private getDiceValue(playerDice: string): number {
         const D4_VALUE = 4; // Define the value for D4 dice
         const D6_VALUE = 6; // Define the value for D6 dice
@@ -460,14 +468,6 @@ export class GameSocketHandlerService {
             return D6_VALUE;
         }
         return 0;
-    }
-    private getGameStateOrEmitError(socket: Socket, lobbyId: string): GameState | null {
-        const gameState = this.gameStates.get(lobbyId);
-        if (!gameState) {
-            socket.emit(GameEvents.Error, gameSocketMessages.gameNotFound);
-            return null;
-        }
-        return gameState;
     }
 
     private async delay(ms: number) {

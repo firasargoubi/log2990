@@ -25,11 +25,11 @@ export class MessagesComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         if (this.lobbyId) {
-            this.chatService.joinLobby(this.lobbyId); // ⬅️ Rejoindre le chat du lobby
+            this.chatService.joinLobby(this.lobbyId);
         }
 
         this.chatService.onMessage().subscribe(() => {
-            this.chatMessages = [...this.chatService.chatMessages]; // ✅ forcer la maj locale
+            this.chatMessages = [...this.chatService.chatMessages];
         });
     }
 
@@ -38,8 +38,8 @@ export class MessagesComponent implements OnInit, OnDestroy {
     }
 
     sendMessage(playerName: string, message: string): void {
-        this.chatService.sendMessage(this.lobbyId, this.playerName, message); // ✅ utiliser this.lobbyId
-        // this.chatService.addChatMessage(this.playerName, message);
+        this.chatService.sendMessage(this.lobbyId, this.playerName, message);
+        this.chatService.addChatMessage(this.playerName, message);
         this.newMessage = '';
     }
 
