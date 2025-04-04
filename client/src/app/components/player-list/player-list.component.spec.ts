@@ -1,15 +1,22 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
+import { PlayerListComponent } from './player-list.component';
 import { PlayerCardComponent } from '@app/components/player-card/player-card.component';
 import { Player } from '@common/player';
-import { PlayerListComponent } from './player-list.component';
+import { DebugElement } from '@angular/core';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { LobbyService } from '@app/services/lobby.service';
+import { of } from 'rxjs';
+import { VirtualPlayerDialogComponent } from '@app/components/virtual-player-dialog/virtual-player-dialog.component';
 
 describe('PlayerListComponent', () => {
     let component: PlayerListComponent;
     let fixture: ComponentFixture<PlayerListComponent>;
     let mockPlayers: Player[];
+    let mockDialog: jasmine.SpyObj<MatDialog>;
+    let mockLobbyService: jasmine.SpyObj<LobbyService>;
+    let mockDialogRef: jasmine.SpyObj<MatDialogRef<any>>;
 
     beforeEach(async () => {
         mockPlayers = [
@@ -41,9 +48,16 @@ describe('PlayerListComponent', () => {
             },
         ];
 
+        mockDialog = jasmine.createSpyObj('MatDialog', ['open']);
+        mockLobbyService = jasmine.createSpyObj('LobbyService', ['joinLobby']);
+        mockDialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
+
         await TestBed.configureTestingModule({
             imports: [PlayerListComponent, PlayerCardComponent],
+            providers: [{ provide: LobbyService, useValue: mockLobbyService }],
         }).compileComponents();
+
+        TestBed.overrideProvider(MatDialog, { useValue: mockDialog });
 
         fixture = TestBed.createComponent(PlayerListComponent);
         component = fixture.componentInstance;
@@ -72,5 +86,39 @@ describe('PlayerListComponent', () => {
         const playerId = '2';
         component.remove(playerId);
         expect(component.removePlayer.emit).toHaveBeenCalledWith(playerId);
+    });
+
+    it('should open the virtual player dialog and call joinLobby if a result is returned', () => {
+        const mockResult = {
+            id: '3',
+            name: 'Virtual Player',
+            avatar: '',
+            isHost: false,
+            life: 0,
+            speed: 0,
+            attack: 0,
+            defense: 0,
+            maxLife: 0,
+            winCount: 0,
+            pendingItem: 0,
+        };
+
+        mockDialogRef.afterClosed.and.returnValue(of(mockResult));
+        mockDialog.open.and.returnValue(mockDialogRef);
+
+        component.openVirtualPlayerDialog();
+
+        expect(mockDialog.open).toHaveBeenCalledWith(VirtualPlayerDialogComponent, {});
+        expect(mockLobbyService.joinLobby).toHaveBeenCalledWith(component.lobbyId, mockResult);
+    });
+
+    it('should not call joinLobby if dialog result is null', () => {
+        mockDialogRef.afterClosed.and.returnValue(of(null));
+        mockDialog.open.and.returnValue(mockDialogRef);
+
+        component.openVirtualPlayerDialog();
+
+        expect(mockDialog.open).toHaveBeenCalledWith(VirtualPlayerDialogComponent, {});
+        expect(mockLobbyService.joinLobby).not.toHaveBeenCalled();
     });
 });

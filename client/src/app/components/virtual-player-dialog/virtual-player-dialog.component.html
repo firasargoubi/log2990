@@ -1,0 +1,33 @@
+<div class="dialog-container">
+    <h2>Ajouter un joueur virtuel</h2>
+
+    <div class="profile-selection">
+        <button class="profile-button aggressive" [class.selected]="selectedProfile === 'aggressive'" (click)="selectProfile('aggressive')">
+            Agressif
+        </button>
+
+        <button class="profile-button defensive" [class.selected]="selectedProfile === 'defensive'" (click)="selectProfile('defensive')">
+            Défensif
+        </button>
+    </div>
+
+    @if (selectedProfile) {
+    <div class="generated-bonuses">
+        <h3>Bonus attribués :</h3>
+        <ul>
+            @if (generatedBonuses.life) {
+            <li>+2 Vie</li>
+            } @if (generatedBonuses.speed) {
+            <li>+2 Vitesse</li>
+            }
+            <li>Dé d'attaque : {{ generatedBonuses.attack }}</li>
+            <li>Dé de défense : {{ generatedBonuses.defense }}</li>
+        </ul>
+    </div>
+    }
+
+    <div class="dialog-actions">
+        <button mat-button (click)="onCancel()">Annuler</button>
+        <button mat-raised-button color="primary" (click)="onConfirm()" [disabled]="!selectedProfile">Ajouter le joueur</button>
+    </div>
+</div>

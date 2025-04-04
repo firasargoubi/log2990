@@ -20,4 +20,7 @@ export interface Player {
     currentAP?: number;
     winCount: number;
     items?: number[];
+    virtualPlayerData?: {
+        profile: 'aggressive' | 'defensive';
+    };
 }
