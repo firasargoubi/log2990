@@ -45,6 +45,7 @@ export class BoardService {
             currentPlayerMovementPoints: BoardSocketConstants.DefaultMovementPoints,
             currentPlayerActionPoints: BoardSocketConstants.DefaultActionPoints,
             debug: false,
+            gameMode: gameData.mode,
         };
 
         this.sortPlayersBySpeed(gameState);
