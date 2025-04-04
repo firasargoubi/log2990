@@ -275,14 +275,15 @@ export class GameSocketHandlerService {
 
         winner.life = winner.maxLife;
         loser.life = loser.maxLife;
-        this.itemService.dropItems(loserIndex, gameState);
-        this.io.to(lobbyId).emit('combatEnded', { loser });
 
         gameState.playerPositions[loserIndex] = newSpawn;
+        gameState.players[loserIndex] = loser;
         gameState.currentPlayerActionPoints = 0;
         gameState.players[winnerIndex] = winner;
         gameState.players[winnerIndex].currentAP = 0;
-        gameState.players[loserIndex] = loser;
+        this.itemService.dropItems(loserIndex, gameState);
+        this.io.to(lobbyId).emit('combatEnded', { loser });
+
         let newGameState;
         if (loser.id === gameState.currentPlayer) {
             newGameState = this.boardService.handleEndTurn(gameState);

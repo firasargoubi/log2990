@@ -25,7 +25,6 @@ export class DisconnectHandlerService {
             if (playerIndex !== -1) {
                 const player = lobby.players[playerIndex];
                 const gameState = this.gameStates.get(lobbyId);
-                console.log(gameState);
                 this.itemService.dropItems(playerIndex, gameState);
                 this.lobbySocketHandler.leaveGame(socket, lobbyId, player.name);
                 this.lobbySocketHandler.leaveLobby(socket, lobbyId, player.name);

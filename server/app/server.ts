@@ -11,7 +11,6 @@ import { DisconnectHandlerService } from './services/disconnect-handler.service'
 import { GameSocketHandlerService } from './services/game-socket-handler.service';
 import { GameService } from './services/game.service';
 import { ItemService } from './services/item.service';
-import { ItemService } from './services/item.service';
 import { LobbySocketHandlerService } from './services/lobby-socket-handler.service';
 import { PathfindingService } from './services/pathfinding.service';
 import { ValidationSocketHandlerService } from './services/validation-socket-handler.service';
@@ -42,7 +41,6 @@ export class Server {
         const lobbyMap = new Map<string, GameLobby>();
         const gameStateMap = new Map<string, GameState>();
         const lobbyHandler = new LobbySocketHandlerService(lobbyMap);
-        const gameHandler = new GameSocketHandlerService(lobbyMap, gameStateMap, boardService, lobbyHandler, pathfindingService, itemService);
         const gameHandler = new GameSocketHandlerService(lobbyMap, gameStateMap, boardService, lobbyHandler, pathfindingService, itemService);
         const validationHandler = new ValidationSocketHandlerService(lobbyMap);
         const disconnectHandler = new DisconnectHandlerService(lobbyMap, lobbyHandler, gameStateMap, pathfindingService, itemService);

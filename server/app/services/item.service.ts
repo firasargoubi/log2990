@@ -1,16 +1,11 @@
 import { GameState } from '@common/game-state';
-import { GameState } from '@common/game-state';
 import { ITEM_EFFECTS, ObjectsTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Service } from 'typedi';
 import { PathfindingService } from './pathfinding.service';
-import { Service } from 'typedi';
-import { PathfindingService } from './pathfinding.service';
 
 @Service()
-@Service()
 export class ItemService {
-    constructor(private pathFindingService: PathfindingService) {}
     constructor(private pathFindingService: PathfindingService) {}
     applyEffect(player: Player, item: ObjectsTypes): void {
         const effect = ITEM_EFFECTS[item];
