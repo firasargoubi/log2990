@@ -184,6 +184,7 @@ export class GameSocketHandlerService {
                         handleEndTurn: this.handleEndTurn.bind(this),
                         startBattle: this.startBattle.bind(this),
                         delay: this.delay,
+                        handleOpenDoor: this.openDoor.bind(this),
                     },
                 });
             }
