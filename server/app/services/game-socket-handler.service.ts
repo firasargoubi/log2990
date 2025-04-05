@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
 import { Coordinates } from '@common/coordinates';
-import { GameEvents } from '@common/events';
+import { EventType, GameEvents } from '@common/events';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
 import { ObjectsTypes, Tile, TILE_DELIMITER, TileTypes } from '@common/game.interface';
@@ -172,6 +172,7 @@ export class GameSocketHandlerService {
             this.gameStates.set(lobbyId, updatedGameState);
 
             this.io.to(lobbyId).emit(GameEvents.TurnStarted, { gameState: updatedGameState });
+            this.io.to(lobbyId).emit(GameEvents.EventLog, { gameState: updatedGameState, eventType: EventType.TurnStarted });
         } catch (error) {
             this.io.to(lobbyId).emit(GameEvents.Error, `${gameSocketMessages.turnError}${error.message}`);
         }
@@ -193,6 +194,10 @@ export class GameSocketHandlerService {
         const newGameState = this.boardService.handleBoardChange(updatedGameState);
         this.gameStates.set(lobbyId, newGameState);
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
+        this.io.to(lobbyId).emit(GameEvents.EventLog, {
+            gameState: newGameState,
+            eventType: EventType.DoorClosed,
+        });
     }
 
     openDoor(socket: Socket, tile: Tile, lobbyId: string) {
@@ -212,6 +217,10 @@ export class GameSocketHandlerService {
         const newGameState = this.boardService.handleBoardChange(updatedGameState);
         this.gameStates.set(lobbyId, newGameState);
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
+        this.io.to(lobbyId).emit(GameEvents.EventLog, {
+            gameState: newGameState,
+            eventType: EventType.DoorOpened,
+        });
     }
 
     startBattle(lobbyId: string, currentPlayer: Player, opponent: Player) {
@@ -244,6 +253,11 @@ export class GameSocketHandlerService {
         } else if (opponent.speed === currentPlayer.speed) {
             firstPlayer = currentPlayer;
         }
+        this.io.to(lobbyId).emit(GameEvents.EventLog, {
+            gameState,
+            eventType: EventType.CombatStarted,
+            involvedPlayers: [currentPlayer.name, opponent.name],
+        });
         this.io.to(currentPlayer.id).to(opponent.id).emit('startCombat', { firstPlayer });
     }
 
@@ -293,6 +307,11 @@ export class GameSocketHandlerService {
         winner.life = winner.maxLife;
         loser.life = loser.maxLife;
         this.io.to(lobbyId).emit('combatEnded', { loser });
+        this.io.to(lobbyId).emit(GameEvents.EventLog, {
+            gameState,
+            eventType: EventType.CombatEnded,
+            involvedPlayers: [winner.name, loser.name],
+        });
 
         gameState.playerPositions[loserIndex] = newSpawn;
         gameState.currentPlayerActionPoints = 0;
@@ -325,6 +344,11 @@ export class GameSocketHandlerService {
 
         this.gameStates.set(lobbyId, updatedGameState);
         this.io.to(lobbyId).emit('boardModified', { gameState: updatedGameState });
+        if (debug) {
+            this.io.to(lobbyId).emit(GameEvents.EventLog, { gameState: updatedGameState, eventType: EventType.DebugActivated });
+        } else {
+            this.io.to(lobbyId).emit(GameEvents.EventLog, { gameState: updatedGameState, eventType: EventType.DebugDeactivated });
+        }
     }
 
     createTeams(lobbyId: string, players: Player[]) {

@@ -53,8 +53,11 @@
     </div>
 
     <div class="sidebar right-sidebar">
-        <app-messages></app-messages>
-
+        <div class="chat-box">
+            <app-messages></app-messages>
+            <app-game-log></app-game-log>
+        </div>
+           
         <!-- Countdown for the active player or others -->
 
         @if (isCurrentPlayerTurn()) {

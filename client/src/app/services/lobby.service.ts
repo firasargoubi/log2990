@@ -293,6 +293,14 @@ export class LobbyService {
         });
     }
 
+    onEventLog(): Observable<{ gameState: GameState; eventType: string; involvedPlayers?: string[]; involvedPlayer?: string }> {
+        return new Observable((observer) => {
+            this.socket.on('eventLog', (data) => {
+                observer.next(data);
+            });
+        });
+    }
+
     onInventoryFull(): Observable<{ item: number; currentInventory: number[] }> {
         return new Observable((observer) => {
             this.socket.on('inventoryFull', (data) => {
