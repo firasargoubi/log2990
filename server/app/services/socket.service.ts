@@ -75,8 +75,8 @@ export class SocketService {
             this.handleAttackAction(data.lobbyId, data.attacker, data.defender);
         });
 
-        socket.on('flee', (data: { lobbyId: string; player: Player }) => {
-            this.handleFlee(data.lobbyId, data.player);
+        socket.on('flee', (data: { lobbyId: string; player: Player; opponent: Player }) => {
+            this.handleFlee(data.lobbyId, data.player, data.opponent);
         });
 
         socket.on('createTeams', (data: { lobbyId: string; players: Player[] }) => {
@@ -299,8 +299,8 @@ export class SocketService {
         this.gameSocketHandlerService.handleAttackAction(lobbyId, attacker, defender);
     }
 
-    private handleFlee(lobbyId: string, player: Player) {
-        this.gameSocketHandlerService.handleFlee(lobbyId, player);
+    private handleFlee(lobbyId: string, player: Player, opponent: Player) {
+        this.gameSocketHandlerService.handleFlee(lobbyId, player, opponent);
     }
 
     private createTeams(lobbyId: string, players: Player[]) {

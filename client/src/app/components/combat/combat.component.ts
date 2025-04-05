@@ -112,7 +112,7 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
         }
 
         this.stopCombatCountdown();
-        this.lobbyService.flee(this.gameState.id, this.currentPlayer);
+        this.lobbyService.flee(this.gameState.id, this.currentPlayer, this.opponent);
     }
 
     isCountdownActive(): boolean {

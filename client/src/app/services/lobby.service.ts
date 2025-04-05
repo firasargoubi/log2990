@@ -219,8 +219,8 @@ export class LobbyService {
         this.socket.emit('attack', { lobbyId, attacker, defender });
     }
 
-    flee(lobbyId: string, player: Player): void {
-        this.socket.emit('flee', { lobbyId, player });
+    flee(lobbyId: string, player: Player, opponent: Player): void {
+        this.socket.emit('flee', { lobbyId, player, opponent });
     }
 
     onAttackResult(): Observable<{
@@ -293,7 +293,7 @@ export class LobbyService {
         });
     }
 
-    onEventLog(): Observable<{ gameState: GameState; eventType: string; involvedPlayers?: string[]; involvedPlayer?: string }> {
+    onEventLog(): Observable<{ gameState: GameState; eventType: string; involvedPlayers?: string[]; involvedPlayer?: string; description?: string }> {
         return new Observable((observer) => {
             this.socket.on('eventLog', (data) => {
                 observer.next(data);

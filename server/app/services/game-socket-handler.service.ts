@@ -102,6 +102,8 @@ export class GameSocketHandlerService {
                 updatedGameState = result.gameState;
                 updatedGameState = this.boardService.updatePlayerMoves(updatedGameState);
 
+                this.itemEvent(result, lobbyId);
+
                 if (result.shouldStop) {
                     if (currentPlayer.pendingItem !== 0) {
                         this.handleInventoryFull(updatedGameState, currentPlayer, socket, lobbyId);
@@ -139,6 +141,21 @@ export class GameSocketHandlerService {
         }
     }
 
+    itemEvent(result: { gameState: GameState; shouldStop: boolean; itemPicked?: boolean; item?: number }, lobbyId: string) {
+        if (result.itemPicked && result.item === ObjectsTypes.FLAG) {
+            this.io.to(lobbyId).emit(GameEvents.EventLog, {
+                gameState: result.gameState,
+                eventType: EventType.FlagPicked,
+            });
+        } else if (result.itemPicked && result.item !== ObjectsTypes.FLAG) {
+            this.io.to(lobbyId).emit(GameEvents.EventLog, {
+                gameState: result.gameState,
+                eventType: EventType.ItemPicked,
+            });
+        } else {
+            return;
+        }
+    }
     handleInventoryFull(updatedGameState: GameState, currentPlayer: Player, socket: Socket, lobbyId: string) {
         socket.emit('inventoryFull', {
             item: currentPlayer.pendingItem,
@@ -283,6 +300,11 @@ export class GameSocketHandlerService {
                 gameState.deletedPlayers = [];
             }
             gameState.deletedPlayers.push(deletedPlayer);
+            this.io.to(lobbyId).emit(GameEvents.EventLog, {
+                gameState,
+                eventType: EventType.PlayerAbandonned,
+                involvedPlayer: deletedPlayer.name,
+            });
         }
         const newGameState = this.boardService.handleBoardChange(gameState);
         this.gameStates.set(lobbyId, gameState);
@@ -424,9 +446,18 @@ export class GameSocketHandlerService {
             attacker,
             defender,
         });
+        this.io
+            .to(attacker.id)
+            .to(defender.id)
+            .emit(GameEvents.EventLog, {
+                gameState,
+                eventType: EventType.AttackResult,
+                involvedPlayers: [attacker.name, defender.name],
+                description: `${attacker.name} a attaqué ${defender.name} et lui a infligé ${damage} dégâts.`,
+            });
     }
 
-    handleFlee(lobbyId: string, fleeingPlayer: Player) {
+    handleFlee(lobbyId: string, fleeingPlayer: Player, opponent: Player) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
 
@@ -457,8 +488,26 @@ export class GameSocketHandlerService {
             this.gameStates.set(lobbyId, gameState);
             this.io.to(lobbyId).emit(GameEvents.FleeSuccess, { fleeingPlayer, isSuccessful });
             this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState });
+            this.io
+                .to(fleeingPlayer.id)
+                .to(opponent.id)
+                .emit(GameEvents.EventLog, {
+                    gameState,
+                    eventType: EventType.FleeSuccess,
+                    involvedPlayers: [fleeingPlayer.name],
+                    description: `${fleeingPlayer.name} a fui ${opponent.name}.`,
+                });
         } else {
             this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
+            this.io
+                .to(fleeingPlayer.id)
+                .to(opponent.id)
+                .emit(GameEvents.EventLog, {
+                    gameState,
+                    eventType: EventType.FleeFailure,
+                    involvedPlayers: [fleeingPlayer.name],
+                    description: `${fleeingPlayer.name} n'a pas pu fuire.`,
+                });
         }
 
         this.gameStates.set(lobbyId, gameState);

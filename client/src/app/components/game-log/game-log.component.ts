@@ -17,7 +17,9 @@ export class GameLogComponent implements OnInit {
             if (
                 data.eventType === 'Le tour a commencé' ||
                 data.eventType === 'Une porte a été fermée' ||
-                data.eventType === 'Une porte a été ouverte'
+                data.eventType === 'Une porte a été ouverte' ||
+                data.eventType === 'Le drapeau a été ramassé' ||
+                data.eventType === 'Un objet a été ramassé'
             ) {
                 const involvedPlayerId = data.gameState.currentPlayer;
                 const involvedPlayer = data.gameState.players.find((player) => player.id === involvedPlayerId)?.name;
@@ -30,6 +32,13 @@ export class GameLogComponent implements OnInit {
                 this.addGameLog(data.eventType, undefined, undefined, description);
             } else if (data.eventType === 'Debug activé' || data.eventType === 'Debug désactivé') {
                 this.addGameLog(data.eventType, undefined, undefined, undefined);
+            } else if (data.eventType === 'Un joueur a abandonné') {
+                const involvedPlayer = data?.involvedPlayer;
+                this.addGameLog(data.eventType, involvedPlayer);
+            } else if (data.eventType === "Résultat de l'attaque" || data.eventType === 'Fuite réussie' || data.eventType === 'Fuite échouée') {
+                const involvedPlayers = data?.involvedPlayers;
+                const description = data?.description;
+                this.addGameLog(data.eventType, undefined, involvedPlayers, description);
             }
         });
     }
