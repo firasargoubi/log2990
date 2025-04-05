@@ -11,6 +11,7 @@ import { Service } from 'typedi';
 import { BoardService } from './board.service';
 import { LobbySocketHandlerService } from './lobby-socket-handler.service';
 import { PathfindingService } from './pathfinding.service';
+import { VirtualPlayerService } from '@app/services/virtual-player.service';
 
 @Service()
 export class GameSocketHandlerService {
@@ -21,6 +22,7 @@ export class GameSocketHandlerService {
         private boardService: BoardService,
         private lobbySocketHandlerService: LobbySocketHandlerService,
         private pathfindingService: PathfindingService,
+        private virtualService: VirtualPlayerService,
     ) {}
     setServer(server: Server) {
         this.io = server;
@@ -168,10 +170,23 @@ export class GameSocketHandlerService {
         if (!gameState) return;
         try {
             const updatedGameState = this.boardService.handleTurn(gameState);
-
             this.gameStates.set(lobbyId, updatedGameState);
-
             this.io.to(lobbyId).emit(GameEvents.TurnStarted, { gameState: updatedGameState });
+            const currentPlayer = updatedGameState.players.find((p) => p.id === updatedGameState.currentPlayer);
+            if (currentPlayer && currentPlayer.virtualPlayerData) {
+                this.virtualService.handleVirtualMovement({
+                    lobbyId,
+                    virtualPlayer: currentPlayer,
+                    getGameState: () => this.gameStates.get(lobbyId),
+                    boardService: this.boardService,
+                    callbacks: {
+                        handleRequestMovement: this.handleRequestMovement.bind(this),
+                        handleEndTurn: this.handleEndTurn.bind(this),
+                        startBattle: this.startBattle.bind(this),
+                        delay: this.delay,
+                    },
+                });
+            }
         } catch (error) {
             this.io.to(lobbyId).emit(GameEvents.Error, `${gameSocketMessages.turnError}${error.message}`);
         }
@@ -448,8 +463,8 @@ export class GameSocketHandlerService {
         return gameState;
     }
 
-    private async delay(ms: number) {
-        return new Promise((resolve) => setTimeout(resolve, ms));
+    private async delay(ms: number): Promise<void> {
+        return new Promise<void>((resolve) => setTimeout(resolve, ms));
         // eslint-disable-next-line max-lines
     }
 
