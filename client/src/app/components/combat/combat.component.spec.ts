@@ -166,7 +166,7 @@ describe('CombatComponent', () => {
         component.currentPlayer.amountEscape = 1;
 
         component.onFlee();
-        expect(mockLobbyService.flee).toHaveBeenCalledWith('game1', component.currentPlayer);
+        expect(mockLobbyService.flee).toHaveBeenCalledWith('game1', component.currentPlayer, component.opponent);
 
         component.currentPlayer.amountEscape = 2;
         component.onFlee();
@@ -374,7 +374,7 @@ describe('CombatComponent', () => {
             component.canAct = true;
             component.gameState = { id: 'game1', players: [component.currentPlayer, component.opponent], currentPlayer: 'player1' } as GameState;
             component.onFlee();
-            expect(mockLobbyService.flee).toHaveBeenCalledWith('game1', component.currentPlayer);
+            expect(mockLobbyService.flee).toHaveBeenCalledWith('game1', component.currentPlayer, component.opponent);
         });
 
         it('should not change currentPlayer.amountEscape if it is already defined and call flee', () => {
@@ -383,7 +383,7 @@ describe('CombatComponent', () => {
             component.gameState = { id: 'game1', players: [component.currentPlayer, component.opponent], currentPlayer: 'player1' } as GameState;
             component.onFlee();
             expect(component.currentPlayer.amountEscape).toBe(1);
-            expect(mockLobbyService.flee).toHaveBeenCalledWith('game1', component.currentPlayer);
+            expect(mockLobbyService.flee).toHaveBeenCalledWith('game1', component.currentPlayer, component.opponent);
         });
     });
 

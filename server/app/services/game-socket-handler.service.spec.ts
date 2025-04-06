@@ -393,10 +393,11 @@ describe('GameSocketHandlerService', () => {
 
     it('should prevent flee attempts after 2 failures', () => {
         const player = { id: 'p1', amountEscape: 2 } as Player;
+        const opponent = { id: 'p2', amountEscape: 3 } as Player;
         const gameState = { players: [player] } as GameState;
         gameStates.set('lobby1', gameState);
 
-        service.handleFlee('lobby1', player);
+        service.handleFlee('lobby1', player, opponent);
 
         expect(player.amountEscape).to.equal(2);
         expect(ioToStub.calledWith('lobby1')).to.equal(true);
@@ -482,14 +483,16 @@ describe('GameSocketHandlerService', () => {
 
         it('should exit handleFlee if gameState is not found', () => {
             const player = { id: 'p1' } as Player;
+            const opponent = { id: 'p2' } as Player;
 
-            service.handleFlee('lobbyNonexistent', player);
+            service.handleFlee('lobbyNonexistent', player, opponent);
 
             expect(ioToStub.called).to.equal(false);
         });
 
         it('should force successful flee in debug mode', () => {
             const player = { id: 'p1', amountEscape: 1 } as Player;
+            const opponent = { id: 'p2', amountEscape: 2 } as Player;
             const gameState = {
                 players: [player],
                 debug: true,
@@ -499,7 +502,7 @@ describe('GameSocketHandlerService', () => {
 
             sandbox.stub(Math, 'random').returns(0.99);
 
-            service.handleFlee('lobby1', player);
+            service.handleFlee('lobby1', player, opponent);
 
             expect(ioToStub.calledWith('lobby1')).to.equal(true);
             expect(emitStub.calledWith(GameEvents.FleeSuccess)).to.equal(true);
@@ -588,6 +591,7 @@ describe('GameSocketHandlerService', () => {
 
     it('should handle flee success', () => {
         const player = { id: 'p1', amountEscape: 1 } as Player;
+        const opponent = { id: 'p2', amountEscape: 3 } as Player;
         const gameState = {
             players: [player],
             debug: false,
@@ -597,7 +601,7 @@ describe('GameSocketHandlerService', () => {
 
         sandbox.stub(Math, 'random').returns(0.01);
 
-        service.handleFlee('lobby1', player);
+        service.handleFlee('lobby1', player, opponent);
 
         expect(ioToStub.calledWith('lobby1')).to.equal(true);
         expect(emitStub.calledWith(GameEvents.FleeSuccess)).to.equal(true);
@@ -608,6 +612,7 @@ describe('GameSocketHandlerService', () => {
 
     it('should handle flee failure', () => {
         const player = { id: 'p1', amountEscape: 1 } as Player;
+        const opponent = { id: 'p2', amountEscape: 3 } as Player;
         const gameState = {
             players: [player],
             debug: false,
@@ -617,7 +622,7 @@ describe('GameSocketHandlerService', () => {
 
         sandbox.stub(Math, 'random').returns(0.9);
 
-        service.handleFlee('lobby1', player);
+        service.handleFlee('lobby1', player, opponent);
 
         expect(ioToStub.calledWith('lobby1')).to.equal(true);
         expect(emitStub.calledWith(GameEvents.FleeFailure)).to.equal(true);
