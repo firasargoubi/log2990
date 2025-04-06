@@ -80,6 +80,10 @@ export class SocketService {
         socket.on('flee', (data: { lobbyId: string; player: Player }) => {
             this.handleFlee(data.lobbyId, data.player);
         });
+
+        socket.on('createTeams', (data: { lobbyId: string; players: Player[] }) => {
+            this.createTeams(data.lobbyId, data.players);
+        });
         socket.on('resolveInventory', (data) => this.handleResolveInventory(socket, data));
         socket.on('cancelInventoryChoice', (data) => this.handleCancelInventoryChoice(socket, data));
     }
@@ -305,5 +309,9 @@ export class SocketService {
 
     private handleFlee(lobbyId: string, player: Player) {
         this.gameSocketHandlerService.handleFlee(lobbyId, player);
+    }
+
+    private createTeams(lobbyId: string, players: Player[]) {
+        this.gameSocketHandlerService.createTeams(lobbyId, players);
     }
 }

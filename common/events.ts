@@ -13,4 +13,5 @@ export enum GameEvents {
     FleeFailure = 'fleeFailure',
     AttackEnd = 'attackEnd',
     ChangedSpawn = 'changedSpawnPoint',
+    TeamsCreated = 'teamsCreated',
 }

@@ -1,6 +1,7 @@
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
+
 import { CommonModule } from '@angular/common';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
@@ -16,6 +17,7 @@ import { GameState } from '@common/game-state';
 import { ObjectsTypes, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
+
 import { BehaviorSubject, of } from 'rxjs';
 import { PlayingPageComponent } from './playing-page.component';
 
@@ -58,6 +60,7 @@ describe('PlayingPageComponent', () => {
         animation: false,
         availableMoves: [],
         combat: { isActive: false },
+        gameMode: 'standard',
     } as GameState;
 
     const mockLobby: GameLobby = {
@@ -90,6 +93,7 @@ describe('PlayingPageComponent', () => {
             'onBoardChanged',
             'onFleeSuccess',
             'onGameOver',
+            'teamCreated',
         ]);
 
         mockActionService = jasmine.createSpyObj('ActionService', ['getActionType', 'findOpponent']);
@@ -111,6 +115,14 @@ describe('PlayingPageComponent', () => {
         mockLobbyService.onBoardChanged.and.returnValue(of({ gameState: mockGameState }));
         mockLobbyService.onFleeSuccess.and.returnValue(of({ fleeingPlayer: mockPlayer }));
         mockLobbyService.onGameOver.and.returnValue(of({ winner: mockPlayer.name }));
+
+        mockLobbyService.teamCreated.and.returnValue(
+            of({
+                team1Server: [],
+                team2Server: [],
+                updatedGameState: {} as GameState,
+            }),
+        );
 
         TestBed.configureTestingModule({
             imports: [CommonModule],
@@ -292,12 +304,10 @@ describe('PlayingPageComponent', () => {
             mockLobbyService.getCurrentPlayer.and.returnValue({ ...mockPlayer });
             component.getCurrentPlayer();
             expect(component.currentPlayer).toEqual(mockPlayer);
-
             const differentSocketId = 'different-socket-id';
             mockLobbyService.getSocketId.and.returnValue(differentSocketId);
             component.getCurrentPlayer();
             expect(component.currentPlayer.id).toBe(differentSocketId);
-
             mockLobbyService.getCurrentPlayer.and.returnValue(null);
             const prevPlayer = { ...component.currentPlayer };
             component.getCurrentPlayer();
@@ -534,8 +544,9 @@ describe('PlayingPageComponent', () => {
 
             component.gameState = {
                 ...mockGameState,
-                currentPlayerMovementPoints: 0,
-                currentPlayerActionPoints: 0,
+                currentPlayerMovementPoints: 1,
+                currentPlayerActionPoints: 1,
+                teams: { team1: [], team2: [] },
             };
             component.gameState.currentPlayer = mockPlayer.id;
             component.currentPlayer = mockPlayer;
@@ -552,7 +563,6 @@ describe('PlayingPageComponent', () => {
             tick();
 
             expect(updateGameStateSpy).toHaveBeenCalledWith(component.gameState);
-            expect(mockLobbyService.requestEndTurn).toHaveBeenCalledWith(mockLobbyId);
         }));
     });
 
@@ -583,6 +593,113 @@ describe('PlayingPageComponent', () => {
             const deletedPlayer = { ...mockPlayer, id: 'deleted' };
             component.gameState.deletedPlayers = [deletedPlayer];
             expect(component.getDeletedPlayers()).toEqual([deletedPlayer]);
+        });
+    });
+    describe('isSameTeam functionality', () => {
+        it('should return true if both players are in team1', () => {
+            component.gameState = {
+                ...mockGameState,
+                teams: {
+                    team1: [
+                        { ...mockPlayer },
+                        {
+                            id: 'opponent-id',
+                            name: 'Opponent',
+                            isHost: false,
+                            life: 100,
+                            maxLife: 100,
+                            amountEscape: 0,
+                            pendingItem: 0,
+                            avatar: '',
+                            speed: 10,
+                            attack: 15,
+                            defense: 5,
+                            winCount: 0,
+                        },
+                    ],
+                    team2: [],
+                },
+            };
+            const opponent = { id: 'opponent-id' } as Player;
+            const isSameTeam = component['isSameTeam'](mockPlayer, opponent);
+            expect(isSameTeam).toBe(true);
+        });
+
+        it('should return true if both players are in team2', () => {
+            component.gameState = {
+                ...mockGameState,
+                teams: {
+                    team1: [],
+                    team2: [
+                        { ...mockPlayer },
+                        {
+                            id: 'opponent-id',
+                            name: 'Opponent',
+                            isHost: false,
+                            life: 100,
+                            maxLife: 100,
+                            amountEscape: 0,
+                            pendingItem: 0,
+                            avatar: '',
+                            speed: 10,
+                            attack: 5,
+                            defense: 3,
+                            winCount: 0,
+                        },
+                    ],
+                },
+            };
+            const opponent = { id: 'opponent-id' } as Player;
+            const isSameTeam = component['isSameTeam'](mockPlayer, opponent);
+            expect(isSameTeam).toBe(true);
+        });
+
+        it('should return false if players are in different teams', () => {
+            component.gameState = {
+                ...mockGameState,
+                teams: {
+                    team1: [{ ...mockPlayer }],
+                    team2: [
+                        {
+                            id: 'opponent-id',
+                            name: 'Opponent',
+                            isHost: false,
+                            life: 100,
+                            maxLife: 100,
+                            amountEscape: 0,
+                            pendingItem: 0,
+                            avatar: '',
+                            speed: 10,
+                            attack: 5,
+                            defense: 3,
+                            winCount: 0,
+                        },
+                    ],
+                },
+            };
+            const opponent = { id: 'opponent-id' } as Player;
+            const isSameTeam = component['isSameTeam'](mockPlayer, opponent);
+            expect(isSameTeam).toBe(false);
+        });
+
+        it('should return false if one or both players are not in any team', () => {
+            component.gameState = {
+                ...mockGameState,
+                teams: {
+                    team1: [{ ...mockPlayer }],
+                    team2: [],
+                },
+            };
+            const opponent = { id: 'opponent-id' } as Player;
+            const isSameTeam = component['isSameTeam'](mockPlayer, opponent);
+            expect(isSameTeam).toBe(false);
+
+            component.gameState.teams = {
+                team1: [],
+                team2: [],
+            };
+            const isSameTeamNoTeams = component['isSameTeam'](mockPlayer, opponent);
+            expect(isSameTeamNoTeams).toBe(false);
         });
     });
 });

@@ -69,6 +69,7 @@ describe('GameBoardComponent', () => {
         currentPlayerMovementPoints: 0,
         currentPlayerActionPoints: 0,
         debug: false,
+        gameMode: 'default',
     });
 
     beforeEach(async () => {

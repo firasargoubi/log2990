@@ -19,7 +19,13 @@
             <button (click)="startGame()" [disabled]="!lobby || !currentPlayer || !lobby.isLocked">Commencer la partie</button>
             }
 
-            <app-player-list [currentPlayer]="currentPlayer" [players]="lobby.players" [hostId]="hostId" (removePlayer)="removePlayer($event)">
+            <app-player-list
+                [lobbyId]="lobby.id"
+                [currentPlayer]="currentPlayer"
+                [players]="lobby.players"
+                [hostId]="hostId"
+                (removePlayer)="removePlayer($event)"
+            >
             </app-player-list>
 
             @if (isHost()) {

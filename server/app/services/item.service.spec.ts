@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { GameState } from '@common/game-state';
-import { ITEM_EFFECTS, ObjectsTypes } from '@common/game.interface';
+import { GameType, ITEM_EFFECTS, ObjectsTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
@@ -118,6 +118,7 @@ describe('ItemService - dropItems', () => {
             spawnPoints: [{ x: 1, y: 1 }],
             currentPlayerMovementPoints: 6,
             debug: false,
+            gameMode: GameType.capture,
         };
     });
 

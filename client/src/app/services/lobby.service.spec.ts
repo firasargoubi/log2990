@@ -4,7 +4,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-lines */
 import { TestBed } from '@angular/core/testing';
-import { LobbyService } from './lobby.service';
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
@@ -12,6 +11,7 @@ import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
 import { take } from 'rxjs/operators';
+import { LobbyService } from './lobby.service';
 
 describe('LobbyService', () => {
     let service: LobbyService;
@@ -382,6 +382,7 @@ describe('LobbyService', () => {
                     currentPlayerActionPoints: 0,
                     shortestMoves: [],
                     debug: false,
+                    gameMode: 'default',
                 } as GameState,
                 playerMoved: 'player1',
                 newPosition: { x: 1, y: 1 },
@@ -590,6 +591,80 @@ describe('LobbyService', () => {
             callback(testData);
         });
     });
+    describe('Team management', () => {
+        it('should handle teamCreated event', (done) => {
+            const testData = {
+                team1Server: [] as Player[],
+                team2Server: [] as Player[],
+                updatedGameState: {} as GameState,
+            };
+
+            service
+                .teamCreated()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    expect(data).toEqual(testData);
+                    done();
+                });
+
+            const callback = findSocketCallback('teamsCreated');
+            callback(testData);
+        });
+    });
+    describe('Team management', () => {
+        it('should create teams', () => {
+            const players: Player[] = [{ id: 'player1', name: 'Player 1' } as Player, { id: 'player2', name: 'Player 2' } as Player];
+
+            service.createTeams('lobby1', players);
+
+            expect(socketMock.emit).toHaveBeenCalledWith('createTeams', { lobbyId: 'lobby1', players });
+        });
+    });
+    describe('Inventory management', () => {
+        it('should handle inventoryFull event', (done) => {
+            const MAX_INVENTORY_SIZE = 3;
+            const MAX_ITEM_VALUE = 4;
+            const testData = { item: 1, currentInventory: [2, MAX_INVENTORY_SIZE, MAX_ITEM_VALUE] };
+
+            service
+                .onInventoryFull()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    expect(data).toEqual(testData);
+                    done();
+                });
+
+            const callback = findSocketCallback('inventoryFull');
+            callback(testData);
+        });
+
+        it('should resolve inventory', () => {
+            service.resolveInventory('lobby1', 1, 2);
+            expect(socketMock.emit).toHaveBeenCalledWith('resolveInventory', { lobbyId: 'lobby1', oldItem: 1, newItem: 2 });
+        });
+
+        it('should cancel inventory choice', () => {
+            service.cancelInventoryChoice('lobby1');
+            expect(socketMock.emit).toHaveBeenCalledWith('cancelInventoryChoice', { lobbyId: 'lobby1' });
+        });
+    });
+
+    describe('Board management', () => {
+        it('should handle boardModified event', (done) => {
+            const testData = { board: [] };
+
+            service
+                .onBoardModified()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    expect(data).toEqual(testData);
+                    done();
+                });
+
+            const callback = findSocketCallback('boardModified');
+            callback(testData);
+        });
+    });
 
     function findSocketCallback(eventName: string): Function {
         if (!socketMock.on.calls) {
@@ -638,6 +713,12 @@ describe('LobbyService', () => {
                 break;
             case 'fleeFailure':
                 service.onFleeFailure().pipe(take(1)).subscribe();
+                break;
+            case 'teamsCreated':
+                service.teamCreated().pipe(take(1)).subscribe();
+                break;
+            case 'inventoryFull':
+                service.onInventoryFull().pipe(take(1)).subscribe();
                 break;
             default:
                 throw new Error(`Event '${eventName}' not handled in findSocketCallback`);
