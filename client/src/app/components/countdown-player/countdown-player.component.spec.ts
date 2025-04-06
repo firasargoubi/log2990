@@ -32,7 +32,6 @@ describe('CountdownPlayerComponent', () => {
         component.isAnimated = false;
         component['remainingTime'] = 60;
 
-        // Spy on window methods
         setIntervalSpy = spyOn(window, 'setInterval').and.returnValue(123 as any);
         clearIntervalSpy = spyOn(window, 'clearInterval');
     });
@@ -51,7 +50,6 @@ describe('CountdownPlayerComponent', () => {
         fixture.detectChanges();
         component['remainingTime'] = 10;
 
-        // Simulate countdown
         for (let i = 0; i < 5; i++) {
             component['remainingTime']--;
         }
@@ -63,8 +61,7 @@ describe('CountdownPlayerComponent', () => {
         fixture.detectChanges();
         component['remainingTime'] = 30;
 
-        // Simulate starting countdown
-        component['interval'] = 1; // Mock interval ID
+        component['interval'] = 1;
         component['pauseCountdown']();
 
         expect(component['interval']).toBeNull();
@@ -86,7 +83,7 @@ describe('CountdownPlayerComponent', () => {
     it('should clear interval on destroy', () => {
         fixture.detectChanges();
 
-        component['interval'] = 1; // Mock interval ID
+        component['interval'] = 1;
         component.ngOnDestroy();
 
         expect(component['interval']).toBeNull();
@@ -96,7 +93,6 @@ describe('CountdownPlayerComponent', () => {
     it('should start countdown when not in combat', () => {
         fixture.detectChanges();
 
-        // Reset any previous calls to setInterval
         setIntervalSpy.calls.reset();
 
         component.isInCombat = false;
@@ -112,29 +108,22 @@ describe('CountdownPlayerComponent', () => {
         component['interval'] = 123;
         component.isAnimated = true;
 
-        // Mock the behavior of the while loop checking animation state
         spyOn(component as any, 'startCountdown').and.callFake(() => {
-            // Mock implementation that avoids the while loop
             component['interval'] = 123;
-            // We won't actually start the interval in this test
         });
 
         component.ngOnChanges();
 
-        // Get the interval callback function from the original startCountdown call
         const intervalCallback = setIntervalSpy.calls.first()?.args[0];
 
-        // Call the callback to simulate time hitting zero with animation active
         if (intervalCallback) {
             intervalCallback();
         }
 
         expect(lobbyServiceSpy.requestEndTurn).not.toHaveBeenCalled();
 
-        // Now simulate animation ending
         component.isAnimated = false;
 
-        // Call again to check if it proceeds after animation ends
         if (intervalCallback) {
             intervalCallback();
         }
@@ -146,10 +135,8 @@ describe('CountdownPlayerComponent', () => {
         fixture.detectChanges();
         component['remainingTime'] = 30;
 
-        // Simulate starting countdown
-        component['interval'] = 123; // Mock interval ID
+        component['interval'] = 123;
 
-        // Simulate entering combat
         component.isInCombat = true;
         component.ngOnChanges();
 
@@ -160,24 +147,21 @@ describe('CountdownPlayerComponent', () => {
     it('should start a new countdown and clear any existing interval', () => {
         fixture.detectChanges();
 
-        // First set an interval
         component['interval'] = 123;
 
-        // Now call startCountdown which should clear the existing interval
         component['startCountdown'](30);
 
         expect(clearIntervalSpy).toHaveBeenCalledWith(123);
         expect(setIntervalSpy).toHaveBeenCalled();
-        expect(component['interval']).toBe(123); // New interval ID
+        expect(component['interval']).toBe(123);
     });
 
     it('should execute the interval callback properly', fakeAsync(() => {
         fixture.detectChanges();
         component['remainingTime'] = 5;
 
-        // Mock the setInterval to capture and execute the callback
         setIntervalSpy.and.callFake((callback: Function) => {
-            callback(); // Execute the callback once to test time decrement
+            callback();
             return 123;
         });
 

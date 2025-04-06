@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
     imports: [CommonModule],
 })
 export class ItemReplacePopupComponent {
-    @Input() items: number[] = []; // 3 items (2 existants + 1 nouveau)
+    @Input() items: number[] = [];
     @Input() maxSelection = 2;
 
     @Output() confirmReplace = new EventEmitter<number[]>();

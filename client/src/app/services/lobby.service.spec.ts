@@ -18,7 +18,6 @@ describe('LobbyService', () => {
     let socketMock: any;
 
     beforeEach(() => {
-        // Create a mock for socket.io
         socketMock = {
             id: 'socket-id-123',
             connected: true,
@@ -28,7 +27,6 @@ describe('LobbyService', () => {
             connect: jasmine.createSpy('connect'),
         };
 
-        // Mock the io function
         (window as any).io = jasmine.createSpy('io').and.returnValue(socketMock);
 
         TestBed.configureTestingModule({
@@ -36,7 +34,6 @@ describe('LobbyService', () => {
         });
 
         service = TestBed.inject(LobbyService);
-        // Replace the socket with our mock
         (service as any).socket = socketMock;
     });
 
@@ -313,7 +310,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate the socket.on callback being triggered
             const callArgs = socketMock.on.calls.allArgs().find((args: any[]) => args[0] === 'lobbyCreated');
             if (callArgs) {
                 const onLobbyCreatedCallback = callArgs[1];
@@ -332,7 +328,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('lobbyLocked');
             callback(testData);
         });
@@ -348,7 +343,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('gameStarted');
             callback(testData);
         });
@@ -368,7 +362,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('turnStarted');
             callback(testData);
         });
@@ -402,13 +395,11 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('movementProcessed');
             callback(testData);
         });
 
         it('should handle onMovementProcessed event without availableMoves', (done) => {
-            // Create a complete GameState but with undefined availableMoves
             const gameStateData: Partial<GameState> = {
                 id: 'game1',
                 board: [],
@@ -422,26 +413,22 @@ describe('LobbyService', () => {
                 currentPlayerActionPoints: 0,
             };
 
-            // Remove the availableMoves property explicitly to test that case
             const testData = {
                 gameState: gameStateData as GameState,
                 playerMoved: 'player1',
                 newPosition: { x: 1, y: 1 },
             };
 
-            // We need to ensure availableMoves is undefined
             (testData.gameState as any).availableMoves = undefined;
 
             service
                 .onMovementProcessed()
                 .pipe(take(1))
                 .subscribe((data) => {
-                    // Should add empty availableMoves array
                     expect(data.gameState.availableMoves).toEqual([]);
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('movementProcessed');
             callback(testData);
         });
@@ -457,7 +444,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('boardModified');
             callback(testData);
         });
@@ -473,7 +459,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('error');
             callback(errorMessage);
         });
@@ -489,7 +474,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('lobbyUpdated');
             callback(testData);
         });
@@ -499,11 +483,9 @@ describe('LobbyService', () => {
                 .onHostDisconnected()
                 .pipe(take(1))
                 .subscribe(() => {
-                    // Just verifying the event is received
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('hostDisconnected');
             callback();
         });
@@ -529,7 +511,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('attackResult');
             callback(testData);
         });
@@ -545,7 +526,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('startCombat');
             callback(testData);
         });
@@ -561,7 +541,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('combatEnded');
             callback(testData);
         });
@@ -577,7 +556,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('gameOver');
             callback(testData);
         });
@@ -593,7 +571,6 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('fleeSuccess');
             callback(testData);
         });
@@ -609,21 +586,16 @@ describe('LobbyService', () => {
                     done();
                 });
 
-            // Simulate socket event
             const callback = findSocketCallback('fleeFailure');
             callback(testData);
         });
     });
 
-    // Helper function to find the callback for a specific socket event
     function findSocketCallback(eventName: string): Function {
-        // Configure socket.on spy to track calls with their arguments
         if (!socketMock.on.calls) {
-            // Make sure we have access to the calls
             socketMock.on = jasmine.createSpy('on');
         }
 
-        // Subscribe to the event to ensure the socket.on is called
         switch (eventName) {
             case 'lobbyLocked':
                 service.onLobbyLocked().pipe(take(1)).subscribe();
@@ -671,7 +643,6 @@ describe('LobbyService', () => {
                 throw new Error(`Event '${eventName}' not handled in findSocketCallback`);
         }
 
-        // Find the registration for this event
         const args = socketMock.on.calls.allArgs().find((args: any[]) => args[0] === eventName);
 
         if (!args) {

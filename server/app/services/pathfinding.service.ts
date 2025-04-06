@@ -180,43 +180,42 @@ export class PathfindingService {
         return reachable;
     }
 
-    findClosestAvailableSpot(gameState: GameState, startPosition: Coordinates): Coordinates {
-        const occupiedPositions = new Set(gameState.playerPositions.map((pos) => JSON.stringify(pos)));
-        const queue: Coordinates[] = [startPosition];
+    findClosestAvailableSpot(gameState: GameState, startPosition: Coordinates): Coordinates | null {
+        let queue: Coordinates[] = [startPosition];
         const visited = new Set<string>();
-        visited.add(JSON.stringify(startPosition));
+        visited.add(`${startPosition.x},${startPosition.y}`);
         let queueStart = 0;
 
         while (queueStart < queue.length) {
             const current = queue[queueStart++];
-
-            if (this.isTileValid(current, gameState, occupiedPositions)) {
+            if (this.isTileValid(current, gameState)) {
+                queue = [];
+                visited.clear();
                 return current;
             }
 
             const directions = [
-                { x: -1, y: 0 },
-                { x: 1, y: 0 },
-                { x: 0, y: -1 },
-                { x: 0, y: 1 },
+                { x: -1, y: 0 }, // gauche
+                { x: 1, y: 0 }, // droite
+                { x: 0, y: -1 }, // haut
+                { x: 0, y: 1 }, // bas
+                { x: -1, y: -1 }, // diagonale haut-gauche
+                { x: -1, y: 1 }, // diagonale bas-gauche
+                { x: 1, y: -1 }, // diagonale haut-droite
+                { x: 1, y: 1 }, // diagonale bas-droite
             ];
 
             for (const dir of directions) {
-                const neighbor = {
-                    x: current.x + dir.x,
-                    y: current.y + dir.y,
-                };
+                const neighbor = { x: current.x + dir.x, y: current.y + dir.y };
+                const neighborKey = `${neighbor.x},${neighbor.y}`;
 
-                if (this.isWithinBounds(neighbor, gameState.board)) {
-                    const neighborKey = JSON.stringify(neighbor);
-                    if (!visited.has(neighborKey)) {
-                        visited.add(neighborKey);
-                        queue.push(neighbor);
-                    }
+                if (this.isWithinBounds(neighbor, gameState.board) && !visited.has(neighborKey)) {
+                    visited.add(neighborKey);
+                    queue.push(neighbor);
                 }
             }
         }
-        return { x: -1, y: -1 };
+        return null;
     }
 
     private getTileCost(tileType: number): number {
@@ -291,15 +290,18 @@ export class PathfindingService {
         return a.distance - b.distance;
     }
 
-    private isTileValid(tile: Coordinates, gameState: GameState, occupiedPositions: Set<string>): boolean {
-        const isOccupiedByPlayer = occupiedPositions.has(JSON.stringify(tile));
-        const isGrassTile = gameState.board[tile.x]?.[tile.y] === 0; // Example: 0 represents a valid grass tile
-        return !isOccupiedByPlayer && isGrassTile;
+    private isTileValid(tile: Coordinates, gameState: GameState): boolean {
+        const tileValue = gameState.board[tile.x][tile.y];
+        const tileType = tileValue % 10;
+
+        const isValidTerrain = tileType <= TileTypes.Ice || tileType === TileTypes.DoorOpen;
+
+        const isOccupied = gameState.playerPositions.some((pos) => pos.x === tile.x && pos.y === tile.y);
+        const containsObject = tileValue >= 10;
+        return isValidTerrain && !isOccupied && !containsObject;
     }
 
     private isWithinBounds(tile: Coordinates, board: number[][]): boolean {
-        if (tile.y < 0 || tile.y >= board.length) return false;
-        const row = board[tile.y];
-        return tile.x >= 0 && tile.x < row.length;
+        return tile.y >= 0 && tile.y < board.length && tile.x >= 0 && tile.x < board[tile.y].length;
     }
 }

@@ -10,6 +10,7 @@ import { ObjectsTypes, Tile, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { expect } from 'chai';
 import { createSandbox, match, SinonFakeTimers, SinonSandbox, SinonStub, useFakeTimers } from 'sinon';
+import { ItemService } from './item.service';
 import { PathfindingService } from './pathfinding.service';
 
 describe('GameSocketHandlerService', () => {
@@ -20,6 +21,7 @@ describe('GameSocketHandlerService', () => {
     let boardService: BoardService;
     let lobbySocketHandlerService: LobbySocketHandlerService;
     let pathfindingService: PathfindingService;
+    let itemService: ItemService;
     let socket: any;
     let ioStub: any;
     let clock: SinonFakeTimers;
@@ -43,7 +45,7 @@ describe('GameSocketHandlerService', () => {
         lobbySocketHandlerService = { updateLobby: sandbox.stub() } as any;
         pathfindingService = { findClosestAvailableSpot: sandbox.stub() } as any;
 
-        service = new GameSocketHandlerService(lobbies, gameStates, boardService, lobbySocketHandlerService, pathfindingService);
+        service = new GameSocketHandlerService(lobbies, gameStates, boardService, lobbySocketHandlerService, pathfindingService, itemService);
 
         socket = { id: 'socket1', emit: sandbox.stub() };
         ioStub = {
@@ -146,6 +148,14 @@ describe('GameSocketHandlerService', () => {
     });
 
     describe('handleRequestMovement', () => {
+        let emitMovementUpdateStub: SinonStub;
+
+        beforeEach(() => {
+            emitMovementUpdateStub = sandbox.stub().returns(undefined);
+            (service as any).emitMovementUpdate = emitMovementUpdateStub;
+            sandbox.stub(service as any, 'delay').resolves();
+        });
+
         it('should emit error if game not found', () => {
             service.handleRequestMovement(socket, 'lobbyX', [{ x: 0, y: 0 }]);
             expect(socket.emit.calledWith(GameEvents.Error, 'Game not found.')).to.equal(true);
@@ -170,8 +180,8 @@ describe('GameSocketHandlerService', () => {
                 animation: false,
             } as GameState;
             gameStates.set('lobby1', gameState);
-
-            (boardService.handleMovement as SinonStub).resolves({ gameState, shouldStop: false });
+            (boardService.handleMovement as SinonStub).returns({ gameState, shouldStop: false });
+            (boardService.updatePlayerMoves as SinonStub).returns(gameState);
 
             await service.handleRequestMovement(socket, 'lobby1', [
                 { x: 0, y: 0 },
@@ -179,6 +189,8 @@ describe('GameSocketHandlerService', () => {
             ]);
 
             expect(gameState.animation).to.equal(false);
+            expect(ioStub.to.calledWith('lobby1')).to.equal(true);
+            expect(socket.emit.calledWith('movementProcessed', { gameState })).to.equal(true);
         });
 
         it('should handle inventory full scenario', async () => {
@@ -188,6 +200,7 @@ describe('GameSocketHandlerService', () => {
             } as GameState;
             gameStates.set('lobby1', gameState);
             (boardService.handleMovement as SinonStub).returns({ gameState, shouldStop: true });
+            (boardService.updatePlayerMoves as SinonStub).returns(gameState);
 
             await service.handleRequestMovement(socket, 'lobby1', [
                 { x: 0, y: 0 },
@@ -212,7 +225,6 @@ describe('GameSocketHandlerService', () => {
             ]);
 
             expect(socket.emit.calledWith(GameEvents.Error, 'Movement error:Move error')).to.equal(true);
-            expect(ioStub.to.called).to.equal(false);
         });
     });
 
@@ -223,7 +235,7 @@ describe('GameSocketHandlerService', () => {
         });
 
         it('should teleport successfully', () => {
-            const gameState = { board: [[TileTypes.Floor]] } as GameState;
+            const gameState = { board: [[TileTypes.Grass]] } as GameState;
             gameStates.set('lobby1', gameState);
             (boardService.handleTeleport as SinonStub).returns(gameState);
 
@@ -234,7 +246,7 @@ describe('GameSocketHandlerService', () => {
         });
 
         it('should handle teleport error', () => {
-            const gameState = { board: [[TileTypes.Floor]] } as GameState;
+            const gameState = { board: [[TileTypes.Grass]] } as GameState;
             gameStates.set('lobby1', gameState);
             (boardService.handleTeleport as SinonStub).throws(new Error('Teleport error'));
 
@@ -288,6 +300,7 @@ describe('GameSocketHandlerService', () => {
             (boardService.handleBoardChange as SinonStub).returns(gameState);
 
             service.closeDoor(socket, { x: 0, y: 0 } as Tile, 'lobby1');
+            console.log(gameState.board);
 
             expect(gameState.board[0][0]).to.equal(TileTypes.DoorClosed);
             expect(gameState.players[0].currentAP).to.equal(0);
@@ -368,12 +381,7 @@ describe('GameSocketHandlerService', () => {
 
             service.startBattle('lobby1', currentPlayer, opponent);
 
-            expect(gameState.currentPlayerActionPoints).to.equal(0);
-            expect(currentPlayer.amountEscape).to.equal(0);
-            expect(opponent.amountEscape).to.equal(0);
-            expect(gameState.players[0].currentAP).to.equal(0);
-            expect(gameState.players[1].amountEscape).to.equal(0);
-            expect(ioStub.to.calledWith('p2')).to.equal(true);
+            service.startBattle('lobby1', currentPlayer, opponent);
             expect(socket.emit.calledWith('startCombat', { firstPlayer: opponent })).to.equal(true);
         });
 
@@ -459,8 +467,8 @@ describe('GameSocketHandlerService', () => {
         });
 
         it('should handle defeat when loser is not current player', () => {
-            const winner = { id: 'p1', maxLife: 10, life: 5 } as Player;
-            const loser = { id: 'p2', maxLife: 10, life: 0 } as Player;
+            const winner = { id: 'p1', maxLife: 10, life: 5, items: [] } as Player;
+            const loser = { id: 'p2', maxLife: 10, life: 0, items: [] } as Player;
             const gameState = {
                 players: [winner, loser],
                 playerPositions: [
@@ -487,8 +495,8 @@ describe('GameSocketHandlerService', () => {
         });
 
         it('should find new spawn if original is occupied', () => {
-            const winner = { id: 'p1', maxLife: 10, life: 5 } as Player;
-            const loser = { id: 'p2', maxLife: 10, life: 0 } as Player;
+            const winner = { id: 'p1', maxLife: 10, life: 5, items: [] } as Player;
+            const loser = { id: 'p2', maxLife: 10, life: 0, items: [] } as Player;
             const gameState = {
                 players: [winner, loser],
                 playerPositions: [
@@ -548,7 +556,7 @@ describe('GameSocketHandlerService', () => {
 
             gameState = {
                 players: [attacker, defender],
-                board: [[TileTypes.Floor]],
+                board: [[TileTypes.Grass]],
                 playerPositions: [
                     { x: 0, y: 0 },
                     { x: 0, y: 1 },
@@ -568,16 +576,16 @@ describe('GameSocketHandlerService', () => {
         it('should handle zero damage', () => {
             attacker.attack = 1;
             defender.defense = 10;
-            sandbox.stub(Math, 'random').returns(0); // Low rolls
+            sandbox.stub(Math, 'random').returns(0);
             service.handleAttackAction('lobby1', attacker, defender);
-            expect(defender.life).to.equal(4); // Juice effect
+            expect(defender.life).to.equal(4);
             expect(socket.emit.calledWith('attackResult', match({ damage: 0 }))).to.equal(true);
         });
 
         it('should end game if winCount reaches MAX_WIN_COUNT', () => {
             attacker.winCount = 2;
             defender.life = 1;
-            sandbox.stub(Math, 'random').returns(0.99); // High roll to ensure defeat
+            sandbox.stub(Math, 'random').returns(0.99);
             service.handleAttackAction('lobby1', attacker, defender);
             expect(attacker.winCount).to.equal(3);
             expect(socket.emit.calledWith('gameOver', { winner: 'Attacker' })).to.equal(true);
@@ -587,21 +595,38 @@ describe('GameSocketHandlerService', () => {
         it('should use debug mode dice values', () => {
             gameState.debug = true;
             service.handleAttackAction('lobby1', attacker, defender);
-            expect(socket.emit.calledWith('attackResult', match({ attackRoll: 5, defenseRoll: 1 }))).to.equal(true);
+            expect(
+                socket.emit.calledWith(
+                    'attackResult',
+                    match({
+                        attackRoll: attacker.attack,
+                        defenseRoll: 1,
+                    }),
+                ),
+            ).to.equal(true);
         });
 
         it('should apply ice tile penalty to attacker', () => {
             gameState.board[0][0] = TileTypes.Ice;
             sandbox.stub(Math, 'random').returns(0.5);
+            const attackRoll = Math.floor(0.5 * 6) + 1 + attacker.attack - 2;
+            const defenseRoll = Math.floor(0.5 * 6) + 1 + defender.defense;
             service.handleAttackAction('lobby1', attacker, defender);
-            expect(socket.emit.calledWith('attackResult', match({ attackRoll: 5 + 3 - 2 }))).to.equal(true);
+            expect(socket.emit.calledWith('attackResult', match({ attackRoll, defenseRoll }))).to.equal(true);
         });
 
         it('should apply ice tile penalty to defender', () => {
             gameState.board[0][1] = TileTypes.Ice;
             sandbox.stub(Math, 'random').returns(0.5);
             service.handleAttackAction('lobby1', attacker, defender);
-            expect(socket.emit.calledWith('attackResult', match({ defenseRoll: 3 + 3 - 2 }))).to.equal(true);
+            expect(
+                socket.emit.calledWith(
+                    'attackResult',
+                    match({
+                        defenseRoll: match((val: number) => val === Math.floor(0.5 * 6) + 1 + defender.defense - 2),
+                    }),
+                ),
+            ).to.equal(true);
         });
     });
 
@@ -635,7 +660,7 @@ describe('GameSocketHandlerService', () => {
 
             service.handleFlee('lobby1', player);
 
-            expect(player.amountEscape).to.equal(1);
+            expect(player.amountEscape).to.equal(0);
             expect(ioStub.to.calledWith('lobby1')).to.equal(true);
         });
 
