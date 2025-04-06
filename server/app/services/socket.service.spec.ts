@@ -14,13 +14,15 @@ describe('SocketService', () => {
     let httpServer: HttpServer;
     let socketService: SocketService;
     let mockSocket: any;
+    let ioStub: any;
+
     let lobbyHandler: any;
-    let gameHandler: any;
+    let gameLifecycleService: any;
+    let gameActionService: any;
     let validationHandler: any;
     let disconnectHandler: any;
     let boardService: any;
     let itemService: any;
-    let ioStub: any;
 
     beforeEach(() => {
         sandbox = createSandbox();
@@ -34,38 +36,32 @@ describe('SocketService', () => {
             leaveGame: sandbox.stub(),
             lockLobby: sandbox.stub(),
             getLobby: sandbox.stub(),
-            updateLobby: sandbox.stub(),
         };
-
-        gameHandler = {
+        gameLifecycleService = {
             setServer: sandbox.stub(),
             handleRequestStart: sandbox.stub(),
             handleEndTurn: sandbox.stub(),
-            handleRequestMovement: sandbox.stub(),
-            handleTeleport: sandbox.stub(),
             handleSetDebug: sandbox.stub(),
             handlePlayersUpdate: sandbox.stub(),
-            openDoor: sandbox.stub(),
-            closeDoor: sandbox.stub(),
+            handleFlee: sandbox.stub(),
+            getGameStateOrEmitError: sandbox.stub(),
+            createTeams: sandbox.stub(),
+        };
+
+        gameActionService = {
+            setServer: sandbox.stub(),
+            handleRequestMovement: sandbox.stub(),
             startBattle: sandbox.stub(),
             handleAttackAction: sandbox.stub(),
+            handleTeleport: sandbox.stub(),
+            openDoor: sandbox.stub(),
+            closeDoor: sandbox.stub(),
             handleFlee: sandbox.stub(),
         };
-
-        validationHandler = {
-            verifyRoom: sandbox.stub(),
-            verifyAvatars: sandbox.stub(),
-            verifyUsername: sandbox.stub(),
-        };
-
-        disconnectHandler = {
-            handleDisconnect: sandbox.stub(),
-            handleDisconnectFromRoom: sandbox.stub(),
-        };
-        boardService = {
-            findAllPaths: sandbox.stub(),
-            calculateShortestMoves: sandbox.stub(),
-        };
+        validationHandler = { verifyRoom: sandbox.stub(), verifyAvatars: sandbox.stub(), verifyUsername: sandbox.stub() };
+        disconnectHandler = { handleDisconnect: sandbox.stub(), handleDisconnectFromRoom: sandbox.stub() };
+        boardService = { findAllPaths: sandbox.stub(), calculateShortestMoves: sandbox.stub() };
+        itemService = { removeAttributeEffects: sandbox.stub() };
 
         mockSocket = {
             emit: sandbox.stub(),
@@ -75,16 +71,18 @@ describe('SocketService', () => {
 
         ioStub = {
             on: sandbox.stub(),
+            to: sandbox.stub().returns({ emit: sandbox.stub() }),
         };
 
         socketService = new SocketService(
             httpServer,
-            lobbyHandler as any,
-            gameHandler as any,
-            validationHandler as any,
-            disconnectHandler as any,
-            boardService as any,
-            itemService as any,
+            lobbyHandler,
+            validationHandler,
+            disconnectHandler,
+            boardService,
+            itemService,
+            gameActionService,
+            gameLifecycleService,
         );
 
         (socketService as any).io = ioStub;
@@ -93,10 +91,10 @@ describe('SocketService', () => {
     afterEach(() => {
         sandbox.restore();
     });
-
     it('should set server instances in constructor', () => {
         expect(lobbyHandler.setServer.calledOnce).to.equal(true);
-        expect(gameHandler.setServer.calledOnce).to.equal(true);
+        expect(gameActionService.setServer.calledOnce).to.equal(true);
+        expect(gameLifecycleService.setServer.calledOnce).to.equal(true);
     });
 
     it('should register connection event on init', () => {
@@ -400,7 +398,7 @@ describe('SocketService', () => {
 
         if (requestStartHandler) {
             requestStartHandler('lobby1');
-            expect(gameHandler.handleRequestStart.calledWith(mockSocket, 'lobby1')).to.equal(true);
+            expect(gameLifecycleService.handleRequestStart.calledWith(mockSocket, 'lobby1')).to.equal(true);
 
             mockSocket.emit.resetHistory();
             requestStartHandler(null);
@@ -417,7 +415,7 @@ describe('SocketService', () => {
 
         if (endTurnHandler) {
             endTurnHandler({ lobbyId: 'lobby1' });
-            expect(gameHandler.handleEndTurn.calledWith(mockSocket, 'lobby1')).to.equal(true);
+            expect(gameLifecycleService.handleEndTurn.calledWith(mockSocket, 'lobby1')).to.equal(true);
 
             mockSocket.emit.resetHistory();
             endTurnHandler(null);
@@ -435,7 +433,7 @@ describe('SocketService', () => {
         if (requestMovementHandler) {
             const coordinates = [{ x: 1, y: 2 }];
             requestMovementHandler({ lobbyId: 'lobby1', coordinates });
-            expect(gameHandler.handleRequestMovement.calledWith(mockSocket, 'lobby1', coordinates)).to.equal(true);
+            expect(gameActionService.handleRequestMovement.calledWith(mockSocket, 'lobby1', coordinates)).to.equal(true);
 
             mockSocket.emit.resetHistory();
             requestMovementHandler({ lobbyId: 'lobby1', coordinates: null });
@@ -453,7 +451,7 @@ describe('SocketService', () => {
         if (teleportHandler) {
             const coordinates = { x: 3, y: 4 };
             teleportHandler({ lobbyId: 'lobby1', coordinates });
-            expect(gameHandler.handleTeleport.calledWith(mockSocket, 'lobby1', coordinates)).to.equal(true);
+            expect(gameActionService.handleTeleport.calledWith(mockSocket, 'lobby1', coordinates)).to.equal(true);
         }
     });
 
@@ -467,7 +465,7 @@ describe('SocketService', () => {
 
         if (openDoorHandler) {
             openDoorHandler({ lobbyId: 'lobby1', tile });
-            expect(gameHandler.openDoor.calledWith(mockSocket, tile, 'lobby1')).to.equal(true);
+            expect(gameActionService.openDoor.calledWith(mockSocket, tile, 'lobby1')).to.equal(true);
 
             mockSocket.emit.resetHistory();
             openDoorHandler(null);
@@ -493,7 +491,7 @@ describe('SocketService', () => {
 
         if (closeDoorHandler) {
             closeDoorHandler({ lobbyId: 'lobby1', tile });
-            expect(gameHandler.closeDoor.calledWith(mockSocket, tile, 'lobby1')).to.equal(true);
+            expect(gameActionService.closeDoor.calledWith(mockSocket, tile, 'lobby1')).to.equal(true);
 
             mockSocket.emit.resetHistory();
             closeDoorHandler(null);
@@ -518,7 +516,7 @@ describe('SocketService', () => {
 
         if (setDebugHandler) {
             setDebugHandler({ lobbyId: 'lobby1', debug: true });
-            expect(gameHandler.handleSetDebug.calledWith(mockSocket, 'lobby1', true)).to.equal(true);
+            expect(gameLifecycleService.handleSetDebug.calledWith(mockSocket, 'lobby1', true)).to.equal(true);
         }
     });
 
@@ -532,7 +530,7 @@ describe('SocketService', () => {
 
         if (updatePlayersHandler) {
             updatePlayersHandler('lobby1', players);
-            expect(gameHandler.handlePlayersUpdate.calledWith(mockSocket, 'lobby1', players)).to.equal(true);
+            expect(gameLifecycleService.handlePlayersUpdate.calledWith(mockSocket, 'lobby1', players)).to.equal(true);
         }
     });
 
@@ -550,7 +548,7 @@ describe('SocketService', () => {
 
         if (startBattleHandler) {
             startBattleHandler(battleData);
-            expect(gameHandler.startBattle.calledWith('lobby1', battleData.currentPlayer, battleData.opponent)).to.equal(true);
+            expect(gameActionService.startBattle.calledWith('lobby1', battleData.currentPlayer, battleData.opponent)).to.equal(true);
         }
     });
 
@@ -568,7 +566,7 @@ describe('SocketService', () => {
 
         if (attackHandler) {
             attackHandler(attackData);
-            expect(gameHandler.handleAttackAction.calledWith('lobby1', attackData.attacker, attackData.defender)).to.equal(true);
+            expect(gameActionService.handleAttackAction.calledWith('lobby1', attackData.attacker, attackData.defender)).to.equal(true);
         }
     });
 
@@ -585,7 +583,7 @@ describe('SocketService', () => {
 
         if (fleeHandler) {
             fleeHandler(fleeData);
-            expect(gameHandler.handleFlee.calledWith('lobby1', fleeData.player)).to.equal(true);
+            expect(gameLifecycleService.handleFlee.calledWith('lobby1', fleeData.player)).to.equal(true);
         }
     });
 
@@ -612,6 +610,66 @@ describe('SocketService', () => {
         if (disconnectFromRoomHandler) {
             disconnectFromRoomHandler('lobby1');
             expect(disconnectHandler.handleDisconnectFromRoom.calledWith(mockSocket, 'lobby1')).to.equal(true);
+        }
+    });
+    it('should handle createTeams event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const createTeamsHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'createTeams')?.args[1];
+
+        if (createTeamsHandler) {
+            const players = [{ id: 'p1', name: 'Player 1' }] as Player[];
+            createTeamsHandler({ lobbyId: 'lobby1', players });
+            expect(gameLifecycleService.createTeams.calledWith('lobby1', players)).to.equal(true);
+        }
+    });
+    it('should handle resolveInventory event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const resolveHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'resolveInventory')?.args[1];
+
+        const mockGameState = {
+            players: [{ id: 'socket1', items: [1], pendingItem: 2 }],
+            playerPositions: [{ x: 0, y: 0 }],
+            board: [[0]],
+        };
+        gameLifecycleService.getGameStateOrEmitError.returns(mockGameState);
+        boardService.findAllPaths.returns([]);
+        boardService.calculateShortestMoves.returns([]);
+
+        if (resolveHandler) {
+            resolveHandler({ lobbyId: 'lobby1', keptItems: [1] });
+            expect(mockSocket.emit.notCalled).to.be.equal(true);
+        }
+    });
+    it('should handle cancelInventoryChoice event', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const cancelHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'cancelInventoryChoice')?.args[1];
+
+        const mockGameState = {
+            players: [{ id: 'socket1', pendingItem: 5 }],
+            playerPositions: [{ x: 1, y: 2 }],
+            board: [
+                [0, 0, 0],
+                [0, 0, 0],
+            ],
+        };
+
+        boardService.findAllPaths.returns([]);
+        boardService.calculateShortestMoves.returns([]);
+
+        gameLifecycleService.getGameStateOrEmitError.returns(mockGameState);
+
+        if (cancelHandler) {
+            cancelHandler({ lobbyId: 'lobby1' });
+            expect(ioStub.to().emit.calledWith('boardModified')).to.be.equal(true);
         }
     });
 });
