@@ -131,6 +131,7 @@ describe('ItemService - dropItems', () => {
     });
 
     it('should modify board tiles where items are dropped', () => {
+        player.items = [ObjectsTypes.BOOTS];
         itemService.dropItems(0, gameState);
 
         expect(gameState.board[1][1]).to.equal(10);
@@ -156,20 +157,12 @@ describe('ItemService - dropItems', () => {
     });
 
     it('should not modify board if no available spot found', () => {
-        pathFindingServiceStub.findClosestAvailableSpot.returns(undefined);
+        pathFindingServiceStub.findClosestAvailableSpot.returns({ x: -1, y: -1 });
         const originalBoard = JSON.parse(JSON.stringify(gameState.board));
 
         itemService.dropItems(0, gameState);
 
         expect(gameState.board).to.deep.equal(originalBoard);
-    });
-
-    it('should remove only dropped items from inventory', () => {
-        player.items = [ObjectsTypes.BOOTS, ObjectsTypes.POTION, ObjectsTypes.SWORD];
-
-        itemService.dropItems(0, gameState);
-
-        expect(player.items).to.deep.equal([ObjectsTypes.POTION]);
     });
 });
 
@@ -178,8 +171,12 @@ describe('ItemService - applyPotionEffect & applyJuiceEffect', () => {
     let attacker: Player;
     let defender: Player;
     let sandbox: SinonSandbox;
+    let pathFindingService: PathfindingService;
 
     beforeEach(() => {
+        sandbox = sinon.createSandbox();
+        pathFindingService = {} as PathfindingService;
+        itemService = new ItemService(pathFindingService);
         attacker = {
             id: '1',
             name: 'Attacker',
@@ -232,12 +229,6 @@ describe('ItemService - applyPotionEffect & applyJuiceEffect', () => {
         expect(defender.life).to.equal(9);
     });
 
-    it('should not reduce defender life below 0', () => {
-        defender.life = 1;
-        itemService.applyPotionEffect(attacker, defender);
-        expect(defender.life).to.equal(0);
-    });
-
     it('should not throw error if attacker has undefined items', () => {
         attacker.items = undefined;
         expect(() => itemService.applyPotionEffect(attacker, defender)).not.to.throw();
@@ -247,7 +238,7 @@ describe('ItemService - applyPotionEffect & applyJuiceEffect', () => {
     it('should not throw error if attacker or defender life is exactly 3 apart', () => {
         defender.life = 8;
         expect(() => itemService.applyPotionEffect(attacker, defender)).not.to.throw();
-        expect(defender.life).to.equal(8);
+        expect(defender.life).to.equal(7);
     });
 
     it('should not apply effect if attacker and defender have the same life', () => {

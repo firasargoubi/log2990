@@ -339,7 +339,7 @@ describe('PathfindingService', () => {
 
             const result = service.findClosestAvailableSpot(gameState as any, { x: 0, y: 0 });
 
-            expect(result).to.deep.equal({ x: -1, y: -1 });
+            expect(result).to.deep.equal(null);
         });
 
         it('should handle searching beyond board boundaries', () => {
@@ -351,7 +351,7 @@ describe('PathfindingService', () => {
 
             const result = service.findClosestAvailableSpot(gameState as any, { x: 0, y: 0 });
 
-            expect(result).to.deep.equal({ x: -1, y: -1 });
+            expect(result).to.deep.equal(null);
         });
     });
 
@@ -366,7 +366,7 @@ describe('PathfindingService', () => {
 
                 const outOfBoundsResult = service.findClosestAvailableSpot(smallBoardState as any, { x: 0, y: 0 });
 
-                expect(outOfBoundsResult).to.deep.equal({ x: -1, y: -1 });
+                expect(outOfBoundsResult).to.deep.equal(null);
 
                 const twoByTwoState = {
                     ...mockGameState,

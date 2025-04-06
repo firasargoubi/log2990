@@ -20,12 +20,12 @@ export class ItemService {
     dropItems(loserIndex: number, gameState: GameState): void {
         const playerCoordinates = gameState.playerPositions[loserIndex];
         const player = gameState.players[loserIndex];
-        const itemsToDrop = [...player.items];
+        const itemsToDrop = player.items ? [...player.items] : [];
         player.items = [];
 
         for (const item of itemsToDrop) {
             const tileCoordinate = this.pathFindingService.findClosestAvailableSpot(gameState, playerCoordinates);
-            if (tileCoordinate.x !== -1 && tileCoordinate.y !== -1) {
+            if (tileCoordinate && tileCoordinate.x !== -1 && tileCoordinate.y !== -1) {
                 gameState.board[tileCoordinate.x][tileCoordinate.y] += item * 10;
             }
         }
@@ -33,7 +33,7 @@ export class ItemService {
 
     applyPotionEffect(attacker: Player, defender: Player): void {
         if (defender.life - attacker.life >= 3 && attacker.items?.includes(ObjectsTypes.POTION)) {
-            defender.life -= 1;
+            defender.life = Math.max(defender.life - 1, 0);
         }
     }
 

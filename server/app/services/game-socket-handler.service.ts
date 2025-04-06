@@ -95,7 +95,9 @@ export class GameSocketHandlerService {
         if (!gameState) return;
         try {
             let updatedGameState = gameState;
-            updatedGameState.animation = true;
+            if (coordinates.length > 1) {
+                updatedGameState.animation = true;
+            }
 
             for (const [idx, coordinate] of coordinates.entries()) {
                 if (!idx) {
@@ -433,7 +435,7 @@ export class GameSocketHandlerService {
         const playerIndex = gameState.players.findIndex((p) => p.id === player.id);
         if (playerIndex === -1) return false;
         const position = gameState.playerPositions[playerIndex];
-        if (!position) return false;
+        if (!position || position.x >= gameState.board.length || position.y >= gameState.board[0].length) return false;
 
         const tile = gameState.board[position.x][position.y];
         return tile === TileTypes.Ice;
