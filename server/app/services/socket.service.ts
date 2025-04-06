@@ -115,8 +115,8 @@ export class SocketService {
             gameState.board[playerPosition.x][playerPosition.y] = refusedItem * TILE_DELIMITER + tileValue;
         }
 
-        gameState.availableMoves = this.boardService['findAllPaths'](gameState, playerPosition);
-        gameState.shortestMoves = this.boardService['calculateShortestMoves'](gameState, playerPosition, gameState.availableMoves);
+        gameState.availableMoves = this.boardService.findAllPaths(gameState, playerPosition);
+        gameState.shortestMoves = this.boardService.calculateShortestMoves(gameState, playerPosition, gameState.availableMoves);
 
         this.io.to(data.lobbyId).emit('boardModified', { gameState });
     }
@@ -133,8 +133,8 @@ export class SocketService {
 
         player.pendingItem = 0;
 
-        gameState.availableMoves = this.boardService['findAllPaths'](gameState, playerPosition);
-        gameState.shortestMoves = this.boardService['calculateShortestMoves'](gameState, playerPosition, gameState.availableMoves);
+        gameState.availableMoves = this.boardService.findAllPaths(gameState, playerPosition);
+        gameState.shortestMoves = this.boardService.calculateShortestMoves(gameState, playerPosition, gameState.availableMoves);
 
         this.io.to(data.lobbyId).emit('boardModified', { gameState });
     }

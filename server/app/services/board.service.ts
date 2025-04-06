@@ -223,10 +223,8 @@ export class BoardService {
 
     private getPlayerMovementPoints(player: Player, hasOrb: boolean = false): number {
         if (hasOrb) {
-            console.log("Modified Speed for ", player.name);
             return Math.floor(Math.random() * RANDOM_SPEED) + 1;
         }
-        console.log("Player speed : ", player.speed, " for ", player.name);
         return player.speed || 0;
     }
 
