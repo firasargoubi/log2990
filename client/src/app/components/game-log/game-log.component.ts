@@ -1,6 +1,8 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import { PAD_TIME_VALUE } from '@app/Consts/app-constants';
 import { LobbyService } from '@app/services/lobby.service';
+import { EventType } from '@common/events';
+import { Player } from '@common/player';
 
 @Component({
     selector: 'app-game-log',
@@ -8,37 +10,56 @@ import { LobbyService } from '@app/services/lobby.service';
     styleUrls: ['./game-log.component.scss'],
 })
 export class GameLogComponent implements OnInit {
+    @Input() currentPlayer: Player;
     activeTab: string = 'gameLog';
     gameLog: { timestamp: string; eventType: string; involvedPlayers?: string[]; involvedPlayer?: string; description?: string }[] = [];
+    filterByCurrentPlayer = false;
     private lobbyService = inject(LobbyService);
 
+    get filterGameLog(): { timestamp: string; eventType: string; involvedPlayers?: string[]; involvedPlayer?: string; description?: string }[] {
+        if (!this.filterByCurrentPlayer) {
+            return this.gameLog;
+        }
+        return this.gameLog.filter(
+            (log) => log.involvedPlayer === this.currentPlayer.name || (log.involvedPlayers && log.involvedPlayers.includes(this.currentPlayer.name)),
+        );
+    }
     ngOnInit(): void {
         this.lobbyService.onEventLog().subscribe((data) => {
-            if (
-                data.eventType === 'Le tour a commencé' ||
-                data.eventType === 'Une porte a été fermée' ||
-                data.eventType === 'Une porte a été ouverte' ||
-                data.eventType === 'Le drapeau a été ramassé' ||
-                data.eventType === 'Un objet a été ramassé'
-            ) {
-                const involvedPlayerId = data.gameState.currentPlayer;
-                const involvedPlayer = data.gameState.players.find((player) => player.id === involvedPlayerId)?.name;
-                this.addGameLog(data.eventType, involvedPlayer);
-            } else if (data.eventType === 'Un combat a commencé') {
-                const involvedPlayers = data?.involvedPlayers;
-                this.addGameLog(data.eventType, undefined, involvedPlayers);
-            } else if (data.eventType === 'Un combat a terminé') {
-                const description = 'Le gagnant est ' + (data?.involvedPlayers?.[0] ?? 'inconnu');
-                this.addGameLog(data.eventType, undefined, undefined, description);
-            } else if (data.eventType === 'Debug activé' || data.eventType === 'Debug désactivé') {
-                this.addGameLog(data.eventType, undefined, undefined, undefined);
-            } else if (data.eventType === 'Un joueur a abandonné') {
-                const involvedPlayer = data?.involvedPlayer;
-                this.addGameLog(data.eventType, involvedPlayer);
-            } else if (data.eventType === "Résultat de l'attaque" || data.eventType === 'Fuite réussie' || data.eventType === 'Fuite échouée') {
-                const involvedPlayers = data?.involvedPlayers;
-                const description = data?.description;
-                this.addGameLog(data.eventType, undefined, involvedPlayers, description);
+            const eventType = data.eventType;
+            switch (eventType) {
+                case EventType.TurnStarted:
+                case EventType.DoorClosed:
+                case EventType.DoorOpened:
+                case EventType.FlagPicked:
+                case EventType.ItemPicked: {
+                    const involvedPlayerId = data.gameState.currentPlayer;
+                    const involvedPlayer = data.gameState.players.find((player) => player.id === involvedPlayerId)?.name;
+                    this.addGameLog(eventType, involvedPlayer);
+                    break;
+                }
+                case EventType.CombatStarted: {
+                    this.addGameLog(eventType, undefined, data?.involvedPlayers);
+                    break;
+                }
+                case EventType.DebugActivated:
+                case EventType.DebugDeactivated: {
+                    this.addGameLog(eventType);
+                    break;
+                }
+                case EventType.PlayerAbandonned: {
+                    this.addGameLog(eventType, data?.involvedPlayer);
+                    break;
+                }
+                case EventType.AttackResult:
+                case EventType.FleeSuccess:
+                case EventType.FleeFailure:
+                case EventType.CombatEnded: {
+                    this.addGameLog(eventType, undefined, data?.involvedPlayers, data?.description);
+                    break;
+                }
+                default:
+                    break;
             }
         });
     }

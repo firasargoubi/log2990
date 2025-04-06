@@ -97,10 +97,27 @@ button.active {
     color: #4b5d2b;
 }
 
-.player,
-.players,
+.event-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-left: 8px;
+}
+
+.players-wrapper {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.player, .players {
+    color: #5c7235;
+    font-weight: 600;
+    padding-right: 6px;
+}
+
 .description {
     color: #5c7235;
     font-weight: 600;
+    padding-right: 6px;
 }
-

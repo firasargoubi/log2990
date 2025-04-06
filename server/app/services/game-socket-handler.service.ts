@@ -332,6 +332,7 @@ export class GameSocketHandlerService {
         this.io.to(lobbyId).emit(GameEvents.EventLog, {
             gameState,
             eventType: EventType.CombatEnded,
+            description: `${winner.name} a vaincu ${loser.name}.`,
             involvedPlayers: [winner.name, loser.name],
         });
 
