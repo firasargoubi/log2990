@@ -2,7 +2,7 @@ import { BoardSocketConstants, ERROR_MESSAGES } from '@app/constants/board-const
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
-import { Game, ITEM_EFFECTS, ObjectsTypes, TILE_DELIMITER, TileTypes } from '@common/game.interface';
+import { Game, ITEM_EFFECTS, ObjectsTypes, RANDOM_SPEED, TILE_DELIMITER, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Service } from 'typedi';
 import { GameService } from './game.service';
@@ -121,11 +121,15 @@ export class BoardService {
         const currentPlayerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
         if (currentPlayerIndex === -1) return gameState;
 
+        gameState.players[currentPlayerIndex].currentMP = this.getPlayerMovementPoints(gameState.players[currentPlayerIndex]);
+
         const nextPlayerIndex = (currentPlayerIndex + 1) % gameState.players.length;
 
         gameState.currentPlayer = gameState.players[nextPlayerIndex].id;
 
-        gameState.currentPlayerMovementPoints = this.getPlayerMovementPoints(gameState.players[nextPlayerIndex]);
+        const hasOrb = this.verifyOrb(gameState);
+
+        gameState.currentPlayerMovementPoints = this.getPlayerMovementPoints(gameState.players[nextPlayerIndex], hasOrb);
 
         gameState.players[currentPlayerIndex].currentMP = gameState.currentPlayerMovementPoints;
 
@@ -177,9 +181,6 @@ export class BoardService {
             return gameState;
         }
 
-        const currentPlayer = gameState.players[playerIndex];
-        gameState.currentPlayerMovementPoints = currentPlayer.currentMP ?? currentPlayer.speed;
-
         const availableMoves = this.findAllPaths(gameState, playerPosition);
         gameState.availableMoves = availableMoves;
         gameState.shortestMoves = this.calculateShortestMoves(gameState, playerPosition, availableMoves);
@@ -220,7 +221,12 @@ export class BoardService {
         return shortestMoves;
     }
 
-    private getPlayerMovementPoints(player: Player): number {
+    private getPlayerMovementPoints(player: Player, hasOrb: boolean = false): number {
+        if (hasOrb) {
+            console.log("Modified Speed for ", player.name);
+            return Math.floor(Math.random() * RANDOM_SPEED) + 1;
+        }
+        console.log("Player speed : ", player.speed, " for ", player.name);
         return player.speed || 0;
     }
 
@@ -311,5 +317,20 @@ export class BoardService {
             const tileType = gameState.board[tile.x][tile.y] % TILE_DELIMITER;
             gameState.board[tile.x][tile.y] = objectsTypes[randomIndex] * TILE_DELIMITER + tileType;
         });
+    }
+
+    private verifyOrb(gameState: GameState): boolean {
+        for (const player of gameState.players) {
+            if (!player.items) continue;
+            for (const item of player.items) {
+                if (item === ObjectsTypes.CRYSTAL) {
+                    if (player.id === gameState.currentPlayer) {
+                        return false;
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
