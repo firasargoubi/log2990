@@ -21,7 +21,6 @@ export class ItemService {
         const playerCoordinates = gameState.playerPositions[loserIndex];
         const player = gameState.players[loserIndex];
         const itemsToDrop = player.items ? [...player.items] : [];
-        player.items = [];
 
         for (const item of itemsToDrop) {
             const tileCoordinate = this.pathFindingService.findClosestAvailableSpot(gameState, playerCoordinates);
