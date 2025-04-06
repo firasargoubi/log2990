@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ITEM_INFOS } from '@app/Consts/item-constants';
+import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/Consts/item-constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { Player } from '@common/player';
 import { Subject } from 'rxjs';
@@ -77,5 +77,17 @@ describe('InventoryComponent', () => {
         expect(component.getItemName(testItem)).toBe(ITEM_INFOS[testItem].name);
         expect(component.getItemDescription(testItem)).toBe(ITEM_INFOS[testItem].description);
         expect(component.getItemImage(testItem)).toBe(ITEM_INFOS[testItem].image);
+    });
+    it('should return empty array if player is undefined', () => {
+        component.player = undefined as unknown as Player;
+        expect(component.items).toEqual([]);
+    });
+
+    it('should return default values for unknown item', () => {
+        const unknownItemId = 999;
+
+        expect(component.getItemName(unknownItemId)).toBe(UNKNOWN_ITEM.name);
+        expect(component.getItemDescription(unknownItemId)).toBe(UNKNOWN_ITEM.description);
+        expect(component.getItemImage(unknownItemId)).toBe(UNKNOWN_ITEM.image);
     });
 });

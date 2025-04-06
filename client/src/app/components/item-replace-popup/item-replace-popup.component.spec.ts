@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { UNKNOWN_ITEM } from '@app/Consts/item-constants';
 import { ItemReplacePopupComponent } from './item-replace-popup.component';
 
 describe('ItemReplacePopupComponent', () => {
@@ -49,5 +50,13 @@ describe('ItemReplacePopupComponent', () => {
         const spy = spyOn(component.cancelReplace, 'emit');
         component.cancel();
         expect(spy).toHaveBeenCalled();
+    });
+
+    it('should return default values for unknown item', () => {
+        const unknownItem = 9999; // un ID pas dans ITEM_INFOS
+
+        expect(component.getItemName(unknownItem)).toBe(UNKNOWN_ITEM.name);
+        expect(component.getItemDescription(unknownItem)).toBe(UNKNOWN_ITEM.description);
+        expect(component.getItemImage(unknownItem)).toBe(UNKNOWN_ITEM.image);
     });
 });
