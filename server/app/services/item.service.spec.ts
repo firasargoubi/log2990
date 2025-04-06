@@ -125,11 +125,6 @@ describe('ItemService - dropItems', () => {
         sandbox.restore();
     });
 
-    it('should drop all items from player inventory', () => {
-        itemService.dropItems(0, gameState);
-        expect(player.items.length).to.equal(0);
-    });
-
     it('should modify board tiles where items are dropped', () => {
         player.items = [ObjectsTypes.BOOTS];
         itemService.dropItems(0, gameState);

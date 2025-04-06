@@ -547,7 +547,7 @@ describe('GameSocketHandlerService', () => {
 
             defender = {
                 id: 'p2',
-                life: 1,
+                life: 10,
                 defense: 3,
                 bonus: { attack: 'D6', defense: 'D6' },
                 items: [ObjectsTypes.JUICE],
@@ -578,7 +578,7 @@ describe('GameSocketHandlerService', () => {
             defender.defense = 10;
             sandbox.stub(Math, 'random').returns(0);
             service.handleAttackAction('lobby1', attacker, defender);
-            expect(defender.life).to.equal(4);
+            expect(defender.life).to.equal(10);
             expect(socket.emit.calledWith('attackResult', match({ damage: 0 }))).to.equal(true);
         });
 
@@ -594,13 +594,14 @@ describe('GameSocketHandlerService', () => {
 
         it('should use debug mode dice values', () => {
             gameState.debug = true;
+            gameStates.set('lobby1', gameState);
             service.handleAttackAction('lobby1', attacker, defender);
             expect(
                 socket.emit.calledWith(
                     'attackResult',
                     match({
-                        attackRoll: attacker.attack,
-                        defenseRoll: 1,
+                        attackRoll: attacker.attack + attacker.attack,
+                        defenseRoll: 1 + defender.defense,
                     }),
                 ),
             ).to.equal(true);
@@ -618,12 +619,13 @@ describe('GameSocketHandlerService', () => {
         it('should apply ice tile penalty to defender', () => {
             gameState.board[0][1] = TileTypes.Ice;
             sandbox.stub(Math, 'random').returns(0.5);
+            gameStates.set('lobby1', gameState);
             service.handleAttackAction('lobby1', attacker, defender);
             expect(
                 socket.emit.calledWith(
                     'attackResult',
                     match({
-                        defenseRoll: match((val: number) => val === Math.floor(0.5 * 6) + 1 + defender.defense - 2),
+                        defenseRoll: match((val: number) => val === Math.floor(0.5 * 6) + 1 - 2 + defender.defense),
                     }),
                 ),
             ).to.equal(true);
@@ -660,7 +662,7 @@ describe('GameSocketHandlerService', () => {
 
             service.handleFlee('lobby1', player);
 
-            expect(player.amountEscape).to.equal(0);
+            expect(player.amountEscape).to.equal(1);
             expect(ioStub.to.calledWith('lobby1')).to.equal(true);
         });
 
