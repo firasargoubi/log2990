@@ -174,17 +174,13 @@ export class GameSocketHandlerService {
         const gameState = this.getGameStateOrEmitError(socket, lobbyId);
         if (!gameState) return;
         const currentPlayerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
-        const newGameBoard = gameState.board.map((row) => [...row]);
-        newGameBoard[tile.x][tile.y] = TileTypes.DoorClosed;
-        const updatedGameState: GameState = {
-            ...gameState,
-            board: newGameBoard,
-            currentPlayerActionPoints: 0,
-        };
+        gameState.board = gameState.board.map((row) => [...row]);
+        gameState.board[tile.x][tile.y] = TileTypes.DoorClosed;
+        gameState.currentPlayerActionPoints = 0;
         if (currentPlayerIndex !== -1) {
-            updatedGameState.players[currentPlayerIndex].currentAP = 0;
+            gameState.players[currentPlayerIndex].currentAP = 0;
         }
-        const newGameState = this.boardService.handleBoardChange(updatedGameState);
+        const newGameState = this.boardService.handleBoardChange(gameState);
         this.gameStates.set(lobbyId, newGameState);
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
     }
@@ -193,17 +189,13 @@ export class GameSocketHandlerService {
         const gameState = this.getGameStateOrEmitError(socket, lobbyId);
         if (!gameState) return;
         const currentPlayerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
-        const newGameBoard = gameState.board.map((row) => [...row]);
-        newGameBoard[tile.x][tile.y] = TileTypes.DoorOpen;
-        const updatedGameState = {
-            ...gameState,
-            board: newGameBoard,
-            currentPlayerActionPoints: 0,
-        };
+        gameState.board = gameState.board.map((row) => [...row]);
+        gameState.board[tile.x][tile.y] = TileTypes.DoorOpen;
+        gameState.currentPlayerActionPoints = 0;
         if (currentPlayerIndex !== -1) {
-            updatedGameState.players[currentPlayerIndex].currentAP = 0;
+            gameState.players[currentPlayerIndex].currentAP = 0;
         }
-        const newGameState = this.boardService.handleBoardChange(updatedGameState);
+        const newGameState = this.boardService.handleBoardChange(gameState);
         this.gameStates.set(lobbyId, newGameState);
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
     }

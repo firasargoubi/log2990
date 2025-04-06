@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-lines */
 import { BoardService } from '@app/services/board.service';
@@ -298,7 +299,7 @@ describe('GameSocketHandlerService', () => {
                 currentPlayer: 'socket1',
             } as GameState;
             gameStates.set('lobby1', gameState);
-            (boardService.handleBoardChange as SinonStub).returns(gameState);
+            (boardService.handleBoardChange as SinonStub).callsFake((state: GameState) => state);
 
             service.closeDoor(socket, { x: 0, y: 0 } as Tile, 'lobby1');
             expect(gameState.board[0][0]).to.equal(TileTypes.DoorClosed);
@@ -315,7 +316,7 @@ describe('GameSocketHandlerService', () => {
                 currentPlayer: 'socket1',
             } as GameState;
             gameStates.set('lobby1', gameState);
-            (boardService.handleBoardChange as SinonStub).returns(gameState);
+            (boardService.handleBoardChange as SinonStub).callsFake((state: GameState) => state);
 
             service.closeDoor(socket, { x: 0, y: 0 } as Tile, 'lobby1');
 
@@ -338,7 +339,7 @@ describe('GameSocketHandlerService', () => {
                 currentPlayer: 'socket1',
             } as GameState;
             gameStates.set('lobby1', gameState);
-            (boardService.handleBoardChange as SinonStub).returns(gameState);
+            (boardService.handleBoardChange as SinonStub).callsFake((state: GameState) => state);
 
             service.openDoor(socket, { x: 0, y: 0 } as Tile, 'lobby1');
 
@@ -356,7 +357,7 @@ describe('GameSocketHandlerService', () => {
                 currentPlayer: 'socket1',
             } as GameState;
             gameStates.set('lobby1', gameState);
-            (boardService.handleBoardChange as SinonStub).returns(gameState);
+            (boardService.handleBoardChange as SinonStub).callsFake((state: GameState) => state);
 
             service.openDoor(socket, { x: 0, y: 0 } as Tile, 'lobby1');
 
@@ -418,7 +419,7 @@ describe('GameSocketHandlerService', () => {
         it('should handle no player deletion', () => {
             const gameState = { players: [{ id: 'p1' }], board: [[]], playerPositions: [], spawnPoints: [] } as GameState;
             gameStates.set('lobby1', gameState);
-            (boardService.handleBoardChange as SinonStub).returns(gameState);
+            (boardService.handleBoardChange as SinonStub).callsFake((state: GameState) => state);
 
             service.handlePlayersUpdate(socket, 'lobby1', [{ id: 'p1' } as Player]);
 
@@ -441,7 +442,7 @@ describe('GameSocketHandlerService', () => {
                 ],
             } as GameState;
             gameStates.set('lobby1', gameState);
-            (boardService.handleBoardChange as SinonStub).returns(gameState);
+            (boardService.handleBoardChange as SinonStub).callsFake((state: GameState) => state);
 
             service.handlePlayersUpdate(socket, 'lobby1', [{ id: 'p1' } as Player]);
 
