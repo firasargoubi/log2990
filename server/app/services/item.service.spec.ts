@@ -32,7 +32,7 @@ describe('ItemService - applyEffect()', () => {
     });
 
     it('should apply BOOTS effect (+2 speed, -1 attack)', () => {
-        itemService.applyEffect(player, ObjectsTypes.BOOTS);
+        itemService.applyAttributeEffects(player, ObjectsTypes.BOOTS);
 
         expect(player.speed).to.equal(5);
         expect(player.attack).to.equal(1);
@@ -41,7 +41,7 @@ describe('ItemService - applyEffect()', () => {
     });
 
     it('should apply SWORD effect (+1 attack, -1 defense)', () => {
-        itemService.applyEffect(player, ObjectsTypes.SWORD);
+        itemService.applyAttributeEffects(player, ObjectsTypes.SWORD);
 
         expect(player.attack).to.equal(3);
         expect(player.defense).to.equal(0);
@@ -52,7 +52,7 @@ describe('ItemService - applyEffect()', () => {
     it('should not apply anything if item has no effect', () => {
         const originalPlayer = { ...player };
 
-        itemService.applyEffect(player, ObjectsTypes.POTION);
+        itemService.applyAttributeEffects(player, ObjectsTypes.POTION);
 
         expect(player).to.deep.equal(originalPlayer);
     });
@@ -62,7 +62,7 @@ describe('ItemService - applyEffect()', () => {
         const healingItem = 999 as ObjectsTypes;
         ITEM_EFFECTS[healingItem] = { life: 5 };
 
-        itemService.applyEffect(player, healingItem);
+        itemService.applyAttributeEffects(player, healingItem);
 
         expect(player.life).to.equal(10);
     });
@@ -276,5 +276,47 @@ describe('ItemService - applyPotionEffect & applyJuiceEffect', () => {
         defender.items = undefined;
         expect(() => itemService.applyJuiceEffect(defender)).not.to.throw();
         expect(defender.life).to.equal(9);
+    });
+    describe('ItemService - removeAttributeEffects', () => {
+        let player: Player;
+
+        beforeEach(() => {
+            player = {
+                id: '1',
+                name: 'Player',
+                avatar: '🐱',
+                isHost: false,
+                life: 8,
+                maxLife: 10,
+                speed: 5,
+                attack: 3,
+                defense: 2,
+                winCount: 0,
+                pendingItem: 0,
+                items: [],
+            };
+        });
+
+        it('should remove BOOTS effect (-2 speed, +1 attack)', () => {
+            itemService.removeAttributeEffects(player, ObjectsTypes.BOOTS);
+
+            expect(player.speed).to.equal(3); // 5 - 2
+            expect(player.attack).to.equal(4); // 3 - (-1)
+        });
+
+        it('should not decrease life below 0', () => {
+            player.life = 1;
+            const lifeItem = 999 as ObjectsTypes;
+            ITEM_EFFECTS[lifeItem] = { life: 5 };
+
+            itemService.removeAttributeEffects(player, lifeItem);
+            expect(player.life).to.equal(0); // 1 - 5 → max(0, -4)
+        });
+
+        it('should do nothing if item has no effect', () => {
+            const original = { ...player };
+            itemService.removeAttributeEffects(player, ObjectsTypes.POTION);
+            expect(player).to.deep.equal(original);
+        });
     });
 });

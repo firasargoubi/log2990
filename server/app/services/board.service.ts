@@ -104,7 +104,7 @@ export class BoardService {
                 gameState.board[targetCoordinate.x][targetCoordinate.y] = tile;
             }
             if (ITEM_EFFECTS[item as ObjectsTypes]) {
-                this.itemService.applyEffect(player, item);
+                this.itemService.applyAttributeEffects(player, item);
             }
             return { gameState, shouldStop: true };
         }

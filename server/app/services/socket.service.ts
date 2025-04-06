@@ -101,7 +101,7 @@ export class SocketService {
         const tileValue = gameState.board[playerPosition.x][playerPosition.y] % TILE_DELIMITER;
 
         if (refusedItem && player.items.includes(refusedItem)) {
-            this.itemService.removeEffect(player, refusedItem);
+            this.itemService.removeAttributeEffects(player, refusedItem);
         }
 
         player.items = data.keptItems;

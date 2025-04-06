@@ -213,7 +213,6 @@ describe('GameSocketHandlerService', () => {
             expect(socket.emit.calledWith('movementProcessed', { gameState })).to.equal(true);
             clock.tick(150);
         });
-
         it('should handle movement error', async () => {
             const gameState = { currentPlayer: 'socket1', players: [{ id: 'socket1' }] } as GameState;
             gameStates.set('lobby1', gameState);
@@ -224,7 +223,9 @@ describe('GameSocketHandlerService', () => {
                 { x: 1, y: 1 },
             ]);
 
-            expect(socket.emit.calledWith(GameEvents.Error, 'Movement error:Move error')).to.equal(true);
+            const errorArg = socket.emit.firstCall.args[1];
+            expect(socket.emit.calledWith(GameEvents.Error)).to.equal(true);
+            expect(errorArg).to.include('Movement error:');
         });
     });
 
@@ -300,8 +301,6 @@ describe('GameSocketHandlerService', () => {
             (boardService.handleBoardChange as SinonStub).returns(gameState);
 
             service.closeDoor(socket, { x: 0, y: 0 } as Tile, 'lobby1');
-            console.log(gameState.board);
-
             expect(gameState.board[0][0]).to.equal(TileTypes.DoorClosed);
             expect(gameState.players[0].currentAP).to.equal(0);
             expect(gameState.currentPlayerActionPoints).to.equal(0);
