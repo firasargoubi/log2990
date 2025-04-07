@@ -186,6 +186,7 @@ export class GameSocketHandlerService {
                         delay: this.delay,
                         handleOpenDoor: this.openDoor.bind(this),
                     },
+                    gameState: updatedGameState,
                 });
             }
         } catch (error) {
@@ -466,7 +467,6 @@ export class GameSocketHandlerService {
 
     private async delay(ms: number): Promise<void> {
         return new Promise<void>((resolve) => setTimeout(resolve, ms));
-        // eslint-disable-next-line max-lines
     }
 
     private getDiceValue(playerDice: string): number {
