@@ -174,19 +174,7 @@ export class GameSocketHandlerService {
             this.io.to(lobbyId).emit(GameEvents.TurnStarted, { gameState: updatedGameState });
             const currentPlayer = updatedGameState.players.find((p) => p.id === updatedGameState.currentPlayer);
             if (currentPlayer && currentPlayer.virtualPlayerData) {
-                this.virtualService.handleVirtualMovement({
-                    lobbyId,
-                    virtualPlayer: currentPlayer,
-                    getGameState: () => this.gameStates.get(lobbyId),
-                    boardService: this.boardService,
-                    callbacks: {
-                        handleRequestMovement: this.handleRequestMovement.bind(this),
-                        handleEndTurn: this.handleEndTurn.bind(this),
-                        startBattle: this.startBattle.bind(this),
-                        delay: this.delay,
-                        handleOpenDoor: this.openDoor.bind(this),
-                    },
-                });
+                this.virtualService.startTurn(this.io, gameState);
             }
         } catch (error) {
             this.io.to(lobbyId).emit(GameEvents.Error, `${gameSocketMessages.turnError}${error.message}`);
