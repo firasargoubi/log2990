@@ -102,6 +102,19 @@ export class GameActionService {
             socket.emit('error', `Teleport error: ${error.message}`);
         }
     }
+    startTurn(lobbyId: string) {
+        const gameState = this.gameStates.get(lobbyId);
+        if (!gameState) return;
+        try {
+            const updatedGameState = this.boardService.handleTurn(gameState);
+            this.gameStates.set(lobbyId, updatedGameState);
+
+            this.io.to(lobbyId).emit(GameEvents.TurnStarted, { gameState: updatedGameState });
+        } catch (error) {
+            this.io.to(lobbyId).emit(GameEvents.Error, `${gameSocketMessages.turnError}${error.message}`);
+        }
+    }
+
     closeDoor(socket: Socket, tile: Tile, lobbyId: string) {
         const gameState = this.gameLifeCycleService.getGameStateOrEmitError(socket, lobbyId);
         if (!gameState) return;
