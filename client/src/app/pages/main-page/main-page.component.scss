@@ -2,12 +2,9 @@ body {
     margin: 0;
     font-family: 'IM Fell English SC', serif;
     color: #ffffff;
-    background: url('../../../assets/images/back.png') no-repeat center center;
+    background: url('../../../assets/images/water3.jpg') no-repeat center center;
     background-size: cover;
-    //filter: saturate(1.5);
-    /* Ajoute de la clarté et de la saturation */
     background-size: cover;
-    /* Fait en sorte que l'image occupe tout l'écran */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -23,14 +20,12 @@ body {
     max-width: 600px;
     width: 80%;
 
-    /* From https://css.glass */
     background: rgba(255, 255, 255, 0.37);
     border-radius: 16px;
     box-shadow: 0 4px 30px rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(12.5px);
     -webkit-backdrop-filter: blur(12.5px);
     border: 1px solid rgba(255, 255, 255, 0.37);
-
 }
 
 .game-title {
@@ -61,8 +56,6 @@ body {
     border: 3px solid #56f884;
 }
 
-
-
 /* Boutons */
 .button-container {
     display: flex;
@@ -82,7 +75,9 @@ body {
     text-transform: uppercase;
     text-shadow: 1px 1px 3px #ffffff;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease;
+    transition:
+        background-color 0.3s ease,
+        transform 0.3s ease;
 }
 
 .btn:hover {
@@ -105,15 +100,11 @@ body {
     color: #d3d3d3;
 }
 
-
-
-
 label {
     margin-right: 15px;
     font-size: 1rem;
     color: gray;
 }
-
 
 /* Footer styles */
 footer {
@@ -139,4 +130,3 @@ footer {
     flex-wrap: wrap;
     justify-content: center;
 }
-

@@ -1,0 +1,76 @@
+.board-tile {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    font-size: 1rem;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.tile-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+.tile-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+    box-sizing: border-box;
+}
+
+.overlay-available-move {
+    background-color: rgba(50, 255, 50, 0.5);
+    border: 2px solid #00ff00;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.7);
+    border-radius: 4px;
+    background-color: rgba(0, 255, 0, 0.6);
+
+}
+
+.overlay-path-highlighted {
+    background-color: rgba(244, 67, 54, 0.4);
+    border: 2px solid #f44336;
+}
+
+.object-image {
+    position: absolute;
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+    z-index: 3;
+}
+
+.player-marker {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    z-index: 4;
+}
+
+.avatar-image {
+    width: 80%;
+    height: 80%;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    object-fit: cover;
+    background-color: rgba(255, 255, 255, 0.5);
+}

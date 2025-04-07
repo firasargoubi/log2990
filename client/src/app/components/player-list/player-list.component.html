@@ -1,0 +1,7 @@
+@for (player of players; track $index) {
+<app-player-card [player]="player" [currentPlayer]="currentPlayer" [hostId]="hostId" (remove)="remove($event)"></app-player-card>
+} @if (currentPlayer.isHost) {
+<mat-card class="add-player-card" (click)="openVirtualPlayerDialog()" matTooltip="Créer un jeu" matTooltipPosition="above">
+    <div class="plus-sign">+</div>
+</mat-card>
+}

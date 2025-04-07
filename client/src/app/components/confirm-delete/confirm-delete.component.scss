@@ -1,22 +1,21 @@
-
 .mat-mdc-dialog-container .mdc-dialog__surface {
-    background-color: #459948 !important; 
-    border-radius: 50px !important; 
+    background-color: #459948 !important;
+    border-radius: 50px !important;
     padding: 30px !important;
     text-align: center !important;
     font-family: 'Press Start 2P', cursive !important;
     box-shadow: 0px 15px 25px rgba(0, 0, 0, 0.3) !important;
-    border: 4px solid #81C784 !important; 
+    border: 4px solid #81c784 !important;
     width: 420px !important;
     max-width: 90% !important;
-    overflow: hidden !important; 
+    overflow: hidden !important;
     position: relative !important;
     animation: floating 3s infinite ease-in-out !important;
 }
 
-
 @keyframes floating {
-    0%, 100% {
+    0%,
+    100% {
         transform: translateY(0px);
     }
     50% {
@@ -64,20 +63,20 @@
 
 .cancel {
     background: white !important;
-    color: #2E7D32 !important;
-    border: 2px solid #81C784 !important;
+    color: #2e7d32 !important;
+    border: 2px solid #81c784 !important;
 }
 
 .cancel:hover {
-    background: #A5D6A7 !important;
+    background: #a5d6a7 !important;
 }
 
 .confirm {
-    background: #FFA07A !important; 
+    background: #ffa07a !important;
     color: white !important;
-    border: 2px solid #FFBFA3 !important;
+    border: 2px solid #ffbfa3 !important;
 }
 
 .confirm:hover {
-    background: #FF8C69 !important; 
+    background: #ff8c69 !important;
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Tile } from '@app/interfaces/tile';
-import { TileTypes } from '@app/interfaces/tile-types';
+import { Tile } from '@common/tile';
+import { TileTypes } from '@common/game.interface';
 
 @Injectable({
     providedIn: 'root',

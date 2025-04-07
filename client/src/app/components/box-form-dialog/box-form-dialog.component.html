@@ -1,6 +1,4 @@
-<h2>Formulaire du jeu :</h2>
-
-<form (ngSubmit)="closeDialog()">
+<form (keydown.enter)="onSubmit($event)" (ngSubmit)="onSubmit($event)">
     <div>
         <label for="name">Nom:</label>
         <input id="name" type="text" placeholder="Entre le nom de ton personnage" maxlength="12" (input)="inputName($event)" required />
@@ -10,7 +8,7 @@
     </div>
 
     <div class="avatar-grid">
-        <label>Choisi ton avatar: </label>
+        <label>Choisis ton avatar: </label>
         <div class="avatars">
             @for (avatar of avatars; track avatar) {
             <img [src]="avatar" [class.selected]="form.get('avatar')?.value === avatar" (click)="selectAvatar(avatar)" alt="Avatar" />
@@ -19,16 +17,12 @@
     </div>
 
     <div class="description1">
-        <label>Choisi un attribut à bonifier</label>
+        <label>Choisis un bonus</label>
     </div>
 
     <div class="stats">
         <button id="life" type="button" [disabled]="attributeClicked$" (click)="increase('life')">+2 Vie</button>
-        <span>{{ form.get('life')?.value }} vies en main!</span>
-    </div>
-    <div class="stats">
         <button id="speed" type="button" [disabled]="attributeClicked$" (click)="increase('speed')">+2 Vitesse</button>
-        <span>{{ form.get('speed')?.value }} de rapidité en main!</span>
     </div>
 
     <div class="description2">
@@ -37,16 +31,19 @@
 
     <div class="stats">
         <button id="attack" type="button" [disabled]="diceClicked$" (click)="pickDice('attack')">Dé d'attaque 6 faces</button>
-        <span>Attaque: un Dé de {{ form.get('attack')?.value }} faces</span>
-    </div>
-    <div class="stats">
         <button id="defense" type="button" [disabled]="diceClicked$" (click)="pickDice('defense')">Dé de défense 6 faces</button>
-        <span>Défense: un Dé de {{ form.get('defense')?.value }} faces</span>
+    </div>
+
+    <div class="summary of stats">
+        <p>❤️: {{ form.get('life')?.value }}</p>
+        <p>⚡: {{ form.get('speed')?.value }}</p>
+        <p>⚔️: 4 + D{{ form.get('attack')?.value }}</p>
+        <p>🛡️: 4 + D{{ form.get('defense')?.value }}</p>
     </div>
 
     <div class="actions">
         <button type="button" (click)="cancel()">Annuler</button>
-        <button mat-button type="submit" [disabled]="!formValid$" (click)="save()">Enregistrer</button>
+        <button mat-button type="button" [disabled]="!formValid$" (click)="save()">Enregistrer</button>
         <button type="button" (click)="resetAttributes()">Réinitialiser</button>
     </div>
 </form>

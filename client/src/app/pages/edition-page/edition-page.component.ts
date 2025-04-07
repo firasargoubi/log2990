@@ -1,13 +1,11 @@
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { Component, ElementRef, inject, ViewChild, OnInit } from '@angular/core';
+import { Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { BoardComponent } from '@app/components/board/board.component';
 import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
-import { EDITION_PAGE_CONSTANTS, OBJECT_COUNT, GameSize, GameType } from '@app/Consts/app.constants';
-import { Game } from '@common/game.interface';
-import { MapSize } from '@app/interfaces/map-size';
+import { EDITION_PAGE_CONSTANTS, GameSize, GameType, MapSize, OBJECT_COUNT } from '@app/Consts/app-constants';
 import { BoardService } from '@app/services/board.service';
 import { ErrorService } from '@app/services/error.service';
 import { GameService } from '@app/services/game.service';
@@ -16,13 +14,14 @@ import { NotificationService } from '@app/services/notification.service';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { SaveService } from '@app/services/save.service';
 import { ValidationService } from '@app/services/validation.service';
+import { Game } from '@common/game.interface';
 import { catchError, EMPTY, tap } from 'rxjs';
 
 @Component({
     selector: 'app-game-page',
     templateUrl: './edition-page.component.html',
     styleUrls: ['./edition-page.component.scss'],
-    imports: [FormsModule, BoardComponent, TileOptionsComponent, ObjectsComponent, RouterLink, DragDropModule],
+    imports: [FormsModule, BoardComponent, TileOptionsComponent, ObjectsComponent, DragDropModule, RouterLink],
 })
 export class EditionPageComponent implements OnInit {
     @ViewChild('board', { static: false }) boardElement: ElementRef;
@@ -48,8 +47,8 @@ export class EditionPageComponent implements OnInit {
     constructor() {
         this.gameLoaded = false;
         this.game.id = this.route.snapshot.params['id'];
-        this.game.mode = this.route.snapshot.queryParams['mode'] ? GameType.classic : GameType.capture;
-        this.game.mapSize = this.route.snapshot.queryParams['size'] ? GameSize.large : GameSize.small;
+        this.game.mode = this.route.snapshot.queryParams['mode'];
+        this.game.mapSize = this.route.snapshot.queryParams['size'];
         this.gameNames = this.saveService.getGameNames(this.game.id);
         this.loadGame();
     }

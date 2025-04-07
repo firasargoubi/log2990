@@ -1,0 +1,30 @@
+<mat-card class="player-card">
+    <div class="player-preview">
+        <img [src]="player.avatar" alt="Avatar de {{ player.name }}" matTooltip="{{ player.name }}" matTooltipPosition="above" />
+    </div>
+    <div class="player-info">
+        <ul>
+            <li>
+                <span class="player-name">{{ player.name }}</span>
+            </li>
+            @if (player.isHost) {
+            <li>👑</li>
+            } @if(player.virtualPlayerData) {
+            <li>💻</li>
+            }
+        </ul>
+        <div class="player-stats">
+            <p>Vie: {{ player.life }}</p>
+            <p>Vitesse: {{ player.speed }}</p>
+            <p>Attaque: {{ player.attack }}</p>
+            <p>Défense: {{ player.defense }}</p>
+        </div>
+    </div>
+    <div class="player-actions">
+        @if (isHost() && !player.isHost) {
+        <button mat-icon-button (click)="onRemovePlayer()" class="action remove" matTooltip="Exclure" matTooltipPosition="below">
+            <i>👢</i>
+        </button>
+        }
+    </div>
+</mat-card>

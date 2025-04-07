@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TestBed } from '@angular/core/testing';
+import { MapSize } from '@app/Consts/app-constants';
+import { Game, GameSize, GameType } from '@common/game.interface';
+import { Tile } from '@common/tile';
 import { BoardService } from './board.service';
-import { Game, GameType, GameSize } from '@common/game.interface';
-import { Tile } from '@app/interfaces/tile';
-import { MapSize } from '@app/interfaces/map-size';
 
 describe('BoardService', () => {
     let service: BoardService;

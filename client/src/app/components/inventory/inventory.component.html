@@ -1,0 +1,16 @@
+<div class="inventory">
+    @for (item of items; track item; let i = $index) {
+    <div class="item-slot">
+        <img [src]="getItemImage(item)" alt="Item {{ i + 1 }}" [matTooltip]="getItemDescription(item)" matTooltipPosition="above" />
+    </div>
+    }
+</div>
+@if (showPopup) {
+<app-item-replace-popup
+    [item1Name]="getItemName(items[0])"
+    [item2Name]="getItemName(items[1])"
+    [newItemName]="getItemName(pendingItem)"
+    (confirm)="handleConfirmReplace()"
+    (cancel)="handleCancelReplace()"
+/>
+}

@@ -1,0 +1,34 @@
+<div class="game-info">
+    <h3>Informations de la Partie</h3>
+
+    <p><strong>Taille de la carte:</strong> {{ mapSize }}</p>
+    <p><strong>Nombre de joueurs:</strong> {{ playerCount }}</p>
+    <p><strong>Joueur Actif:</strong> {{ activePlayer }}</p>
+
+    <p><strong>Joueurs qui ont quittés:</strong></p>
+    <ul>
+        @for (player of deletedPlayers; track player) {
+        <li>
+            <del>{{ player.name }}{{ player.virtualPlayerData ? ' 💻' : '' }}</del>
+        </li>
+        }
+    </ul>
+
+    <p><strong>Joueurs:</strong></p>
+    <ul>
+        @for (player of players; track player.id) {
+        <li>
+            {{ player.name }}{{ player.virtualPlayerData ? ' 💻' : '' }}
+            <ul>
+                @if (isCTF) {
+                <li><strong>Équipe:</strong> {{ getTeam(player) }}</li>
+                } @if ((player?.items ?? []).length > 0) { @if (player.items?.includes(objectTypes.FLAG)) {
+                <li>
+                    <strong>🏳️</strong>
+                </li>
+                } }
+            </ul>
+        </li>
+        }
+    </ul>
+</div>

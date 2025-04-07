@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatDialogRef } from '@angular/material/dialog';
-import { ConfirmDeleteComponent } from './confirm-delete.component';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialogRef } from '@angular/material/dialog';
 import { By } from '@angular/platform-browser';
+import { ConfirmDeleteComponent } from './confirm-delete.component';
 
 describe('ConfirmDeleteComponent', () => {
     let component: ConfirmDeleteComponent;

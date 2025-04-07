@@ -1,0 +1,189 @@
+h2 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #3f783f;
+    font-family: 'Press Start 2P', cursive;
+    margin-bottom: 25px;
+    font-size: 1.5rem;
+    padding: 15px 0;
+    text-shadow: 2px 2px 0 rgba(184, 213, 139, 0.7);
+    letter-spacing: 1px;
+    gap: 15px;
+}
+
+h2::before,
+h2::after {
+    font-size: 1.8rem;
+}
+
+h2::before {
+    content: '🌿';
+}
+h2::after {
+    content: '🦊';
+}
+
+.error-message {
+    color: #e05c3b;
+    margin: 8px 0;
+    font-size: 0.9rem;
+    font-family: 'Press Start 2P', cursive;
+    background: transparent;
+    padding: 4px 12px;
+}
+
+.error-message::before {
+    content: '🦝';
+}
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    background: #f0f7e6;
+    border: 3px solid #9eba63;
+    box-shadow: 0 6px 12px rgba(73, 115, 66, 0.2);
+}
+
+form div {
+    display: flex;
+    flex-direction: column;
+    background: #9eba63;
+    border-radius: 50px;
+    padding: 16px;
+    transition: 0.3s;
+}
+
+form div:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(19, 93, 12, 0.2);
+}
+
+form div:first-of-type {
+    background: transparent;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+form div:first-of-type:hover,
+form div:last-of-type:hover,
+.error-message:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+form div:first-of-type h2 {
+    background: #9eba63;
+    border-radius: 50px;
+    padding: 16px;
+    margin-bottom: 20px;
+    gap: 15px;
+}
+
+form div:nth-child(2) {
+    background: #9eba63;
+    border-radius: 50px;
+    padding: 16px;
+}
+
+form div:last-of-type {
+    flex-direction: row;
+    justify-content: center;
+    background: transparent;
+    padding: 0;
+    gap: 15px;
+}
+
+form label {
+    display: flex;
+    align-items: center;
+    color: #125d0c;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+form input {
+    width: 90%;
+    padding: 12px;
+    margin: 8px auto 0;
+    border: 2px solid #b8d58b;
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.8);
+    font-family: 'Courier New', monospace;
+}
+
+form input:focus {
+    outline: none;
+    border-color: #125d0c;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(18, 93, 12, 0.2);
+}
+
+form input::placeholder {
+    color: #9eba63;
+}
+
+form button {
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: 0.3s;
+    position: relative;
+    padding-left: 36px;
+}
+
+form button:first-of-type {
+    background: #125d0c;
+    color: white;
+    border: none;
+}
+
+form button:first-of-type::before {
+    content: '🦉';
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+form button:first-of-type:hover:not(:disabled) {
+    background: #1a7a10;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(19, 93, 12, 0.3);
+}
+
+form button:first-of-type:disabled {
+    background: #b8d58b;
+    cursor: not-allowed;
+}
+
+form button:last-of-type {
+    background: transparent;
+    border: 2px solid #9eba63;
+    color: #3f783f;
+}
+
+form button:last-of-type::before {
+    content: '🦢';
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+form button:last-of-type:hover {
+    background: rgba(158, 186, 99, 0.1);
+    transform: translateY(-2px);
+}
+
+form::after {
+    content: '🐾 🐾 🐾';
+    display: block;
+    text-align: right;
+    margin-top: 10px;
+    font-size: 1.2rem;
+}

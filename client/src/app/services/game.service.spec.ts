@@ -1,13 +1,13 @@
 /* eslint-disable import/no-deprecated */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { GameService } from './game.service';
+import { TestBed } from '@angular/core/testing';
+import { GAME_SERVICE_CONSTANTS } from '@app/Consts/app-constants';
+import { ApiEndpoint, ApiRoutes } from '@common/api.endpoints';
 import { Game, GameSize, GameType } from '@common/game.interface';
 import { environment } from 'src/environments/environment';
-import { ApiEndpoint, ApiRoutes } from '@common/api.endpoints';
+import { GameService } from './game.service';
 import { NotificationService } from './notification.service';
-import { GAME_SERVICE_CONSTANTS } from '@app/Consts/app.constants';
 
 describe('GameService', () => {
     let service: GameService;
@@ -225,15 +225,25 @@ describe('GameService', () => {
             req.flush(true);
         });
 
-        it('should handle errors when verifying game name', () => {
+        it('should handle errors when verifying game name by completing silently', () => {
+            let completed = false;
+
             service.verifyGameName(mockGame).subscribe({
-                next: (result) => {
-                    expect(result).toBeFalsy();
+                next: () => {
+                    fail('Should not emit a value on error');
+                },
+                error: () => {
+                    fail('Should not emit an error on error');
+                },
+                complete: () => {
+                    completed = true;
                 },
             });
 
             const req = httpMock.expectOne(`${baseUrl}/validateName`);
             req.error(new ErrorEvent('Network error'));
+
+            expect(completed).toBeTrue();
         });
     });
 
@@ -250,17 +260,26 @@ describe('GameService', () => {
             req.flush(true);
         });
 
-        it('should handle errors when verifying game accessibility', () => {
+        it('should handle errors when verifying game accessibility by completing silently', () => {
             const gameId = '123';
+            let completed = false;
 
             service.verifyGameAccessible(gameId).subscribe({
-                next: (result) => {
-                    expect(result).toBeFalsy();
+                next: () => {
+                    fail('Should not emit a value on error');
+                },
+                error: () => {
+                    fail('Should not emit an error on error');
+                },
+                complete: () => {
+                    completed = true;
                 },
             });
 
             const req = httpMock.expectOne(`${baseUrl}${ApiEndpoint.Validate}/${gameId}`);
             req.error(new ErrorEvent('Network error'));
+
+            expect(completed).toBeTrue();
         });
     });
 

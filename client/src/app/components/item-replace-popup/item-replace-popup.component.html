@@ -1,0 +1,15 @@
+<div class="popup-backdrop">
+    <div class="popup-container">
+        <h3>Inventaire plein</h3>
+        <p>Tu as déjà 2 objets :</p>
+        <ul>
+            <li>1- {{ item1Name }}</li>
+            <li>2- {{ item2Name }}</li>
+        </ul>
+        <p>Souhaites-tu remplacer le 1er par {{ newItemName }} ?</p>
+        <div class="popup-buttons">
+            <button (click)="onConfirm()">Oui</button>
+            <button (click)="onCancel()">Non</button>
+        </div>
+    </div>
+</div>

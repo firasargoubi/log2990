@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { EDITION_PAGE_CONSTANTS } from '@app/Consts/app.constants';
-import { Game } from '@common/game.interface';
+import { EDITION_PAGE_CONSTANTS } from '@app/Consts/app-constants';
 import { SaveMessage } from '@app/interfaces/save-message';
 import { ErrorService } from '@app/services/error.service';
 import { SaveService } from '@app/services/save.service';
+import { Game, GameType } from '@common/game.interface';
 
 @Injectable({
     providedIn: 'root',
@@ -34,6 +34,11 @@ export class ValidationService {
 
         this.saveService.alertBoardForVerification(true);
         const saveStatus: Partial<SaveMessage> = this.saveService.currentStatus;
+
+        if (game.mode === GameType.capture && !saveStatus.ctfPlaced) {
+            this.errorService.addMessage(EDITION_PAGE_CONSTANTS.missingFlag);
+            isValid = false;
+        }
 
         if (!saveStatus.doors) {
             this.errorService.addMessage(EDITION_PAGE_CONSTANTS.errorInvalidDoors);

@@ -1,24 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable max-classes-per-file */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, provideRouter, Routes } from '@angular/router';
 import { Component, Input } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { of, Subject, throwError } from 'rxjs';
-import { EditionPageComponent } from './edition-page.component';
-import { Game, GameSize, GameType } from '@common/game.interface';
-import { ErrorService } from '@app/services/error.service';
-import { GameService } from '@app/services/game.service';
-import { SaveService } from '@app/services/save.service';
-import { NotificationService } from '@app/services/notification.service';
-import { ImageService } from '@app/services/image.service';
-import { ObjectCounterService } from '@app/services/objects-counter.service';
-import { ValidationService } from '@app/services/validation.service';
+import { ActivatedRoute, provideRouter, Routes } from '@angular/router';
 import { BoardComponent } from '@app/components/board/board.component';
 import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
-import { EDITION_PAGE_CONSTANTS } from '@app/Consts/app.constants';
+import { EDITION_PAGE_CONSTANTS } from '@app/Consts/app-constants';
+import { BoardService } from '@app/services/board.service';
+import { ErrorService } from '@app/services/error.service';
+import { GameService } from '@app/services/game.service';
+import { ImageService } from '@app/services/image.service';
+import { NotificationService } from '@app/services/notification.service';
+import { ObjectCounterService } from '@app/services/objects-counter.service';
+import { SaveService } from '@app/services/save.service';
+import { ValidationService } from '@app/services/validation.service';
+import { Game, GameSize, GameType } from '@common/game.interface';
+import { of, Subject, throwError } from 'rxjs';
+import { EditionPageComponent } from './edition-page.component';
 
 const routes: Routes = [];
 
@@ -57,6 +58,7 @@ describe('EditionPageComponent Standalone', () => {
     let notificationServiceSpy: jasmine.SpyObj<NotificationService>;
     let objectCounterServiceSpy: jasmine.SpyObj<ObjectCounterService>;
     let validationServiceSpy: jasmine.SpyObj<ValidationService>;
+    let boardServiceSpy: jasmine.SpyObj<BoardService>;
 
     const mockGame: Game = {
         id: '123',
@@ -72,7 +74,8 @@ describe('EditionPageComponent Standalone', () => {
     };
 
     beforeEach(async () => {
-        saveServiceSpy = jasmine.createSpyObj('SaveService', ['alertBoardForVerification', 'saveGame', 'getGameNames'], {
+        boardServiceSpy = jasmine.createSpyObj('BoardService', ['initializeBoard']);
+        saveServiceSpy = jasmine.createSpyObj('SaveService', ['alertBoardForReset', 'alertBoardForVerification', 'saveGame', 'getGameNames'], {
             isSave$: new Subject<boolean>(),
             isReset$: of(false),
             currentStatus: {},
@@ -112,6 +115,7 @@ describe('EditionPageComponent Standalone', () => {
                 { provide: NotificationService, useValue: notificationServiceSpy },
                 { provide: ObjectCounterService, useValue: objectCounterServiceSpy },
                 { provide: ValidationService, useValue: validationServiceSpy },
+                { provide: BoardService, useValue: boardServiceSpy },
                 provideRouter(routes),
             ],
         }).compileComponents();
@@ -167,6 +171,11 @@ describe('EditionPageComponent Standalone', () => {
 
         component.game.mapSize = GameSize.large;
         expect(component.mapSize).toBe(20);
+    });
+
+    it('should return small map size when mapSize is invalid', () => {
+        component.game.mapSize = 'invalid' as GameSize;
+        expect(component.mapSize).toBe(10);
     });
 
     it('should return correct objectNumber based on mapSize', () => {
@@ -327,5 +336,29 @@ describe('EditionPageComponent Standalone', () => {
         expect(imageServiceSpy.captureBoardFromTiles).toHaveBeenCalled();
         expect(saveServiceSpy.saveGame).toHaveBeenCalled();
         expect(component.saveState).toBeTrue();
+    });
+
+    it('should show error notification when saving fails', async () => {
+        validationServiceSpy.validateGame.and.returnValue(true);
+        component.showErrorPopup = false;
+        component.game = mockGame;
+
+        const error = new Error('Test Error');
+        imageServiceSpy.captureBoardFromTiles.and.returnValue(Promise.reject(error));
+
+        await component.saveBoard();
+
+        expect(notificationServiceSpy.showError).toHaveBeenCalledWith('Error saving game: ' + error.message);
+    });
+    it('should reset the game to reference and alert board reset', () => {
+        const initialGame = { ...component.game };
+        component.game.name = 'Modified Name';
+        component.gameReference = initialGame;
+
+        component.resetBoard();
+
+        expect(component.game).toEqual(initialGame);
+        expect(component['boardService'].initializeBoard).toHaveBeenCalledWith(initialGame, component.mapSize);
+        expect(saveServiceSpy.alertBoardForReset).toHaveBeenCalledWith(true);
     });
 });
