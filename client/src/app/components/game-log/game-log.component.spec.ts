@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { TestBed } from '@angular/core/testing';
+import { ElementRef } from '@angular/core';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { EventType } from '@common/events';
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
@@ -76,16 +77,6 @@ describe('GameLogComponent', () => {
         const PAD_TIME_VALUE = 10;
         const paddedTime = component['padTime'](PAD_TIME_VALUE);
         expect(paddedTime).toBe('10');
-    });
-
-    it('should scroll to the bottom of the element', () => {
-        const SCROLL_HEIGHT = 100;
-        const mockElement = { scrollTop: 0, scrollHeight: 100 } as HTMLElement;
-        spyOn(document, 'getElementById').and.returnValue(mockElement);
-
-        component['scrollToBottom']('gameLog');
-
-        expect(mockElement.scrollTop).toBe(SCROLL_HEIGHT);
     });
 
     it('should handle events from lobbyService and add logs', () => {
@@ -281,7 +272,7 @@ describe('GameLogComponent', () => {
                 involvedPlayers: ['Player1', 'Player2'],
                 description: 'A description',
             });
-            expect((component as any).scrollToBottom).toHaveBeenCalledWith('gameLog');
+            expect((component as any).scrollToBottom).toHaveBeenCalledWith();
         });
 
         it('should add a log entry with only eventType', () => {
@@ -298,7 +289,7 @@ describe('GameLogComponent', () => {
                 involvedPlayers: undefined,
                 description: undefined,
             });
-            expect((component as any).scrollToBottom).toHaveBeenCalledWith('gameLog');
+            expect((component as any).scrollToBottom).toHaveBeenCalledWith();
         });
 
         it('should accumulate multiple log entries', () => {
@@ -323,8 +314,34 @@ describe('GameLogComponent', () => {
                 involvedPlayers: undefined,
                 description: undefined,
             });
-            expect((component as any).scrollToBottom).toHaveBeenCalledWith('gameLog');
+            expect((component as any).scrollToBottom).toHaveBeenCalledWith();
             expect((component as any).scrollToBottom).toHaveBeenCalledTimes(2);
         });
+    });
+
+    describe('scrollToBottom', () => {
+        it('should scroll to the bottom when the element exists', fakeAsync(() => {
+            const mockElement = {
+                scrollHeight: 500,
+                scrollTop: 0,
+            } as HTMLDivElement;
+            component.gameLogRef = {
+                nativeElement: mockElement,
+            } as ElementRef<HTMLDivElement>;
+
+            component['scrollToBottom']();
+            tick(0);
+
+            expect(mockElement.scrollTop).toBe(mockElement.scrollHeight);
+        }));
+
+        it('should handle cases where the element is not available', fakeAsync(() => {
+            component.gameLogRef = null as unknown as ElementRef<HTMLDivElement>;
+
+            expect(() => {
+                component['scrollToBottom']();
+                tick(0);
+            }).not.toThrow();
+        }));
     });
 });
