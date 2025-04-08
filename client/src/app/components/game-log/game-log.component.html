@@ -3,7 +3,7 @@
 </div>
 
 @if (activeTab === 'eventLog') {
-<div class="game-log-container">
+<div class="game-log-container" #gameLog>
     <div class="game-log-header">
         Journal de Jeu
         <button (click)="filterByCurrentPlayer = !filterByCurrentPlayer">

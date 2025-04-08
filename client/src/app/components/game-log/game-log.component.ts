@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, inject, Input, OnInit, ViewChild } from '@angular/core';
 import { PAD_TIME_VALUE } from '@app/Consts/app-constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { EventType } from '@common/events';
@@ -11,6 +11,7 @@ import { Player } from '@common/player';
 })
 export class GameLogComponent implements OnInit {
     @Input() currentPlayer: Player;
+    @ViewChild('gameLog') gameLogRef!: ElementRef<HTMLDivElement>;
     activeTab: string = 'gameLog';
     filterByCurrentPlayer = false;
     private gameLog: { timestamp: string; eventType: string; involvedPlayer?: string; involvedPlayers?: string[]; description?: string }[] = [];
@@ -38,7 +39,7 @@ export class GameLogComponent implements OnInit {
             description,
         };
         this.gameLog.push(event);
-        this.scrollToBottom('gameLog');
+        this.scrollToBottom();
     }
 
     private gameListeners(): void {
@@ -90,10 +91,12 @@ export class GameLogComponent implements OnInit {
         return value < PAD_TIME_VALUE ? `0${value}` : value.toString();
     }
 
-    private scrollToBottom(elementId: string): void {
-        const element = document.getElementById(elementId);
-        if (element) {
-            element.scrollTop = element.scrollHeight;
-        }
+    private scrollToBottom(): void {
+        setTimeout(() => {
+            const element = this.gameLogRef?.nativeElement;
+            if (element) {
+                element.scrollTop = element.scrollHeight;
+            }
+        }, 0);
     }
 }
