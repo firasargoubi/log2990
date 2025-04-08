@@ -51,8 +51,6 @@ export class Server {
             lobbyHandler,
             validationHandler,
             disconnectHandler,
-            boardService,
-            itemService,
             gameActionService,
             gameLifeCycleService,
         );

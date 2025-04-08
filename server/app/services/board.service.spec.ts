@@ -757,4 +757,66 @@ describe('BoardService', () => {
 
         expect(tileType).to.equal(TileTypes.Wall);
     });
+    it('should handleMovement and set pendingItem when player inventory is full', () => {
+        const state = {
+            players: [{ id: 'p1', speed: 2, items: [ObjectsTypes.BOOTS, ObjectsTypes.SWORD], bonus: {} }],
+            currentPlayer: 'p1',
+            playerPositions: [{ x: 0, y: 0 }],
+            currentPlayerMovementPoints: 5,
+            board: [
+                [ObjectsTypes.POTION * TILE_DELIMITER + TileTypes.Grass, 0],
+                [0, 0],
+            ],
+        } as any;
+
+        pathfindingService.getMovementCost.returns(1);
+        itemService = { applyAttributeEffects: sandbox.stub() };
+        boardService = new BoardService(gameService, pathfindingService, itemService);
+
+        const result = boardService.handleMovement(state, { x: 0, y: 0 });
+
+        expect(result.shouldStop).to.be.equal(true);
+        expect(result.gameState.players[0].pendingItem).to.equal(ObjectsTypes.POTION);
+        expect(result.gameState.players[0].items).to.deep.equal([ObjectsTypes.BOOTS, ObjectsTypes.SWORD]);
+    });
+    it('should handleTeleport with negative movement points without setting moves', () => {
+        sandbox.stub(boardService as any, 'isOccupied').returns(false);
+
+        const state: GameState = {
+            players: [{ id: 'p1' }],
+            currentPlayer: 'p1',
+            playerPositions: [{ x: 0, y: 0 }],
+            currentPlayerMovementPoints: -1,
+        } as any;
+
+        const result = boardService.handleTeleport(state, { x: 2, y: 2 });
+
+        expect(result.availableMoves).to.deep.equal([]);
+        expect(result.shortestMoves).to.deep.equal([]);
+    });
+    it('should return false from verifyOrb if current player holds orb', () => {
+        const gameState: GameState = {
+            currentPlayer: 'p1',
+            players: [
+                { id: 'p1', items: [ObjectsTypes.CRYSTAL] },
+                { id: 'p2', items: [] },
+            ],
+        } as any;
+
+        const result = (boardService as any).verifyOrb(gameState);
+        expect(result).to.be.equal(false);
+    });
+
+    it('should return true from verifyOrb if another player holds orb', () => {
+        const gameState: GameState = {
+            currentPlayer: 'p1',
+            players: [
+                { id: 'p1', items: [] },
+                { id: 'p2', items: [ObjectsTypes.CRYSTAL] },
+            ],
+        } as any;
+
+        const result = (boardService as any).verifyOrb(gameState);
+        expect(result).to.be.equal(true);
+    });
 });

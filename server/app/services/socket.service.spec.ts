@@ -21,8 +21,6 @@ describe('SocketService', () => {
     let gameActionService: any;
     let validationHandler: any;
     let disconnectHandler: any;
-    let boardService: any;
-    let itemService: any;
 
     beforeEach(() => {
         sandbox = createSandbox();
@@ -60,8 +58,6 @@ describe('SocketService', () => {
         };
         validationHandler = { verifyRoom: sandbox.stub(), verifyAvatars: sandbox.stub(), verifyUsername: sandbox.stub() };
         disconnectHandler = { handleDisconnect: sandbox.stub(), handleDisconnectFromRoom: sandbox.stub() };
-        boardService = { findAllPaths: sandbox.stub(), calculateShortestMoves: sandbox.stub() };
-        itemService = { removeAttributeEffects: sandbox.stub() };
 
         mockSocket = {
             emit: sandbox.stub(),
@@ -74,16 +70,7 @@ describe('SocketService', () => {
             to: sandbox.stub().returns({ emit: sandbox.stub() }),
         };
 
-        socketService = new SocketService(
-            httpServer,
-            lobbyHandler,
-            validationHandler,
-            disconnectHandler,
-            boardService,
-            itemService,
-            gameActionService,
-            gameLifecycleService,
-        );
+        socketService = new SocketService(httpServer, lobbyHandler, validationHandler, disconnectHandler, gameActionService, gameLifecycleService);
 
         (socketService as any).io = ioStub;
     });
@@ -623,53 +610,6 @@ describe('SocketService', () => {
             const players = [{ id: 'p1', name: 'Player 1' }] as Player[];
             createTeamsHandler({ lobbyId: 'lobby1', players });
             expect(gameLifecycleService.createTeams.calledWith('lobby1', players)).to.equal(true);
-        }
-    });
-    it('should handle resolveInventory event', () => {
-        socketService.init();
-        const connectionHandler = ioStub.on.firstCall.args[1];
-        connectionHandler(mockSocket);
-
-        const resolveHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'resolveInventory')?.args[1];
-
-        const mockGameState = {
-            players: [{ id: 'socket1', items: [1], pendingItem: 2 }],
-            playerPositions: [{ x: 0, y: 0 }],
-            board: [[0]],
-        };
-        gameLifecycleService.getGameStateOrEmitError.returns(mockGameState);
-        boardService.findAllPaths.returns([]);
-        boardService.calculateShortestMoves.returns([]);
-
-        if (resolveHandler) {
-            resolveHandler({ lobbyId: 'lobby1', keptItems: [1] });
-            expect(mockSocket.emit.notCalled).to.be.equal(true);
-        }
-    });
-    it('should handle cancelInventoryChoice event', () => {
-        socketService.init();
-        const connectionHandler = ioStub.on.firstCall.args[1];
-        connectionHandler(mockSocket);
-
-        const cancelHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'cancelInventoryChoice')?.args[1];
-
-        const mockGameState = {
-            players: [{ id: 'socket1', pendingItem: 5 }],
-            playerPositions: [{ x: 1, y: 2 }],
-            board: [
-                [0, 0, 0],
-                [0, 0, 0],
-            ],
-        };
-
-        boardService.findAllPaths.returns([]);
-        boardService.calculateShortestMoves.returns([]);
-
-        gameLifecycleService.getGameStateOrEmitError.returns(mockGameState);
-
-        if (cancelHandler) {
-            cancelHandler({ lobbyId: 'lobby1' });
-            expect(ioStub.to().emit.calledWith('boardModified')).to.be.equal(true);
         }
     });
 });

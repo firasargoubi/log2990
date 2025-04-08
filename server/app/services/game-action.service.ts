@@ -2,7 +2,7 @@ import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-soc
 import { Coordinates } from '@common/coordinates';
 import { GameEvents } from '@common/events';
 import { GameState } from '@common/game-state';
-import { ObjectsTypes, Tile, TileTypes } from '@common/game.interface';
+import { ObjectsTypes, Tile, TILE_DELIMITER, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
@@ -231,6 +231,55 @@ export class GameActionService {
             attacker,
             defender,
         });
+    }
+    handleResolveInventory(socket: Socket, lobbyId: string, keptItems: number[]): GameState | null {
+        const gameState = this.gameLifeCycleService.getGameStateOrEmitError(socket, lobbyId);
+        if (!gameState) return null;
+
+        const playerIndex = gameState.players.findIndex((p) => p.id === socket.id);
+        if (playerIndex === -1) return null;
+
+        const player = gameState.players[playerIndex];
+        const playerPosition = gameState.playerPositions[playerIndex];
+
+        const fullList = [...player.items];
+        if (player.pendingItem !== 0) fullList.push(player.pendingItem);
+
+        const refusedItem = fullList.find((item) => !keptItems.includes(item));
+        const tileValue = gameState.board[playerPosition.x][playerPosition.y] % TILE_DELIMITER;
+
+        if (refusedItem && player.items.includes(refusedItem)) {
+            this.itemService.removeAttributeEffects(player, refusedItem);
+        }
+
+        player.items = keptItems;
+        player.pendingItem = 0;
+
+        if (refusedItem !== undefined) {
+            gameState.board[playerPosition.x][playerPosition.y] = refusedItem * TILE_DELIMITER + tileValue;
+        }
+
+        gameState.availableMoves = this.boardService.findAllPaths(gameState, playerPosition);
+        gameState.shortestMoves = this.boardService.calculateShortestMoves(gameState, playerPosition, gameState.availableMoves);
+
+        return gameState;
+    }
+    handleCancelInventoryChoice(socket: Socket, lobbyId: string, playerId: string): GameState | null {
+        const gameState = this.gameLifeCycleService.getGameStateOrEmitError(socket, lobbyId);
+        if (!gameState) return null;
+
+        const playerIndex = gameState.players.findIndex((p) => p.id === playerId);
+        if (playerIndex === -1) return null;
+
+        const player = gameState.players[playerIndex];
+        const playerPosition = gameState.playerPositions[playerIndex];
+
+        player.pendingItem = 0;
+
+        gameState.availableMoves = this.boardService.findAllPaths(gameState, playerPosition);
+        gameState.shortestMoves = this.boardService.calculateShortestMoves(gameState, playerPosition, gameState.availableMoves);
+
+        return gameState;
     }
 
     private async delay(ms: number) {

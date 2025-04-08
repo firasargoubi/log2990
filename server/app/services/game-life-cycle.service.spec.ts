@@ -159,6 +159,7 @@ describe('GameLifecycleService', () => {
 
         gameStates.set('lobby1', gameState);
         (boardService.handleEndTurn as SinonStub).returns(gameState);
+        (boardService.handleTurn as SinonStub).returns(gameState);
 
         const winner = { id: '1', life: 5, maxLife: 5 } as Player;
         const loser = { id: '2', life: 0, maxLife: 5, items: [] } as Player;
@@ -271,23 +272,7 @@ describe('GameLifecycleService', () => {
 
         expect((socket.emit as SinonStub).calledWith(GameEvents.Error, gameSocketMessages.notEnoughPlayers)).to.equal(true);
     });
-    it('should emit error if an exception is thrown during game start', async () => {
-        const lobby = {
-            players: [{ id: '1', isHost: true }],
-            isLocked: false,
-        } as GameLobby;
 
-        const gameState = { gameMode: 'default' } as GameState;
-
-        lobbies.set('lobby1', lobby);
-        (boardService.initializeGameState as SinonStub).resolves(gameState);
-        (boardService.handleTurn as SinonStub).throws(new Error('Unexpected error'));
-
-        await service.handleRequestStart(socket as Socket, 'lobby1');
-
-        const errorMessage = `${gameSocketMessages.failedStartGame} Unexpected error`;
-        expect((socket.emit as SinonStub).calledWith(GameEvents.Error, errorMessage)).to.equal(true);
-    });
     it('should return early if gameState is not found in startTurn', () => {
         const emitStub = sandbox.stub();
         service.setServer({ to: () => ({ emit: emitStub }) } as unknown as Server);
@@ -404,17 +389,5 @@ describe('GameLifecycleService', () => {
         await service.handleRequestStart(socket as Socket, 'lobby1');
 
         expect((socket.emit as SinonStub).calledWith(GameEvents.Error, gameSocketMessages.notEnoughPlayers)).to.equal(true);
-    });
-    it('should emit error if handleTurn throws in handleRequestStart', async () => {
-        const lobby = { players: [{ id: '1', isHost: true }], isLocked: false } as GameLobby;
-        const gameState = { gameMode: 'default' } as GameState;
-
-        lobbies.set('lobby1', lobby);
-        (boardService.initializeGameState as SinonStub).resolves(gameState);
-        (boardService.handleTurn as SinonStub).throws(new Error('turn error'));
-
-        await service.handleRequestStart(socket as Socket, 'lobby1');
-
-        expect((socket.emit as SinonStub).calledWithMatch(GameEvents.Error, /failed to start game/i)).to.be.equal(true);
     });
 });

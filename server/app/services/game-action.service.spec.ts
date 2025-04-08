@@ -1,19 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
+import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
+import { GameActionService } from '@app/services/game-action.service';
+import { Coordinates } from '@common/coordinates';
+import { GameEvents } from '@common/events';
+import { GameState } from '@common/game-state';
+import { ObjectsTypes, Tile, TILE_DELIMITER, TileTypes } from '@common/game.interface';
+import { Player } from '@common/player';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { Server, Socket } from 'socket.io';
-import { GameActionService } from '@app/services/game-action.service';
 import { BoardService } from './board.service';
-import { ItemService } from './item.service';
 import { GameLifecycleService } from './game-life-cycle.service';
-import { GameState } from '@common/game-state';
-import { ObjectsTypes, Tile, TileTypes } from '@common/game.interface';
-import { Coordinates } from '@common/coordinates';
-import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
-import { GameEvents } from '@common/events';
-import { Player } from '@common/player';
+import { ItemService } from './item.service';
 
 const createGameState = (): GameState => {
     return {
@@ -101,11 +101,20 @@ describe('GameActionService Tests', () => {
                 return gameState;
             }),
             handleBoardChange: sandbox.stub().callsFake((gameState: GameState) => gameState),
+            findAllPaths: sandbox.stub().callsFake((gameState: GameState, coordinate: Coordinates) => {
+                gameState.playerPositions[0] = coordinate;
+                return [coordinate];
+            }),
+            calculateShortestMoves: sandbox.stub().callsFake((gameState: GameState, coordinate: Coordinates) => {
+                gameState.playerPositions[0] = coordinate;
+                return [[coordinate]];
+            }),
         } as unknown as BoardService;
 
         itemService = {
             applyPotionEffect: sandbox.stub(),
             applyJuiceEffect: sandbox.stub(),
+            removeAttributeEffects: sandbox.stub(),
         } as unknown as ItemService;
 
         handleDefeatStub = sandbox.stub();
@@ -484,5 +493,72 @@ describe('GameActionService Tests', () => {
 
         service.startBattle(lobbyId, undefined, undefined);
         expect((io.to as sinon.SinonStub).called).to.equal(false);
+    });
+    it('should handleResolveInventory correctly and update gameState', () => {
+        const lobbyId = 'lobbyInventory';
+        const gameState = createGameState();
+        const socket = { id: 'player1', emit: sandbox.stub() } as unknown as Socket;
+
+        gameStates.set(lobbyId, gameState);
+        gameState.players[0].items = [ObjectsTypes.BOOTS, ObjectsTypes.FLAG];
+        gameState.players[0].pendingItem = ObjectsTypes.POTION;
+        gameState.playerPositions[0] = { x: 0, y: 0 };
+        gameState.board[0][0] = ObjectsTypes.POTION * TILE_DELIMITER + TileTypes.Grass;
+
+        (boardService.findAllPaths as sinon.SinonStub).returns([{ x: 1, y: 1 }]);
+        (boardService.calculateShortestMoves as sinon.SinonStub).returns([[{ x: 1, y: 1 }]]);
+
+        const result = service.handleResolveInventory(socket, lobbyId, [ObjectsTypes.BOOTS, ObjectsTypes.POTION]);
+
+        expect(result).to.not.be.equal(null);
+        expect(result?.players[0].items).to.deep.equal([ObjectsTypes.BOOTS, ObjectsTypes.POTION]);
+        expect(result?.players[0].pendingItem).to.equal(0);
+        expect(result?.board[0][0]).to.equal(ObjectsTypes.FLAG * TILE_DELIMITER + TileTypes.Grass);
+        expect(result?.availableMoves).to.deep.equal([{ x: 1, y: 1 }]);
+        expect(result?.shortestMoves).to.deep.equal([[{ x: 1, y: 1 }]]);
+    });
+
+    it('should handleCancelInventoryChoice correctly and reset pending item', () => {
+        const lobbyId = 'lobbyCancelInventory';
+        const gameState = createGameState();
+        const socket = { id: 'player1', emit: sandbox.stub() } as unknown as Socket;
+
+        gameStates.set(lobbyId, gameState);
+        gameState.players[0].pendingItem = ObjectsTypes.POTION;
+        gameState.playerPositions[0] = { x: 0, y: 0 };
+
+        (boardService.findAllPaths as sinon.SinonStub).returns([{ x: 1, y: 1 }]);
+        (boardService.calculateShortestMoves as sinon.SinonStub).returns([[{ x: 1, y: 1 }]]);
+
+        const result = service.handleCancelInventoryChoice(socket, lobbyId, 'player1');
+
+        expect(result).to.not.be.equal(null);
+        expect(result?.players[0].pendingItem).to.equal(0);
+        expect(result?.availableMoves).to.deep.equal([{ x: 1, y: 1 }]);
+        expect(result?.shortestMoves).to.deep.equal([[{ x: 1, y: 1 }]]);
+    });
+
+    it('should return null from handleResolveInventory if player not found', () => {
+        const lobbyId = 'lobbyInventoryNull';
+        const gameState = createGameState();
+        const socket = { id: 'nonExistingPlayer', emit: sandbox.stub() } as unknown as Socket;
+
+        gameStates.set(lobbyId, gameState);
+
+        const result = service.handleResolveInventory(socket, lobbyId, [ObjectsTypes.BOOTS, ObjectsTypes.POTION]);
+
+        expect(result).to.be.equal(null);
+    });
+
+    it('should return null from handleCancelInventoryChoice if player not found', () => {
+        const lobbyId = 'lobbyCancelNull';
+        const gameState = createGameState();
+        const socket = { id: 'nonExistingPlayer', emit: sandbox.stub() } as unknown as Socket;
+
+        gameStates.set(lobbyId, gameState);
+
+        const result = service.handleCancelInventoryChoice(socket, lobbyId, 'nonExistingPlayer');
+
+        expect(result).to.be.equal(null);
     });
 });
