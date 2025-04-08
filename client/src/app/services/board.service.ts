@@ -4,7 +4,7 @@ import { MapSize, OBJECT_MULTIPLIER } from '@app/Consts/app-constants';
 import { Coordinates } from '@app/interfaces/coordinates';
 import { Game } from '@common/game.interface';
 import { Tile } from '@common/tile';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 
 @Injectable({
     providedIn: 'root',
@@ -14,10 +14,14 @@ export class BoardService {
     private objectsHeldSubject = new BehaviorSubject<boolean>(false);
     private selectedTilesSubject = new BehaviorSubject<Coordinates[]>([]);
 
+    boardUpdated$ = new Subject<void>();
     board$ = this.boardSubject.asObservable();
     objectHeld$ = this.objectsHeldSubject.asObservable();
     selectedTiles$ = this.selectedTilesSubject.asObservable();
 
+    notifyBoardUpdate(): void {
+        this.boardUpdated$.next();
+    }
     get board(): Tile[][] {
         return this.boardSubject.value;
     }
