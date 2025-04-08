@@ -9,6 +9,7 @@ import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
 import { expect } from 'chai';
+import * as sinon from 'sinon';
 import { createSandbox, SinonSandbox, SinonStub } from 'sinon';
 import { Server, Socket } from 'socket.io';
 import { GameLifecycleService } from './game-life-cycle.service';
@@ -144,29 +145,34 @@ describe('GameLifecycleService', () => {
 
     it('should handleDefeat and continue turn if loser is current player', () => {
         const gameState = {
-            players: [{ id: '1' }, { id: '2' }],
-            playerPositions: [
-                { x: 0, y: 0 },
-                { x: 1, y: 1 },
+            currentPlayer: '2',
+            players: [
+                { id: '1', life: 5, maxLife: 5 },
+                { id: '2', life: 5, maxLife: 5 },
             ],
             spawnPoints: [
                 { x: 0, y: 0 },
                 { x: 1, y: 1 },
             ],
+            playerPositions: [
+                { x: 0, y: 0 },
+                { x: 1, y: 1 },
+            ],
             board: [[0]],
-            currentPlayer: '2',
         } as unknown as GameState;
 
         gameStates.set('lobby1', gameState);
         (boardService.handleEndTurn as SinonStub).returns(gameState);
+        (boardService.handleTurn as SinonStub).returns(gameState);
 
-        const winner = { id: '1', life: 5, maxLife: 5 } as Player;
-        const loser = { id: '2', life: 0, maxLife: 5, items: [] } as Player;
+        service.setServer({
+            to: sandbox.stub().returns({ emit: sandbox.stub() }),
+        } as unknown as any);
 
-        service.handleDefeat('lobby1', winner, loser);
-        expect(gameStates.get('lobby1')).to.equal(gameState);
+        service.handleDefeat('lobby1', { ...gameState.players[0], life: 5, maxLife: 5 }, { ...gameState.players[1], life: 0, maxLife: 5, items: [] });
+
+        expect(gameStates.get('lobby1')).to.deep.equal(gameState);
     });
-
     it('should handleFlee and emit failure after 2 attempts', () => {
         const gameState = {
             players: [{ id: '1', amountEscape: 2 }],
@@ -281,12 +287,11 @@ describe('GameLifecycleService', () => {
 
         lobbies.set('lobby1', lobby);
         (boardService.initializeGameState as SinonStub).resolves(gameState);
-        (boardService.handleTurn as SinonStub).throws(new Error('Unexpected error'));
+        (lobbyService.updateLobby as SinonStub).throws(new Error('Unexpected error'));
 
         await service.handleRequestStart(socket as Socket, 'lobby1');
 
-        const errorMessage = `${gameSocketMessages.failedStartGame} Unexpected error`;
-        expect((socket.emit as SinonStub).calledWith(GameEvents.Error, errorMessage)).to.equal(true);
+        sinon.assert.calledOnceWithExactly(socket.emit as SinonStub, GameEvents.Error, `${gameSocketMessages.failedStartGame} Unexpected error`);
     });
     it('should return early if gameState is not found in startTurn', () => {
         const emitStub = sandbox.stub();
@@ -406,15 +411,29 @@ describe('GameLifecycleService', () => {
         expect((socket.emit as SinonStub).calledWith(GameEvents.Error, gameSocketMessages.notEnoughPlayers)).to.equal(true);
     });
     it('should emit error if handleTurn throws in handleRequestStart', async () => {
-        const lobby = { players: [{ id: '1', isHost: true }], isLocked: false } as GameLobby;
-        const gameState = { gameMode: 'default' } as GameState;
+        const lobby = {
+            players: [{ id: '1', isHost: true }],
+            isLocked: false,
+        } as GameLobby;
+
+        const gameState = {
+            gameMode: 'default',
+            players: [{ id: '1', isHost: true }],
+            currentPlayer: '1',
+        } as GameState;
 
         lobbies.set('lobby1', lobby);
         (boardService.initializeGameState as SinonStub).resolves(gameState);
         (boardService.handleTurn as SinonStub).throws(new Error('turn error'));
 
+        const emitStub = sandbox.stub();
+        const toStub = sandbox.stub().returns({ emit: emitStub });
+        service.setServer({ to: toStub } as unknown as Server);
+
         await service.handleRequestStart(socket as Socket, 'lobby1');
 
-        expect((socket.emit as SinonStub).calledWithMatch(GameEvents.Error, /failed to start game/i)).to.be.equal(true);
+        sinon.assert.calledOnceWithExactly(socket.emit as SinonStub, GameEvents.Error, `${gameSocketMessages.failedStartGame} turn error`);
+
+        sinon.assert.calledWith(emitStub, GameEvents.GameStarted, { gameState });
     });
 });
