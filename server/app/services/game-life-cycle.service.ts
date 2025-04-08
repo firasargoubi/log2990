@@ -14,6 +14,7 @@ import { PathfindingService } from './pathfinding.service';
 @Service()
 export class GameLifecycleService {
     private io: Server;
+    // eslint-disable-next-line max-params
     constructor(
         private lobbies: Map<string, GameLobby>,
         private gameStates: Map<string, GameState>,

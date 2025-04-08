@@ -131,6 +131,7 @@ describe('GameLifecycleService', () => {
             players: [{ id: '1' }],
             spawnPoints: [{ x: 0, y: 0 }],
             playerPositions: [{ x: 0, y: 0 }],
+            // eslint-disable-next-line @typescript-eslint/no-magic-numbers
             board: [[100]],
         } as unknown as GameState;
 
