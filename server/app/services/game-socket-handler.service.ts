@@ -91,11 +91,11 @@ export class GameSocketHandlerService {
         const indexPlayer = gameState.players.findIndex((p) => p.id === socket.id);
         const currentPlayer = gameState.players[indexPlayer];
         if (!gameState) return;
-
         try {
             let updatedGameState = gameState;
-            updatedGameState.animation = true;
-
+            if (coordinates.length > 1) {
+                updatedGameState.animation = true;
+            }
             for (const [idx, coordinate] of coordinates.entries()) {
                 if (!idx) {
                     continue;

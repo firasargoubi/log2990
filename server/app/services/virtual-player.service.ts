@@ -82,6 +82,26 @@ export class VirtualPlayerService {
         return nearestItemPos;
     }
 
+    getAdjacentPositions(pos: Coordinates, board: number[][]): Coordinates[] {
+        const adjacent: Coordinates[] = [];
+        const directions = [
+            { x: -1, y: 0 },
+            { x: 1, y: 0 },
+            { x: 0, y: -1 },
+            { x: 0, y: 1 },
+        ];
+        const rows = board.length;
+        const cols = board[0].length;
+        directions.forEach((d) => {
+            const newX = pos.x + d.x;
+            const newY = pos.y + d.y;
+            if (newX >= 0 && newY >= 0 && newX < rows && newY < cols) {
+                adjacent.push({ x: newX, y: newY });
+            }
+        });
+        return adjacent;
+    }
+
     private async prepareTurn(config: VirtualMovementConfig): Promise<{ currentGameState: GameState; playerIndex: number } | null> {
         let currentGameState = config.getGameState();
         if (!currentGameState) return null;
@@ -106,15 +126,30 @@ export class VirtualPlayerService {
         const { boardService, virtualPlayer, gameState } = config;
         const currentPos = gameState.playerPositions[playerIndex];
 
-        const availableMoves = boardService.findAllPaths(gameState, currentPos);
+        let availableMoves = boardService.findAllPaths(gameState, currentPos);
         if (!availableMoves || availableMoves.length === 0) {
             return null;
+        }
+
+        const inventoryFull = virtualPlayer.items?.length >= 2;
+        if (inventoryFull) {
+            availableMoves = availableMoves.filter((move) => {
+                const tileValue = gameState.board[move.x]?.[move.y];
+                if (tileValue === undefined) return false;
+                const itemOnTile = Math.floor(tileValue / TILE_DELIMITER);
+                return itemOnTile === ObjectsTypes.EMPTY || itemOnTile === ObjectsTypes.SPAWN;
+            });
+
+            if (availableMoves.length === 0) {
+                return null;
+            }
         }
 
         const movementStrategy = this.getMovementStrategy(virtualPlayer);
         const target = movementStrategy.determineTarget(config, availableMoves, playerIndex);
         return { target };
     }
+
     private async executeMovementSequence(config: VirtualMovementConfig, target: Coordinates, playerIndex: number): Promise<void> {
         const { boardService, gameState } = config;
         const currentPos = gameState.playerPositions[playerIndex];
@@ -191,26 +226,6 @@ export class VirtualPlayerService {
         }
     }
 
-    private getAdjacentPositions(pos: Coordinates, board: number[][]): Coordinates[] {
-        const adjacent: Coordinates[] = [];
-        const directions = [
-            { x: -1, y: 0 },
-            { x: 1, y: 0 },
-            { x: 0, y: -1 },
-            { x: 0, y: 1 },
-        ];
-        const rows = board.length;
-        const cols = board[0].length;
-        directions.forEach((d) => {
-            const newX = pos.x + d.x;
-            const newY = pos.y + d.y;
-            if (newX >= 0 && newY >= 0 && newX < rows && newY < cols) {
-                adjacent.push({ x: newX, y: newY });
-            }
-        });
-        return adjacent;
-    }
-
     private async checkAndHandleAdjacentDoors(config: VirtualMovementConfig, currentPos: Coordinates, gameState: GameState): Promise<GameState> {
         const adjacentPositions = this.getAdjacentPositions(currentPos, gameState.board);
         const player = gameState.players.find((p) => p.id === config.virtualPlayer.id);
@@ -234,41 +249,28 @@ export class VirtualPlayerService {
     }
 
     private async followPath(path: Coordinates[], context: VirtualMovementConfig): Promise<void> {
-        for (let i = 1; i < path.length; i++) {
-            let currentGameState = context.getGameState();
-            if (!currentGameState) return;
-            context = { ...context, gameState: currentGameState };
+        const { virtualPlayer, callbacks, lobbyId } = context;
+        let currentGameState = context.getGameState();
+        if (!currentGameState) return;
 
+        const player = currentGameState.players.find((p) => p.id === virtualPlayer.id);
+        if (!player) return;
+
+        for (let i = 1; i < path.length; i++) {
             const nextPosition = path[i];
             const tileValue = currentGameState.board[nextPosition.x][nextPosition.y];
             const tileType = tileValue % TILE_DELIMITER;
-            const player = currentGameState.players.find((p) => p.id === context.virtualPlayer.id);
 
-            if (tileType === TileTypes.DoorClosed && player && player.currentAP > 0) {
-                await this.handleDoor(context, nextPosition);
-                await context.callbacks.delay(500);
+            if (tileType === TileTypes.DoorClosed && player.currentAP > 0) {
+                const tile: Tile = { x: nextPosition.x, y: nextPosition.y, type: TileTypes.DoorClosed, object: 0 };
+                await callbacks.handleOpenDoor({ id: virtualPlayer.id } as Socket, tile, lobbyId);
+                await callbacks.delay(500);
+
                 currentGameState = context.getGameState();
                 if (!currentGameState) return;
-                context = { ...context, gameState: currentGameState };
-
-                const updatedTileValue = currentGameState.board[nextPosition.x][nextPosition.y];
-                const updatedTileType = updatedTileValue % TILE_DELIMITER;
-                if (updatedTileType !== TileTypes.DoorOpen) {
-                    return;
-                }
-            } else if (tileType === TileTypes.DoorClosed && (!player || player.currentAP <= 0)) {
-                return;
             }
-
-            await context.callbacks.handleRequestMovement({ id: context.virtualPlayer.id } as Socket, context.lobbyId, path.slice(0, i + 1));
-            await context.callbacks.delay(500);
-
-            const postMoveState = context.getGameState();
-            if (!postMoveState || postMoveState.animation === false) {
-                return;
-            }
-            context = { ...context, gameState: postMoveState };
         }
+        await callbacks.handleRequestMovement({ id: virtualPlayer.id } as Socket, lobbyId, path);
     }
 
     private distance(a: Coordinates, b: Coordinates): number {
