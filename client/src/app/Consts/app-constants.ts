@@ -139,7 +139,7 @@ export const OBJECT_COUNT = {
 export const OBJECT_NAMES = {
     boots: 'Bottes de vitesse',
     sword: 'Épée de puissance',
-    potion: 'Potion de soin',
+    potion: 'Potion violette',
     wand: 'Baguette magique',
     crystalBall: 'Boule de cristal',
     berryJuice: 'Jus de baies',
@@ -150,12 +150,14 @@ export const OBJECT_NAMES = {
 };
 
 export const OBJECTS_DESCRIPTION = {
-    boots: 'Les bottes magiques vous permettront de vous déplacer à une vitesse SUPERSONIQUE!',
-    sword: 'Cette épée effectue plus de dégats sur vos ennemis!',
-    potion: 'Figez le temps et profitez-en pour vous déplacer une fois de plus que vos adversaires...',
-    wand: "Cette mystérieuse baguette vous permet d'ensorceler un de vos adversaires et de le dérouter de son chemin!",
-    crystal: "Vos talents de clairvoyance vous permettent d'identifier tous les points faibles d'un de vos ennemis.",
-    berryJuice: 'Ne paniquez pas, ce nectar soignera toutes vos blessures!',
+    boots: 'Les bottes magiques vous permettront de vous déplacer à une vitesse SUPERSONIQUE! +2 RAPIDITÉ, -1 ATTAQUE',
+    sword: 'Cette épée effectue plus de dégats sur vos ennemis! +1 ATTAQUE, -1 VIE',
+    potion:
+        'Cette mystérieuse potion dégage une odeur étrange. Servez vous en lorsque votre adversaire a 3 ' +
+        "points de vie de plus que vous pour l'empoisonner.",
+    wand: 'Cette mystérieuse baguette vous permet de contrôler les entités de la forêt. Même les arbres vous céderons le passage!',
+    crystal: 'Les talents mystiques de cet objet vous permettent de contrôler la vitesse de vos ennemis.',
+    berryJuice: "Même s'il vous reste 1 point de vie, ne paniquez pas! Cette concoction vous redonnera des forces.",
     vortex: "Cet objet indique l'endroit où une bataille épique est sur le point d'avoir lieu",
     gnome: 'Ce petit gnome farceur a un cadeau pour vous. À vos risque et périls...',
     flag: "Cette relique à l'effigie de la reine de la forêt doit être sécurisé à tout prix.",

@@ -300,9 +300,10 @@ export class LobbyService {
             });
         });
     }
-    resolveInventory(lobbyId: string, oldItem: number, newItem: number): void {
-        this.socket.emit('resolveInventory', { lobbyId, oldItem, newItem });
+    resolveInventory(lobbyId: string, keptItems: number[]) {
+        this.socket.emit('resolveInventory', { lobbyId, keptItems });
     }
+
     cancelInventoryChoice(lobbyId: string): void {
         this.socket.emit('cancelInventoryChoice', { lobbyId });
     }
