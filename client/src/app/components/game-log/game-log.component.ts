@@ -12,17 +12,36 @@ import { Player } from '@common/player';
 export class GameLogComponent implements OnInit {
     @Input() currentPlayer: Player;
     activeTab: string = 'gameLog';
-    gameLog: { timestamp: string; eventType: string; involvedPlayers?: string[]; description?: string }[] = [];
     filterByCurrentPlayer = false;
+    private gameLog: { timestamp: string; eventType: string; involvedPlayer?: string; involvedPlayers?: string[]; description?: string }[] = [];
     private lobbyService = inject(LobbyService);
 
-    get filterGameLog(): { timestamp: string; eventType: string; involvedPlayers?: string[]; description?: string }[] {
+    get filterGameLog(): { timestamp: string; eventType: string; involvedPlayer?: string; involvedPlayers?: string[]; description?: string }[] {
         if (!this.filterByCurrentPlayer) {
             return this.gameLog;
         }
-        return this.gameLog.filter((log) => log.involvedPlayers && log.involvedPlayers.includes(this.currentPlayer.name));
+        return this.gameLog.filter(
+            (log) => log.involvedPlayer === this.currentPlayer.name || (log.involvedPlayers && log.involvedPlayers.includes(this.currentPlayer.name)),
+        );
     }
     ngOnInit(): void {
+        this.gameListeners();
+    }
+
+    private addGameLog(eventType: string, involvedPlayer?: string, involvedPlayers?: string[], description?: string): void {
+        const timestamp = this.getFormattedTime();
+        const event = {
+            timestamp,
+            eventType,
+            involvedPlayer,
+            involvedPlayers,
+            description,
+        };
+        this.gameLog.push(event);
+        this.scrollToBottom('gameLog');
+    }
+
+    private gameListeners(): void {
         this.lobbyService.onEventLog().subscribe((data) => {
             const eventType = data.eventType;
             switch (eventType) {
@@ -57,19 +76,6 @@ export class GameLogComponent implements OnInit {
                     break;
             }
         });
-    }
-
-    addGameLog(eventType: string, involvedPlayer?: string, involvedPlayers?: string[], description?: string): void {
-        const timestamp = this.getFormattedTime();
-        const event = {
-            timestamp,
-            eventType,
-            involvedPlayer,
-            involvedPlayers,
-            description,
-        };
-        this.gameLog.push(event);
-        this.scrollToBottom('gameLog');
     }
 
     private getFormattedTime(): string {
