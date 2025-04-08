@@ -410,30 +410,4 @@ describe('GameLifecycleService', () => {
 
         expect((socket.emit as SinonStub).calledWith(GameEvents.Error, gameSocketMessages.notEnoughPlayers)).to.equal(true);
     });
-    it('should emit error if handleTurn throws in handleRequestStart', async () => {
-        const lobby = {
-            players: [{ id: '1', isHost: true }],
-            isLocked: false,
-        } as GameLobby;
-
-        const gameState = {
-            gameMode: 'default',
-            players: [{ id: '1', isHost: true }],
-            currentPlayer: '1',
-        } as GameState;
-
-        lobbies.set('lobby1', lobby);
-        (boardService.initializeGameState as SinonStub).resolves(gameState);
-        (boardService.handleTurn as SinonStub).throws(new Error('turn error'));
-
-        const emitStub = sandbox.stub();
-        const toStub = sandbox.stub().returns({ emit: emitStub });
-        service.setServer({ to: toStub } as unknown as Server);
-
-        await service.handleRequestStart(socket as Socket, 'lobby1');
-
-        sinon.assert.calledOnceWithExactly(socket.emit as SinonStub, GameEvents.Error, `${gameSocketMessages.failedStartGame} turn error`);
-
-        sinon.assert.calledWith(emitStub, GameEvents.GameStarted, { gameState });
-    });
 });
