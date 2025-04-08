@@ -1,6 +1,6 @@
 import { itemConstants } from '@app/constants/item-const';
 import { GameState } from '@common/game-state';
-import { ITEM_EFFECTS, ObjectsTypes } from '@common/game.interface';
+import { ITEM_EFFECTS, ObjectsTypes, TILE_DELIMITER } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Service } from 'typedi';
 import { PathfindingService } from './pathfinding.service';
@@ -51,6 +51,35 @@ export class ItemService {
             defender.life = Math.min(defender.life + itemConstants.juiceHealAmount, defender.maxLife);
         }
     }
+
+    randomizeItem(gameState: GameState): void {
+        const randomObjects: { x: number; y: number }[] = [];
+        let objectsTypes = [ObjectsTypes.BOOTS, ObjectsTypes.SWORD, ObjectsTypes.POTION, ObjectsTypes.WAND, ObjectsTypes.JUICE, ObjectsTypes.CRYSTAL];
+
+        gameState.board.forEach((row, rowIndex) => {
+            row.forEach((tile, colIndex) => {
+                const objectValue = Math.floor(tile / TILE_DELIMITER);
+                if (objectsTypes.includes(objectValue)) {
+                    objectsTypes = objectsTypes.filter((obj) => obj !== objectValue);
+                }
+                if (objectValue === ObjectsTypes.RANDOM) {
+                    randomObjects.push({ x: rowIndex, y: colIndex });
+                }
+            });
+        });
+
+        randomObjects.forEach((tile) => {
+            try {
+                const randomIndex = Math.floor(Math.random() * objectsTypes.length);
+                const tileType = gameState.board[tile.x][tile.y] % TILE_DELIMITER;
+                gameState.board[tile.x][tile.y] = objectsTypes[randomIndex] * TILE_DELIMITER + tileType;
+                objectsTypes.splice(randomIndex, 1);
+            } catch (error) {
+                throw new Error(`Failed to randomize tile at (${tile.x}, ${tile.y}): ${error}`);
+            }
+        });
+    }
+
     private getEffect(item: ObjectsTypes) {
         return ITEM_EFFECTS[item] ?? null;
     }

@@ -48,7 +48,7 @@ export class BoardService {
             gameMode: gameData.mode,
         };
 
-        this.randomizeItem(gameState);
+        this.itemService.randomizeItem(gameState);
         this.sortPlayersBySpeed(gameState);
         await this.assignSpawnPoints(gameState);
 
@@ -293,30 +293,6 @@ export class BoardService {
 
         return false;
     }
-
-    private randomizeItem(gameState: GameState): void {
-        const randomObjects: { x: number; y: number }[] = [];
-        let objectsTypes = [ObjectsTypes.BOOTS, ObjectsTypes.SWORD, ObjectsTypes.POTION, ObjectsTypes.WAND, ObjectsTypes.JUICE, ObjectsTypes.CRYSTAL];
-
-        gameState.board.forEach((row, rowIndex) => {
-            row.forEach((tile, colIndex) => {
-                const objectValue = Math.floor(tile / TILE_DELIMITER);
-                if (objectsTypes.includes(objectValue)) {
-                    objectsTypes = objectsTypes.filter((obj) => obj !== objectValue);
-                }
-                if (objectValue === ObjectsTypes.RANDOM) {
-                    randomObjects.push({ x: rowIndex, y: colIndex });
-                }
-            });
-        });
-
-        randomObjects.forEach((tile) => {
-            const randomIndex = Math.floor(Math.random() * objectsTypes.length);
-            const tileType = gameState.board[tile.x][tile.y] % TILE_DELIMITER;
-            gameState.board[tile.x][tile.y] = objectsTypes[randomIndex] * TILE_DELIMITER + tileType;
-        });
-    }
-
     private verifyOrb(gameState: GameState): boolean {
         for (const player of gameState.players) {
             if (!player.items) continue;
