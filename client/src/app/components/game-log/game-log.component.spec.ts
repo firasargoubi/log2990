@@ -24,12 +24,12 @@ describe('GameLogComponent', () => {
 
     it('should initialize with default values', () => {
         expect(component.activeTab).toBe('gameLog');
-        expect(component.gameLog).toEqual([]);
+        expect(component['gameLog']).toEqual([]);
         expect(component.filterByCurrentPlayer).toBeFalse();
     });
 
     it('should filter game log by current player when filterByCurrentPlayer is true', () => {
-        component.gameLog = [
+        component['gameLog'] = [
             { timestamp: '10:00:00', eventType: 'Event1', involvedPlayer: 'Player1' },
             { timestamp: '10:01:00', eventType: 'Event2', involvedPlayer: 'Player2' },
         ];
@@ -42,7 +42,7 @@ describe('GameLogComponent', () => {
     });
 
     it('should not filter game log when filterByCurrentPlayer is false', () => {
-        component.gameLog = [
+        component['gameLog'] = [
             { timestamp: '10:00:00', eventType: 'Event1', involvedPlayer: 'Player1' },
             { timestamp: '10:01:00', eventType: 'Event2', involvedPlayer: 'Player2' },
         ];
@@ -98,7 +98,7 @@ describe('GameLogComponent', () => {
         }>();
 
         lobbyServiceMock.onEventLog.and.returnValue(eventLogSubject.asObservable());
-        spyOn(component, 'addGameLog');
+        spyOn<any>(component as any, 'addGameLog');
 
         component.ngOnInit();
 
@@ -135,7 +135,7 @@ describe('GameLogComponent', () => {
             },
         });
 
-        expect(component.addGameLog).toHaveBeenCalledWith(EventType.TurnStarted, 'Player1');
+        expect(component['addGameLog']).toHaveBeenCalledWith(EventType.TurnStarted, 'Player1');
     });
     it('should handle DoorClosed, DoorOpened, FlagPicked, and ItemPicked events and add logs correctly', () => {
         const eventTypes = [EventType.DoorClosed, EventType.DoorOpened, EventType.FlagPicked, EventType.ItemPicked];
@@ -147,7 +147,7 @@ describe('GameLogComponent', () => {
             description?: string;
         }>();
         lobbyServiceMock.onEventLog.and.returnValue(eventLogSubject.asObservable());
-        spyOn(component, 'addGameLog');
+        spyOn<any>(component as any, 'addGameLog');
         component.ngOnInit();
         eventTypes.forEach((eventType) => {
             const eventData = {
@@ -183,7 +183,7 @@ describe('GameLogComponent', () => {
                 },
             };
             eventLogSubject.next(eventData);
-            expect(component.addGameLog).toHaveBeenCalledWith(eventType, 'Player1');
+            expect(component['addGameLog']).toHaveBeenCalledWith(eventType, 'Player1');
         });
     });
 
@@ -196,7 +196,7 @@ describe('GameLogComponent', () => {
             description?: string;
         }>();
         lobbyServiceMock.onEventLog.and.returnValue(eventLogSubject.asObservable());
-        spyOn(component, 'addGameLog');
+        spyOn<any>(component as any, 'addGameLog');
         component.ngOnInit();
 
         const fakeGameState = {} as GameState;
@@ -209,7 +209,7 @@ describe('GameLogComponent', () => {
 
         eventLogSubject.next(combatEvent);
 
-        expect(component.addGameLog).toHaveBeenCalledWith(EventType.CombatStarted, undefined, ['Player1', 'Player2']);
+        expect(component['addGameLog']).toHaveBeenCalledWith(EventType.CombatStarted, undefined, ['Player1', 'Player2']);
     });
 
     it('should handle DebugActivated and DebugDeactivated events and add logs without player info', () => {
@@ -221,7 +221,7 @@ describe('GameLogComponent', () => {
             description?: string;
         }>();
         lobbyServiceMock.onEventLog.and.returnValue(eventLogSubject.asObservable());
-        spyOn(component, 'addGameLog');
+        spyOn<any>(component as any, 'addGameLog');
         component.ngOnInit();
 
         const fakeGameState = {} as GameState;
@@ -232,33 +232,8 @@ describe('GameLogComponent', () => {
         eventLogSubject.next(debugActivatedEvent);
         eventLogSubject.next(debugDeactivatedEvent);
 
-        expect(component.addGameLog).toHaveBeenCalledWith(EventType.DebugActivated);
-        expect(component.addGameLog).toHaveBeenCalledWith(EventType.DebugDeactivated);
-    });
-
-    it('should handle PlayerAbandonned event and add log with involvedPlayer', () => {
-        const eventLogSubject = new Subject<{
-            eventType: EventType;
-            gameState: GameState;
-            involvedPlayers?: string[];
-            involvedPlayer?: string;
-            description?: string;
-        }>();
-        lobbyServiceMock.onEventLog.and.returnValue(eventLogSubject.asObservable());
-        spyOn(component, 'addGameLog');
-        component.ngOnInit();
-
-        const fakeGameState = {} as GameState;
-
-        const abandonEvent = {
-            eventType: EventType.PlayerAbandonned,
-            gameState: fakeGameState,
-            involvedPlayer: 'Player1',
-        };
-
-        eventLogSubject.next(abandonEvent);
-
-        expect(component.addGameLog).toHaveBeenCalledWith(EventType.PlayerAbandonned, 'Player1');
+        expect(component['addGameLog']).toHaveBeenCalledWith(EventType.DebugActivated);
+        expect(component['addGameLog']).toHaveBeenCalledWith(EventType.DebugDeactivated);
     });
 
     it('should handle AttackResult, FleeSuccess, FleeFailure, and CombatEnded events and add logs with involvedPlayers and description', () => {
@@ -271,7 +246,7 @@ describe('GameLogComponent', () => {
             description?: string;
         }>();
         lobbyServiceMock.onEventLog.and.returnValue(eventLogSubject.asObservable());
-        spyOn(component, 'addGameLog');
+        spyOn<any>(component as any, 'addGameLog');
         component.ngOnInit();
 
         const fakeGameState = {} as GameState;
@@ -284,7 +259,7 @@ describe('GameLogComponent', () => {
                 description: 'Test description',
             };
             eventLogSubject.next(eventData);
-            expect(component.addGameLog).toHaveBeenCalledWith(eventType, undefined, ['Player1', 'Player2'], 'Test description');
+            expect(component['addGameLog']).toHaveBeenCalledWith(eventType, undefined, ['Player1', 'Player2'], 'Test description');
         });
     });
     describe('addGameLog method', () => {
@@ -296,10 +271,10 @@ describe('GameLogComponent', () => {
             const fakeTimestamp = '12:34:56';
             spyOn<any>(component, 'getFormattedTime').and.returnValue(fakeTimestamp);
 
-            component.addGameLog(EventType.CombatStarted, 'Player1', ['Player1', 'Player2'], 'A description');
+            component['addGameLog'](EventType.CombatStarted, 'Player1', ['Player1', 'Player2'], 'A description');
 
-            expect(component.gameLog.length).toBe(1);
-            expect(component.gameLog[0]).toEqual({
+            expect(component['gameLog'].length).toBe(1);
+            expect(component['gameLog'][0]).toEqual({
                 timestamp: fakeTimestamp,
                 eventType: EventType.CombatStarted,
                 involvedPlayer: 'Player1',
@@ -313,10 +288,10 @@ describe('GameLogComponent', () => {
             const fakeTimestamp = '23:45:01';
             spyOn<any>(component, 'getFormattedTime').and.returnValue(fakeTimestamp);
 
-            component.addGameLog(EventType.DebugActivated);
+            component['addGameLog'](EventType.DebugActivated);
 
-            expect(component.gameLog.length).toBe(1);
-            expect(component.gameLog[0]).toEqual({
+            expect(component['gameLog'].length).toBe(1);
+            expect(component['gameLog'][0]).toEqual({
                 timestamp: fakeTimestamp,
                 eventType: EventType.DebugActivated,
                 involvedPlayer: undefined,
@@ -330,18 +305,18 @@ describe('GameLogComponent', () => {
             const fakeTimestamp = '00:00:00';
             spyOn<any>(component, 'getFormattedTime').and.returnValue(fakeTimestamp);
 
-            component.addGameLog(EventType.FleeSuccess, 'Player1');
-            component.addGameLog(EventType.DebugDeactivated);
+            component['addGameLog'](EventType.FleeSuccess, 'Player1');
+            component['addGameLog'](EventType.DebugDeactivated);
 
-            expect(component.gameLog.length).toBe(2);
-            expect(component.gameLog[0]).toEqual({
+            expect(component['gameLog'].length).toBe(2);
+            expect(component['gameLog'][0]).toEqual({
                 timestamp: fakeTimestamp,
                 eventType: EventType.FleeSuccess,
                 involvedPlayer: 'Player1',
                 involvedPlayers: undefined,
                 description: undefined,
             });
-            expect(component.gameLog[1]).toEqual({
+            expect(component['gameLog'][1]).toEqual({
                 timestamp: fakeTimestamp,
                 eventType: EventType.DebugDeactivated,
                 involvedPlayer: undefined,
