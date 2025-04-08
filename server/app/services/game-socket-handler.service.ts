@@ -143,15 +143,9 @@ export class GameSocketHandlerService {
 
     itemEvent(result: { gameState: GameState; shouldStop: boolean; itemPicked?: boolean; item?: number }, lobbyId: string) {
         if (result.itemPicked && result.item === ObjectsTypes.FLAG) {
-            this.io.to(lobbyId).emit(GameEvents.EventLog, {
-                gameState: result.gameState,
-                eventType: EventType.FlagPicked,
-            });
+            this.emitGlobalEvent(result.gameState, EventType.FlagPicked, lobbyId);
         } else if (result.itemPicked && result.item !== ObjectsTypes.FLAG) {
-            this.io.to(lobbyId).emit(GameEvents.EventLog, {
-                gameState: result.gameState,
-                eventType: EventType.ItemPicked,
-            });
+            this.emitGlobalEvent(result.gameState, EventType.ItemPicked, lobbyId);
         } else {
             return;
         }
@@ -189,7 +183,7 @@ export class GameSocketHandlerService {
             this.gameStates.set(lobbyId, updatedGameState);
 
             this.io.to(lobbyId).emit(GameEvents.TurnStarted, { gameState: updatedGameState });
-            this.io.to(lobbyId).emit(GameEvents.EventLog, { gameState: updatedGameState, eventType: EventType.TurnStarted });
+            this.emitGlobalEvent(updatedGameState, EventType.TurnStarted, lobbyId);
         } catch (error) {
             this.io.to(lobbyId).emit(GameEvents.Error, `${gameSocketMessages.turnError}${error.message}`);
         }
@@ -211,10 +205,7 @@ export class GameSocketHandlerService {
         const newGameState = this.boardService.handleBoardChange(updatedGameState);
         this.gameStates.set(lobbyId, newGameState);
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
-        this.io.to(lobbyId).emit(GameEvents.EventLog, {
-            gameState: newGameState,
-            eventType: EventType.DoorClosed,
-        });
+        this.emitGlobalEvent(newGameState, EventType.DoorClosed, lobbyId);
     }
 
     openDoor(socket: Socket, tile: Tile, lobbyId: string) {
@@ -234,10 +225,7 @@ export class GameSocketHandlerService {
         const newGameState = this.boardService.handleBoardChange(updatedGameState);
         this.gameStates.set(lobbyId, newGameState);
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
-        this.io.to(lobbyId).emit(GameEvents.EventLog, {
-            gameState: newGameState,
-            eventType: EventType.DoorOpened,
-        });
+        this.emitGlobalEvent(newGameState, EventType.DoorOpened, lobbyId);
     }
 
     startBattle(lobbyId: string, currentPlayer: Player, opponent: Player) {
@@ -270,11 +258,7 @@ export class GameSocketHandlerService {
         } else if (opponent.speed === currentPlayer.speed) {
             firstPlayer = currentPlayer;
         }
-        this.io.to(lobbyId).emit(GameEvents.EventLog, {
-            gameState,
-            eventType: EventType.CombatStarted,
-            involvedPlayers: [currentPlayer.name, opponent.name],
-        });
+        this.emitGlobalEvent(gameState, EventType.CombatStarted, lobbyId, [currentPlayer.name, opponent.name]);
         this.io.to(currentPlayer.id).to(opponent.id).emit('startCombat', { firstPlayer });
     }
 
@@ -300,11 +284,7 @@ export class GameSocketHandlerService {
                 gameState.deletedPlayers = [];
             }
             gameState.deletedPlayers.push(deletedPlayer);
-            this.io.to(lobbyId).emit(GameEvents.EventLog, {
-                gameState,
-                eventType: EventType.PlayerAbandonned,
-                involvedPlayer: deletedPlayer.name,
-            });
+            this.emitGlobalEvent(gameState, EventType.PlayerAbandonned, lobbyId, [deletedPlayer.name]);
         }
         const newGameState = this.boardService.handleBoardChange(gameState);
         this.gameStates.set(lobbyId, gameState);
@@ -329,12 +309,8 @@ export class GameSocketHandlerService {
         winner.life = winner.maxLife;
         loser.life = loser.maxLife;
         this.io.to(lobbyId).emit('combatEnded', { loser });
-        this.io.to(lobbyId).emit(GameEvents.EventLog, {
-            gameState,
-            eventType: EventType.CombatEnded,
-            description: `${winner.name} a vaincu ${loser.name}.`,
-            involvedPlayers: [winner.name, loser.name],
-        });
+        const description = `${winner.name} a vaincu ${loser.name}.`;
+        this.emitGlobalEvent(gameState, EventType.CombatEnded, lobbyId, [winner.name, loser.name], description);
 
         gameState.playerPositions[loserIndex] = newSpawn;
         gameState.currentPlayerActionPoints = 0;
@@ -368,9 +344,9 @@ export class GameSocketHandlerService {
         this.gameStates.set(lobbyId, updatedGameState);
         this.io.to(lobbyId).emit('boardModified', { gameState: updatedGameState });
         if (debug) {
-            this.io.to(lobbyId).emit(GameEvents.EventLog, { gameState: updatedGameState, eventType: EventType.DebugActivated });
+            this.emitGlobalEvent(updatedGameState, EventType.DebugActivated, lobbyId);
         } else {
-            this.io.to(lobbyId).emit(GameEvents.EventLog, { gameState: updatedGameState, eventType: EventType.DebugDeactivated });
+            this.emitGlobalEvent(updatedGameState, EventType.DebugDeactivated, lobbyId);
         }
     }
 
@@ -447,15 +423,8 @@ export class GameSocketHandlerService {
             attacker,
             defender,
         });
-        this.io
-            .to(attacker.id)
-            .to(defender.id)
-            .emit(GameEvents.EventLog, {
-                gameState,
-                eventType: EventType.AttackResult,
-                involvedPlayers: [attacker.name, defender.name],
-                description: `${attacker.name} a attaqué ${defender.name} et lui a infligé ${damage} dégâts.`,
-            });
+        const description = `${attacker.name} a attaqué ${defender.name} et lui a infligé ${damage} dégâts.`;
+        this.emitEventToPlayers(EventType.AttackResult, [attacker.name, defender.name], description, attacker.id, defender.id);
     }
 
     handleFlee(lobbyId: string, fleeingPlayer: Player, opponent: Player) {
@@ -489,26 +458,11 @@ export class GameSocketHandlerService {
             this.gameStates.set(lobbyId, gameState);
             this.io.to(lobbyId).emit(GameEvents.FleeSuccess, { fleeingPlayer, isSuccessful });
             this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState });
-            this.io
-                .to(fleeingPlayer.id)
-                .to(opponent.id)
-                .emit(GameEvents.EventLog, {
-                    gameState,
-                    eventType: EventType.FleeSuccess,
-                    involvedPlayers: [fleeingPlayer.name],
-                    description: `${fleeingPlayer.name} a fui ${opponent.name}.`,
-                });
+            const description = `${fleeingPlayer.name} a fui ${opponent.name}.`;
+            this.emitEventToPlayers(EventType.FleeSuccess, [fleeingPlayer.name, opponent.name], description, fleeingPlayer.id, opponent.id);
         } else {
-            this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
-            this.io
-                .to(fleeingPlayer.id)
-                .to(opponent.id)
-                .emit(GameEvents.EventLog, {
-                    gameState,
-                    eventType: EventType.FleeFailure,
-                    involvedPlayers: [fleeingPlayer.name],
-                    description: `${fleeingPlayer.name} n'a pas pu fuire.`,
-                });
+            const description = `${fleeingPlayer.name} n'a pas pu fuire.`;
+            this.emitEventToPlayers(EventType.FleeFailure, [fleeingPlayer.name, opponent.name], description, fleeingPlayer.id, opponent.id);
         }
 
         this.gameStates.set(lobbyId, gameState);
@@ -544,5 +498,22 @@ export class GameSocketHandlerService {
         if (!position) return false;
         const tile = gameState.board[position.x][position.y];
         return tile === TileTypes.Ice;
+    }
+
+    private emitGlobalEvent(gameState: GameState, eventType: EventType, lobbyId?: string, involvedPlayers?: string[], description?: string) {
+        this.io.to(lobbyId).emit(GameEvents.EventLog, {
+            gameState,
+            eventType,
+            involvedPlayers: [involvedPlayers],
+            description,
+        });
+    }
+
+    private emitEventToPlayers(eventType: EventType, involvedPlayers: string[], description: string, attackerId: string, defenderId: string) {
+        this.io.to(attackerId).to(defenderId).emit(GameEvents.EventLog, {
+            eventType,
+            involvedPlayers,
+            description,
+        });
     }
 }

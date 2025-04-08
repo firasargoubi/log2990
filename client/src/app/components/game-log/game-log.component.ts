@@ -12,17 +12,15 @@ import { Player } from '@common/player';
 export class GameLogComponent implements OnInit {
     @Input() currentPlayer: Player;
     activeTab: string = 'gameLog';
-    gameLog: { timestamp: string; eventType: string; involvedPlayers?: string[]; involvedPlayer?: string; description?: string }[] = [];
+    gameLog: { timestamp: string; eventType: string; involvedPlayers?: string[]; description?: string }[] = [];
     filterByCurrentPlayer = false;
     private lobbyService = inject(LobbyService);
 
-    get filterGameLog(): { timestamp: string; eventType: string; involvedPlayers?: string[]; involvedPlayer?: string; description?: string }[] {
+    get filterGameLog(): { timestamp: string; eventType: string; involvedPlayers?: string[]; description?: string }[] {
         if (!this.filterByCurrentPlayer) {
             return this.gameLog;
         }
-        return this.gameLog.filter(
-            (log) => log.involvedPlayer === this.currentPlayer.name || (log.involvedPlayers && log.involvedPlayers.includes(this.currentPlayer.name)),
-        );
+        return this.gameLog.filter((log) => log.involvedPlayers && log.involvedPlayers.includes(this.currentPlayer.name));
     }
     ngOnInit(): void {
         this.lobbyService.onEventLog().subscribe((data) => {
@@ -38,17 +36,14 @@ export class GameLogComponent implements OnInit {
                     this.addGameLog(eventType, involvedPlayer);
                     break;
                 }
-                case EventType.CombatStarted: {
+                case EventType.CombatStarted:
+                case EventType.PlayerAbandonned: {
                     this.addGameLog(eventType, undefined, data?.involvedPlayers);
                     break;
                 }
                 case EventType.DebugActivated:
                 case EventType.DebugDeactivated: {
                     this.addGameLog(eventType);
-                    break;
-                }
-                case EventType.PlayerAbandonned: {
-                    this.addGameLog(eventType, data?.involvedPlayer);
                     break;
                 }
                 case EventType.AttackResult:

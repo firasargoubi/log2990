@@ -293,7 +293,7 @@ export class LobbyService {
         });
     }
 
-    onEventLog(): Observable<{ gameState: GameState; eventType: string; involvedPlayers?: string[]; involvedPlayer?: string; description?: string }> {
+    onEventLog(): Observable<{ gameState: GameState; eventType: string; involvedPlayers?: string[]; description?: string }> {
         return new Observable((observer) => {
             this.socket.on('eventLog', (data) => {
                 observer.next(data);
