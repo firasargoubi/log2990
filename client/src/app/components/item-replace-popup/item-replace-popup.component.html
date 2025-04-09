@@ -1,10 +1,12 @@
 <div class="popup">
     <h3>Choisissez 2 objets à garder</h3>
     <div class="item-grid">
-        <div class="item" *ngFor="let item of items" [class.selected]="selectedItems.has(item)" (click)="toggleSelection(item)">
+        @for (item of items; track item) {
+        <div class="item" [class.selected]="selectedItems.has(item)" (click)="toggleSelection(item)">
             <img [src]="getItemImage(item)" [alt]="getItemName(item)" />
             <div class="item-name">{{ getItemName(item) }}</div>
         </div>
+        }
     </div>
 
     <div class="actions">
