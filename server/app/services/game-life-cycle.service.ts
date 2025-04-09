@@ -108,7 +108,7 @@ export class GameLifecycleService {
                     callbacks: {
                         handleRequestMovement: this.handleRequestMovement.bind(this),
                         handleEndTurn: this.handleEndTurn.bind(this),
-                        startBattle: this.startBattle.bind(this),
+                        startBattle: this.gameActionService.startBattle.bind(this.gameActionService), // Updated
                         delay: this.delay,
                         handleOpenDoor: this.openDoor.bind(this),
                     },
@@ -187,7 +187,7 @@ export class GameLifecycleService {
                 callbacks: {
                     handleRequestMovement: this.handleRequestMovement.bind(this),
                     handleEndTurn: this.handleEndTurn.bind(this),
-                    startBattle: this.startBattle.bind(this),
+                    startBattle: this.gameActionService.startBattle.bind(this.gameActionService), // Updated
                     delay: this.delay,
                     handleOpenDoor: this.openDoor.bind(this),
                 },
