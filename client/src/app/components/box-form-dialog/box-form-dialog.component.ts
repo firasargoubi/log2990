@@ -4,11 +4,11 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
 import { CREATE_PAGE_CONSTANTS, MAIN_PAGE_CONSTANTS } from '@app/Consts/app-constants';
-import { AVATARS } from '@common/avatars';
 import { PageUrl } from '@app/Consts/route-constants';
 import { GameService } from '@app/services/game.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
+import { AVATARS } from '@common/avatars';
 import { Game } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Subscription } from 'rxjs';
@@ -23,8 +23,6 @@ const DEFAULT_STAT_VALUE = 4;
 })
 export class BoxFormDialogComponent implements OnDestroy {
     form: FormGroup;
-    gameList: Game[] = [];
-    lobbyService = inject(LobbyService);
     avatars = [
         AVATARS.fawn,
         AVATARS.bear,
@@ -39,14 +37,13 @@ export class BoxFormDialogComponent implements OnDestroy {
         AVATARS.dear,
         AVATARS.raccoon,
     ];
-
     formValid$: boolean = false;
     attributeClicked$: boolean = false;
     diceClicked$: boolean = false;
-    increasedAttribute: string | null = null;
-    diceAttribute: string | null = null;
+    private diceAttribute: string | null = null;
+    private increasedAttribute: string | null = null;
     private subscriptions: Subscription[] = [];
-
+    private gameList: Game[] = [];
     private notificationService = inject(NotificationService);
     private router = inject(Router);
 
@@ -54,6 +51,7 @@ export class BoxFormDialogComponent implements OnDestroy {
         public dialogRef: MatDialogRef<BoxFormDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: { boxId: string; game: Game; gameList: Game[]; lobbyId: string; isJoining: boolean },
         private gameService: GameService,
+        private lobbyService: LobbyService,
     ) {
         this.loadGames();
 

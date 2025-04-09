@@ -26,7 +26,15 @@ export class AdminPageComponent implements OnInit {
         this.fetchGames();
     }
 
-    fetchGames(): void {
+    onDeleteGame(): void {
+        this.fetchGames();
+    }
+
+    onToggleVisibility(): void {
+        this.fetchGames();
+    }
+
+    private fetchGames(): void {
         this.gameService
             .fetchGames()
             .pipe(
@@ -49,15 +57,6 @@ export class AdminPageComponent implements OnInit {
             )
             .subscribe();
     }
-
-    onDeleteGame(): void {
-        this.fetchGames();
-    }
-
-    onToggleVisibility(): void {
-        this.fetchGames();
-    }
-
     private translateMode(mode: string): GameType {
         return mode as GameType;
     }

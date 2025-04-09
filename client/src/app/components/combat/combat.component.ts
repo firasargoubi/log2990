@@ -19,21 +19,18 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
     @Input() gameState: GameState | null = null;
     @Input() opponent!: Player;
     isPlayerTurn = false;
-    playerTurn = '';
     countDown = 0;
     canAct = false;
     canEscape = true;
-    isFleeSuccess = false;
-    combatEnded = false;
     attackDice = 0;
     defenceDice = 0;
     attackDisplay = '';
     defenceDisplay = '';
     damage = 0;
-    isAttacker = false;
+    private combatEnded = false;
+    private playerTurn = '';
     private lobbyService = inject(LobbyService);
     private subscriptions: Subscription[] = [];
-
     private countDownInterval: ReturnType<typeof setInterval> | null = null;
     private notificationService = inject(NotificationService);
 
