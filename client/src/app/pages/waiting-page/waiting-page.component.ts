@@ -5,11 +5,11 @@ import { GameControlsComponent } from '@app/components/game-controls/game-contro
 import { MessagesComponent } from '@app/components/messages/messages.component';
 import { PlayerListComponent } from '@app/components/player-list/player-list.component';
 import { WAITING_PAGE, WAITING_PAGE_CONSTANTS } from '@app/Consts/app-constants';
-import { AVATARS } from '@common/avatars';
 import { PageUrl } from '@app/Consts/route-constants';
 import { ChatService } from '@app/services/chat.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
+import { AVATARS } from '@common/avatars';
 import { GameLobby } from '@common/game-lobby';
 import { Player } from '@common/player';
 import { Subscription } from 'rxjs';
@@ -98,12 +98,6 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
                 this.lobbyService.onGameStarted().subscribe(() => {
                     this.lobbyService.setCurrentPlayer(this.currentPlayer);
                     this.router.navigate([`${PageUrl.Play}/${lobbyId}`]);
-                }),
-            );
-
-            this.subscriptions.push(
-                this.chatService.onMessage().subscribe((chatMessage) => {
-                    console.log('💬 WaitingPageComponent received', chatMessage);
                 }),
             );
         }

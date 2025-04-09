@@ -7,11 +7,11 @@ import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
 import { BoardService } from './board.service';
 import { DisconnectHandlerService } from './disconnect-handler.service';
+import { GameActionService } from './game-action.service';
+import { GameLifecycleService } from './game-life-cycle.service';
 import { ItemService } from './item.service';
 import { LobbySocketHandlerService } from './lobby-socket-handler.service';
 import { ValidationSocketHandlerService } from './validation-socket-handler.service';
-import { GameActionService } from './game-action.service';
-import { GameLifecycleService } from './game-life-cycle.service';
 
 @Service()
 export class SocketService {
@@ -310,7 +310,7 @@ export class SocketService {
     }
 
     private handleChatMessage(lobbyId: string, playerName: string, message: string) {
-        this.gameSocketHandlerService.handleChatMessage(lobbyId, playerName, message);
+        this.gameActionService.handleChatMessage(lobbyId, playerName, message);
     }
 
     private createTeams(lobbyId: string, players: Player[]) {
