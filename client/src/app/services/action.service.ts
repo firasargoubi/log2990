@@ -59,7 +59,7 @@ export class ActionService {
             if (tile.type === TileTypes.DoorClosed) {
                 return 'openDoor';
             }
-            if (tile.type === TileTypes.DoorOpen) {
+            if (tile.type === TileTypes.DoorOpen && !tile.object) {
                 return 'closeDoor';
             }
         }

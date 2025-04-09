@@ -291,21 +291,17 @@ describe('PathfindingService', () => {
 
     describe('findClosestAvailableSpot', () => {
         it('should find nearest empty spot when starting position is occupied', () => {
-            // Looking at the implementation, it checks if a tile is Grass (0) specifically
             const gameState = {
                 ...mockGameState,
                 board: [
-                    [0, 0], // Using 0 (Grass) instead of TileTypes.Grass
+                    [0, 0],
                     [0, 0],
                 ],
-                playerPositions: [
-                    { x: 0, y: 0 }, // Position is occupied
-                ],
+                playerPositions: [{ x: 0, y: 0 }],
             };
 
             const result = service.findClosestAvailableSpot(gameState as any, { x: 0, y: 0 });
 
-            // The method should find either { x: 1, y: 0 } or { x: 0, y: 1 }
             const validResults = [
                 { x: 1, y: 0 },
                 { x: 0, y: 1 },
@@ -317,21 +313,17 @@ describe('PathfindingService', () => {
         });
 
         it('should return starting position if it is valid', () => {
-            // Using 0 for Grass tiles as required by the implementation
             const gameState = {
                 ...mockGameState,
                 board: [
-                    [0, 0], // Using 0 (Grass) instead of TileTypes.Grass
+                    [0, 0],
                     [0, 0],
                 ],
-                playerPositions: [
-                    { x: 1, y: 1 }, // Different position is occupied
-                ],
+                playerPositions: [{ x: 1, y: 1 }],
             };
 
             const result = service.findClosestAvailableSpot(gameState as any, { x: 0, y: 0 });
 
-            // Should return the starting position since it's valid
             expect(result).to.deep.equal({ x: 0, y: 0 });
         });
 
@@ -347,45 +339,35 @@ describe('PathfindingService', () => {
 
             const result = service.findClosestAvailableSpot(gameState as any, { x: 0, y: 0 });
 
-            // Should return invalid coordinates when no valid spot is found
-            expect(result).to.deep.equal({ x: -1, y: -1 });
+            expect(result).to.deep.equal(null);
         });
 
         it('should handle searching beyond board boundaries', () => {
             const gameState = {
                 ...mockGameState,
                 board: [[TileTypes.Grass]],
-                playerPositions: [
-                    { x: 0, y: 0 }, // Starting position is occupied
-                ],
+                playerPositions: [{ x: 0, y: 0 }],
             };
 
             const result = service.findClosestAvailableSpot(gameState as any, { x: 0, y: 0 });
 
-            // Should return invalid coordinates since there's no valid spot
-            expect(result).to.deep.equal({ x: -1, y: -1 });
+            expect(result).to.deep.equal(null);
         });
     });
 
-    // Test the private methods through public interfaces
     describe('Private method coverage through public interfaces', () => {
         describe('isTileValid and isWithinBounds (via findClosestAvailableSpot)', () => {
             it('should check if tile is within bounds and valid', () => {
-                // The implementation specifically checks for value 0 (Grass)
-                // Test with small 1x1 board
                 const smallBoardState = {
                     ...mockGameState,
                     board: [[0]],
                     playerPositions: [{ x: 0, y: 0 }],
                 };
 
-                // Position is out of bounds
                 const outOfBoundsResult = service.findClosestAvailableSpot(smallBoardState as any, { x: 0, y: 0 });
 
-                // With a 1x1 board and that spot being occupied, there are no valid spots
-                expect(outOfBoundsResult).to.deep.equal({ x: -1, y: -1 });
+                expect(outOfBoundsResult).to.deep.equal(null);
 
-                // Test with 2x2 board where starting position is a wall
                 const twoByTwoState = {
                     ...mockGameState,
                     board: [
@@ -395,10 +377,8 @@ describe('PathfindingService', () => {
                     playerPositions: [] as any,
                 };
 
-                // Position is a wall
                 const wallResult = service.findClosestAvailableSpot(twoByTwoState as any, { x: 0, y: 0 });
 
-                // Should find one of the valid grass spots
                 const validSpots = [
                     { x: 0, y: 1 },
                     { x: 1, y: 0 },
@@ -422,18 +402,14 @@ describe('PathfindingService', () => {
                     ],
                 };
 
-                // Here we're testing the compareNodes method indirectly
-                // When two paths have same cost but different distances
                 const path = service.findShortestPath(gameState as any, { x: 0, y: 0 }, { x: 2, y: 2 }, 5);
 
-                // Path should be optimal
                 expect(path.length).to.be.at.most(5);
                 expect(path[0]).to.deep.equal({ x: 0, y: 0 });
                 expect(path[path.length - 1]).to.deep.equal({ x: 2, y: 2 });
             });
 
             it('should handle paths through mixed terrains', () => {
-                // Create a game state with same-cost paths but one has ice (cost 0)
                 const gameState = {
                     ...mockGameState,
                     board: [
@@ -443,10 +419,9 @@ describe('PathfindingService', () => {
                     ],
                 };
 
-                // The path should go through ice tile since it costs 0
                 const path = service.findShortestPath(gameState as any, { x: 0, y: 0 }, { x: 2, y: 2 }, 5);
 
-                expect(path).to.deep.include({ x: 1, y: 1 }); // Should include the ice tile
+                expect(path).to.deep.include({ x: 1, y: 1 });
             });
         });
 
@@ -460,10 +435,8 @@ describe('PathfindingService', () => {
                     ],
                 };
 
-                // We'll run a search that should create nodes and use node keys
                 const path = service.findShortestPath(smallGameState as any, { x: 0, y: 0 }, { x: 1, y: 1 }, 5);
 
-                // Verify path was found, which tests createNode and getNodeKey
                 expect(path.length).to.be.at.least(2);
                 expect(path[0]).to.deep.equal({ x: 0, y: 0 });
                 expect(path[path.length - 1]).to.deep.equal({ x: 1, y: 1 });
@@ -481,10 +454,8 @@ describe('PathfindingService', () => {
                     ],
                 };
 
-                // Set maximum movement to 1, which isn't enough to reach the target
                 const path = service.findShortestPath(gameState as any, { x: 0, y: 0 }, { x: 2, y: 2 }, 1);
 
-                // Path should be empty since target is unreachable with limited points
                 expect(path).to.deep.equal([]);
             });
 
@@ -498,11 +469,8 @@ describe('PathfindingService', () => {
                     ],
                 };
 
-                // This creates a grid with multiple possible paths
-                // The algorithm should find the optimal path through ice tiles
                 const path = service.findShortestPath(gameState as any, { x: 0, y: 0 }, { x: 2, y: 2 }, 5);
 
-                // Count ice tiles in the path (should be at least 2)
                 const iceTileCount = path.filter((pos) => gameState.board[pos.x][pos.y] === TileTypes.Ice).length;
 
                 expect(iceTileCount).to.be.at.least(2);

@@ -5,6 +5,7 @@ import { ItemReplacePopupComponent } from '@app/components/item-replace-popup/it
 import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/Consts/item-constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { ObjectsTypes } from '@common/game.interface';
+import { Player } from '@common/player';
 
 @Component({
     selector: 'app-inventory',
@@ -14,30 +15,32 @@ import { ObjectsTypes } from '@common/game.interface';
     imports: [CommonModule, ItemReplacePopupComponent, MatTooltipModule],
 })
 export class InventoryComponent implements OnInit {
-    @Input() items: number[] = [];
+    @Input() player: Player;
     @Input() lobbyId: string = '';
 
     showPopup = false;
     pendingItem = 0;
 
     constructor(private lobbyService: LobbyService) {}
+    get items(): number[] {
+        return this.player?.items ?? [];
+    }
 
     ngOnInit(): void {
         this.lobbyService.onInventoryFull().subscribe(({ item, currentInventory }) => {
             if (!item || item === ObjectsTypes.EMPTY || !currentInventory || currentInventory.length < 2) return;
 
             this.pendingItem = item;
-            this.items = [...currentInventory];
             this.showPopup = true;
-        });
-
-        this.lobbyService.onMovementProcessed().subscribe(({ gameState }) => {
-            this.items = gameState.players.find((p) => p.id === this.lobbyService.getSocketId())?.items ?? [];
         });
     }
 
-    handleConfirmReplace() {
-        this.lobbyService.resolveInventory(this.lobbyId, this.items[0], this.pendingItem);
+    getAllInventoryItems(): number[] {
+        const allItems = this.pendingItem && this.pendingItem !== ObjectsTypes.EMPTY ? [...this.items, this.pendingItem] : this.items;
+        return allItems;
+    }
+    handleConfirmReplace(keptItems: number[]) {
+        this.lobbyService.resolveInventory(this.lobbyId, keptItems);
         this.showPopup = false;
     }
 
