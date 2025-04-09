@@ -1,4 +1,4 @@
-import { itemConstants } from '@app/constants/item-const';
+import { itemConstants } from '@app/consts/item-const';
 import { GameState } from '@common/game-state';
 import { ITEM_EFFECTS, ObjectsTypes } from '@common/game.interface';
 import { Player } from '@common/player';

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
+import { GameSocketConstants, gameSocketMessages } from '@app/consts/game-socket-handler-const';
 import { GameActionService } from '@app/services/game-action.service';
 import { Coordinates } from '@common/coordinates';
 import { GameEvents } from '@common/events';

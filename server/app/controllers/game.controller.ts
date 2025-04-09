@@ -1,7 +1,7 @@
 import { GameService } from '@app/services/game.service';
 import { Request, Response, Router } from 'express';
-import { Service } from 'typedi';
 import { StatusCodes } from 'http-status-codes';
+import { Service } from 'typedi';
 
 @Service()
 export class GameController {
@@ -79,11 +79,7 @@ export class GameController {
         this.router.get('/validate/:id', async (req: Request, res: Response) => {
             try {
                 const game = await this.gameService.getGameById(req.params.id);
-                if (!game || !game.isVisible) {
-                    res.status(StatusCodes.OK).json(false);
-                } else {
-                    res.status(StatusCodes.OK).json(true);
-                }
+                res.status(StatusCodes.OK).json({ exists: !!game, visible: game?.isVisible ?? false });
             } catch (error) {
                 res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
             }

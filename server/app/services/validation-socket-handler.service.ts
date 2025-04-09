@@ -1,7 +1,7 @@
+import { VIRTUAL_PLAYER_NAMES } from '@app/consts/virtual-player-names';
+import { AVATARS } from '@common/avatars';
 import { GameLobby } from '@common/game-lobby';
 import { Socket } from 'socket.io';
-import { AVATARS } from '@common/avatars';
-import { VIRTUAL_PLAYER_NAMES } from '@app/constants/virtual-player-names';
 
 export class ValidationSocketHandlerService {
     constructor(private lobbies: Map<string, GameLobby>) {}

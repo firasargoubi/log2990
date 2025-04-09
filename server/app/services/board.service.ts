@@ -1,4 +1,4 @@
-import { BoardSocketConstants, ERROR_MESSAGES } from '@app/constants/board-const';
+import { BoardSocketConstants, ERROR_MESSAGES } from '@app/consts/board-const';
 import { Coordinates } from '@common/coordinates';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';

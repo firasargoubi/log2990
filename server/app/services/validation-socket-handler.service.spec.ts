@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { VIRTUAL_PLAYER_NAMES } from '@app/consts/virtual-player-names';
 import { ValidationSocketHandlerService } from '@app/services/validation-socket-handler.service';
+import { AVATARS } from '@common/avatars';
 import { GameLobby } from '@common/game-lobby';
 import { expect } from 'chai';
 import { createSandbox, SinonSandbox, SinonSpy } from 'sinon';
 import { Socket } from 'socket.io';
-import { AVATARS } from '@common/avatars';
-import { VIRTUAL_PLAYER_NAMES } from '@app/constants/virtual-player-names';
 
 describe('ValidationSocketHandlerService', () => {
     let sandbox: SinonSandbox;

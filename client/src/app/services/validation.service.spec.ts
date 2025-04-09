@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { TestBed } from '@angular/core/testing';
-import { EDITION_PAGE_CONSTANTS } from '@app/Consts/app-constants';
+import { EDITION_PAGE_CONSTANTS } from '@app/consts/app-constants';
 import { Game, GameSize, GameType } from '@common/game.interface';
 import { ErrorService } from './error.service';
 import { SaveService } from './save.service';

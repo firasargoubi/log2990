@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ItemComponent } from '@app/components/item/item.component';
-import { DEFAULT_TILE_IMAGE, TILE_IMAGES } from '@app/Consts/tile-constants';
+import { DEFAULT_TILE_IMAGE, TILE_IMAGES } from '@app/consts/tile-constants';
 import { DEFAULT_ITEMS } from '@app/interfaces/default-items';
 import { BoardService } from '@app/services/board.service';
 import { ObjectCounterService } from '@app/services/objects-counter.service';

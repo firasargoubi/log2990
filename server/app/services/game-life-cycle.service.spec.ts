@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { gameSocketMessages } from '@app/constants/game-socket-handler-const';
+import { gameSocketMessages } from '@app/consts/game-socket-handler-const';
 import { BoardService } from '@app/services/board.service';
 import { ItemService } from '@app/services/item.service';
 import { LobbySocketHandlerService } from '@app/services/lobby-socket-handler.service';

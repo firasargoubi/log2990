@@ -3,7 +3,7 @@ import { ChangeDetectorRef, Component, inject, Input, OnInit } from '@angular/co
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { TileComponent } from '@app/components/tile/tile.component';
-import { RIGHT_CLICK } from '@app/Consts/app-constants';
+import { RIGHT_CLICK } from '@app/consts/app-constants';
 import { Coordinates } from '@app/interfaces/coordinates';
 import { BoardService } from '@app/services/board.service';
 import { MouseService } from '@app/services/mouse.service';

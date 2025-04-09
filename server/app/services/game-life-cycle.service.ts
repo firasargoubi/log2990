@@ -1,4 +1,4 @@
-import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
+import { GameSocketConstants, gameSocketMessages } from '@app/consts/game-socket-handler-const';
 import { GameEvents } from '@common/events';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';

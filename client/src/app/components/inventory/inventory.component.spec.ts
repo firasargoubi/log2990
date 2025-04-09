@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/Consts/item-constants';
+import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/consts/item-constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { Player } from '@common/player';
 import { Subject } from 'rxjs';

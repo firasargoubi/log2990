@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BoardSocketConstants } from '@app/constants/board-const';
+import { BoardSocketConstants } from '@app/consts/board-const';
 import { BoardService } from '@app/services/board.service';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
