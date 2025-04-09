@@ -3,6 +3,7 @@ import { Component, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ChatService } from '@app/services/chat.service';
 
+const MAX_MESSAGE_LENGTH = 200;
 @Component({
     selector: 'app-messages',
     templateUrl: './messages.component.html',
@@ -26,7 +27,7 @@ export class MessagesComponent {
     }
 
     sendMessage(): void {
-        if (!this.newMessage || this.newMessage.length > 200) return;
+        if (!this.newMessage || this.newMessage.length > MAX_MESSAGE_LENGTH) return;
         this.chatService.sendMessage(this.lobbyId, this.playerName, this.newMessage);
         this.newMessage = '';
     }

@@ -1,105 +1,153 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
+import { CommonModule } from '@angular/common';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
+import { ChatService } from '@app/services/chat.service';
 import { MessagesComponent } from './messages.component';
 
 describe('MessagesComponent', () => {
     let component: MessagesComponent;
+    let fixture: ComponentFixture<MessagesComponent>;
+    let chatServiceMock: jasmine.SpyObj<ChatService>;
 
-    beforeEach(() => {
-        component = new MessagesComponent();
+    beforeEach(async () => {
+        // Create a spy object for ChatService with the methods we need
+        chatServiceMock = jasmine.createSpyObj('ChatService', ['sendMessage', 'addEvent', 'disconnect', 'resetMessages'], {
+            chatMessages: [],
+            eventLog: [],
+        });
+
+        await TestBed.configureTestingModule({
+            imports: [FormsModule, CommonModule],
+            providers: [{ provide: ChatService, useValue: chatServiceMock }],
+        }).compileComponents();
+
+        fixture = TestBed.createComponent(MessagesComponent);
+        component = fixture.componentInstance;
+
+        // Set required input properties
+        component.lobbyId = 'test-lobby';
+        component.playerName = 'test-player';
+
+        fixture.detectChanges();
     });
 
-    it('should initialize with empty chatMessages, eventLog, and activeTab set to chat', () => {
-        expect(component.chatMessages).toEqual([]);
-        expect(component.eventLog).toEqual([]);
-        expect(component.activeTab).toBe('chat');
+    it('should create', () => {
+        expect(component).toBeTruthy();
     });
 
-    describe('addChatMessage', () => {
-        it('should add a message with timestamp, player name, and message content', () => {
-            const mockDate = new Date(2023, 10, 1, 12, 30, 45);
-            jasmine.clock().install();
-            jasmine.clock().mockDate(mockDate);
+    describe('Input Properties', () => {
+        it('should have lobbyId input', () => {
+            expect(component.lobbyId).toBe('test-lobby');
+        });
 
-            component.addChatMessage('Player1', 'Hello there');
-            const message = component.chatMessages[0];
+        it('should have playerName input', () => {
+            expect(component.playerName).toBe('test-player');
+        });
+    });
 
+    describe('chatMessages', () => {
+        it('should return chat messages from service', () => {
+            // Arrange
+            const testMessages = [{ playerName: 'player1', message: 'test', timestamp: '00:00:00' }];
+
+            // Directly set the mock value on the chatServiceMock
+            Object.defineProperty(chatServiceMock, 'chatMessages', {
+                get: () => testMessages,
+                configurable: true,
+            });
+
+            // Act & Assert
+            expect(component.chatMessages).toEqual(testMessages);
             expect(component.chatMessages.length).toBe(1);
-            expect(message.playerName).toBe('Player1');
-            expect(message.message).toBe('Hello there');
-            expect(message.timestamp).toBe('12:30:45');
-
-            jasmine.clock().uninstall();
-        });
-
-        it('should format timestamp with leading zeros for single-digit values', () => {
-            const mockDate = new Date(2023, 10, 1, 5, 3, 9);
-            jasmine.clock().install();
-            jasmine.clock().mockDate(mockDate);
-
-            component.addChatMessage('Player', 'Test');
-            expect(component.chatMessages[0].timestamp).toBe('05:03:09');
-
-            jasmine.clock().uninstall();
-        });
-
-        it('should scroll to the bottom of the chatMessages container', () => {
-            const mockElement = { scrollHeight: 150, scrollTop: 0 };
-            spyOn(document, 'getElementById').and.returnValue(mockElement as HTMLElement);
-
-            component.addChatMessage('Player', 'Hi');
-            expect(document.getElementById).toHaveBeenCalledWith('chatMessages');
-            expect(mockElement.scrollTop).toBe(150);
-        });
-
-        it('should handle missing chatMessages container gracefully', () => {
-            spyOn(document, 'getElementById').and.returnValue(null);
-            expect(() => component.addChatMessage('Player', 'Message')).not.toThrow();
-            expect(component.chatMessages.length).toBe(1);
+            expect(component.chatMessages[0]).toEqual({
+                playerName: 'player1',
+                message: 'test',
+                timestamp: '00:00:00',
+            });
         });
     });
 
-    describe('addEvent', () => {
-        it('should add an event with timestamp, type, description, and involved players', () => {
-            const mockDate = new Date(2023, 10, 1, 14, 15, 16);
-            jasmine.clock().install();
-            jasmine.clock().mockDate(mockDate);
+    describe('sendMessage()', () => {
+        it('should call chatService.sendMessage with correct parameters when message is valid', () => {
+            component.newMessage = 'Hello world';
+            component.sendMessage();
 
-            component.addEvent('attack', 'Player attacked enemy', ['Player1', 'Enemy']);
-            const event = component.eventLog[0];
-
-            expect(component.eventLog.length).toBe(1);
-            expect(event.eventType).toBe('attack');
-            expect(event.description).toBe('Player attacked enemy');
-            expect(event.involvedPlayers).toEqual(['Player1', 'Enemy']);
-            expect(event.timestamp).toBe('14:15:16');
-
-            jasmine.clock().uninstall();
+            expect(chatServiceMock.sendMessage).toHaveBeenCalledWith('test-lobby', 'test-player', 'Hello world');
         });
 
-        it('should format event timestamps correctly with leading zeros', () => {
-            const mockDate = new Date(2023, 10, 1, 9, 5, 2);
-            jasmine.clock().install();
-            jasmine.clock().mockDate(mockDate);
+        it('should not send message when empty', () => {
+            component.newMessage = '';
+            component.sendMessage();
 
-            component.addEvent('item', 'Picked up item', ['Player']);
-            expect(component.eventLog[0].timestamp).toBe('09:05:02');
-
-            jasmine.clock().uninstall();
+            expect(chatServiceMock.sendMessage).not.toHaveBeenCalled();
         });
 
-        it('should scroll to the bottom of the eventLog container', () => {
-            const mockElement = { scrollHeight: 200, scrollTop: 0 };
-            spyOn(document, 'getElementById').and.returnValue(mockElement as HTMLElement);
+        it('should not send message when exceeding max length', () => {
+            component.newMessage = 'a'.repeat(201); // MAX_MESSAGE_LENGTH + 1
+            component.sendMessage();
 
-            component.addEvent('defend', 'Player defended', ['Player']);
-            expect(document.getElementById).toHaveBeenCalledWith('eventLog');
-            expect(mockElement.scrollTop).toBe(200);
+            expect(chatServiceMock.sendMessage).not.toHaveBeenCalled();
         });
 
-        it('should handle missing eventLog container gracefully', () => {
-            spyOn(document, 'getElementById').and.returnValue(null);
-            expect(() => component.addEvent('move', 'Player moved', ['Player'])).not.toThrow();
-            expect(component.eventLog.length).toBe(1);
+        it('should clear newMessage after sending', () => {
+            component.newMessage = 'Test message';
+            component.sendMessage();
+
+            expect(component.newMessage).toBe('');
+        });
+    });
+
+    describe('addEvent()', () => {
+        it('should call chatService.addEvent with correct parameters', () => {
+            const eventType = 'test-event';
+            const description = 'test description';
+            const involvedPlayers = ['player1', 'player2'];
+
+            component.addEvent(eventType, description, involvedPlayers);
+
+            expect(chatServiceMock.addEvent).toHaveBeenCalledWith(eventType, description, involvedPlayers);
+        });
+    });
+
+    describe('Template', () => {
+        it('should display player name', () => {
+            const element = fixture.nativeElement.querySelector('.chat-header strong');
+            expect(element.textContent).toContain('test-player');
+        });
+
+        it('should have chat and events tabs', () => {
+            const tabs = fixture.nativeElement.querySelectorAll('.tabs button');
+            expect(tabs.length).toBe(2);
+            expect(tabs[0].textContent).toContain('Chat');
+            expect(tabs[1].textContent).toContain('Events');
+        });
+
+        it('should show chat tab by default', () => {
+            expect(component.activeTab).toBe('chat');
+            const chatTab = fixture.nativeElement.querySelector('.tabs button.active');
+            expect(chatTab.textContent).toContain('Chat');
+        });
+
+        it('should switch to events tab when clicked', () => {
+            const eventTab = fixture.nativeElement.querySelectorAll('.tabs button')[1];
+            eventTab.click();
+            fixture.detectChanges();
+
+            expect(component.activeTab).toBe('events');
+            const activeTab = fixture.nativeElement.querySelector('.tabs button.active');
+            expect(activeTab.textContent).toContain('Events');
+        });
+
+        it('should display message input with send button', () => {
+            const input = fixture.nativeElement.querySelector('.message-input input');
+            const button = fixture.nativeElement.querySelector('.message-input button');
+
+            expect(input).toBeTruthy();
+            expect(input.getAttribute('placeholder')).toBe('Tapez un message...');
+            expect(input.getAttribute('maxlength')).toBe('200');
+            expect(button).toBeTruthy();
+            expect(button.textContent).toContain('Envoyer');
         });
     });
 });
