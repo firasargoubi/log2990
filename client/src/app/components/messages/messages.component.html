@@ -8,28 +8,28 @@
         <button [class.active]="activeTab === 'events'" (click)="activeTab = 'events'">Events</button>
     </div>
 
-    <div *ngIf="activeTab === 'chat'" class="chat">
+    @if (activeTab === 'chat') {
+    <div class="chat">
         <div class="messages" id="chatMessages">
-            <div
-                *ngFor="let msg of chatMessages"
-                [ngClass]="{ sent: msg.playerName === playerName, received: msg.playerName !== playerName }"
-                class="message-bubble"
-            >
+            @for (msg of chatMessages; track msg) {
+            <div [ngClass]="{ sent: msg.playerName === playerName, received: msg.playerName !== playerName }" class="message-bubble">
                 <span class="meta">
                     <strong>{{ msg.playerName }}</strong>
                     <span class="timestamp">[{{ msg.timestamp }}]</span>
                 </span>
                 <div class="content">{{ msg.message }}</div>
             </div>
+            }
         </div>
         <div class="message-input">
             <input type="text" [(ngModel)]="newMessage" placeholder="Tapez un message..." maxlength="200" />
             <button (click)="sendMessage()">Envoyer</button>
         </div>
     </div>
-
-    <div *ngIf="activeTab === 'events'" class="event-log">
-        <div class="event" *ngFor="let event of eventLog">
+    } @if (activeTab === 'events') {
+    <div class="event-log">
+        @for (event of eventLog; track event) {
+        <div class="event">
             <div class="event-details">
                 <span class="timestamp">{{ event.timestamp }}</span>
                 <span class="event-type">{{ event.eventType }}</span> :
@@ -37,5 +37,7 @@
                 <span class="involved-players"> Players: {{ event.involvedPlayers.join(', ') }} </span>
             </div>
         </div>
+        }
     </div>
+    }
 </div>

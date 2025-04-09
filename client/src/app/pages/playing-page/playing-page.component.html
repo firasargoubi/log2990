@@ -54,7 +54,9 @@
 
     <div class="sidebar right-sidebar">
         <div class="chat-wrapper-playing">
-            <app-messages *ngIf="currentPlayer && lobbyId" [playerName]="currentPlayer.name" [lobbyId]="lobbyId"></app-messages>
+            @if (currentPlayer && lobbyId) {
+            <app-messages [playerName]="currentPlayer.name" [lobbyId]="lobbyId"></app-messages>
+            }
         </div>
 
         @if (isCurrentPlayerTurn()) {
@@ -79,7 +81,7 @@
         </div>
         } @else {
         <div class="action-buttons">
-            @if(action) {
+            @if (action) {
             <button class="action-buttons selected" (click)="handleAction()">Action</button>
             } @else {
             <button (click)="handleAction()">Action</button>
