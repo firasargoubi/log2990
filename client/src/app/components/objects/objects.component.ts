@@ -19,8 +19,8 @@ import { filter } from 'rxjs/operators';
 export class ObjectsComponent implements OnInit, OnDestroy {
     @Input() mapSize: string;
     @Input() gameMode!: GameType;
-    range: number[] = [];
     items: ItemModel[] = [];
+    private range: number[] = [];
     private subscriptions: Subscription[] = [];
 
     constructor(

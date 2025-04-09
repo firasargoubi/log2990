@@ -32,7 +32,7 @@ export class GameCardComponent {
         private notificationService: NotificationService,
     ) {}
 
-    async deleteGame(): Promise<void> {
+    deleteGame(): void {
         if (!this.game || this.isLoading) return;
         const dialogRef = this.dialog.open(ConfirmDeleteComponent);
         dialogRef.afterClosed().subscribe((result) => {

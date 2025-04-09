@@ -23,8 +23,6 @@ const DEFAULT_STAT_VALUE = 4;
 })
 export class BoxFormDialogComponent implements OnDestroy {
     form: FormGroup;
-    gameList: Game[] = [];
-    lobbyService = inject(LobbyService);
     avatars = [
         AVATARS.fawn,
         AVATARS.bear,
@@ -39,14 +37,13 @@ export class BoxFormDialogComponent implements OnDestroy {
         AVATARS.dear,
         AVATARS.raccoon,
     ];
-
     formValid$: boolean = false;
     attributeClicked$: boolean = false;
     diceClicked$: boolean = false;
-    increasedAttribute: string | null = null;
-    diceAttribute: string | null = null;
+    private diceAttribute: string | null = null;
+    private increasedAttribute: string | null = null;
     private subscriptions: Subscription[] = [];
-
+    private gameList: Game[] = [];
     private notificationService = inject(NotificationService);
     private router = inject(Router);
 
@@ -54,6 +51,7 @@ export class BoxFormDialogComponent implements OnDestroy {
         public dialogRef: MatDialogRef<BoxFormDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: { boxId: string; game: Game; gameList: Game[]; lobbyId: string; isJoining: boolean },
         private gameService: GameService,
+        private lobbyService: LobbyService,
     ) {
         this.loadGames();
 

@@ -27,7 +27,7 @@ export class GameBoardComponent implements OnInit, OnChanges {
 
     tiles: Tile[][] = [];
     availableMoves: Coordinates[] = [];
-    highlightedPath: Coordinates[] = [];
+    private highlightedPath: Coordinates[] = [];
 
     constructor(private lobbyService: LobbyService) {}
 
