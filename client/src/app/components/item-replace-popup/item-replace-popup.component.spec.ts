@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { UNKNOWN_ITEM } from '@app/Consts/item-constants';
 import { ItemReplacePopupComponent } from './item-replace-popup.component';

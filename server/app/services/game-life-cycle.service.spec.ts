@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { gameSocketMessages } from '@app/constants/game-socket-handler-const';
 import { BoardService } from '@app/services/board.service';

@@ -1,3 +1,4 @@
+/* eslint-disable max-params */
 import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
 import { GameEvents } from '@common/events';
 import { GameLobby } from '@common/game-lobby';

@@ -59,7 +59,7 @@
 
         @if (isCurrentPlayerTurn()) {
         <app-countdown-player
-            [countdown]="60"
+            [countdown]="30"
             [isPlayerTurn]="true"
             [isInCombat]="isInCombat"
             [lobbyId]="lobbyId"
@@ -68,11 +68,10 @@
         >
         </app-countdown-player>
         } @else {
-        <app-countdown-player [countdown]="60" [isPlayerTurn]="false" [isInCombat]="isInCombat" [isTransitioning]="false"> </app-countdown-player>
+        <app-countdown-player [countdown]="30" [isPlayerTurn]="false" [isInCombat]="isInCombat" [isTransitioning]="false"> </app-countdown-player>
         }
 
         <app-inventory [player]="currentPlayer" [lobbyId]="lobbyId"></app-inventory>
-
 
         @if (isInCombat) {
         <div class="action-buttons">
