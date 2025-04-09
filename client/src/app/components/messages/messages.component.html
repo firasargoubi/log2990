@@ -3,7 +3,7 @@
     <button (click)="activeTab = 'eventLog'" [class.active]="activeTab === 'eventLog'">Journal de Jeu</button>
 </div>
 
-<div class="chat-messages" id="chatMessages"></div>
+<div class="chat-messages" id="chatMessages"  #chatMessagesContainer></div>
 
 <input
     #chatInput

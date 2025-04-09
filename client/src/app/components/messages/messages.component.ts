@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { PAD_TIME_VALUE } from '@app/Consts/app-constants';
 
 @Component({
@@ -7,6 +7,8 @@ import { PAD_TIME_VALUE } from '@app/Consts/app-constants';
     styleUrls: ['./messages.component.scss'],
 })
 export class MessagesComponent {
+    @ViewChild('chatMessagesContainer') chatMessagesContainer!: ElementRef;
+    @ViewChild('eventLogContainer') eventLogContainer!: ElementRef;
     chatMessages: { timestamp: string; playerName: string; message: string }[] = [];
     eventLog: { timestamp: string; eventType: string; description: string; involvedPlayers: string[] }[] = [];
     activeTab: string = 'chat';
@@ -36,10 +38,10 @@ export class MessagesComponent {
         return value < PAD_TIME_VALUE ? `0${value}` : value.toString();
     }
 
-    private scrollToBottom(elementId: string): void {
-        const element = document.getElementById(elementId);
-        if (element) {
-            element.scrollTop = element.scrollHeight;
+    private scrollToBottom(container: 'chatMessages' | 'eventLog'): void {
+        const target = container === 'chatMessages' ? this.chatMessagesContainer : this.eventLogContainer;
+        if (target?.nativeElement) {
+            target.nativeElement.scrollTop = target.nativeElement.scrollHeight;
         }
     }
 }

@@ -80,7 +80,7 @@ export class GameController {
             try {
                 const game = await this.gameService.getGameById(req.params.id);
                 if (!game || !game.isVisible) {
-                    res.status(StatusCodes.OK).json(false);
+                    res.status(StatusCodes.NOT_FOUND).json(false);
                 } else {
                     res.status(StatusCodes.OK).json(true);
                 }
