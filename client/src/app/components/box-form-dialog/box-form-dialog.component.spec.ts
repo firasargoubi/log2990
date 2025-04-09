@@ -6,7 +6,8 @@ import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testin
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
-import { CREATE_PAGE_CONSTANTS, GAME_IMAGES, MAIN_PAGE_CONSTANTS } from '@app/Consts/app-constants';
+import { CREATE_PAGE_CONSTANTS, MAIN_PAGE_CONSTANTS } from '@app/Consts/app-constants';
+import { AVATARS } from '@common/avatars';
 import { PageUrl } from '@app/Consts/route-constants';
 import { GameService } from '@app/services/game.service';
 import { LobbyService } from '@app/services/lobby.service';
@@ -113,7 +114,7 @@ describe('BoxFormDialogComponent', () => {
     });
 
     it('selectAvatar should update the avatar form control', () => {
-        const newAvatar = GAME_IMAGES.bear;
+        const newAvatar = AVATARS.bear;
         component.selectAvatar(newAvatar);
         expect(component.form.get('avatar')?.value).toBe(newAvatar);
     });
@@ -251,7 +252,7 @@ describe('BoxFormDialogComponent', () => {
             component.increasedAttribute = 'life';
             component.diceAttribute = 'attack';
             component.form.get('name')?.setValue('Player1');
-            component.form.get('avatar')?.setValue(GAME_IMAGES.fawn);
+            component.form.get('avatar')?.setValue(AVATARS.fawn);
             component.form.get('life')?.setValue(4);
             component.form.get('speed')?.setValue(4);
             component.form.get('attack')?.setValue(4);
@@ -354,7 +355,7 @@ describe('BoxFormDialogComponent', () => {
             component.increasedAttribute = 'life';
             component.diceAttribute = 'attack';
             component.form.get('name')?.setValue('Player1');
-            component.form.get('avatar')?.setValue(GAME_IMAGES.fawn);
+            component.form.get('avatar')?.setValue(AVATARS.fawn);
             component.form.get('life')?.setValue(4);
             component.form.get('speed')?.setValue(4);
             component.form.get('attack')?.setValue(4);

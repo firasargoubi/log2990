@@ -397,6 +397,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         const playerInGameState = this.gameState.players.find((p) => p.id === this.currentPlayer?.id);
         if (playerInGameState) {
             this.currentPlayer = playerInGameState;
+            this.inventoryItems = this.currentPlayer?.items ?? [];
             this.lobbyService.setCurrentPlayer(this.currentPlayer);
         }
 

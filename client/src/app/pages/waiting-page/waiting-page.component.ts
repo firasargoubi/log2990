@@ -4,7 +4,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { GameControlsComponent } from '@app/components/game-controls/game-controls.component';
 import { MessagesComponent } from '@app/components/messages/messages.component';
 import { PlayerListComponent } from '@app/components/player-list/player-list.component';
-import { GAME_IMAGES, WAITING_PAGE, WAITING_PAGE_CONSTANTS } from '@app/Consts/app-constants';
+import { WAITING_PAGE, WAITING_PAGE_CONSTANTS } from '@app/Consts/app-constants';
+import { AVATARS } from '@common/avatars';
 import { PageUrl } from '@app/Consts/route-constants';
 import { ChatService } from '@app/services/chat.service';
 import { LobbyService } from '@app/services/lobby.service';
@@ -27,7 +28,7 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
     currentPlayer: Player = {
         id: WAITING_PAGE.defaultPlayerId,
         name: WAITING_PAGE.defaultPlayerName,
-        avatar: GAME_IMAGES.fawn,
+        avatar: AVATARS.fawn,
         isHost: false,
         life: 0,
         maxLife: 0,

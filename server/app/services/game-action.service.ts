@@ -1,98 +1,39 @@
-/* eslint-disable max-lines */
 import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
 import { Coordinates } from '@common/coordinates';
 import { GameEvents } from '@common/events';
-import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
-import { ObjectsTypes, Tile, TILE_DELIMITER, TileTypes } from '@common/game.interface';
+import { ObjectsTypes, Tile, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
 import { BoardService } from './board.service';
-import { LobbySocketHandlerService } from './lobby-socket-handler.service';
-import { PathfindingService } from './pathfinding.service';
+import { GameLifecycleService } from './game-life-cycle.service';
+import { ItemService } from './item.service';
 
 @Service()
-export class GameSocketHandlerService {
+export class GameActionService {
     private io: Server;
     constructor(
-        private lobbies: Map<string, GameLobby>,
         private gameStates: Map<string, GameState>,
         private boardService: BoardService,
-        private lobbySocketHandlerService: LobbySocketHandlerService,
-        private pathfindingService: PathfindingService,
+        private itemService: ItemService,
+        private gameLifeCycleService: GameLifecycleService,
     ) {}
     setServer(server: Server) {
         this.io = server;
     }
 
-    async handleRequestStart(socket: Socket, lobbyId: string) {
-        const lobby = this.lobbies.get(lobbyId);
-        const gameState = await this.boardService.initializeGameState(lobby);
-
-        if (!lobby) {
-            socket.emit(GameEvents.Error, gameSocketMessages.lobbyNotFound);
-            return;
-        }
-        const player = lobby.players.find((p) => p.id === socket.id);
-        if (!player || !player.isHost) {
-            socket.emit(GameEvents.Error, gameSocketMessages.onlyHostStart);
-            return;
-        }
-
-        if (gameState.gameMode === 'capture') {
-            if (lobby.players.length % 2 !== 0) {
-                socket.emit(GameEvents.Error, gameSocketMessages.notEnoughPlayers);
-                return;
-            }
-        }
-
-        try {
-            this.gameStates.set(lobbyId, gameState);
-
-            lobby.isLocked = true;
-            this.lobbySocketHandlerService.updateLobby(lobbyId);
-
-            this.io.to(lobbyId).emit(GameEvents.GameStarted, { gameState });
-
-            this.startTurn(lobbyId);
-        } catch (error) {
-            socket.emit(GameEvents.Error, `${gameSocketMessages.failedStartGame} ${error.message}`);
-        }
-    }
-
-    handleEndTurn(socket: Socket, lobbyId: string) {
-        const gameState = this.gameStates.get(lobbyId);
-        if (!gameState) {
-            socket.emit(GameEvents.Error, gameSocketMessages.gameNotFound);
-            return;
-        }
-
-        if (socket.id !== gameState.currentPlayer) {
-            socket.emit(GameEvents.Error, gameSocketMessages.notYourTurn);
-            return;
-        }
-
-        try {
-            const updatedGameState = this.boardService.handleEndTurn(gameState);
-
-            this.gameStates.set(lobbyId, updatedGameState);
-
-            this.startTurn(lobbyId);
-        } catch (error) {
-            socket.emit(GameEvents.Error, `${gameSocketMessages.failedEndTurn} ${error.message}`);
-        }
-    }
-
     async handleRequestMovement(socket: Socket, lobbyId: string, coordinates: Coordinates[]) {
-        const gameState = this.getGameStateOrEmitError(socket, lobbyId);
+        const gameState = this.gameLifeCycleService.getGameStateOrEmitError(socket, lobbyId);
         const indexPlayer = gameState.players.findIndex((p) => p.id === socket.id);
         const currentPlayer = gameState.players[indexPlayer];
         if (!gameState) return;
 
         try {
             let updatedGameState = gameState;
-            updatedGameState.animation = true;
+            if (coordinates.length > 1) {
+                updatedGameState.animation = true;
+            }
 
             for (const [idx, coordinate] of coordinates.entries()) {
                 if (!idx) {
@@ -138,17 +79,15 @@ export class GameSocketHandlerService {
             socket.emit(GameEvents.Error, `${gameSocketMessages.movementError}${error.message}`);
         }
     }
-
     handleInventoryFull(updatedGameState: GameState, currentPlayer: Player, socket: Socket, lobbyId: string) {
         socket.emit('inventoryFull', {
             item: currentPlayer.pendingItem,
-            currentInventory: currentPlayer.items,
+            currentInventory: [...currentPlayer.items],
         });
         updatedGameState.animation = false;
         this.gameStates.set(lobbyId, updatedGameState);
         this.io.to(lobbyId).emit('movementProcessed', { gameState: updatedGameState });
     }
-
     handleTeleport(socket: Socket, lobbyId: string, coordinates: Coordinates) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) {
@@ -168,7 +107,6 @@ export class GameSocketHandlerService {
         if (!gameState) return;
         try {
             const updatedGameState = this.boardService.handleTurn(gameState);
-
             this.gameStates.set(lobbyId, updatedGameState);
 
             this.io.to(lobbyId).emit(GameEvents.TurnStarted, { gameState: updatedGameState });
@@ -178,38 +116,31 @@ export class GameSocketHandlerService {
     }
 
     closeDoor(socket: Socket, tile: Tile, lobbyId: string) {
-        const gameState = this.getGameStateOrEmitError(socket, lobbyId);
+        const gameState = this.gameLifeCycleService.getGameStateOrEmitError(socket, lobbyId);
         if (!gameState) return;
         const currentPlayerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
-        const newGameBoard = gameState.board.map((row) => [...row]);
-        newGameBoard[tile.x][tile.y] = TileTypes.DoorClosed;
-        const updatedGameState: GameState = {
-            ...gameState,
-            board: newGameBoard,
-            currentPlayerActionPoints: 0,
-        };
-
-        updatedGameState.players[currentPlayerIndex].currentAP = 0;
-        const newGameState = this.boardService.handleBoardChange(updatedGameState);
+        gameState.board = gameState.board.map((row) => [...row]);
+        gameState.board[tile.x][tile.y] = TileTypes.DoorClosed;
+        gameState.currentPlayerActionPoints = 0;
+        if (currentPlayerIndex !== -1) {
+            gameState.players[currentPlayerIndex].currentAP = 0;
+        }
+        const newGameState = this.boardService.handleBoardChange(gameState);
         this.gameStates.set(lobbyId, newGameState);
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
     }
 
     openDoor(socket: Socket, tile: Tile, lobbyId: string) {
-        const gameState = this.getGameStateOrEmitError(socket, lobbyId);
+        const gameState = this.gameLifeCycleService.getGameStateOrEmitError(socket, lobbyId);
         if (!gameState) return;
         const currentPlayerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
-        const newGameBoard = gameState.board.map((row) => [...row]);
-        newGameBoard[tile.x][tile.y] = TileTypes.DoorOpen;
-        const updatedGameState = {
-            ...gameState,
-            board: newGameBoard,
-            currentPlayerActionPoints: 0,
-        };
-
-        updatedGameState.players[currentPlayerIndex].currentAP = 0;
-
-        const newGameState = this.boardService.handleBoardChange(updatedGameState);
+        gameState.board = gameState.board.map((row) => [...row]);
+        gameState.board[tile.x][tile.y] = TileTypes.DoorOpen;
+        gameState.currentPlayerActionPoints = 0;
+        if (currentPlayerIndex !== -1) {
+            gameState.players[currentPlayerIndex].currentAP = 0;
+        }
+        const newGameState = this.boardService.handleBoardChange(gameState);
         this.gameStates.set(lobbyId, newGameState);
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
     }
@@ -246,108 +177,6 @@ export class GameSocketHandlerService {
         }
         this.io.to(currentPlayer.id).to(opponent.id).emit('startCombat', { firstPlayer });
     }
-
-    handlePlayersUpdate(socket: Socket, lobbyId: string, players: Player[]) {
-        const gameState = this.getGameStateOrEmitError(socket, lobbyId);
-        if (!gameState) return;
-
-        let deletedPlayer: Player | undefined;
-        for (const player of gameState.players) {
-            if (!players.find((p) => p.id === player.id)) {
-                deletedPlayer = player;
-            }
-        }
-        if (deletedPlayer) {
-            const playerIndex = gameState.players.findIndex((p) => p.id === deletedPlayer.id);
-            gameState.currentPlayer = gameState.players[(playerIndex + 1) % gameState.players.length].id;
-            gameState.players.splice(playerIndex, 1);
-            const spawnPoint = gameState.spawnPoints[playerIndex];
-            gameState.board[spawnPoint.x][spawnPoint.y] = gameState.board[spawnPoint.x][spawnPoint.y] % TILE_DELIMITER;
-            gameState.spawnPoints.splice(playerIndex, 1);
-            gameState.playerPositions.splice(playerIndex, 1);
-            if (!gameState.deletedPlayers) {
-                gameState.deletedPlayers = [];
-            }
-            gameState.deletedPlayers.push(deletedPlayer);
-        }
-        const newGameState = this.boardService.handleBoardChange(gameState);
-        this.gameStates.set(lobbyId, gameState);
-        this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
-    }
-
-    handleDefeat(lobbyId: string, winner: Player, loser: Player) {
-        const gameState = this.gameStates.get(lobbyId);
-        if (!gameState) return;
-        const winnerIndex = gameState.players.findIndex((p) => p.id === winner.id);
-        const loserIndex = gameState.players.findIndex((p) => p.id === loser.id);
-        if (winnerIndex === -1 || loserIndex === -1) return;
-        const originalSpawn = gameState.spawnPoints[loserIndex];
-        const isInSpawnPoints = JSON.stringify(originalSpawn) === JSON.stringify(gameState.playerPositions[loserIndex]);
-        const occupiedPositions = new Set(gameState.playerPositions.map((pos) => JSON.stringify(pos)));
-        let newSpawn = originalSpawn;
-
-        if (!isInSpawnPoints && occupiedPositions.has(JSON.stringify(originalSpawn))) {
-            newSpawn = this.pathfindingService.findClosestAvailableSpot(gameState, originalSpawn);
-        }
-
-        winner.life = winner.maxLife;
-        loser.life = loser.maxLife;
-        this.io.to(lobbyId).emit('combatEnded', { loser });
-
-        gameState.playerPositions[loserIndex] = newSpawn;
-        gameState.currentPlayerActionPoints = 0;
-        gameState.players[winnerIndex] = winner;
-        gameState.players[winnerIndex].currentAP = 0;
-        gameState.players[loserIndex] = loser;
-        let newGameState;
-        if (loser.id === gameState.currentPlayer) {
-            newGameState = this.boardService.handleEndTurn(gameState);
-            this.startTurn(lobbyId);
-            return;
-        }
-        newGameState = this.boardService.handleTurn(gameState);
-        this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
-
-        this.gameStates.set(lobbyId, newGameState);
-    }
-
-    handleSetDebug(socket: Socket, lobbyId: string, debug: boolean) {
-        const gameState = this.gameStates.get(lobbyId);
-        if (!gameState) {
-            socket.emit('error', 'Game not found.');
-            return;
-        }
-
-        const updatedGameState = {
-            ...gameState,
-            debug,
-        };
-
-        this.gameStates.set(lobbyId, updatedGameState);
-        this.io.to(lobbyId).emit('boardModified', { gameState: updatedGameState });
-    }
-
-    createTeams(lobbyId: string, players: Player[]) {
-        const gameState = this.gameStates.get(lobbyId);
-        if (!gameState) return;
-        if (gameState.teams) {
-            return;
-        }
-        const shuffledPlayers = [...players].sort(() => Math.random() - GameSocketConstants.PlayerTeamConst);
-        const half = Math.ceil(players.length / 2);
-        const team1Server: Player[] = shuffledPlayers.slice(0, half).map((player) => ({ ...player, team: 'Red' }));
-        const team2Server: Player[] = shuffledPlayers.slice(half).map((player) => ({ ...player, team: 'Blue' }));
-        const updatedGameState = {
-            ...gameState,
-            teams: {
-                team1: team1Server,
-                team2: team2Server,
-            },
-        };
-        this.gameStates.set(lobbyId, updatedGameState);
-        this.io.to(lobbyId).emit(GameEvents.TeamsCreated, { team1Server, team2Server, updatedGameState });
-    }
-
     handleAttackAction(lobbyId: string, attacker: Player, defender: Player) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
@@ -373,9 +202,13 @@ export class GameSocketHandlerService {
         }
         const damage = Math.max(0, attackDice + attacker.attack - defenseDice - defender.defense);
 
+        this.itemService.applyPotionEffect(attacker, defender);
+
         if (damage > 0) {
             defender.life -= damage;
         }
+
+        this.itemService.applyJuiceEffect(defender);
 
         if (defender.life <= 0) {
             attacker.winCount += 1;
@@ -386,7 +219,7 @@ export class GameSocketHandlerService {
                 this.io.to(lobbyId).emit('gameOver', { winner: attacker.name });
                 return;
             }
-            this.handleDefeat(lobbyId, attacker, defender);
+            this.gameLifeCycleService.handleDefeat(lobbyId, attacker, defender);
             return;
         }
         this.io.to(lobbyId).emit('attackResult', {
@@ -400,43 +233,6 @@ export class GameSocketHandlerService {
         });
     }
 
-    handleFlee(lobbyId: string, fleeingPlayer: Player) {
-        const gameState = this.gameStates.get(lobbyId);
-        if (!gameState) return;
-
-        fleeingPlayer.amountEscape = fleeingPlayer.amountEscape ?? 0;
-
-        if (fleeingPlayer.amountEscape >= 2) {
-            this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
-            return;
-        }
-
-        fleeingPlayer.amountEscape++;
-
-        const playerIndex = gameState.players.findIndex((p) => p.id === fleeingPlayer.id);
-        if (playerIndex !== -1) {
-            gameState.players[playerIndex].amountEscape = fleeingPlayer.amountEscape;
-        }
-
-        const FLEE_RATE = GameSocketConstants.FleeRatePercent;
-        let isSuccessful = Math.random() * GameSocketConstants.MaxFlee <= FLEE_RATE;
-        if (gameState.debug) {
-            isSuccessful = true;
-        }
-
-        if (isSuccessful) {
-            for (const player of gameState.players) {
-                player.amountEscape = 0;
-            }
-            this.gameStates.set(lobbyId, gameState);
-            this.io.to(lobbyId).emit(GameEvents.FleeSuccess, { fleeingPlayer, isSuccessful });
-            this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState });
-        } else {
-            this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
-        }
-
-        this.gameStates.set(lobbyId, gameState);
-    }
     handleChatMessage(lobbyId: string, playerName: string, message: string) {
         this.io.to(lobbyId).emit(GameEvents.ChatMessage, {
             playerName,
@@ -452,27 +248,27 @@ export class GameSocketHandlerService {
         }
         return gameState;
     }
-    private getDiceValue(playerDice: string): number {
-        const D4_VALUE = 4;
-        const D6_VALUE = 6;
-        if (playerDice === 'D4') {
-            return D4_VALUE;
-        }
-        if (playerDice === 'D6') {
-            return D6_VALUE;
-        }
-        return 0;
-    }
 
     private async delay(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    private getDiceValue(playerDice: string): number {
+        if (playerDice === 'D4') {
+            return GameSocketConstants.D4Value;
+        }
+        if (playerDice === 'D6') {
+            return GameSocketConstants.D6Value;
+        }
+        return 0;
     }
 
     private isPlayerOnIceTile(gameState: GameState, player: Player): boolean {
         const playerIndex = gameState.players.findIndex((p) => p.id === player.id);
         if (playerIndex === -1) return false;
         const position = gameState.playerPositions[playerIndex];
-        if (!position) return false;
+        if (!position || position.x >= gameState.board.length || position.y >= gameState.board[0].length) return false;
+
         const tile = gameState.board[position.x][position.y];
         return tile === TileTypes.Ice;
     }

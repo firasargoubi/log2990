@@ -4,7 +4,6 @@
 import { BoardSocketConstants } from '@app/constants/board-const';
 import { BoardService } from '@app/services/board.service';
 import { GameLobby } from '@common/game-lobby';
-
 import { GameState } from '@common/game-state';
 import { Game, ObjectsTypes, TILE_DELIMITER, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
@@ -26,6 +25,11 @@ describe('BoardService', () => {
             getMovementCost: sandbox.stub(),
             findReachablePositions: sandbox.stub(),
         };
+        itemService = {
+            randomizeItem: sandbox.stub(),
+            applyAttributeEffects: sandbox.stub(),
+        };
+
         boardService = new BoardService(gameService, pathfindingService, itemService);
     });
 
@@ -109,18 +113,6 @@ describe('BoardService', () => {
         const res = boardService.findShortestPath({ currentPlayerMovementPoints: 3 } as any, { x: 0, y: 0 }, { x: 1, y: 1 });
         expect(res).to.equal(null);
     });
-    /*
-    it('should return unchanged state if invalid movement', () => {
-        const state = {
-            players: [{ id: 'p1' }],
-            currentPlayer: 'p1',
-            availableMoves: [],
-            playerPositions: [],
-        } as any;
-        const result = boardService.handleMovement(state, { x: 1, y: 1 });
-        expect(result.gameState).to.deep.equal(state);
-    });
-    */
 
     it('should handleMovement and update game state correctly', () => {
         const state = {
@@ -258,7 +250,7 @@ describe('BoardService', () => {
 
     it('should return unchanged state if player index not found in handleBoardChange', () => {
         const state = {
-            players: [{ id: 'p1' }],
+            players: [{ id: 'p1', name: '', avatar: '', isHost: false, speed: 0, bonus: {}, items: [], pendingItem: null }],
             currentPlayer: 'pX',
             availableMoves: [],
             shortestMoves: [],
@@ -397,36 +389,7 @@ describe('BoardService', () => {
         const result = boardService.handleMovement(state, { x: 1, y: 1 });
         expect(result.gameState).to.equal(state);
     });
-    /*
-    it('should return unchanged state if invalid movement in handleMovement', () => {
-        const state = {
-            players: [{ id: 'p1', speed: 2, bonus: {} }],
-            currentPlayer: 'p1',
-            playerPositions: [{ x: 0, y: 0 }],
-            availableMoves: [],
-            currentPlayerMovementPoints: 5,
-        } as any;
 
-        const result = boardService.handleMovement(state, { x: 1, y: 1 });
-        expect(result.gameState).to.equal(state);
-    });
-    
-
-    it('should return unchanged state if no path was found in handleMovement', () => {
-        const state = {
-            players: [{ id: 'p1', speed: 2, bonus: {} }],
-            currentPlayer: 'p1',
-            playerPositions: [{ x: 0, y: 0 }],
-            availableMoves: [{ x: 1, y: 1 }],
-            currentPlayerMovementPoints: 5,
-        } as any;
-
-        pathfindingService.findShortestPath.returns(null);
-
-        const result = boardService.handleMovement(state, { x: 1, y: 1 });
-        expect(result.gameState).to.equal(state);
-    });
-*/
     it('should return empty array if gameState or startPosition is null in findAllPaths', async () => {
         const result1 = (boardService as any).findAllPaths(null, { x: 0, y: 0 });
         expect(Array.isArray(result1)).to.equal(true);
@@ -731,11 +694,163 @@ describe('BoardService', () => {
     });
     it('should return false in isOccupied if position not occupied and item is SPAWN or EMPTY and tile not wall/door', () => {
         const state: GameState = {
-            board: [[ObjectsTypes.SPAWN * TILE_DELIMITER + TileTypes.Floor]],
+            board: [[ObjectsTypes.SPAWN * TILE_DELIMITER + TileTypes.Grass]],
             playerPositions: [{ x: 1, y: 1 }],
         } as any;
 
         const result = (boardService as any).isOccupied(state, { x: 0, y: 0 }, 0);
         expect(result).to.equal(false);
+    });
+
+    it('should handle item collection with full inventory in handleMovement', () => {
+        const state = {
+            players: [
+                {
+                    id: 'p1',
+                    speed: 2,
+                    bonus: {},
+                    items: [ObjectsTypes.CRYSTAL, ObjectsTypes.BOOTS],
+                },
+            ],
+            currentPlayer: 'p1',
+            playerPositions: [{ x: 0, y: 0 }],
+            currentPlayerMovementPoints: 5,
+            board: [[ObjectsTypes.BOOTS * TILE_DELIMITER]],
+        } as any;
+
+        pathfindingService.getMovementCost.returns(1);
+
+        const result = boardService.handleMovement(state, { x: 0, y: 0 });
+        expect(result.gameState.players[0].pendingItem).to.equal(ObjectsTypes.BOOTS);
+        expect(result.shouldStop).to.equal(true);
+    });
+
+    it('should apply item effects when collecting an item in handleMovement', () => {
+        const state = {
+            players: [{ id: 'p1', speed: 2, bonus: {}, items: [] }],
+            currentPlayer: 'p1',
+            playerPositions: [{ x: 0, y: 0 }],
+            currentPlayerMovementPoints: 5,
+            board: [[ObjectsTypes.BOOTS * TILE_DELIMITER]],
+        } as any;
+
+        pathfindingService.getMovementCost.returns(1);
+
+        const result = boardService.handleMovement(state, { x: 0, y: 0 });
+        expect(itemService.applyAttributeEffects.calledOnce).to.equal(true);
+        expect(result.shouldStop).to.equal(true);
+    });
+
+    it('should verify orb possession correctly', () => {
+        const state = {
+            players: [
+                { id: 'p1', items: [ObjectsTypes.CRYSTAL] },
+                { id: 'p2', items: [] },
+            ],
+            currentPlayer: 'p2',
+        } as any;
+
+        const result = (boardService as any).verifyOrb(state);
+        expect(result).to.equal(true);
+    });
+
+    it('should return false for verifyOrb when current player has orb', () => {
+        const state = {
+            players: [{ id: 'p1', items: [ObjectsTypes.CRYSTAL] }],
+            currentPlayer: 'p1',
+        } as any;
+
+        const result = (boardService as any).verifyOrb(state);
+        expect(result).to.equal(false);
+    });
+
+    it('should return false for verifyOrb when no player has orb', () => {
+        const state = {
+            players: [{ id: 'p1', items: [] }],
+            currentPlayer: 'p1',
+        } as any;
+
+        const result = (boardService as any).verifyOrb(state);
+        expect(result).to.equal(false);
+    });
+
+    it('should handle random movement points when player has orb', () => {
+        const player = { id: 'p1', speed: 2 } as any;
+        const result = (boardService as any).getPlayerMovementPoints(player, true);
+        expect(result).to.be.at.least(1);
+        expect(result).to.be.at.most(6);
+    });
+
+    it('should handle movement to spawn point in handleMovement', () => {
+        const state = {
+            players: [{ id: 'p1', speed: 2, bonus: {} }],
+            currentPlayer: 'p1',
+            playerPositions: [{ x: 0, y: 0 }],
+            currentPlayerMovementPoints: 5,
+            board: [[ObjectsTypes.SPAWN * TILE_DELIMITER]],
+        } as any;
+
+        pathfindingService.getMovementCost.returns(1);
+
+        const result = boardService.handleMovement(state, { x: 0, y: 0 });
+        expect(result.shouldStop).to.equal(false);
+    });
+
+    it('should handle movement to empty tile in handleMovement', () => {
+        const state = {
+            players: [{ id: 'p1', speed: 2, bonus: {} }],
+            currentPlayer: 'p1',
+            playerPositions: [{ x: 0, y: 0 }],
+            currentPlayerMovementPoints: 5,
+            board: [[ObjectsTypes.EMPTY * TILE_DELIMITER]],
+        } as any;
+
+        pathfindingService.getMovementCost.returns(1);
+
+        const result = boardService.handleMovement(state, { x: 0, y: 0 });
+        expect(result.shouldStop).to.equal(false);
+    });
+    it('should return unchanged gameState if currentPlayer not found in players array in updatePlayerMoves', () => {
+        const initialState: GameState = {
+            id: 'gameState1',
+            players: [
+                {
+                    id: 'p1',
+                    name: '',
+                    avatar: '',
+                    isHost: false,
+                    speed: 0,
+                    bonus: {},
+                    items: [],
+                    pendingItem: null,
+                    life: 100,
+                    maxLife: 100,
+                    attack: 0,
+                    defense: 0,
+                    winCount: 0,
+                    currentMP: 0,
+                    currentAP: 0,
+                },
+            ],
+            currentPlayer: 'nonExistentPlayer',
+            availableMoves: [],
+            shortestMoves: [],
+            playerPositions: [],
+            board: [],
+            spawnPoints: [],
+            currentPlayerMovementPoints: 0,
+            currentPlayerActionPoints: 0,
+            turnCounter: 0,
+            debug: false,
+            gameMode: 'classic',
+        };
+
+        const expectedState = JSON.parse(JSON.stringify(initialState));
+
+        const result = boardService.updatePlayerMoves(initialState);
+
+        expect(result).to.deep.equal(expectedState);
+        expect(result.availableMoves).to.deep.equal([]);
+        expect(result.shortestMoves).to.deep.equal([]);
     });
 });

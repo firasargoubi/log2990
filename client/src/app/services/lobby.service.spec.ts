@@ -639,8 +639,8 @@ describe('LobbyService', () => {
         });
 
         it('should resolve inventory', () => {
-            service.resolveInventory('lobby1', 1, 2);
-            expect(socketMock.emit).toHaveBeenCalledWith('resolveInventory', { lobbyId: 'lobby1', oldItem: 1, newItem: 2 });
+            service.resolveInventory('lobby1', [1, 2]);
+            expect(socketMock.emit).toHaveBeenCalledWith('resolveInventory', { lobbyId: 'lobby1', keptItems: [1, 2] });
         });
 
         it('should cancel inventory choice', () => {

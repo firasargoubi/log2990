@@ -5,6 +5,43 @@
     width: 100%;
 }
 
+.add-player-card {
+    height: 235px;
+    width: 290px;
+    display: flex;
+    background-color: #f0f7e6;
+    border: 2px solid #9eba63;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 4px 8px rgba(73, 115, 66, 0.15);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+
+    &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(73, 115, 66, 0.2);
+    }
+
+    &:before {
+        content: '🌱';
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        font-size: 0.9rem;
+        opacity: 0.7;
+    }
+
+    .plus-sign {
+        font-size: 3rem;
+        color: #3f783f;
+        font-weight: bold;
+    }
+}
+
 .player-list {
     display: flex;
     flex-direction: column;

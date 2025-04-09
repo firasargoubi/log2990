@@ -8,7 +8,8 @@ import { AddressInfo } from 'net';
 import { Service } from 'typedi';
 import { BoardService } from './services/board.service';
 import { DisconnectHandlerService } from './services/disconnect-handler.service';
-import { GameSocketHandlerService } from './services/game-socket-handler.service';
+import { GameActionService } from './services/game-action.service';
+import { GameLifecycleService } from './services/game-life-cycle.service';
 import { GameService } from './services/game.service';
 import { ItemService } from './services/item.service';
 import { LobbySocketHandlerService } from './services/lobby-socket-handler.service';
@@ -36,15 +37,25 @@ export class Server {
         this.server = http.createServer(this.application.app);
         const gameService = new GameService();
         const pathfindingService = new PathfindingService();
-        const itemService = new ItemService();
+        const itemService = new ItemService(pathfindingService);
         const boardService = new BoardService(gameService, pathfindingService, itemService);
         const lobbyMap = new Map<string, GameLobby>();
         const gameStateMap = new Map<string, GameState>();
-        const lobbyHandler = new LobbySocketHandlerService(lobbyMap);
-        const gameHandler = new GameSocketHandlerService(lobbyMap, gameStateMap, boardService, lobbyHandler, pathfindingService);
         const validationHandler = new ValidationSocketHandlerService(lobbyMap);
-        const disconnectHandler = new DisconnectHandlerService(lobbyMap, lobbyHandler);
-        this.socketManager = new SocketService(this.server, lobbyHandler, gameHandler, validationHandler, disconnectHandler, boardService);
+        const lobbyHandler = new LobbySocketHandlerService(lobbyMap, validationHandler);
+        const gameLifeCycleService = new GameLifecycleService(lobbyMap, gameStateMap, boardService, lobbyHandler, pathfindingService, itemService);
+        const disconnectHandler = new DisconnectHandlerService(lobbyMap, lobbyHandler, gameStateMap, itemService);
+        const gameActionService = new GameActionService(gameStateMap, boardService, itemService, gameLifeCycleService);
+        this.socketManager = new SocketService(
+            this.server,
+            lobbyHandler,
+            validationHandler,
+            disconnectHandler,
+            boardService,
+            itemService,
+            gameActionService,
+            gameLifeCycleService,
+        );
         this.socketManager.init();
 
         this.server.on('error', (error: NodeJS.ErrnoException) => this.onError(error));
