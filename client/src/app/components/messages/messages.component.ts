@@ -1,45 +1,33 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms'; // Import FormsModule
+import { Component, Input } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ChatService } from '@app/services/chat.service';
 
 @Component({
     selector: 'app-messages',
     templateUrl: './messages.component.html',
     styleUrls: ['./messages.component.scss'],
-    imports: [
-        FormsModule,
-        CommonModule, // Add FormsModule to imports
-    ],
+    standalone: true,
+    imports: [FormsModule, CommonModule],
 })
-export class MessagesComponent implements OnInit, OnDestroy {
-    @Input() lobbyId: string; // Accepte lobbyId comme une entrée
+export class MessagesComponent {
+    @Input() lobbyId: string;
     @Input() playerName: string = '';
-    chatMessages = this.chatService.chatMessages;
 
+    messages: { playerName: string; message: string; timestamp: string }[] = [];
     eventLog = this.chatService.eventLog;
     activeTab: string = 'chat';
     newMessage: string = '';
 
     constructor(private chatService: ChatService) {}
 
-    ngOnInit(): void {
-        if (this.lobbyId) {
-            this.chatService.joinLobby(this.lobbyId);
-        }
-
-        this.chatService.onMessage().subscribe(() => {
-            this.chatMessages = [...this.chatService.chatMessages];
-        });
+    get chatMessages() {
+        return this.chatService.chatMessages;
     }
 
-    ngOnDestroy(): void {
-        this.chatService.disconnect();
-    }
-
-    sendMessage(playerName: string, message: string): void {
-        this.chatService.sendMessage(this.lobbyId, this.playerName, message);
-        this.chatService.addChatMessage(this.playerName, message);
+    sendMessage(): void {
+        if (!this.newMessage || this.newMessage.length > 200) return;
+        this.chatService.sendMessage(this.lobbyId, this.playerName, this.newMessage);
         this.newMessage = '';
     }
 

@@ -384,11 +384,9 @@ export class GameSocketHandlerService {
             }
             if (attacker.winCount === GameSocketConstants.MaxWinCount) {
                 this.io.to(lobbyId).emit('gameOver', { winner: attacker.name });
-                // eslint-disable-next-line max-lines
                 return;
             }
             this.handleDefeat(lobbyId, attacker, defender);
-            // eslint-disable-next-line max-lines
             return;
         }
         this.io.to(lobbyId).emit('attackResult', {
@@ -440,15 +438,11 @@ export class GameSocketHandlerService {
         this.gameStates.set(lobbyId, gameState);
     }
     handleChatMessage(lobbyId: string, playerName: string, message: string) {
-        console.log(`Message sent in lobby ${lobbyId} by ${playerName}: ${message}`);
-
         this.io.to(lobbyId).emit(GameEvents.ChatMessage, {
             playerName,
             message,
         });
     }
-
-    // Fonction pour gérer la connexion de nouveaux joueurs au chat
 
     getGameStateOrEmitError(socket: Socket, lobbyId: string): GameState | null {
         const gameState = this.gameStates.get(lobbyId);
@@ -459,8 +453,8 @@ export class GameSocketHandlerService {
         return gameState;
     }
     private getDiceValue(playerDice: string): number {
-        const D4_VALUE = 4; // Define the value for D4 dice
-        const D6_VALUE = 6; // Define the value for D6 dice
+        const D4_VALUE = 4;
+        const D6_VALUE = 6;
         if (playerDice === 'D4') {
             return D4_VALUE;
         }
@@ -472,7 +466,6 @@ export class GameSocketHandlerService {
 
     private async delay(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
-        // eslint-disable-next-line max-lines
     }
 
     private isPlayerOnIceTile(gameState: GameState, player: Player): boolean {

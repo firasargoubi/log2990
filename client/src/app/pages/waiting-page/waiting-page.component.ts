@@ -6,6 +6,7 @@ import { MessagesComponent } from '@app/components/messages/messages.component';
 import { PlayerListComponent } from '@app/components/player-list/player-list.component';
 import { GAME_IMAGES, WAITING_PAGE, WAITING_PAGE_CONSTANTS } from '@app/Consts/app-constants';
 import { PageUrl } from '@app/Consts/route-constants';
+import { ChatService } from '@app/services/chat.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { GameLobby } from '@common/game-lobby';
@@ -21,6 +22,8 @@ import { Subscription } from 'rxjs';
 })
 export class WaitingPageComponent implements OnInit, OnDestroy {
     lobby: GameLobby;
+    messages: string[] = [];
+
     currentPlayer: Player = {
         id: WAITING_PAGE.defaultPlayerId,
         name: WAITING_PAGE.defaultPlayerName,
@@ -41,12 +44,14 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
     private lobbyService = inject(LobbyService);
     private router = inject(Router);
     private notificationService = inject(NotificationService);
+    private chatService = inject(ChatService);
 
     ngOnInit(): void {
         const lobbyId = this.route.snapshot.paramMap.get(WAITING_PAGE.lobbyIdParam);
         const player = this.route.snapshot.paramMap.get(WAITING_PAGE.playerIdParam);
 
         if (lobbyId && player) {
+            this.chatService.joinLobby(lobbyId);
             this.lobbyService.getLobby(lobbyId).subscribe((lobby) => {
                 this.lobby = lobby;
                 this.currentPlayer = lobby.players.find((p) => p.id === player) || this.currentPlayer;
@@ -94,9 +99,14 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
                     this.router.navigate([`${PageUrl.Play}/${lobbyId}`]);
                 }),
             );
+
+            this.subscriptions.push(
+                this.chatService.onMessage().subscribe((chatMessage) => {
+                    console.log('💬 WaitingPageComponent received', chatMessage);
+                }),
+            );
         }
     }
-
     ngOnDestroy(): void {
         this.subscriptions.forEach((sub) => sub.unsubscribe());
     }

@@ -53,9 +53,9 @@
     </div>
 
     <div class="sidebar right-sidebar">
-        <app-messages></app-messages>
-
-        <!-- Countdown for the active player or others -->
+        <div class="chat-wrapper-playing">
+            <app-messages *ngIf="currentPlayer && lobbyId" [playerName]="currentPlayer.name" [lobbyId]="lobbyId"></app-messages>
+        </div>
 
         @if (isCurrentPlayerTurn()) {
         <app-countdown-player

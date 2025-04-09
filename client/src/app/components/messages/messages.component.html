@@ -1,34 +1,40 @@
 <div class="messages-container">
-    <!-- Tab Navigation -->
+    <div class="chat-header">
+        👤 Connecté en tant que : <strong>{{ playerName }}</strong>
+    </div>
+
     <div class="tabs">
         <button [class.active]="activeTab === 'chat'" (click)="activeTab = 'chat'">Chat</button>
         <button [class.active]="activeTab === 'events'" (click)="activeTab = 'events'">Events</button>
     </div>
 
-    <!-- Chat Section -->
     <div *ngIf="activeTab === 'chat'" class="chat">
-        <div class="message-input">
-            <input type="text" [(ngModel)]="newMessage" placeholder="Type your message..." />
-            <button (click)="sendMessage(playerName, newMessage)">Send</button>
-        </div>
         <div class="messages" id="chatMessages">
-            <div *ngFor="let msg of chatMessages">
-                <strong>{{ msg.playerName }}</strong> [{{ msg.timestamp }}] : {{ msg.message }}
+            <div
+                *ngFor="let msg of chatMessages"
+                [ngClass]="{ sent: msg.playerName === playerName, received: msg.playerName !== playerName }"
+                class="message-bubble"
+            >
+                <span class="meta">
+                    <strong>{{ msg.playerName }}</strong>
+                    <span class="timestamp">[{{ msg.timestamp }}]</span>
+                </span>
+                <div class="content">{{ msg.message }}</div>
             </div>
         </div>
-
-        <!-- Send Message Form -->
+        <div class="message-input">
+            <input type="text" [(ngModel)]="newMessage" placeholder="Tapez un message..." maxlength="200" />
+            <button (click)="sendMessage()">Envoyer</button>
+        </div>
     </div>
 
-    <!-- Event Log Section -->
     <div *ngIf="activeTab === 'events'" class="event-log">
         <div class="event" *ngFor="let event of eventLog">
             <div class="event-details">
                 <span class="timestamp">{{ event.timestamp }}</span>
-                <span class="event-type">{{ event.eventType }}</span
-                >:
+                <span class="event-type">{{ event.eventType }}</span> :
                 <span class="event-description">{{ event.description }}</span>
-                <span class="involved-players">Players: {{ event.involvedPlayers.join(', ') }}</span>
+                <span class="involved-players"> Players: {{ event.involvedPlayers.join(', ') }} </span>
             </div>
         </div>
     </div>

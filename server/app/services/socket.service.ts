@@ -40,19 +40,12 @@ export class SocketService {
 
     private onConnection(socket: Socket) {
         socket.on('createLobby', (game: Game) => this.handleCreateLobby(socket, game));
-        // Chat uniquement : client envoie un simple string = lobbyId
         socket.on('joinLobby', (data: string | { lobbyId: string; player: Player }) => {
             if (typeof data === 'string') {
-                // 👈 C'est un simple lobbyId, on l'utilise pour le chat
                 socket.join(data);
-                console.log(`✅ [Chat] Socket ${socket.id} joined lobby: ${data}`);
             } else if (typeof data === 'object' && data.lobbyId && data.player) {
-                // 👈 Appel complet avec player, pour les autres fonctionnalités du jeu
                 this.handleJoinLobby(socket, data);
                 socket.join(data.lobbyId);
-                console.log(`✅ [Game] Socket ${socket.id} joined lobby: ${data.lobbyId}`);
-            } else {
-                console.warn('⚠️ joinLobby: invalid data received', data);
             }
         });
 
@@ -94,8 +87,7 @@ export class SocketService {
             this.handleFlee(data.lobbyId, data.player);
         });
 
-        // ✅ Corrigé : maintenant on reçoit aussi playerName
-        socket.on('sendMessage', (data: { lobbyId: string; playerName: string; message: string }) => {
+        socket.on('sendMessage', (data) => {
             this.handleChatMessage(data.lobbyId, data.playerName, data.message);
         });
 
@@ -307,7 +299,6 @@ export class SocketService {
         this.gameSocketHandlerService.handleFlee(lobbyId, player);
     }
 
-    // ✅ Mise à jour pour inclure playerName
     private handleChatMessage(lobbyId: string, playerName: string, message: string) {
         this.gameSocketHandlerService.handleChatMessage(lobbyId, playerName, message);
     }
