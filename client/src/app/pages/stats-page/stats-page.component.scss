@@ -1,0 +1,134 @@
+/* General Page Layout */
+.end-page {
+    background-color: rgb(25, 94, 25);
+    color: white;
+    padding: 20px;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+}
+
+/* Section Styling */
+.section {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-size: 18px;
+    margin-top: 0;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Congratulations Section */
+.congratulations-section {
+    text-align: center;
+}
+
+.page-title {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.winner-name {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+/* Stats Table */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+}
+
+.stats-table th,
+.stats-table td {
+    text-align: left;
+    padding: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stats-table th {
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+/* Game Stats Section */
+.game-stats-list {
+    width: 100%;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stat-label {
+    font-weight: normal;
+}
+
+.stat-value {
+    text-align: right;
+}
+
+/* Chat Section */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.chat-messages {
+    min-height: 150px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.chat-input-container {
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input {
+    flex: 1;
+    padding: 8px;
+    border-radius: 4px;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.chat-send-btn {
+    padding: 8px 15px;
+    background-color: #336633;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.chat-send-btn:hover {
+    background-color: #448844;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .stats-table {
+        font-size: 14px;
+    }
+
+    .section {
+        padding: 10px;
+    }
+}
