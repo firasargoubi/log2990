@@ -56,7 +56,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     @HostListener('document:keydown', ['$event'])
-    @HostListener('document:keydown', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
         const target = event.target as HTMLElement;
 

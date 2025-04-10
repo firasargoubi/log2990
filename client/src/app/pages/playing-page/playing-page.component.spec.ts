@@ -372,19 +372,36 @@ describe('PlayingPageComponent', () => {
     });
 
     describe('Game operations', () => {
-        it('should handle debug mode toggling', () => {
+        it('should toggle debug mode when host and not typing in an input/textarea/contenteditable', () => {
             component.currentPlayer.isHost = true;
-            const keyEvent = new KeyboardEvent('keydown', { key: PLAYING_PAGE.debugKey });
-            component.handleKeyboardEvent(keyEvent);
+
+            const inputTargets = [{ tagName: 'INPUT' }, { tagName: 'TEXTAREA' }, { tagName: 'DIV', getAttribute: () => 'true' }];
+
+            for (const target of inputTargets) {
+                const event = new KeyboardEvent('keydown', {
+                    key: PLAYING_PAGE.debugKey,
+                });
+                Object.defineProperty(event, 'target', { value: target });
+                component.handleKeyboardEvent(event);
+            }
+
+            expect(mockLobbyService.setDebug).not.toHaveBeenCalled();
+
+            const safeTarget = {
+                tagName: 'DIV',
+                getAttribute: () => null,
+            };
+
+            const debugEvent = new KeyboardEvent('keydown', {
+                key: PLAYING_PAGE.debugKey,
+            });
+            Object.defineProperty(debugEvent, 'target', { value: safeTarget });
+
+            component.handleKeyboardEvent(debugEvent);
             expect(mockLobbyService.setDebug).toHaveBeenCalledWith(mockLobbyId, true);
 
-            component.handleKeyboardEvent(keyEvent);
+            component.handleKeyboardEvent(debugEvent);
             expect(mockLobbyService.setDebug).toHaveBeenCalledWith(mockLobbyId, false);
-
-            mockLobbyService.setDebug.calls.reset();
-            component.currentPlayer.isHost = false;
-            component.handleKeyboardEvent(keyEvent);
-            expect(mockLobbyService.setDebug).not.toHaveBeenCalled();
         });
 
         it('should handle abandon game', () => {
