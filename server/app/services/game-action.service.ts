@@ -1,6 +1,6 @@
 import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
 import { Coordinates } from '@common/coordinates';
-import { GameEvents } from '@common/events';
+import { EventType, GameEvents } from '@common/events';
 import { GameState } from '@common/game-state';
 import { ObjectsTypes, Tile, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
@@ -79,6 +79,16 @@ export class GameActionService {
             socket.emit(GameEvents.Error, `${gameSocketMessages.movementError}${error.message}`);
         }
     }
+
+    itemEvent(result: { gameState: GameState; shouldStop: boolean; itemPicked?: boolean; item?: number }, lobbyId: string) {
+        if (result.itemPicked && result.item === ObjectsTypes.FLAG) {
+            this.gameLifeCycleService.emitGlobalEvent(result.gameState, EventType.FlagPicked, lobbyId);
+        } else if (result.itemPicked && result.item !== ObjectsTypes.FLAG) {
+            this.gameLifeCycleService.emitGlobalEvent(result.gameState, EventType.ItemPicked, lobbyId);
+        } else {
+            return;
+        }
+    }
     handleInventoryFull(updatedGameState: GameState, currentPlayer: Player, socket: Socket, lobbyId: string) {
         socket.emit('inventoryFull', {
             item: currentPlayer.pendingItem,
@@ -107,42 +117,52 @@ export class GameActionService {
         if (!gameState) return;
         try {
             const updatedGameState = this.boardService.handleTurn(gameState);
+
             this.gameStates.set(lobbyId, updatedGameState);
 
             this.io.to(lobbyId).emit(GameEvents.TurnStarted, { gameState: updatedGameState });
+            this.gameLifeCycleService.emitGlobalEvent(updatedGameState, EventType.TurnStarted, lobbyId);
         } catch (error) {
-            this.io.to(lobbyId).emit(GameEvents.Error, `${gameSocketMessages.turnError}${error.message}`);
+            this.io.to(lobbyId).emit(GameEvents.Error, '${gameSocketMessages.turnError}${error.message}');
         }
     }
-
     closeDoor(socket: Socket, tile: Tile, lobbyId: string) {
-        const gameState = this.gameLifeCycleService.getGameStateOrEmitError(socket, lobbyId);
+        const gameState = this.getGameStateOrEmitError(socket, lobbyId);
         if (!gameState) return;
         const currentPlayerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
-        gameState.board = gameState.board.map((row) => [...row]);
-        gameState.board[tile.x][tile.y] = TileTypes.DoorClosed;
-        gameState.currentPlayerActionPoints = 0;
-        if (currentPlayerIndex !== -1) {
-            gameState.players[currentPlayerIndex].currentAP = 0;
-        }
-        const newGameState = this.boardService.handleBoardChange(gameState);
+        const newGameBoard = gameState.board.map((row) => [...row]);
+        newGameBoard[tile.x][tile.y] = TileTypes.DoorClosed;
+        const updatedGameState: GameState = {
+            ...gameState,
+            board: newGameBoard,
+            currentPlayerActionPoints: 0,
+        };
+
+        updatedGameState.players[currentPlayerIndex].currentAP = 0;
+        const newGameState = this.boardService.handleBoardChange(updatedGameState);
         this.gameStates.set(lobbyId, newGameState);
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
+        this.gameLifeCycleService.emitGlobalEvent(newGameState, EventType.DoorClosed, lobbyId);
     }
 
     openDoor(socket: Socket, tile: Tile, lobbyId: string) {
-        const gameState = this.gameLifeCycleService.getGameStateOrEmitError(socket, lobbyId);
+        const gameState = this.getGameStateOrEmitError(socket, lobbyId);
         if (!gameState) return;
         const currentPlayerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
-        gameState.board = gameState.board.map((row) => [...row]);
-        gameState.board[tile.x][tile.y] = TileTypes.DoorOpen;
-        gameState.currentPlayerActionPoints = 0;
-        if (currentPlayerIndex !== -1) {
-            gameState.players[currentPlayerIndex].currentAP = 0;
-        }
-        const newGameState = this.boardService.handleBoardChange(gameState);
+        const newGameBoard = gameState.board.map((row) => [...row]);
+        newGameBoard[tile.x][tile.y] = TileTypes.DoorOpen;
+        const updatedGameState = {
+            ...gameState,
+            board: newGameBoard,
+            currentPlayerActionPoints: 0,
+        };
+
+        updatedGameState.players[currentPlayerIndex].currentAP = 0;
+
+        const newGameState = this.boardService.handleBoardChange(updatedGameState);
         this.gameStates.set(lobbyId, newGameState);
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
+        this.gameLifeCycleService.emitGlobalEvent(newGameState, EventType.DoorOpened, lobbyId);
     }
 
     startBattle(lobbyId: string, currentPlayer: Player, opponent: Player) {
@@ -175,6 +195,7 @@ export class GameActionService {
         } else if (opponent.speed === currentPlayer.speed) {
             firstPlayer = currentPlayer;
         }
+        this.gameLifeCycleService.emitGlobalEvent(gameState, EventType.CombatStarted, lobbyId, [currentPlayer.name, opponent.name]);
         this.io.to(currentPlayer.id).to(opponent.id).emit('startCombat', { firstPlayer });
     }
     handleAttackAction(lobbyId: string, attacker: Player, defender: Player) {
@@ -231,6 +252,9 @@ export class GameActionService {
             attacker,
             defender,
         });
+
+        const description = '${attacker.name} a attaqué ${defender.name} et lui a infligé ${damage} dégâts.';
+        this.gameLifeCycleService.emitEventToPlayers(EventType.AttackResult, [attacker.name, defender.name], description, attacker.id, defender.id);
     }
 
     handleChatMessage(lobbyId: string, playerName: string, message: string) {

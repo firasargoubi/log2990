@@ -206,8 +206,9 @@ describe('LobbyService', () => {
 
         it('should flee', () => {
             const player: Player = { id: 'player1', name: 'Runner' } as Player;
-            service.flee('lobby1', player);
-            expect(socketMock.emit).toHaveBeenCalledWith('flee', { lobbyId: 'lobby1', player });
+            const player2: Player = { id: 'player2', name: 'Chaser' } as Player;
+            service.flee('lobby1', player, player2);
+            expect(socketMock.emit).toHaveBeenCalledWith('flee', { lobbyId: 'lobby1', player, opponent: player2 });
         });
 
         it('should start combat', () => {
@@ -663,6 +664,31 @@ describe('LobbyService', () => {
 
             const callback = findSocketCallback('boardModified');
             callback(testData);
+        });
+    });
+    describe('Event Log subscription', () => {
+        it('should emit event log data when eventLog is received', (done) => {
+            const testData = {
+                gameState: { id: 'game1' } as GameState,
+                eventType: 'testEvent',
+                involvedPlayers: ['player1', 'player2'],
+                involvedPlayer: 'player1',
+                description: 'Test description',
+            };
+
+            service
+                .onEventLog()
+                .pipe(take(1))
+                .subscribe((data) => {
+                    expect(data).toEqual(testData);
+                    done();
+                });
+
+            const callbackArgs = socketMock.on.calls.allArgs().find((args: any[]) => args[0] === 'eventLog');
+            if (callbackArgs) {
+                const eventLogCallback = callbackArgs[1];
+                eventLogCallback(testData);
+            }
         });
     });
 

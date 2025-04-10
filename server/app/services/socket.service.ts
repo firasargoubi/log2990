@@ -88,8 +88,12 @@ export class SocketService {
             this.handleAttackAction(data.lobbyId, data.attacker, data.defender);
         });
 
-        socket.on('flee', (data: { lobbyId: string; player: Player }) => {
-            this.handleFlee(data.lobbyId, data.player);
+        socket.on('flee', (data: { lobbyId: string; player: Player; opponent: Player }) => {
+            this.handleFlee(data.lobbyId, data.player, data.opponent);
+        });
+
+        socket.on('sendMessage', (data) => {
+            this.handleChatMessage(data.lobbyId, data.playerName, data.message);
         });
 
         socket.on('sendMessage', (data) => {
@@ -305,8 +309,8 @@ export class SocketService {
         this.gameActionService.handleAttackAction(lobbyId, attacker, defender);
     }
 
-    private handleFlee(lobbyId: string, player: Player) {
-        this.gameLifecycleService.handleFlee(lobbyId, player);
+    private handleFlee(lobbyId: string, player: Player, opponent: Player) {
+        this.gameLifecycleService.handleFlee(lobbyId, player, opponent);
     }
 
     private handleChatMessage(lobbyId: string, playerName: string, message: string) {

@@ -1,6 +1,6 @@
 /* eslint-disable max-params */
 import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
-import { GameEvents } from '@common/events';
+import { EventType, GameEvents } from '@common/events';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
 import { TILE_DELIMITER } from '@common/game.interface';
@@ -118,6 +118,7 @@ export class GameLifecycleService {
                 gameState.deletedPlayers = [];
             }
             gameState.deletedPlayers.push(deletedPlayer);
+            this.emitGlobalEvent(gameState, EventType.PlayerAbandonned, lobbyId, [deletedPlayer.name]);
         }
         const newGameState = this.boardService.handleBoardChange(gameState);
         this.gameStates.set(lobbyId, gameState);
@@ -150,6 +151,8 @@ export class GameLifecycleService {
         gameState.players[winnerIndex] = winner;
         gameState.players[winnerIndex].currentAP = 0;
         this.io.to(lobbyId).emit('combatEnded', { loser });
+        const description = `${winner.name} a vaincu ${loser.name}.`;
+        this.emitGlobalEvent(gameState, EventType.CombatEnded, lobbyId, [winner.name, loser.name], description);
 
         let newGameState;
         if (loser.id === gameState.currentPlayer) {
@@ -163,7 +166,7 @@ export class GameLifecycleService {
         this.gameStates.set(lobbyId, newGameState);
     }
 
-    handleFlee(lobbyId: string, fleeingPlayer: Player) {
+    handleFlee(lobbyId: string, fleeingPlayer: Player, opponent: Player) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
 
@@ -194,9 +197,13 @@ export class GameLifecycleService {
             this.gameStates.set(lobbyId, gameState);
             this.io.to(lobbyId).emit(GameEvents.FleeSuccess, { fleeingPlayer, isSuccessful });
             this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState });
+            const description = `${fleeingPlayer.name} a fui ${opponent.name}.`;
+            this.emitEventToPlayers(EventType.FleeSuccess, [fleeingPlayer.name, opponent.name], description, fleeingPlayer.id, opponent.id);
         } else {
-            this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
+            const description = `${fleeingPlayer.name} n'a pas pu fuire.`;
+            this.emitEventToPlayers(EventType.FleeFailure, [fleeingPlayer.name, opponent.name], description, fleeingPlayer.id, opponent.id);
         }
+
         this.gameStates.set(lobbyId, gameState);
     }
     createTeams(lobbyId: string, players: Player[]) {
@@ -234,6 +241,11 @@ export class GameLifecycleService {
 
         this.gameStates.set(lobbyId, updatedGameState);
         this.io.to(lobbyId).emit('boardModified', { gameState: updatedGameState });
+        if (debug) {
+            this.emitGlobalEvent(updatedGameState, EventType.DebugActivated, lobbyId);
+        } else {
+            this.emitGlobalEvent(updatedGameState, EventType.DebugDeactivated, lobbyId);
+        }
     }
     getGameStateOrEmitError(socket: Socket, lobbyId: string): GameState | null {
         const gameState = this.gameStates.get(lobbyId);
@@ -242,5 +254,22 @@ export class GameLifecycleService {
             return null;
         }
         return gameState;
+    }
+
+    emitGlobalEvent(gameState: GameState, eventType: EventType, lobbyId?: string, involvedPlayers?: string[], description?: string) {
+        this.io.to(lobbyId).emit(GameEvents.EventLog, {
+            gameState,
+            eventType,
+            involvedPlayers: [involvedPlayers],
+            description,
+        });
+    }
+
+    emitEventToPlayers(eventType: EventType, involvedPlayers: string[], description: string, attackerId: string, defenderId: string) {
+        this.io.to(attackerId).to(defenderId).emit(GameEvents.EventLog, {
+            eventType,
+            involvedPlayers,
+            description,
+        });
     }
 }

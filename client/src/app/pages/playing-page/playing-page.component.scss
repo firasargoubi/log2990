@@ -13,6 +13,13 @@ body {
     background-position: center;
 }
 
+.chat-box {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 10px 0;
+}
+
 .game-container {
     display: flex;
     justify-content: space-between;
