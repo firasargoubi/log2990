@@ -91,6 +91,28 @@ describe('GameLifecycleService', () => {
         expect(wasCalledWithError).to.be.equal(true);
     });
 
+    it('should handle errors in handleEndTurn', () => {
+        const gameState = { currentPlayer: '1' } as GameState;
+
+        gameStates.set('lobby1', gameState);
+        (boardService.handleEndTurn as SinonStub).throws(new Error('Unexpected error'));
+
+        service.handleEndTurn(socket as Socket, 'lobby1');
+
+        const wasCalledWithError = (socket.emit as SinonStub).calledWith(GameEvents.Error, 'Failed to end turn: Unexpected error');
+        expect(wasCalledWithError).to.be.equal(true);
+    });
+
+    it('should emit error if no gameState on end turn', () => {
+        const gameState = null as GameState;
+        gameStates.set('lobby1', gameState);
+
+        service.handleEndTurn(socket as Socket, 'lobby1');
+
+        const wasCalledWithError = (socket.emit as SinonStub).calledWith(GameEvents.Error, 'Game not found.');
+        expect(wasCalledWithError).to.be.equal(true);
+    });
+
     it('should handleEndTurn with valid player', () => {
         const gameState = { currentPlayer: '1' } as GameState;
 
@@ -139,9 +161,26 @@ describe('GameLifecycleService', () => {
         gameStates.set('lobby1', gameState);
         (boardService.handleBoardChange as SinonStub).returns(gameState);
 
-        service.handlePlayersUpdate(socket as Socket, 'lobby1', []);
+        service.handlePlayersUpdate(socket as Socket, 'lobby1', { id: '1' } as Player);
 
         expect(gameStates.get('lobby1')).to.equal(gameState);
+    });
+
+    it('should handlePlayersUpdate when the currentPlayer is removed', () => {
+        const gameState = {
+            players: [{ id: '1' }, { id: '2' }],
+            spawnPoints: [{ x: 0, y: 0 }],
+            playerPositions: [{ x: 0, y: 0 }],
+            board: [[100]],
+            currentPlayer: '1',
+        } as unknown as GameState;
+
+        gameStates.set('lobby1', gameState);
+        (boardService.handleBoardChange as SinonStub).returns(gameState);
+
+        service.handlePlayersUpdate(socket as Socket, 'lobby1', { id: '1' } as Player);
+
+        expect(gameState.players.length).to.equal(1);
     });
 
     it('should handleDefeat and continue turn if loser is current player', () => {
@@ -221,7 +260,7 @@ describe('GameLifecycleService', () => {
         expect(emitStub.calledWith(GameEvents.TurnStarted)).to.equal(true);
     });
     it('should not update players if gameState is missing', () => {
-        service.handlePlayersUpdate(socket as Socket, 'unknown-lobby', []);
+        service.handlePlayersUpdate(socket as Socket, 'unknown-lobby', { id: '1' } as Player);
         expect((socket.emit as SinonStub).calledWith(GameEvents.Error)).to.equal(true);
     });
     it('should return if gameState is missing on flee', () => {
@@ -238,6 +277,21 @@ describe('GameLifecycleService', () => {
 
         expect(emitStub.calledWith(GameEvents.FleeFailure)).to.equal(true);
     });
+
+    it('should emit FleeFailure if player is unsuccessful', () => {
+        const gameState = { players: [{ id: '1', amountEscape: 1 }] } as unknown as GameState;
+        gameStates.set('lobby1', gameState);
+        const emitStub = sandbox.stub();
+        service.setServer({ to: sandbox.stub().returns({ emit: emitStub }) } as unknown as any);
+
+        sinon.stub(Math, 'random').returns(1);
+
+        service.handleFlee('lobby1', { id: '1', amountEscape: 1 } as Player);
+
+        expect(emitStub.calledWith(GameEvents.FleeFailure)).to.equal(true);
+        sinon.restore();
+    });
+
     it('should not recreate teams if already exists', () => {
         const gameState = { teams: {} } as GameState;
         gameStates.set('lobby1', gameState);
@@ -313,7 +367,7 @@ describe('GameLifecycleService', () => {
         (boardService.handleBoardChange as SinonStub).returns(gameState);
         gameStates.set('lobby1', gameState);
 
-        service.handlePlayersUpdate(socket as Socket, 'lobby1', []);
+        service.handlePlayersUpdate(socket as Socket, 'lobby1', { id: '1' } as Player);
 
         expect(gameState.players.length).to.equal(0);
     });

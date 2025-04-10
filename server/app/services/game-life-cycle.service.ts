@@ -85,23 +85,17 @@ export class GameLifecycleService {
     startTurn(lobbyId: string) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
-        try {
-            const updatedGameState = this.boardService.handleTurn(gameState);
+        const updatedGameState = this.boardService.handleTurn(gameState);
 
-            this.gameStates.set(lobbyId, updatedGameState);
+        this.gameStates.set(lobbyId, updatedGameState);
 
-            this.io.to(lobbyId).emit(GameEvents.TurnStarted, { gameState: updatedGameState });
-        } catch (error) {
-            this.io.to(lobbyId).emit(GameEvents.Error, `${gameSocketMessages.turnError}${error.message}`);
-        }
+        this.io.to(lobbyId).emit(GameEvents.TurnStarted, { gameState: updatedGameState });
     }
 
     handlePlayersUpdate(socket: Socket, lobbyId: string, player: Player) {
         const gameState = this.getGameStateOrEmitError(socket, lobbyId);
         if (!gameState) return;
         if (!player) return;
-        console.log("Gamestate:", gameState);
-        console.log("Player:", player);
         const playerIndex = gameState.players.findIndex((p) => p.id === player.id);
         gameState.players.splice(playerIndex, 1);
         const spawnPoint = gameState.spawnPoints[playerIndex];
@@ -113,11 +107,13 @@ export class GameLifecycleService {
         }
         gameState.deletedPlayers.push(player);
         if (gameState.currentPlayer === player.id) {
-            this.handleEndTurn(socket, lobbyId);
+            gameState.currentPlayer = gameState.players[playerIndex].id;
+            this.gameStates.set(lobbyId, gameState);
+            this.startTurn(lobbyId);
             return;
         }
         const newGameState = this.boardService.handleBoardChange(gameState);
-        this.gameStates.set(lobbyId, gameState);
+        this.gameStates.set(lobbyId, newGameState);
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
     }
 

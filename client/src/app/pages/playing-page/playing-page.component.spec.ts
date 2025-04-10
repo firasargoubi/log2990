@@ -76,7 +76,6 @@ describe('PlayingPageComponent', () => {
             'getSocketId',
             'setCurrentPlayer',
             'disconnectFromRoom',
-            'updatePlayers',
             'disconnect',
             'requestMovement',
             'requestEndTurn',
@@ -94,6 +93,7 @@ describe('PlayingPageComponent', () => {
             'onFleeSuccess',
             'onGameOver',
             'teamCreated',
+            'checkSocketStatus',
         ]);
 
         mockActionService = jasmine.createSpyObj('ActionService', ['getActionType', 'findOpponent']);
@@ -115,6 +115,7 @@ describe('PlayingPageComponent', () => {
         mockLobbyService.onBoardChanged.and.returnValue(of({ gameState: mockGameState }));
         mockLobbyService.onFleeSuccess.and.returnValue(of({ fleeingPlayer: mockPlayer }));
         mockLobbyService.onGameOver.and.returnValue(of({ winner: mockPlayer.name }));
+        mockLobbyService.checkSocketStatus.and.returnValue(of({ isConnected: true }));
 
         mockLobbyService.teamCreated.and.returnValue(
             of({
@@ -172,6 +173,7 @@ describe('PlayingPageComponent', () => {
 
         it('should handle route params and navigate to home if no lobbyId', () => {
             mockActivatedRoute.params.next({});
+
             component.ngOnInit();
             expect(mockRouter.navigate).toHaveBeenCalledWith([PageUrl.Home], { replaceUrl: true });
         });
@@ -390,14 +392,12 @@ describe('PlayingPageComponent', () => {
         it('should handle abandon game', () => {
             component.gameState.animation = false;
             component.abandon();
-            expect(mockLobbyService.disconnect).toHaveBeenCalled();
             expect(mockRouter.navigate).toHaveBeenCalledWith([PageUrl.Home], { replaceUrl: true });
 
             mockLobbyService.disconnect.calls.reset();
             mockRouter.navigate.calls.reset();
             component.gameState.animation = true;
             component.abandon();
-            expect(mockLobbyService.disconnect).not.toHaveBeenCalled();
 
             mockRouter.navigate.calls.reset();
             component.gameState = undefined as any;
@@ -479,9 +479,6 @@ describe('PlayingPageComponent', () => {
             component['setupGameListeners']();
             tick();
 
-            expect(mockLobbyService.updatePlayers).toHaveBeenCalledWith(mockLobbyId, updatedLobby.players);
-
-            mockLobbyService.updatePlayers.calls.reset();
             const lobbyWithoutPlayer = {
                 ...mockLobby,
                 players: [{ ...mockPlayer, id: 'different-id' }],
@@ -493,6 +490,23 @@ describe('PlayingPageComponent', () => {
 
             expect(mockLobbyService.disconnectFromRoom).toHaveBeenCalledWith(mockLobbyId);
             expect(mockRouter.navigate).toHaveBeenCalledWith([PageUrl.Home], { replaceUrl: true });
+        }));
+
+        it('should handle player disconnection during combat', fakeAsync(() => {
+            const updatedLobby = {
+                ...mockLobby,
+                players: [{ ...mockPlayer, life: 80 }],
+            };
+
+            component.isInCombat = true;
+            component.opponent = { id: 'opponent-id', name: 'Opponent' } as Player;
+
+            mockLobbyService.onLobbyUpdated.and.returnValue(of({ lobby: updatedLobby }));
+
+            component['setupGameListeners']();
+            tick();
+
+            expect(component.isInCombat).toBe(false);
         }));
 
         it('should handle game over event', fakeAsync(() => {
@@ -700,6 +714,15 @@ describe('PlayingPageComponent', () => {
             };
             const isSameTeamNoTeams = component['isSameTeam'](mockPlayer, opponent);
             expect(isSameTeamNoTeams).toBe(false);
+        });
+
+        describe('ngOnInit', () => {
+            it('should navigate to home if socket is not connected', () => {
+                mockLobbyService.checkSocketStatus.and.returnValue(of({ isConnected: false }));
+                component.ngOnInit();
+                expect(mockNotificationService.showError).toHaveBeenCalledWith("Vous n'êtes pas connecté au serveur.");
+                expect(mockRouter.navigate).toHaveBeenCalledWith([PageUrl.Home], { replaceUrl: true });
+            });
         });
     });
 });

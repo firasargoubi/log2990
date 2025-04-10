@@ -10,7 +10,6 @@ export class EventBus {
     }
 
     onPlayerUpdate(socket: Socket, lobbyId: string, player: Player) {
-        console.log("updating players properly");
         this.gameLifeCycle.handlePlayersUpdate(socket, lobbyId, player);
     }
 }

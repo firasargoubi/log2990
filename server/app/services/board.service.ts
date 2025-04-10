@@ -65,6 +65,8 @@ export class BoardService {
     handleTurn(gameState: GameState): GameState {
         const playerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
         if (playerIndex === -1) return gameState;
+        const hasOrb = this.verifyOrb(gameState);
+        gameState.currentPlayerMovementPoints = this.getPlayerMovementPoints(gameState.players[playerIndex], hasOrb);
         return this.updatePlayerMoves(gameState);
     }
 

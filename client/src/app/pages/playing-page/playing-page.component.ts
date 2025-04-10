@@ -200,7 +200,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             return;
         }
         if (this.lobbyId && this.currentPlayer) {
-            this.lobbyService.leaveGame(this.lobbyId, this.currentPlayer.name);
             this.router.navigate([PageUrl.Home], { replaceUrl: true });
         }
     }
@@ -315,7 +314,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                         return;
                     }
                     const opponentDeleted = this.lobby.players.find((p) => p.id === this.opponent?.id);
-                    if (opponentDeleted) {
+                    if (!opponentDeleted) {
                         this.isInCombat = false;
                         this.notificationService.showInfo(`${this.opponent?.name} a quitté la partie.`);
                     }

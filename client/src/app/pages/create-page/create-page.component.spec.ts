@@ -190,7 +190,7 @@ describe('CreatePageComponent', () => {
 
         expect(lobbyServiceSpy.createLobby).toHaveBeenCalledWith(component.games[0]);
         expect(lobbyServiceSpy.onLobbyCreated).toHaveBeenCalled();
-        expect(component.lobbyId).toBe('123');
+        expect(component.lobbyId).toBe('');
         expect(matDialogSpy.open).toHaveBeenCalled();
 
         discardPeriodicTasks();

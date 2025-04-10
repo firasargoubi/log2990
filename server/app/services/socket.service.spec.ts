@@ -125,7 +125,6 @@ describe('SocketService', () => {
             'requestMovement',
             'teleport',
             'setDebug',
-            'updatePlayers',
             'openDoor',
             'closeDoor',
             'disconnect',
@@ -517,20 +516,6 @@ describe('SocketService', () => {
         if (setDebugHandler) {
             setDebugHandler({ lobbyId: 'lobby1', debug: true });
             expect(gameLifecycleService.handleSetDebug.calledWith(mockSocket, 'lobby1', true)).to.equal(true);
-        }
-    });
-
-    it('should handle updatePlayers event', () => {
-        socketService.init();
-        const connectionHandler = ioStub.on.firstCall.args[1];
-        connectionHandler(mockSocket);
-
-        const updatePlayersHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'updatePlayers')?.args[1];
-        const players = [{ id: 'player1' }, { id: 'player2' }] as Player[];
-
-        if (updatePlayersHandler) {
-            updatePlayersHandler('lobby1', players);
-            expect(gameLifecycleService.handlePlayersUpdate.calledWith(mockSocket, 'lobby1', players)).to.equal(true);
         }
     });
 

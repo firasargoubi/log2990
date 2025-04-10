@@ -664,6 +664,26 @@ describe('LobbyService', () => {
             const callback = findSocketCallback('boardModified');
             callback(testData);
         });
+
+        it('should verify socket status', (done) => {
+            const response = { isConnected: true };
+
+            socketMock.emit.and.callFake((event: string, callback: Function) => {
+                if (event === 'checkSocketStatus') {
+                    callback(response);
+                }
+            });
+
+            service
+                .checkSocketStatus()
+                .pipe(take(1))
+                .subscribe((result) => {
+                    expect(result).toEqual(response);
+                    done();
+                });
+
+            expect(socketMock.emit).toHaveBeenCalledWith('checkSocketStatus', jasmine.any(Function));
+        });
     });
 
     function findSocketCallback(eventName: string): Function {

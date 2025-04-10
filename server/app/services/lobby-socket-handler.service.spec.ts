@@ -15,6 +15,7 @@ describe('LobbySocketHandlerService', () => {
     let sandbox: SinonSandbox;
     let service: LobbySocketHandlerService;
     let validationServiceMock: any;
+    let eventBusMock: any;
     let lobbies: Map<string, GameLobby>;
     let ioMock: { to: SinonSpy };
     let socketMock: Partial<Socket>;
@@ -36,7 +37,10 @@ describe('LobbySocketHandlerService', () => {
             getAvailableAvatar: sandbox.stub(),
             getAvailableVirtualPlayerName: sandbox.stub(),
         };
-        service = new LobbySocketHandlerService(lobbies, validationServiceMock);
+        eventBusMock = {
+            onPlayerUpdate: sandbox.stub(),
+        };
+        service = new LobbySocketHandlerService(lobbies, validationServiceMock, eventBusMock);
         service.setServer(ioMock as unknown as Server);
     });
 
