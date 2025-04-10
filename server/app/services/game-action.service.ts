@@ -44,35 +44,6 @@ export class GameActionService {
             socket.emit('error', `Teleport error: ${error.message}`);
         }
     }
-    startTurn(lobbyId: string) {
-        const gameState = this.gameStates.get(lobbyId);
-        if (!gameState) return;
-        try {
-            const updatedGameState = this.boardService.handleTurn(gameState);
-            this.gameStates.set(lobbyId, updatedGameState);
-            this.io.to(lobbyId).emit(GameEvents.TurnStarted, { gameState: updatedGameState });
-            const currentPlayer = updatedGameState.players.find((p) => p.id === updatedGameState.currentPlayer);
-            if (currentPlayer && currentPlayer.virtualPlayerData) {
-                this.virtualService.handleVirtualMovement({
-                    lobbyId,
-                    virtualPlayer: currentPlayer,
-                    getGameState: () => this.gameStates.get(lobbyId),
-                    boardService: this.boardService,
-                    callbacks: {
-                        handleRequestMovement: this.gameLifeCycleService.handleRequestMovement.bind(this),
-                        handleEndTurn: this.gameLifeCycleService.handleEndTurn.bind(this),
-                        startBattle: this.startBattle.bind(this),
-                        delay: this.gameLifeCycleService['delay'],
-                        handleOpenDoor: this.openDoor.bind(this),
-                    },
-                    gameState: updatedGameState,
-                });
-            }
-        } catch (error) {
-            this.io.to(lobbyId).emit(GameEvents.Error, `${gameSocketMessages.turnError}${error.message}`);
-        }
-    }
-
     closeDoor(socket: Socket, tile: Tile, lobbyId: string) {
         const gameState = this.gameLifeCycleService.getGameStateOrEmitError(socket, lobbyId);
         if (!gameState) return;
@@ -276,15 +247,6 @@ export class GameActionService {
         }
 
         this.gameStates.set(lobbyId, gameState);
-    }
-
-    getGameStateOrEmitError(socket: Socket, lobbyId: string): GameState | null {
-        const gameState = this.gameStates.get(lobbyId);
-        if (!gameState) {
-            socket.emit(GameEvents.Error, gameSocketMessages.gameNotFound);
-            return null;
-        }
-        return gameState;
     }
 
     async handleRequestMovement(socket: Socket, lobbyId: string, coordinates: Coordinates[]): Promise<void> {

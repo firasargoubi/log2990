@@ -37,7 +37,6 @@ export class GameLifecycleService {
 
     async handleRequestStart(socket: Socket, lobbyId: string) {
         const lobby = this.lobbies.get(lobbyId);
-        const gameState = await this.boardService.initializeGameState(lobby);
         if (!lobby) {
             socket.emit(GameEvents.Error, gameSocketMessages.lobbyNotFound);
             return;
@@ -48,25 +47,23 @@ export class GameLifecycleService {
             return;
         }
 
-        if (gameState.gameMode === 'capture') {
-            if (lobby.players.length % 2 !== 0) {
+        try {
+            const gameState = await this.boardService.initializeGameState(lobby); // Moved inside try
+
+            if (gameState.gameMode === 'capture' && lobby.players.length % 2 !== 0) {
                 socket.emit(GameEvents.Error, gameSocketMessages.notEnoughPlayers);
                 return;
             }
-        }
-        try {
+
             this.gameStates.set(lobbyId, gameState);
             lobby.isLocked = true;
             this.lobbySocketHandlerService.updateLobby(lobbyId);
-
             this.io.to(lobbyId).emit(GameEvents.GameStarted, { gameState });
-
             this.startTurn(lobbyId);
         } catch (error) {
             socket.emit(GameEvents.Error, `${gameSocketMessages.failedStartGame} ${error.message}`);
         }
     }
-
     handleEndTurn(socket: Socket, lobbyId: string) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) {
@@ -224,9 +221,9 @@ export class GameLifecycleService {
 
     async handleRequestMovement(socket: Socket, lobbyId: string, coordinates: Coordinates[]) {
         const gameState = this.getGameStateOrEmitError(socket, lobbyId);
+        if (!gameState) return;
         const indexPlayer = gameState.players.findIndex((p) => p.id === socket.id);
         const currentPlayer = gameState.players[indexPlayer];
-        if (!gameState) return;
         try {
             let updatedGameState = gameState;
             if (coordinates.length > 1) {

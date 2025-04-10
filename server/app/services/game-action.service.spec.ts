@@ -188,100 +188,6 @@ describe('GameActionService Updated Tests', () => {
         });
     });
 
-    describe('startTurn', () => {
-        it('should do nothing if game state not found', () => {
-            chainable.emit.resetHistory();
-            service.startTurn('nonexistent');
-            sinon.assert.notCalled(chainable.emit);
-        });
-
-        it('should update game state using boardService.handleTurn and emit TurnStarted', () => {
-            const lobbyId = 'lobbyTurn';
-            const gameState = createGameState();
-            gameStates.set(lobbyId, gameState);
-            (boardService.handleTurn as sinon.SinonStub).returns({ ...gameState, currentPlayerActionPoints: 2 });
-            chainable.emit.resetHistory();
-            service.startTurn(lobbyId);
-            expect(gameStates.get(lobbyId)?.currentPlayerActionPoints).to.equal(2);
-            sinon.assert.calledWith(chainable.emit, GameEvents.TurnStarted, { gameState: gameStates.get(lobbyId) });
-        });
-
-        it('should emit error when boardService.handleTurn throws', () => {
-            const lobbyId = 'lobbyTurnError';
-            const gameState = createGameState();
-            gameStates.set(lobbyId, gameState);
-            const error = new Error('Turn failed');
-            (boardService.handleTurn as sinon.SinonStub).throws(error);
-            chainable.emit.resetHistory();
-            service.startTurn(lobbyId);
-            sinon.assert.calledWith(chainable.emit, GameEvents.Error, `${gameSocketMessages.turnError}${error.message}`);
-        });
-
-        it('should call virtualService.handleVirtualMovement with correct configuration when current player is virtual', () => {
-            const lobbyId = 'lobbyTurnVirtual';
-            const baseState = createGameState();
-            const virtualPlayer: Player = { ...baseState.players[0], virtualPlayerData: { profile: 'aggressive' } };
-            const updatedState: GameState = { ...baseState, players: [virtualPlayer, baseState.players[1]], currentPlayer: virtualPlayer.id };
-            gameStates.set(lobbyId, updatedState);
-            (boardService.handleTurn as sinon.SinonStub).returns(updatedState);
-            chainable.emit.resetHistory();
-            service.startTurn(lobbyId);
-            sinon.assert.calledOnce(virtualService.handleVirtualMovement as sinon.SinonStub);
-            const config = (virtualService.handleVirtualMovement as sinon.SinonStub).getCall(0).args[0];
-            expect(config.lobbyId).to.equal(lobbyId);
-            expect(config.virtualPlayer).to.deep.equal(virtualPlayer);
-            expect(config.getGameState).to.be.a('function');
-            expect(config.getGameState()).to.deep.equal(gameStates.get(lobbyId));
-            expect(config.boardService).to.equal(boardService);
-            expect(config.callbacks).to.include.all.keys('handleRequestMovement', 'handleEndTurn', 'startBattle', 'delay', 'handleOpenDoor');
-            expect(config.callbacks.delay).to.equal(gameLifeCycleService.delay);
-            expect(config.gameState).to.deep.equal(updatedState);
-        });
-        it('should emit error for same team players in capture mode', () => {
-            const lobbyId = 'lobbySameTeam';
-            const gameState = createGameState();
-            gameState.gameMode = 'capture';
-            gameState.teams = {
-                team1: [
-                    {
-                        id: 'player1',
-                        name: 'Alice',
-                        pendingItem: 0,
-                        avatar: '',
-                        isHost: false,
-                        life: 0,
-                        maxLife: 0,
-                        speed: 0,
-                        attack: 0,
-                        defense: 0,
-                        winCount: 0,
-                    },
-                    {
-                        id: 'player2',
-                        name: 'Bob',
-                        pendingItem: 0,
-                        avatar: '',
-                        isHost: false,
-                        life: 0,
-                        maxLife: 0,
-                        speed: 0,
-                        attack: 0,
-                        defense: 0,
-                        winCount: 0,
-                    },
-                ],
-                team2: [],
-            };
-            gameStates.set(lobbyId, gameState);
-
-            chainable.emit.resetHistory();
-
-            service.startBattle(lobbyId, gameState.players[0], gameState.players[1]);
-
-            sinon.assert.calledWith(chainable.emit, GameEvents.Error, gameSocketMessages.sameTeam);
-        });
-    });
-
     describe('openDoor and closeDoor', () => {
         const tile: Tile = {
             x: 0,
@@ -662,22 +568,6 @@ describe('GameActionService Updated Tests', () => {
             expect(config.boardService).to.equal(boardService);
             expect(config.gameState).to.deep.equal(state);
             expect(config.callbacks).to.include.keys('handleRequestMovement', 'handleEndTurn', 'startBattle', 'delay', 'handleOpenDoor');
-        });
-    });
-
-    describe('getGameStateOrEmitError', () => {
-        it('should emit error and return null when game state is missing', () => {
-            const result = service.getGameStateOrEmitError(fakeSocket as Socket, 'nonexistent');
-            expect(result).to.equal(null);
-            sinon.assert.calledWith(fakeSocket.emit as sinon.SinonStub, GameEvents.Error, gameSocketMessages.gameNotFound);
-        });
-
-        it('should return game state when found', () => {
-            const lobbyId = 'lobbyState';
-            const gameState = createGameState();
-            gameStates.set(lobbyId, gameState);
-            const result = service.getGameStateOrEmitError(fakeSocket as Socket, lobbyId);
-            expect(result).to.deep.equal(gameState);
         });
     });
 
