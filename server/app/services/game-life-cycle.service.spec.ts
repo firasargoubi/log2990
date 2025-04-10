@@ -12,12 +12,12 @@ import * as sinon from 'sinon';
 import { SinonSandbox, SinonStub } from 'sinon';
 import { Server, Socket } from 'socket.io';
 import { BoardService } from './board.service';
+import { GameActionService } from './game-action.service';
+import { GameLifecycleService } from './game-life-cycle.service';
+import { ItemService } from './item.service';
 import { LobbySocketHandlerService } from './lobby-socket-handler.service';
 import { PathfindingService } from './pathfinding.service';
 import { VirtualPlayerService } from './virtual-player.service';
-import { GameActionService } from './game-action.service';
-import { ItemService } from './item.service';
-import { GameLifecycleService } from './game-life-cycle.service';
 
 describe('GameLifecycleService Updated Tests', () => {
     let sandbox: SinonSandbox;
@@ -67,7 +67,7 @@ describe('GameLifecycleService Updated Tests', () => {
 
         virtualService = {
             handleVirtualMovement: sandbox.stub(),
-            performTurn: sandbox.stub().callsArg(0), // Calls the callback immediately
+            performTurn: sandbox.stub().callsArg(0),
         } as unknown as VirtualPlayerService;
 
         gameActionService = {
@@ -164,7 +164,7 @@ describe('GameLifecycleService Updated Tests', () => {
         it('should emit error on exception', async () => {
             const lobby = { players: [{ id: 'player1', isHost: true }], isLocked: false } as GameLobby;
             lobbies.set('lobby1', lobby);
-            (boardService.initializeGameState as SinonStub).rejects(new Error('Init failed')); // Use rejects here
+            (boardService.initializeGameState as SinonStub).rejects(new Error('Init failed'));
             await service.handleRequestStart(socket as Socket, 'lobby1');
             sinon.assert.calledWithMatch(socket.emit as SinonStub, GameEvents.Error, /Init failed/);
         });
@@ -254,7 +254,6 @@ describe('GameLifecycleService Updated Tests', () => {
             const gameState = {
                 currentPlayer: 'player1',
                 players: [{ id: 'player1', virtualPlayerData: { profile: 'aggressive' } }],
-                // Ensure required GameState properties are present
                 board: [[]],
                 spawnPoints: [],
                 playerPositions: [],
@@ -282,7 +281,6 @@ describe('GameLifecycleService Updated Tests', () => {
 
             service.startTurn('lobby1');
 
-            // Update the game state after initial call
             const updatedGameState = {
                 ...initialGameState,
                 currentPlayer: 'player2',
@@ -337,7 +335,7 @@ describe('GameLifecycleService Updated Tests', () => {
             expect(gameState.players.length).to.equal(1);
             expect(gameState.players[0].id).to.equal('player2');
             expect(gameState.currentPlayer).to.equal('player2');
-            expect(gameState.board[0][0]).to.equal(0); // Tile reset
+            expect(gameState.board[0][0]).to.equal(0);
             expect(gameState.deletedPlayers).to.deep.include({ id: 'player1' });
             sinon.assert.calledWith(chainable.emit, GameEvents.BoardModified, { gameState });
         });
@@ -537,7 +535,7 @@ describe('GameLifecycleService Updated Tests', () => {
             gameStates.set('lobby1', gameState);
 
             (virtualService.handleVirtualMovement as SinonStub).callsFake((c) => {
-                expect(c.getGameState()).to.equal(gameState); // Verify initial state
+                expect(c.getGameState()).to.equal(gameState);
             });
 
             service.handleDefeat('lobby1', gameState.players[0], gameState.players[1]);
@@ -591,7 +589,7 @@ describe('GameLifecycleService Updated Tests', () => {
                 { x: 2, y: 2 },
             ]);
 
-            expect(gameState.animation).to.equal(false); // Reset at end
+            expect(gameState.animation).to.equal(false);
             sinon.assert.calledTwice(chainable.emit);
         });
 
@@ -658,10 +656,10 @@ describe('GameLifecycleService Updated Tests', () => {
                 { x: 1, y: 1 },
             ]);
 
-            expect(gameState.animation).to.equal(false); // Animation reset
-            expect(gameStates.get('lobby1')).to.equal(gameState); // Game state updated
-            sinon.assert.calledWith(chainable.emit, 'movementProcessed', { gameState }); // Emit called
-            sinon.assert.notCalled(socket.emit as SinonStub); // No inventory full error
+            expect(gameState.animation).to.equal(false);
+            expect(gameStates.get('lobby1')).to.equal(gameState);
+            sinon.assert.calledWith(chainable.emit, 'movementProcessed', { gameState });
+            sinon.assert.notCalled(socket.emit as SinonStub);
         });
         it('should emit gameOver with team2 player names when Blue team wins with flag at spawn', async () => {
             const gameState = {
@@ -687,13 +685,13 @@ describe('GameLifecycleService Updated Tests', () => {
 
             await service.handleRequestMovement(socket as Socket, 'lobby1', [
                 { x: 0, y: 0 },
-                { x: 0, y: 0 }, // Moving to spawn point
+                { x: 0, y: 0 },
             ]);
 
-            expect(gameState.animation).to.equal(false); // Animation reset after processing
-            expect(gameStates.get('lobby1')).to.equal(gameState); // Game state updated
-            sinon.assert.calledWith(chainable.emit, 'movementProcessed', { gameState }); // Regular movement emit
-            sinon.assert.calledWith(chainable.emit, 'gameOver', { winner: 'Bob, Charlie' }); // Team2 names joined
+            expect(gameState.animation).to.equal(false);
+            expect(gameStates.get('lobby1')).to.equal(gameState);
+            sinon.assert.calledWith(chainable.emit, 'movementProcessed', { gameState });
+            sinon.assert.calledWith(chainable.emit, 'gameOver', { winner: 'Bob, Charlie' });
         });
 
         it('should emit gameOver with "Unknown" when Blue team wins but team2 is undefined', async () => {
@@ -708,7 +706,7 @@ describe('GameLifecycleService Updated Tests', () => {
                 spawnPoints: [{ x: 0, y: 0 }],
                 teams: {
                     team1: [{ id: 'player2', name: 'Alice' }],
-                    team2: undefined, // team2 is undefined
+                    team2: undefined,
                 },
             } as GameState;
             gameStates.set('lobby1', gameState);
@@ -717,13 +715,13 @@ describe('GameLifecycleService Updated Tests', () => {
 
             await service.handleRequestMovement(socket as Socket, 'lobby1', [
                 { x: 0, y: 0 },
-                { x: 0, y: 0 }, // Moving to spawn point
+                { x: 0, y: 0 },
             ]);
 
             expect(gameState.animation).to.equal(false);
             expect(gameStates.get('lobby1')).to.equal(gameState);
             sinon.assert.calledWith(chainable.emit, 'movementProcessed', { gameState });
-            sinon.assert.calledWith(chainable.emit, 'gameOver', { winner: 'Unknown' }); // Fallback to 'Unknown'
+            sinon.assert.calledWith(chainable.emit, 'gameOver', { winner: 'Unknown' });
         });
     });
 
@@ -836,7 +834,7 @@ describe('GameLifecycleService Updated Tests', () => {
 
             service.openDoor(socket as Socket, { x: 0, y: 0 }, 'lobby1');
 
-            expect(gameState.board[0][0]).to.equal(3); // Door open
+            expect(gameState.board[0][0]).to.equal(3);
             expect(gameState.currentPlayerActionPoints).to.equal(0);
             expect(gameState.players[0].currentAP).to.equal(0);
             sinon.assert.calledWith(chainable.emit, GameEvents.BoardModified, { gameState });

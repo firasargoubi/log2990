@@ -51,7 +51,7 @@ export class GameLifecycleService {
         }
 
         try {
-            const gameState = await this.boardService.initializeGameState(lobby); // Moved inside try
+            const gameState = await this.boardService.initializeGameState(lobby);
 
             if (gameState.gameMode === 'capture' && lobby.players.length % 2 !== 0) {
                 socket.emit(GameEvents.Error, gameSocketMessages.notEnoughPlayers);
@@ -338,7 +338,7 @@ export class GameLifecycleService {
         if (!gameState) return;
         const currentPlayerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
         gameState.board = gameState.board.map((row) => [...row]);
-        gameState.board[tile.x][tile.y] = (gameState.board[tile.x][tile.y] % TILE_DELIMITER) + TILE_DOOR_OPEN; // TileTypes.DoorOpen
+        gameState.board[tile.x][tile.y] = (gameState.board[tile.x][tile.y] % TILE_DELIMITER) + TILE_DOOR_OPEN;
         gameState.currentPlayerActionPoints = 0;
         if (currentPlayerIndex !== -1) {
             gameState.players[currentPlayerIndex].currentAP = 0;
