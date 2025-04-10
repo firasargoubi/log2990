@@ -2,7 +2,7 @@
 import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
 import { VirtualMovementConfig } from '@app/interfaces/virtual-player.interface';
 import { Coordinates } from '@common/coordinates';
-import { GameEvents } from '@common/events';
+import { EventType, GameEvents } from '@common/events';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
 import { ObjectsTypes, TILE_DELIMITER } from '@common/game.interface';
@@ -228,8 +228,8 @@ export class GameLifecycleService {
 
     async handleRequestMovement(socket: Socket, lobbyId: string, coordinates: Coordinates[]) {
         const gameState = this.getGameStateOrEmitError(socket, lobbyId);
-        if (!gameState) return;
         const indexPlayer = gameState.players.findIndex((p) => p.id === socket.id);
+        if (!gameState) return;
         const currentPlayer = gameState.players[indexPlayer];
         try {
             let updatedGameState = gameState;
@@ -243,6 +243,8 @@ export class GameLifecycleService {
                 const result = this.boardService.handleMovement(updatedGameState, coordinate);
                 updatedGameState = result.gameState;
                 updatedGameState = this.boardService.updatePlayerMoves(updatedGameState);
+
+                this.gameActionService.itemEvent(result, lobbyId);
 
                 if (result.shouldStop) {
                     if (currentPlayer.pendingItem !== 0) {
@@ -352,9 +354,18 @@ export class GameLifecycleService {
         if (currentPlayerIndex !== -1) {
             gameState.players[currentPlayerIndex].currentAP = 0;
         }
+        const updatedGameState = {
+            ...gameState,
+            board: gameState.board,
+            currentPlayerActionPoints: 0,
+        };
+
+        updatedGameState.players[currentPlayerIndex].currentAP = 0;
+
         const newGameState = this.boardService.handleBoardChange(gameState);
         this.gameStates.set(lobbyId, newGameState);
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
+        this.emitGlobalEvent(newGameState, EventType.DoorOpened, lobbyId);
     }
 
     emitGlobalEvent(gameState: GameState, eventType: EventType, lobbyId?: string, involvedPlayers?: string[], description?: string) {
@@ -373,6 +384,7 @@ export class GameLifecycleService {
             description,
         });
     }
+
     private async delay(ms: number): Promise<void> {
         return new Promise<void>((resolve) => setTimeout(resolve, ms));
     }

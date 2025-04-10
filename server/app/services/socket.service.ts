@@ -88,8 +88,8 @@ export class SocketService {
             this.handleAttackAction(data.lobbyId, data.attacker, data.defender);
         });
 
-        socket.on('flee', (data: { lobbyId: string; player: Player; opponent: Player }) => {
-            this.handleFlee(data.lobbyId, data.player, data.opponent);
+        socket.on('flee', (data: { lobbyId: string; player: Player }) => {
+            this.handleFlee(data.lobbyId, data.player);
         });
 
         socket.on('sendMessage', (data) => {
