@@ -10,6 +10,11 @@ import { Player } from '@common/player';
 import { Socket } from 'socket.io';
 import { Service } from 'typedi';
 
+const MIN_TURN_DELAY_MS = 1000;
+const TURN_DELAY_MS = 2000;
+const DOOR_ACTION_DELAY_MS = 500;
+const ADJACENT_DISTANCE_THRESHOLD = 1.5;
+
 @Service()
 export class VirtualPlayerService {
     private aggressiveMovementStrategy: MovementStrategy = new AggressiveMovementStrategy(this);
@@ -36,7 +41,7 @@ export class VirtualPlayerService {
         await this.completeTurn(config, playerIndex);
     }
     async performTurn(actionCallback: () => void): Promise<void> {
-        const delay = 1000 + Math.random() * 2000;
+        const delay = MIN_TURN_DELAY_MS + Math.random() * TURN_DELAY_MS;
         return new Promise((resolve) => {
             setTimeout(() => {
                 actionCallback();
@@ -199,7 +204,7 @@ export class VirtualPlayerService {
             const opponents = gameState.players
                 .map((p, idx) => ({ player: p, pos: gameState.playerPositions[idx] }))
                 .filter((item) => item.player.id !== virtualPlayer.id);
-            const adjacentOpponent = opponents.find((item) => this.distance(finalPos, item.pos) <= 1.5);
+            const adjacentOpponent = opponents.find((item) => this.distance(finalPos, item.pos) <= ADJACENT_DISTANCE_THRESHOLD);
             if (adjacentOpponent) {
                 callbacks.startBattle(lobbyId, virtualPlayer, adjacentOpponent.player);
                 return;
@@ -250,7 +255,7 @@ export class VirtualPlayerService {
             const tileType = tileValue % TILE_DELIMITER;
             if (tileType === TileTypes.DoorClosed) {
                 await this.handleDoor(config, pos);
-                await config.callbacks.delay(500);
+                await config.callbacks.delay(DOOR_ACTION_DELAY_MS);
                 const newGameState = config.getGameState();
                 if (newGameState) return newGameState;
                 break;
@@ -275,7 +280,7 @@ export class VirtualPlayerService {
             if (tileType === TileTypes.DoorClosed && player.currentAP > 0) {
                 const tile: Tile = { x: nextPosition.x, y: nextPosition.y, type: TileTypes.DoorClosed, object: 0 };
                 await callbacks.handleOpenDoor({ id: virtualPlayer.id } as Socket, tile, lobbyId);
-                await callbacks.delay(500);
+                await callbacks.delay(DOOR_ACTION_DELAY_MS);
 
                 currentGameState = context.getGameState();
                 if (!currentGameState) return;

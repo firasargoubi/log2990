@@ -1,4 +1,6 @@
 import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
+import { VirtualMovementConfig } from '@app/interfaces/virtual-player.interface';
+import { Coordinates } from '@common/coordinates';
 import { GameEvents } from '@common/events';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
@@ -7,17 +9,17 @@ import { Player } from '@common/player';
 import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
 import { BoardService } from './board.service';
-import { LobbySocketHandlerService } from './lobby-socket-handler.service';
-import { PathfindingService } from './pathfinding.service';
-import { VirtualMovementConfig } from '@app/interfaces/virtual-player.interface';
-import { Coordinates } from '@common/coordinates';
-import { VirtualPlayerService } from './virtual-player.service';
 import { GameActionService } from './game-action.service';
 import { ItemService } from './item.service';
+import { LobbySocketHandlerService } from './lobby-socket-handler.service';
+import { PathfindingService } from './pathfinding.service';
+import { VirtualPlayerService } from './virtual-player.service';
 
+const TILE_DOOR_OPEN = 3;
 @Service()
 export class GameLifecycleService {
     private io: Server;
+    // eslint-disable-next-line max-params
     constructor(
         private lobbies: Map<string, GameLobby>,
         private gameStates: Map<string, GameState>,
@@ -335,7 +337,7 @@ export class GameLifecycleService {
         if (!gameState) return;
         const currentPlayerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
         gameState.board = gameState.board.map((row) => [...row]);
-        gameState.board[tile.x][tile.y] = (gameState.board[tile.x][tile.y] % TILE_DELIMITER) + 3; // TileTypes.DoorOpen
+        gameState.board[tile.x][tile.y] = (gameState.board[tile.x][tile.y] % TILE_DELIMITER) + TILE_DOOR_OPEN; // TileTypes.DoorOpen
         gameState.currentPlayerActionPoints = 0;
         if (currentPlayerIndex !== -1) {
             gameState.players[currentPlayerIndex].currentAP = 0;

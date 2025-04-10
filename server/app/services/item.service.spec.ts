@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { GameState } from '@common/game-state';
 import { GameType, ITEM_EFFECTS, ObjectsTypes, TILE_DELIMITER, TileTypes } from '@common/game.interface';
