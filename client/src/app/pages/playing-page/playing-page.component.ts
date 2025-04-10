@@ -423,6 +423,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         const itemDescriptions: Record<number, { name: string; description: string }> = {
             [ObjectsTypes.SPAWN]: { name: 'Point de départ', description: 'Le point de départ du jeu' },
         };
-        return itemDescriptions[itemId]?.name || 'Vide';
+        return itemDescriptions[itemId]?.name || 'Vides';
     }
 }
