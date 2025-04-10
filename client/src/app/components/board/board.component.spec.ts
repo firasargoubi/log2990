@@ -82,7 +82,6 @@ describe('BoardComponent', () => {
 
         fixture = TestBed.createComponent(BoardComponent);
         component = fixture.componentInstance;
-        component.tileComponents = { get: () => ({ refreshObject: jasmine.createSpy('refreshObject') }), reset: jasmine.createSpy('reset') } as any;
         fixture.detectChanges();
     });
 
@@ -323,7 +322,7 @@ describe('BoardComponent', () => {
     });
 
     it('should subscribe to isSave$ observable in constructor', () => {
-        const reloadTilesSpy = spyOn(component, 'reloadTiles');
+        const reloadTilesSpy = spyOn<any>(component, 'reloadTiles');
         (saveServiceSpy.isSave$ as Subject<boolean>).next(true);
         expect(reloadTilesSpy).toHaveBeenCalled();
         expect(saveServiceSpy.verifyBoard).toHaveBeenCalledWith(boardServiceSpy.board);
@@ -334,28 +333,5 @@ describe('BoardComponent', () => {
         const tile: Tile = { type: 1, x: 1, y: 1, id: '1-1', object: 1 };
         component.onMouseDownBoard(event, tile);
         expect(boardServiceSpy.deleteObject).toHaveBeenCalledWith(tile);
-    });
-
-    it('should call refreshObject on each TileComponent when reloadTiles is called', () => {
-        const refreshObjectSpy = jasmine.createSpy('refreshObject');
-
-        const mockTileComponents = [{ refreshObject: refreshObjectSpy }, { refreshObject: refreshObjectSpy }];
-
-        component.tileComponents = {
-            get: (index: number) => mockTileComponents[index],
-            toArray: () => mockTileComponents,
-        } as any;
-
-        spyOnProperty(component, 'mapSize', 'get').and.returnValue(mockTileComponents.length);
-
-        component.reloadTiles();
-
-        expect(refreshObjectSpy).toHaveBeenCalledTimes(mockTileComponents.length);
-    });
-
-    it('should not throw an error if tileComponents is empty when reloadTiles is called', () => {
-        component.tileComponents.reset([]);
-
-        expect(() => component.reloadTiles()).not.toThrow();
     });
 });

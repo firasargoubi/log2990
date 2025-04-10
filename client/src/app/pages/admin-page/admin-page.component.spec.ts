@@ -1,13 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Routes, provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
-import SpyObj = jasmine.SpyObj;
-import { AdminPageComponent } from './admin-page.component';
-import { GameService } from '@app/services/game.service';
-import { Game, GameSize, GameType } from '@common/game.interface';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { Routes, provideRouter } from '@angular/router';
+import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
+import { Game, GameSize, GameType } from '@common/game.interface';
+import { of, throwError } from 'rxjs';
+import { AdminPageComponent } from './admin-page.component';
+import SpyObj = jasmine.SpyObj;
 
 const routes: Routes = [];
 
@@ -73,15 +74,15 @@ describe('AdminPageComponent', () => {
     });
 
     it('should call fetchGames on onDeleteGame', () => {
-        spyOn(component, 'fetchGames');
+        spyOn(component as any, 'fetchGames').and.callThrough();
         component.onDeleteGame();
-        expect(component.fetchGames).toHaveBeenCalled();
+        expect(component['fetchGames']).toHaveBeenCalled();
     });
 
     it('should call fetchGames on onToggleVisibility', () => {
-        spyOn(component, 'fetchGames');
+        spyOn(component as any, 'fetchGames').and.callThrough();
         component.onToggleVisibility();
-        expect(component.fetchGames).toHaveBeenCalled();
+        expect(component['fetchGames']).toHaveBeenCalled();
     });
     it('should show success notification only on the first fetchGames call', () => {
         const notificationService = TestBed.inject(NotificationService);
@@ -89,11 +90,11 @@ describe('AdminPageComponent', () => {
 
         component['isFirstLoad'] = true;
 
-        component.fetchGames();
+        component['fetchGames']();
 
         expect(notificationService.showSuccess).toHaveBeenCalledWith('Jeux chargés avec succès');
 
-        component.fetchGames();
+        component['fetchGames']();
 
         expect(notificationService.showSuccess).toHaveBeenCalledTimes(1);
     });
@@ -104,7 +105,7 @@ describe('AdminPageComponent', () => {
 
         gameService.fetchGames.and.returnValue(throwError(() => new Error('error')));
 
-        component.fetchGames();
+        component['fetchGames']();
 
         expect(notificationService.showError).toHaveBeenCalledWith('Chargement des jeux impossible, réessayez plus tard.');
     });

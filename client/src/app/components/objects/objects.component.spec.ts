@@ -58,7 +58,7 @@ describe('ObjectsComponent', () => {
         it('should generate range from 1 to 8 when gameMode is not "capture"', () => {
             component.gameMode = 'normal' as GameType;
             component.ngOnInit();
-            expect(component.range).toEqual([
+            expect(component['range']).toEqual([
                 ObjectsTypes.BOOTS,
                 ObjectsTypes.SWORD,
                 ObjectsTypes.POTION,
@@ -73,7 +73,7 @@ describe('ObjectsComponent', () => {
         it('should generate range from 1 to 9 when gameMode is "capture"', () => {
             component.gameMode = GameType.capture;
             component.ngOnInit();
-            expect(component.range).toEqual([
+            expect(component['range']).toEqual([
                 ObjectsTypes.BOOTS,
                 ObjectsTypes.SWORD,
                 ObjectsTypes.POTION,

@@ -128,15 +128,15 @@ describe('BoxFormDialogComponent', () => {
     it('increase should set increasedAttribute only on first call', () => {
         component.increase('life');
         expect(component.attributeClicked$).toBeTrue();
-        expect(component.increasedAttribute).toBe('life');
+        expect(component['increasedAttribute']).toBe('life');
         component.increase('speed');
-        expect(component.increasedAttribute).toBe('life');
+        expect(component['increasedAttribute']).toBe('life');
     });
 
     it('pickDice should set diceAttribute and diceClicked$', () => {
         component.pickDice('attack');
         expect(component.diceClicked$).toBeTrue();
-        expect(component.diceAttribute).toBe('attack');
+        expect(component['diceAttribute']).toBe('attack');
     });
 
     it('resetAttributes should reset stat values and flags', () => {
@@ -226,7 +226,7 @@ describe('BoxFormDialogComponent', () => {
     describe('onSubmit', () => {
         it('should show an error if the form is incomplete', () => {
             spyOn(component, 'save');
-            component.increasedAttribute = null;
+            component['increasedAttribute'] = null;
             component.onSubmit(new Event('submit'));
             expect(mockNotificationService.showError).toHaveBeenCalledWith(CREATE_PAGE_CONSTANTS.errorMissingBonuses);
             expect(component.save).not.toHaveBeenCalled();
@@ -234,8 +234,8 @@ describe('BoxFormDialogComponent', () => {
 
         it('should call save if the form is complete', () => {
             spyOn(component, 'save');
-            component.increasedAttribute = 'life';
-            component.diceAttribute = 'attack';
+            component['increasedAttribute'] = 'life';
+            component['diceAttribute'] = 'attack';
 
             component.form.get('name')?.setValue('Player1');
             component.form.get('avatar')?.setValue(component.avatars[0]);
@@ -249,8 +249,8 @@ describe('BoxFormDialogComponent', () => {
 
     describe('saveJoin', () => {
         beforeEach(() => {
-            component.increasedAttribute = 'life';
-            component.diceAttribute = 'attack';
+            component['increasedAttribute'] = 'life';
+            component['diceAttribute'] = 'attack';
             component.form.get('name')?.setValue('Player1');
             component.form.get('avatar')?.setValue(AVATARS.fawn);
             component.form.get('life')?.setValue(4);
@@ -260,7 +260,7 @@ describe('BoxFormDialogComponent', () => {
         });
 
         it('should show error if bonus attributes are missing', () => {
-            component.increasedAttribute = null;
+            component['increasedAttribute'] = null;
             component.saveJoin();
             expect(mockNotificationService.showError).toHaveBeenCalledWith(CREATE_PAGE_CONSTANTS.errorEmptyBonuses);
         });
@@ -352,19 +352,19 @@ describe('BoxFormDialogComponent', () => {
         beforeEach(() => {
             dialogData.isJoining = false;
             component.data.game = { id: 'game1', isVisible: true } as any;
-            component.increasedAttribute = 'life';
-            component.diceAttribute = 'attack';
+            component['increasedAttribute'] = 'life';
+            component['diceAttribute'] = 'attack';
             component.form.get('name')?.setValue('Player1');
             component.form.get('avatar')?.setValue(AVATARS.fawn);
             component.form.get('life')?.setValue(4);
             component.form.get('speed')?.setValue(4);
             component.form.get('attack')?.setValue(4);
             component.form.get('defense')?.setValue(4);
-            component.gameList = [{ id: 'game1', isVisible: true } as any];
+            component['gameList'] = [{ id: 'game1', isVisible: true } as any];
         });
 
         it('should show error if bonus attributes are missing', () => {
-            component.increasedAttribute = null;
+            component['increasedAttribute'] = null;
             component.saveCreate();
             expect(mockNotificationService.showError).toHaveBeenCalledWith(CREATE_PAGE_CONSTANTS.errorEmptyBonuses);
         });
@@ -412,7 +412,7 @@ describe('BoxFormDialogComponent', () => {
             ];
             mockGameService.fetchVisibleGames.and.returnValue(of(games));
             component['loadGames']();
-            expect(component.gameList).toEqual(games);
+            expect(component['gameList']).toEqual(games);
         });
 
         it('should show error if fetching games fails', () => {
@@ -463,25 +463,25 @@ describe('BoxFormDialogComponent', () => {
 
     describe('buildBonus', () => {
         it('should set bonus.speed to 2 when increasedAttribute is speed and diceAttribute is not set', () => {
-            component.increasedAttribute = 'speed';
-            component.diceAttribute = null;
+            component['increasedAttribute'] = 'speed';
+            component['diceAttribute'] = null;
             const bonus = (component as any).buildBonus();
             expect(bonus.speed).toEqual(2);
         });
         it('should set bonus.attack to D4 when increasedAttribute is attack and diceAttribute is not set', () => {
-            component.increasedAttribute = 'attack';
-            component.diceAttribute = null;
+            component['increasedAttribute'] = 'attack';
+            component['diceAttribute'] = null;
             const bonus = (component as any).buildBonus();
             expect(bonus.attack).toEqual('D4');
         });
         it('should set bonus.defense to D4 when increasedAttribute is defense and diceAttribute is not set', () => {
-            component.increasedAttribute = 'defense';
-            component.diceAttribute = null;
+            component['increasedAttribute'] = 'defense';
+            component['diceAttribute'] = null;
             const bonus = (component as any).buildBonus();
             expect(bonus.defense).toEqual('D4');
         });
         it('should set bonus.defense to D6 and bonus.attack to D4 when diceAttribute is defense', () => {
-            component.diceAttribute = 'defense';
+            component['diceAttribute'] = 'defense';
             const bonus = (component as any).buildBonus();
             expect(bonus.defense).toEqual('D6');
             expect(bonus.attack).toEqual('D4');

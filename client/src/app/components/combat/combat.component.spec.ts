@@ -118,7 +118,7 @@ describe('CombatComponent', () => {
     });
 
     it('should not start the countdown if combatEnded is true', () => {
-        component.combatEnded = true;
+        component['combatEnded'] = true;
         component.countDown = 5;
         component.startCountdown();
 
@@ -224,7 +224,7 @@ describe('CombatComponent', () => {
     it('should display a notification when the combat ends', () => {
         component['subscriptions'].push(
             mockLobbyService.onCombatEnded().subscribe((data) => {
-                component.combatEnded = true;
+                component['combatEnded'] = true;
                 mockNotificationService.showInfo(`La partie est terminée! ${data.loser.name} a perdu !`);
             }),
         );
@@ -251,7 +251,7 @@ describe('CombatComponent', () => {
     describe('ngOnChanges', () => {
         it('should set currentPlayer from gameState when currentPlayer is undefined', () => {
             component.currentPlayer = undefined as any;
-            component.playerTurn = 'player1';
+            component['playerTurn'] = 'player1';
             component.gameState = {
                 id: 'game1',
                 players: [
@@ -288,7 +288,7 @@ describe('CombatComponent', () => {
             const originalOpponent = { id: 'player2', name: 'Joueur 2', amountEscape: 0 } as Player;
             component.currentPlayer = originalCurrentPlayer;
             component.opponent = originalOpponent;
-            component.playerTurn = 'player1';
+            component['playerTurn'] = 'player1';
             component.gameState = {
                 id: 'game1',
                 players: [originalCurrentPlayer, originalOpponent],
@@ -303,7 +303,7 @@ describe('CombatComponent', () => {
 
         it('should leave currentPlayer as undefined if gameState does not contain a matching player (fallback using ??)', () => {
             component.currentPlayer = undefined as any;
-            component.playerTurn = 'nonexistent';
+            component['playerTurn'] = 'nonexistent';
             component.gameState = {
                 id: 'game1',
                 players: [{ id: 'playerX', name: 'Player X', amountEscape: 0 } as Player],
@@ -399,7 +399,7 @@ describe('CombatComponent', () => {
         it('should handle onStartCombat if branch correctly', () => {
             component['subscriptions'].push(
                 mockLobbyService.onStartCombat().subscribe((data) => {
-                    component.playerTurn = data.firstPlayer.id;
+                    component['playerTurn'] = data.firstPlayer.id;
                     component.isPlayerTurn = component.currentPlayer.id === data.firstPlayer.id;
                     component.canAct = component.isPlayerTurn;
                 }),
@@ -408,7 +408,7 @@ describe('CombatComponent', () => {
             startCombatSubject.next({ firstPlayer: { id: 'player2', name: 'Joueur 2' } as Player });
             fixture.detectChanges();
 
-            expect(component.playerTurn).toBe('player2');
+            expect(component['playerTurn']).toBe('player2');
             expect(component.isPlayerTurn).toBeFalse();
             expect(component.canAct).toBeFalse();
         });
