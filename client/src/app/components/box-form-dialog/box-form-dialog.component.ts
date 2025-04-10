@@ -278,6 +278,12 @@ export class BoxFormDialogComponent implements OnDestroy {
             defense: formData.defense,
             bonus,
             winCount: 0,
+            loseCount: 0,
+            fleeCount: 0,
+            damageReceived: 0,
+            damageDealt: 0,
+            itemsPicked: [],
+            tileVisited: [],
             pendingItem: 0,
         };
     }

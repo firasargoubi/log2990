@@ -15,29 +15,30 @@
 .top-section {
     grid-area: top-section;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
     position: relative;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 
 .quit-button {
     position: absolute;
     left: 0;
+    top: 0;
+}
 
-    button {
-        background-color: rgba(0, 0, 0, 0.3);
-        color: white;
-        border: none;
-        padding: 10px 18px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 16px;
+.quit-button button {
+    background-color: rgba(0, 0, 0, 0.3);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
 
-        &:hover {
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-    }
+.quit-button button:hover {
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 .congratulations-section {
@@ -47,18 +48,55 @@
     padding: 25px 40px;
     margin: 0 auto;
     width: 60%;
+    min-width: 350px;
+}
 
-    .page-title {
-        font-size: 32px;
-        margin-bottom: 20px;
-        font-weight: bold;
-    }
+.page-title {
+    font-size: 32px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
 
-    .winner-name {
-        font-size: 28px;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
+.winner-list {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: nowrap;
+    max-width: 100%;
+}
+
+.winner-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 8em;
+    flex: 0 1 auto;
+}
+
+.winner-avatar {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 5px;
+}
+
+.winner-avatar .avatar-image {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: #ccc;
+    border: 3px solid rgba(255, 255, 255, 0.6);
+}
+
+.winner-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
 }
 
 .main-content {
@@ -94,31 +132,84 @@
 .table-responsive {
     overflow-x: auto;
     max-width: 100%;
+    margin-bottom: 10px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
 }
 
 .stats-table {
     width: 100%;
     border-collapse: collapse;
-
-    th,
-    td {
-        text-align: left;
-        padding: 8px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        white-space: nowrap;
-    }
-
-    th {
-        font-weight: bold;
-        font-size: 14px;
-    }
-
-    td {
-        font-size: 16px;
-    }
+    table-layout: auto;
 }
 
-/* Game stats section */
+.stats-table th,
+.stats-table td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stats-table th {
+    font-weight: bold;
+    font-size: 14px;
+    background-color: rgba(0, 0, 0, 0.15);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    white-space: nowrap;
+    min-width: 100px;
+    padding: 10px 15px;
+}
+
+.stats-table td {
+    font-size: 14px;
+    vertical-align: middle;
+    padding: 10px 15px;
+    text-align: center;
+}
+
+.stats-table tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.stats-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.player-avatar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    white-space: normal;
+    text-align: center;
+}
+
+.player-avatar .avatar-image {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: #ccc;
+}
+
 .game-stats-list {
     display: flex;
     flex-direction: column;
@@ -128,19 +219,24 @@
 .stat-item {
     display: flex;
     justify-content: space-between;
-    padding: 10px 0;
+    padding: 12px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
 
-    .stat-label {
-        font-weight: normal;
-        font-size: 16px;
-    }
+.stat-label {
+    font-weight: normal;
+    font-size: 16px;
+}
 
-    .stat-value {
-        text-align: right;
-        font-size: 16px;
-        font-weight: bold;
-    }
+.stat-value {
+    text-align: right;
+    font-size: 16px;
+    font-weight: bold;
+    min-width: 40px;
+}
+
+.stat-item:last-child {
+    border-bottom: none;
 }
 
 .chat-sidebar {
@@ -181,6 +277,12 @@
     border: none;
     background-color: rgba(255, 255, 255, 0.8);
     font-size: 14px;
+    color: #333;
+}
+
+.chat-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
 }
 
 .chat-send-btn {
@@ -191,10 +293,15 @@
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
+    transition: background-color 0.2s;
+}
 
-    &:hover {
-        background-color: #448844;
-    }
+.chat-send-btn:hover {
+    background-color: #448844;
+}
+
+.chat-send-btn:active {
+    background-color: #285228;
 }
 
 @media (max-width: 1200px) {
@@ -204,6 +311,8 @@
             'top-section'
             'main-content'
             'chat-sidebar';
+        height: auto;
+        min-height: 100vh;
     }
 
     .main-content {
@@ -218,14 +327,63 @@
 
     .congratulations-section {
         width: 80%;
-        padding: 20px;
+    }
 
-        .page-title {
-            font-size: 28px;
-        }
+    .page-title {
+        font-size: 28px;
+    }
 
-        .winner-name {
-            font-size: 24px;
-        }
+    .winner-name {
+        font-size: 16px;
+    }
+
+    .winner-avatar .avatar-image {
+        width: 60px;
+        height: 60px;
+    }
+
+    .left-stats-section,
+    .right-stats-section {
+        max-height: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    .top-section {
+        margin-top: 50px;
+    }
+
+    .quit-button {
+        position: absolute;
+        top: -40px;
+        left: 0;
+    }
+
+    .congratulations-section {
+        width: 100%;
+        padding: 15px;
+    }
+
+    .stats-table th,
+    .stats-table td {
+        padding: 8px 6px;
+        font-size: 14px;
+    }
+
+    .winner-list {
+        gap: 15px;
+    }
+
+    .winner-item {
+        width: 7em;
+    }
+
+    .winner-avatar .avatar-image {
+        width: 50px;
+        height: 50px;
+    }
+
+    .winner-name {
+        font-size: 16px;
     }
 }

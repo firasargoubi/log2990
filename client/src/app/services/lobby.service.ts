@@ -261,7 +261,7 @@ export class LobbyService {
         });
     }
 
-    onGameOver(): Observable<{ winner: string; lobby: string }> {
+    onGameOver(): Observable<{ winner: string; lobby: string; finalGameState: GameState }> {
         return new Observable((observer) => {
             this.socket.on('gameOver', (data) => {
                 observer.next(data);

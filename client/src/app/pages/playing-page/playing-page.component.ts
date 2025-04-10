@@ -329,7 +329,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             }),
 
             this.lobbyService.onGameOver().subscribe((data) => {
-                this.router.navigate([`${PageUrl.Stats}/${data.lobby}`], { replaceUrl: true });
+                this.router.navigate([`${PageUrl.Stats}/${data.lobby}`], {
+                    state: { winner: data.winner, lobbyId: data.lobby, gameState: data.finalGameState },
+                    replaceUrl: true,
+                });
             }),
 
             this.lobbyService.teamCreated().subscribe((data) => {

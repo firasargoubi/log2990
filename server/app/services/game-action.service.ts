@@ -65,8 +65,8 @@ export class GameActionService {
                             winningTeam === 'Red'
                                 ? (gameState.teams?.team1?.map((p) => p.name).join(', ') ?? 'Unknown')
                                 : (gameState.teams?.team2?.map((p) => p.name).join(', ') ?? 'Unknown');
-
-                        this.io.to(lobbyId).emit('gameOver', { winner: winningTeamPlayers, lobby: lobbyId });
+                        console.log('winningTeamPlayers', winningTeamPlayers);
+                        this.io.to(lobbyId).emit('gameOver', { winner: winningTeamPlayers, lobby: lobbyId, finalGameState: gameState });
                     }
                 }
 
@@ -216,7 +216,7 @@ export class GameActionService {
                 player.amountEscape = 0;
             }
             if (attacker.winCount === GameSocketConstants.MaxWinCount) {
-                this.io.to(lobbyId).emit('gameOver', { winner: attacker.name, lobby: lobbyId });
+                this.io.to(lobbyId).emit('gameOver', { winner: attacker.name, lobby: lobbyId, finalGameState: gameState });
                 return;
             }
             this.gameLifeCycleService.handleDefeat(lobbyId, attacker, defender);

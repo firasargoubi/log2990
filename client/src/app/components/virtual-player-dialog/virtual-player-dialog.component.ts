@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Player } from '@common/player';
 import { NotificationService } from '@app/services/notification.service';
+import { Player } from '@common/player';
 
 interface BonusConfig {
     life?: number;
@@ -66,6 +66,12 @@ export class VirtualPlayerDialogComponent implements OnInit {
                 ...this.generatedBonuses,
             },
             winCount: 0,
+            loseCount: 0,
+            fleeCount: 0,
+            damageReceived: 0,
+            damageDealt: 0,
+            itemsPicked: [],
+            tileVisited: [],
             pendingItem: 0,
             virtualPlayerData: {
                 profile: this.selectedProfile,

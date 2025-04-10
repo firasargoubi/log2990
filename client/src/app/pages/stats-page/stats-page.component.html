@@ -3,10 +3,18 @@
         <div class="quit-button">
             <button (click)="return()">Retour au menu</button>
         </div>
-
         <div class="congratulations-section">
             <h1 class="page-title">Félicitations à:</h1>
-            <div class="winner-name">joueur-1</div>
+            <div class="winner-list">
+                @for (winner of winnersNames; track trackByName) {
+                <div class="winner-item">
+                    <div class="winner-avatar">
+                        <img src="{{ winnersAvatars[winnersNames.indexOf(winner)] }}" alt="Avatar de {{ winner }}" class="avatar-image" />
+                    </div>
+                    <p class="winner-name">{{ winner }}</p>
+                </div>
+                }
+            </div>
         </div>
     </div>
 
@@ -17,6 +25,7 @@
                 <table class="stats-table">
                     <thead>
                         <tr>
+                            <th>Joueur</th>
                             <th>Nombre de combats</th>
                             <th>Nombre d'évasions</th>
                             <th>Nombre de victoires</th>
@@ -28,16 +37,24 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @for (player of gameState.players; track player) {
                         <tr>
-                            <td>10</td>
-                            <td>5.4</td>
-                            <td>3</td>
-                            <td>8</td>
-                            <td>42</td>
-                            <td>150</td>
-                            <td>5</td>
-                            <td>75%</td>
+                            <td>
+                                <div class="player-avatar">
+                                    <img src="{{ player.avatar }}" alt="Avatar de {{ player.name }}" class="avatar-image" />
+                                    <span>{{ player.name }}</span>
+                                </div>
+                            </td>
+                            <td>{{ player.winCount + player.loseCount }} combats</td>
+                            <td>{{ player.fleeCount }} évasions</td>
+                            <td>{{ player.winCount }} victoires</td>
+                            <td>{{ player.loseCount }} défaites</td>
+                            <td>{{ player.damageReceived }} PV</td>
+                            <td>{{ player.damageDealt }} PV</td>
+                            <td>{{ player.itemsPicked || 0 }} objets</td>
+                            <td>{{ player.tileVisited || 0 }}%</td>
                         </tr>
+                        }
                     </tbody>
                 </table>
             </div>

@@ -1,3 +1,5 @@
+import { Tile } from "./game.interface";
+
 export interface Player {
     pendingItem: number;
     id: string;
@@ -19,7 +21,13 @@ export interface Player {
     currentMP?: number;
     currentAP?: number;
     winCount: number;
+    loseCount?: number;
     items?: number[];
+    fleeCount?: number;
+    damageReceived?: number;
+    damageDealt?: number;
+    itemsPicked?: number[];
+    tileVisited?: Tile[];
     virtualPlayerData?: {
         profile: 'aggressive' | 'defensive';
     };
