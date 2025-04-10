@@ -1,14 +1,14 @@
-import { Service } from 'typedi';
-import { Coordinates } from '@common/coordinates';
-import { Player } from '@common/player';
-import { GameState } from '@common/game-state';
-import { Socket } from 'socket.io';
-import { TileTypes, Tile, TILE_DELIMITER, ObjectsTypes } from '@common/game.interface';
 import { VirtualMovementConfig } from '@app/interfaces/virtual-player.interface';
 import { MovementStrategy } from '@app/services/virtual-player/interfaces/movement-strategy';
 import { AggressiveMovementStrategy } from '@app/services/virtual-player/strategies/aggressive-movement-strategy';
 import { DefaultMovementStrategy } from '@app/services/virtual-player/strategies/default-movement-strategy';
 import { DefensiveMovementStrategy } from '@app/services/virtual-player/strategies/defensive-movement-strategy';
+import { Coordinates } from '@common/coordinates';
+import { GameState } from '@common/game-state';
+import { ObjectsTypes, Tile, TILE_DELIMITER, TileTypes } from '@common/game.interface';
+import { Player } from '@common/player';
+import { Socket } from 'socket.io';
+import { Service } from 'typedi';
 
 @Service()
 export class VirtualPlayerService {
@@ -107,6 +107,10 @@ export class VirtualPlayerService {
             }
         });
         return adjacent;
+    }
+
+    distance(a: Coordinates, b: Coordinates): number {
+        return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
     }
 
     private async prepareTurn(config: VirtualMovementConfig): Promise<{ currentGameState: GameState; playerIndex: number } | null> {
@@ -279,11 +283,6 @@ export class VirtualPlayerService {
         }
         await callbacks.handleRequestMovement({ id: virtualPlayer.id } as Socket, lobbyId, path);
     }
-
-    private distance(a: Coordinates, b: Coordinates): number {
-        return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
-    }
-
     private async handleDoor(context: VirtualMovementConfig, doorPosition: Coordinates): Promise<void> {
         const gameState = context.gameState;
         const player = gameState?.players.find((p) => p.id === context.virtualPlayer.id);
