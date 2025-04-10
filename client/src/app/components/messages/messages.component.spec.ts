@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { CommonModule } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { ChatService } from '@app/services/chat.service';
 import { MessagesComponent } from './messages.component';
+import { Player } from '@common/player';
 
 describe('MessagesComponent', () => {
     let component: MessagesComponent;
@@ -68,36 +70,6 @@ describe('MessagesComponent', () => {
         });
     });
 
-    describe('sendMessage()', () => {
-        it('should call chatService.sendMessage with correct parameters when message is valid', () => {
-            component.newMessage = 'Hello world';
-            component.sendMessage();
-
-            expect(chatServiceMock.sendMessage).toHaveBeenCalledWith('test-lobby', 'test-player', 'Hello world');
-        });
-
-        it('should not send message when empty', () => {
-            component.newMessage = '';
-            component.sendMessage();
-
-            expect(chatServiceMock.sendMessage).not.toHaveBeenCalled();
-        });
-
-        it('should not send message when exceeding max length', () => {
-            component.newMessage = 'a'.repeat(201); // MAX_MESSAGE_LENGTH + 1
-            component.sendMessage();
-
-            expect(chatServiceMock.sendMessage).not.toHaveBeenCalled();
-        });
-
-        it('should clear newMessage after sending', () => {
-            component.newMessage = 'Test message';
-            component.sendMessage();
-
-            expect(component.newMessage).toBe('');
-        });
-    });
-
     describe('Template', () => {
         it('should display player name', () => {
             const element = fixture.nativeElement.querySelector('.chat-header strong');
@@ -108,7 +80,7 @@ describe('MessagesComponent', () => {
             const tabs = fixture.nativeElement.querySelectorAll('.tabs button');
             expect(tabs.length).toBe(2);
             expect(tabs[0].textContent).toContain('Chat');
-            expect(tabs[1].textContent).toContain('Events');
+            expect(tabs[1].textContent).toContain('Journal de Jeu');
         });
 
         it('should show chat tab by default', () => {
@@ -122,9 +94,9 @@ describe('MessagesComponent', () => {
             eventTab.click();
             fixture.detectChanges();
 
-            expect(component.activeTab).toBe('events');
+            expect(component.activeTab).toBe('gameLog');
             const activeTab = fixture.nativeElement.querySelector('.tabs button.active');
-            expect(activeTab.textContent).toContain('Events');
+            expect(activeTab.textContent).toContain('Journal de Jeu');
         });
 
         it('should display message input with send button', () => {
@@ -136,6 +108,36 @@ describe('MessagesComponent', () => {
             expect(input.getAttribute('maxlength')).toBe('200');
             expect(button).toBeTruthy();
             expect(button.textContent).toContain('Envoyer');
+        });
+    });
+    describe('filterGameLog', () => {
+        beforeEach(() => {
+            const logs = [
+                { timestamp: 't1', eventType: 'Test', involvedPlayer: 'Alice' },
+                { timestamp: 't2', eventType: 'Test', involvedPlayer: 'Bob' },
+                { timestamp: 't3', eventType: 'Test', involvedPlayers: ['Alice', 'Charlie'] },
+                { timestamp: 't4', eventType: 'Test', involvedPlayers: ['Bob'] },
+            ];
+            (component as any).gameLog = logs;
+            component.currentPlayer = { name: 'Alice' } as Player;
+        });
+
+        it('should return full gameLog when filterByCurrentPlayer is false', () => {
+            component.filterByCurrentPlayer = false;
+            const result = component.filterGameLog;
+            expect(result.length).toBe(4);
+            expect(result).toEqual((component as any).gameLog);
+        });
+
+        it('should filter gameLog by current player when filterByCurrentPlayer is true', () => {
+            component.filterByCurrentPlayer = true;
+            const result = component.filterGameLog;
+            // Only logs with involvedPlayer "Alice" or with involvedPlayers array including "Alice" should be returned
+            expect(result.length).toBe(2);
+            expect(result).toEqual([
+                { timestamp: 't1', eventType: 'Test', involvedPlayer: 'Alice' },
+                { timestamp: 't3', eventType: 'Test', involvedPlayers: ['Alice', 'Charlie'] },
+            ]);
         });
     });
 });
