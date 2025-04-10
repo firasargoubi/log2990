@@ -10,6 +10,7 @@ import { BoardService } from './board.service';
 import { VirtualPlayerService } from '@app/services/virtual-player.service';
 import { GameLifecycleService } from './game-life-cycle.service';
 import { ItemService } from './item.service';
+import { VirtualMovementConfig } from '@app/interfaces/virtual-player.interface';
 
 @Service()
 export class GameActionService {
@@ -196,22 +197,27 @@ export class GameActionService {
 
         const nextPlayer = defender;
         if (nextPlayer.virtualPlayerData) {
+            gameState.currentPlayer = nextPlayer.id;
+            this.gameStates.set(lobbyId, gameState);
             setTimeout(() => this.handleVirtualCombatTurn(lobbyId, nextPlayer, attacker, defender), GameSocketConstants.CombatTurnDelay);
         }
     }
 
-    handleFlee(lobbyId: string, fleeingPlayer: Player) {
+    handleFlee(lobbyId: string, fleeingPlayer: Player): void {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
-
-        const opponent = gameState.players.find((p) => p.id !== fleeingPlayer.id && p.life > 0);
 
         fleeingPlayer.amountEscape = fleeingPlayer.amountEscape ?? 0;
 
         if (fleeingPlayer.amountEscape >= 2) {
             this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
+            const opponent = gameState.players.find((p) => p.id !== fleeingPlayer.id && p.life > 0);
             if (opponent && opponent.virtualPlayerData) {
-                setTimeout(() => this.handleVirtualCombatTurn(lobbyId, opponent, fleeingPlayer, opponent), GameSocketConstants.CombatTurnDelay);
+                gameState.currentPlayer = opponent.id;
+                this.gameStates.set(lobbyId, gameState);
+                setTimeout(() => {
+                    this.handleVirtualCombatTurn(lobbyId, opponent, fleeingPlayer, opponent);
+                }, GameSocketConstants.CombatTurnDelay);
             }
             return;
         }
@@ -236,10 +242,36 @@ export class GameActionService {
             this.gameStates.set(lobbyId, gameState);
             this.io.to(lobbyId).emit(GameEvents.FleeSuccess, { fleeingPlayer, isSuccessful });
             this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState });
+
+            const opponent = gameState.players.find((p) => p.id !== fleeingPlayer.id && p.life > 0);
+            if (opponent && opponent.virtualPlayerData && opponent.currentMP > 0) {
+                const virtualMoveConfig: VirtualMovementConfig = {
+                    lobbyId,
+                    virtualPlayer: opponent,
+                    getGameState: () => this.gameStates.get(lobbyId),
+                    boardService: this.boardService,
+                    callbacks: {
+                        handleRequestMovement: this.gameLifeCycleService.handleRequestMovement.bind(this.gameLifeCycleService),
+                        handleEndTurn: this.gameLifeCycleService.handleEndTurn.bind(this.gameLifeCycleService),
+                        startBattle: this.startBattle.bind(this),
+                        delay: this.gameLifeCycleService['delay'],
+                        handleOpenDoor: this.openDoor.bind(this),
+                    },
+                    gameState,
+                };
+                this.virtualService.performTurn(() => {
+                    this.virtualService.handleVirtualMovement(virtualMoveConfig);
+                });
+            }
         } else {
             this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
+            const opponent = gameState.players.find((p) => p.id !== fleeingPlayer.id && p.life > 0);
             if (opponent && opponent.virtualPlayerData) {
-                setTimeout(() => this.handleVirtualCombatTurn(lobbyId, opponent, fleeingPlayer, opponent), GameSocketConstants.CombatTurnDelay);
+                gameState.currentPlayer = opponent.id;
+                this.gameStates.set(lobbyId, gameState);
+                setTimeout(() => {
+                    this.handleVirtualCombatTurn(lobbyId, opponent, fleeingPlayer, opponent);
+                }, GameSocketConstants.CombatTurnDelay);
             }
         }
 
@@ -259,21 +291,16 @@ export class GameActionService {
         await this.gameLifeCycleService.handleRequestMovement(socket, lobbyId, coordinates);
     }
 
-    private handleVirtualCombatTurn(lobbyId: string, currentTurnPlayer: Player, currentPlayer: Player, player2: Player) {
+    private handleVirtualCombatTurn(lobbyId: string, currentTurnPlayer: Player, originalCombatant1: Player, originalCombatant2: Player) {
         const gameState = this.gameStates.get(lobbyId);
-        if (!gameState || !gameState.players.find((p) => p.id === currentPlayer.id) || !gameState.players.find((p) => p.id === player2.id)) {
-            return;
-        }
+        if (!gameState) return;
 
-        const opponent = currentTurnPlayer.id === currentPlayer.id ? player2 : currentPlayer;
-
-        if (!opponent || opponent.life <= 0) {
-            return;
-        }
+        const opponent = currentTurnPlayer.id === originalCombatant1.id ? originalCombatant2 : originalCombatant1;
+        if (!opponent || opponent.life <= 0) return;
 
         const isDefensive = currentTurnPlayer.virtualPlayerData?.profile === 'defensive';
-
         const wasInjured = currentTurnPlayer.maxLife && currentTurnPlayer.life < currentTurnPlayer.maxLife;
+
         if (isDefensive && wasInjured && currentTurnPlayer.amountEscape < 2) {
             this.handleFlee(lobbyId, currentTurnPlayer);
         } else {

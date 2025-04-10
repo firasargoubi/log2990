@@ -50,7 +50,14 @@ export class VirtualPlayerService {
             .map((p, idx) => ({ player: p, pos: gameState.playerPositions[idx] }))
             .filter((item) => item.player.id !== virtualPlayer.id);
         if (!opponents.length) return null;
-        return opponents.reduce((prev, curr) => (this.distance(curr.pos, currentPos) < this.distance(prev.pos, currentPos) ? curr : prev));
+        const nearest = opponents.reduce((prev, curr) => (this.distance(curr.pos, currentPos) < this.distance(prev.pos, currentPos) ? curr : prev));
+
+        const adjacents = this.getAdjacentPositions(nearest.pos, gameState.board);
+        if (adjacents.length === 0) return nearest;
+
+        const closestAdjacent = adjacents.reduce((prev, curr) => (this.distance(curr, currentPos) < this.distance(prev, currentPos) ? curr : prev));
+
+        return { player: nearest.player, pos: closestAdjacent };
     }
 
     getClosest(target: Coordinates, positions: Coordinates[]): Coordinates {

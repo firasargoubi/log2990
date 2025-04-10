@@ -108,7 +108,7 @@ export class GameLifecycleService {
                     callbacks: {
                         handleRequestMovement: this.handleRequestMovement.bind(this),
                         handleEndTurn: this.handleEndTurn.bind(this),
-                        startBattle: this.gameActionService.startBattle.bind(this.gameActionService), // Updated
+                        startBattle: this.gameActionService.startBattle.bind(this.gameActionService),
                         delay: this.delay,
                         handleOpenDoor: this.openDoor.bind(this),
                     },
@@ -169,8 +169,8 @@ export class GameLifecycleService {
         gameState.players[loserIndex] = loser;
 
         winner.life = winner.maxLife;
+        winner.currentAP = 0;
         gameState.players[winnerIndex] = winner;
-        gameState.players[winnerIndex].currentAP = 0;
 
         this.io.to(lobbyId).emit('combatEnded', { loser });
 
@@ -178,23 +178,32 @@ export class GameLifecycleService {
         const winnerIsVirtual = !!updatedWinner.virtualPlayerData;
         const winnerHasMovementPoints = updatedWinner.currentMP > 0;
 
-        if (winnerIsVirtual && winnerHasMovementPoints) {
-            const virtualMoveConfig: VirtualMovementConfig = {
-                lobbyId,
-                virtualPlayer: updatedWinner,
-                getGameState: () => this.gameStates.get(lobbyId),
-                boardService: this.boardService,
-                callbacks: {
-                    handleRequestMovement: this.handleRequestMovement.bind(this),
-                    handleEndTurn: this.handleEndTurn.bind(this),
-                    startBattle: this.gameActionService.startBattle.bind(this.gameActionService), // Updated
-                    delay: this.delay,
-                    handleOpenDoor: this.openDoor.bind(this),
-                },
-                gameState,
-            };
-            this.virtualService.handleVirtualMovement(virtualMoveConfig);
-            return;
+        if (winnerIsVirtual) {
+            if (winnerHasMovementPoints) {
+                const virtualMoveConfig: VirtualMovementConfig = {
+                    lobbyId,
+                    virtualPlayer: updatedWinner,
+                    getGameState: () => this.gameStates.get(lobbyId),
+                    boardService: this.boardService,
+                    callbacks: {
+                        handleRequestMovement: this.handleRequestMovement.bind(this),
+                        handleEndTurn: this.handleEndTurn.bind(this),
+                        startBattle: this.gameActionService.startBattle.bind(this.gameActionService),
+                        delay: this.delay,
+                        handleOpenDoor: this.openDoor.bind(this),
+                    },
+                    gameState,
+                };
+                this.virtualService.performTurn(() => {
+                    this.virtualService.handleVirtualMovement(virtualMoveConfig);
+                });
+                return;
+            } else {
+                const endedTurnState = this.boardService.handleEndTurn(gameState);
+                this.gameStates.set(lobbyId, endedTurnState);
+                this.startTurn(lobbyId);
+                return;
+            }
         }
 
         let newGameState;
@@ -209,6 +218,7 @@ export class GameLifecycleService {
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
         this.gameStates.set(lobbyId, newGameState);
     }
+
     async handleRequestMovement(socket: Socket, lobbyId: string, coordinates: Coordinates[]) {
         const gameState = this.getGameStateOrEmitError(socket, lobbyId);
         const indexPlayer = gameState.players.findIndex((p) => p.id === socket.id);
@@ -263,6 +273,7 @@ export class GameLifecycleService {
             socket.emit(GameEvents.Error, `${gameSocketMessages.movementError}${error.message}`);
         }
     }
+
     handleInventoryFull(updatedGameState: GameState, currentPlayer: Player, socket: Socket, lobbyId: string) {
         socket.emit('inventoryFull', {
             item: currentPlayer.pendingItem,
@@ -317,58 +328,6 @@ export class GameLifecycleService {
             return null;
         }
         return gameState;
-    }
-    startBattle(lobbyId: string, currentPlayer: Player, opponent: Player): void {
-        const gameState = this.gameStates.get(lobbyId);
-        if (!gameState) return;
-        if (gameState.gameMode === 'capture') {
-            const isSameTeam =
-                (gameState.teams.team1.some((p) => p.id === currentPlayer.id) && gameState.teams.team1.some((p) => p.id === opponent.id)) ||
-                (gameState.teams.team2.some((p) => p.id === currentPlayer.id) && gameState.teams.team2.some((p) => p.id === opponent.id));
-            if (isSameTeam) {
-                this.io.to(currentPlayer.id).to(opponent.id).emit(GameEvents.Error, gameSocketMessages.sameTeam);
-                return;
-            }
-        }
-        this.io.to(currentPlayer.id).to(opponent.id).emit('startCombat', { firstPlayer: currentPlayer });
-    }
-
-    handleFlee(lobbyId: string, fleeingPlayer: Player): void {
-        const gameState = this.gameStates.get(lobbyId);
-        if (!gameState) return;
-
-        fleeingPlayer.amountEscape = fleeingPlayer.amountEscape ?? 0;
-
-        if (fleeingPlayer.amountEscape >= 2) {
-            this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
-            return;
-        }
-
-        fleeingPlayer.amountEscape++;
-
-        const playerIndex = gameState.players.findIndex((p) => p.id === fleeingPlayer.id);
-        if (playerIndex !== -1) {
-            gameState.players[playerIndex].amountEscape = fleeingPlayer.amountEscape;
-        }
-
-        const FLEE_RATE = GameSocketConstants.FleeRatePercent;
-        let isSuccessful = Math.random() * GameSocketConstants.MaxFlee <= FLEE_RATE;
-        if (gameState.debug) {
-            isSuccessful = true;
-        }
-
-        if (isSuccessful) {
-            for (const player of gameState.players) {
-                player.amountEscape = 0;
-            }
-            this.gameStates.set(lobbyId, gameState);
-            this.io.to(lobbyId).emit(GameEvents.FleeSuccess, { fleeingPlayer, isSuccessful });
-            this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState });
-        } else {
-            this.io.to(lobbyId).emit(GameEvents.FleeFailure, { fleeingPlayer });
-        }
-
-        this.gameStates.set(lobbyId, gameState);
     }
 
     openDoor(socket: Socket, tile: { x: number; y: number }, lobbyId: string): void {
