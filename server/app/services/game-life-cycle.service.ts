@@ -263,7 +263,7 @@ export class GameLifecycleService {
                                 ? (gameState.teams?.team1?.map((p) => p.name).join(', ') ?? 'Unknown')
                                 : (gameState.teams?.team2?.map((p) => p.name).join(', ') ?? 'Unknown');
 
-                        this.io.to(lobbyId).emit('gameOver', { winner: winningTeamPlayers });
+                        this.io.to(lobbyId).emit('gameOver', { winner: winningTeamPlayers, lobby: lobbyId, finalGameState: gameState });
                     }
                 }
 
