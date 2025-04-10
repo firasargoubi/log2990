@@ -310,7 +310,7 @@ export class SocketService {
     }
 
     private handleFlee(lobbyId: string, player: Player) {
-        this.gameLifecycleService.handleFlee(lobbyId, player);
+        this.gameActionService.handleFlee(lobbyId, player);
     }
 
     private createTeams(lobbyId: string, players: Player[]) {

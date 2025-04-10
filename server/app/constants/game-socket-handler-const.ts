@@ -8,6 +8,7 @@ export enum GameSocketConstants {
     D6Value = 6,
     MaxFlee = 100,
     PlayerTeamConst = 0.5,
+    CombatTurnDelay = 1000,
 }
 
 export const gameSocketMessages = {
