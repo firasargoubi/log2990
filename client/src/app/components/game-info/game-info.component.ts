@@ -8,11 +8,11 @@ import { Player } from '@common/player';
     selector: 'app-game-info',
     templateUrl: './game-info.component.html',
     styleUrls: ['./game-info.component.scss'],
+    standalone: true,
     imports: [CommonModule],
 })
 export class GameInfoComponent {
     @Input() gameName: string = '';
-    @Input() gameDescription: string = '';
     @Input() gameMode: string = '';
     @Input() mapSize: string = '';
     @Input() playerCount: number = 0;
@@ -21,10 +21,10 @@ export class GameInfoComponent {
     @Input() deletedPlayers: Player[] = [];
     @Input() isCTF: boolean = false;
     @Input() gameState: GameState | undefined;
-    objectTypes = ObjectsTypes;
 
-    getPlayersDeleted(): Player[] {
-        return this.deletedPlayers;
+    objectTypes = ObjectsTypes;
+    isPlayerAbandoned(playerId: string): boolean {
+        return this.deletedPlayers?.some((p) => p.id === playerId) || false;
     }
 
     getTeam(player: Player): string {

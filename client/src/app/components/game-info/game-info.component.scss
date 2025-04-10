@@ -1,3 +1,97 @@
-:host {
-    color: #94ff96;
+.game-info {
+    background-color: #f5f5f5;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    h2 {
+        margin-top: 0;
+        color: #333;
+    }
+
+    .info-section {
+        margin-bottom: 1.5rem;
+
+        .info-item {
+            display: flex;
+            margin-bottom: 0.5rem;
+
+            .label {
+                font-weight: bold;
+                margin-right: 0.5rem;
+                min-width: 120px;
+            }
+        }
+    }
+
+    .player-list {
+        h3 {
+            margin-top: 0;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 0.5rem;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+
+            li {
+                padding: 0.75rem;
+                margin: 0.5rem 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background-color: white;
+                border-radius: 4px;
+                transition: all 0.2s;
+
+                &.active {
+                    background-color: #e6f7ff;
+                    border-left: 3px solid #1890ff;
+                }
+
+                &.host {
+                    border-left: 3px solid gold;
+                }
+
+                &.abandoned {
+                    opacity: 0.6;
+                    background-color: #f5f5f5;
+                }
+
+                .player-name {
+                    flex: 1;
+                    font-weight: 500;
+                }
+
+                .player-info {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+
+                    .battles-won {
+                        font-size: 0.85rem;
+                        color: #666;
+                    }
+
+                    .team-badge {
+                        padding: 0.25rem 0.5rem;
+                        border-radius: 12px;
+                        font-size: 0.75rem;
+                        font-weight: bold;
+                        color: white;
+
+                        &.team-red {
+                            background-color: #ff4d4f;
+                        }
+
+                        &.team-blue {
+                            background-color: #1890ff;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

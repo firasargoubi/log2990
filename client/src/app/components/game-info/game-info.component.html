@@ -1,34 +1,43 @@
 <div class="game-info">
-    <h3>Informations de la Partie</h3>
+    <div class="info-section">
+        <div class="info-item">
+            <span class="label">Mode de jeu:</span>
+            <span class="value">{{ gameMode }}</span>
+        </div>
+        <div class="info-item">
+            <span class="label">Taille de carte:</span>
+            <span class="value">{{ mapSize }}</span>
+        </div>
+        <div class="info-item">
+            <span class="label">Joueurs:</span>
+            <span class="value">{{ playerCount }}</span>
+        </div>
+    </div>
 
-    <p><strong>Taille de la carte:</strong> {{ mapSize }}</p>
-    <p><strong>Nombre de joueurs:</strong> {{ playerCount }}</p>
-    <p><strong>Joueur Actif:</strong> {{ activePlayer }}</p>
-
-    <p><strong>Joueurs qui ont quittés:</strong></p>
-    <ul>
-        @for (player of deletedPlayers; track player) {
-        <li>
-            <del>{{ player.name }}{{ player.virtualPlayerData ? ' 💻' : '' }}</del>
-        </li>
-        }
-    </ul>
-
-    <p><strong>Joueurs:</strong></p>
-    <ul>
-        @for (player of players; track player.id) {
-        <li>
-            {{ player.name }}{{ player.virtualPlayerData ? ' 💻' : '' }}
-            <ul>
-                @if (isCTF) {
-                <li><strong>Équipe:</strong> {{ getTeam(player) }}</li>
-                } @if ((player?.items ?? []).length > 0) { @if (player.items?.includes(objectTypes.FLAG)) {
-                <li>
-                    <strong>🏳️</strong>
-                </li>
-                } }
-            </ul>
-        </li>
-        }
-    </ul>
+    <!-- Liste des joueurs -->
+    <div class="player-list">
+        <ul>
+            @for (player of players; track player.id) {
+            <li [class.active]="gameState?.currentPlayer === player.id" [class.host]="player.isHost" [class.abandoned]="isPlayerAbandoned(player.id)">
+                <div class="player-name">
+                    @if (isPlayerAbandoned(player.id)) {
+                    <s>{{ player.name }}</s>
+                    } @else {
+                    {{ player.name }}
+                    }
+                </div>
+                <div class="player-info">
+                    <br />
+                    <!-- Ligne ajoutée ici -->
+                    <span class="battles-won">Victoires: {{ player.winCount || 0 }}</span>
+                    @if (isCTF) {
+                    <span class="team-badge" [class.team-red]="getTeam(player) === 'Red'" [class.team-blue]="getTeam(player) === 'Blue'">
+                        {{ getTeam(player) }}
+                    </span>
+                    }
+                </div>
+            </li>
+            }
+        </ul>
+    </div>
 </div>

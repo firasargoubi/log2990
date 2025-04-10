@@ -2,14 +2,15 @@
     <div class="sidebar-left">
         <div class="component-box">
             <app-game-info
-                [gameState]="gameState"
                 [gameName]="'Tile Bound'"
+                [gameMode]="gameState?.gameMode || ''"
                 [mapSize]="getMapSize()"
                 [playerCount]="getPlayerCount()"
                 [activePlayer]="getActivePlayer()"
                 [players]="getPlayers()"
                 [deletedPlayers]="getDeletedPlayers()"
                 [isCTF]="isCTF"
+                [gameState]="gameState"
             >
             </app-game-info>
             <div class="header">
