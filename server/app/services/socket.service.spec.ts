@@ -583,10 +583,9 @@ describe('SocketService', () => {
 
         if (fleeHandler) {
             fleeHandler(fleeData);
-            expect(gameLifecycleService.handleFlee.calledWith('lobby1', fleeData.player)).to.equal(true);
+            expect(gameActionService.handleFlee.calledWith('lobby1', fleeData.player)).to.equal(true);
         }
     });
-
     it('should handle disconnect event', () => {
         socketService.init();
         const connectionHandler = ioStub.on.firstCall.args[1];
@@ -670,6 +669,27 @@ describe('SocketService', () => {
         if (cancelHandler) {
             cancelHandler({ lobbyId: 'lobby1' });
             expect(ioStub.to().emit.calledWith('boardModified')).to.be.equal(true);
+        }
+    });
+    it('should call removeAttributeEffects when refused item is in player.items', () => {
+        socketService.init();
+        const connectionHandler = ioStub.on.firstCall.args[1];
+        connectionHandler(mockSocket);
+
+        const resolveHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'resolveInventory')?.args[1];
+
+        const mockGameState = {
+            players: [{ id: 'socket1', items: [1, 2], pendingItem: 3 }],
+            playerPositions: [{ x: 0, y: 0 }],
+            board: [[0]],
+        };
+        gameLifecycleService.getGameStateOrEmitError.returns(mockGameState);
+        boardService.findAllPaths.returns([]);
+        boardService.calculateShortestMoves.returns([]);
+
+        if (resolveHandler) {
+            resolveHandler({ lobbyId: 'lobby1', keptItems: [1, 3] });
+            expect(itemService.removeAttributeEffects.calledOnceWith(mockGameState.players[0], 2)).to.equal(true);
         }
     });
 });
