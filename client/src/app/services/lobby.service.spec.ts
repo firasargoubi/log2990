@@ -5,6 +5,7 @@
 /* eslint-disable max-lines */
 import { TestBed } from '@angular/core/testing';
 import { Coordinates } from '@common/coordinates';
+import { GameEvents } from '@common/events';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
 import { Game } from '@common/game.interface';
@@ -23,6 +24,7 @@ describe('LobbyService', () => {
             connected: true,
             emit: jasmine.createSpy('emit'),
             on: jasmine.createSpy('on'),
+            once: jasmine.createSpy('once'),
             disconnect: jasmine.createSpy('disconnect'),
             connect: jasmine.createSpy('connect'),
         };
@@ -689,6 +691,387 @@ describe('LobbyService', () => {
                 const eventLogCallback = callbackArgs[1];
                 eventLogCallback(testData);
             }
+        });
+    });
+    describe('Additional methods for 100% coverage', () => {
+        // Helper to get socket.on callbacks
+        const findSocketCallback = (event: string): Function | null => {
+            const call = socketMock.on.calls.allArgs().find((args: any[]) => args[0] === event);
+            return call ? call[1] : null;
+        };
+
+        it('should return current player after setting it', () => {
+            const player: Player = { id: 'p1', name: 'Test Player' } as Player;
+            service.setCurrentPlayer(player);
+            expect(service.getCurrentPlayer()).toEqual(player);
+        });
+
+        it('should call socket.disconnect on disconnect()', () => {
+            service.disconnect();
+            expect(socketMock.disconnect).toHaveBeenCalled();
+        });
+
+        it('should call socket.connect on reconnect() if disconnected', () => {
+            socketMock.connected = false;
+            service.reconnect();
+            expect(socketMock.connect).toHaveBeenCalled();
+        });
+
+        it('should not call socket.connect on reconnect() if already connected', () => {
+            socketMock.connected = true;
+            service.reconnect();
+            expect(socketMock.connect).not.toHaveBeenCalled();
+        });
+
+        it('should create lobby by emitting createLobby', () => {
+            const game: Game = { id: 'game1', name: 'Test Game' } as Game;
+            service.createLobby(game);
+            expect(socketMock.emit).toHaveBeenCalledWith('createLobby', game);
+        });
+
+        it('should join lobby by emitting joinLobby with correct data', () => {
+            const player: Player = { id: 'p1', name: 'Test' } as Player;
+            service.joinLobby('lobby1', player);
+            expect(socketMock.emit).toHaveBeenCalledWith('joinLobby', { lobbyId: 'lobby1', player });
+        });
+
+        it('should leave lobby by emitting leaveLobby with correct data', () => {
+            service.leaveLobby('lobby1', 'Test');
+            expect(socketMock.emit).toHaveBeenCalledWith('leaveLobby', { lobbyId: 'lobby1', playerName: 'Test' });
+        });
+
+        it('should leave game by emitting leaveGame with correct args', () => {
+            service.leaveGame('lobby1', 'Test');
+            expect(socketMock.emit).toHaveBeenCalledWith('leaveGame', 'lobby1', 'Test');
+        });
+
+        it('should lock lobby by emitting lockLobby', () => {
+            service.lockLobby('lobby1');
+            expect(socketMock.emit).toHaveBeenCalledWith('lockLobby', 'lobby1');
+        });
+
+        it('should disconnect from room by emitting disconnectFromRoom', () => {
+            service.disconnectFromRoom('lobby1');
+            expect(socketMock.emit).toHaveBeenCalledWith('disconnectFromRoom', 'lobby1');
+        });
+
+        it('should update players by emitting updatePlayers', () => {
+            const players: Player[] = [{ id: 'p1', name: 'A' } as Player];
+            service.updatePlayers('lobby1', players);
+            expect(socketMock.emit).toHaveBeenCalledWith('updatePlayers', 'lobby1', players);
+        });
+
+        it('should request start game by emitting requestStart', () => {
+            service.requestStartGame('lobby1');
+            expect(socketMock.emit).toHaveBeenCalledWith('requestStart', 'lobby1');
+        });
+
+        it('should request movement by emitting requestMovement with correct data', () => {
+            const coords: Coordinates[] = [{ x: 1, y: 1 }];
+            service.requestMovement('lobby1', coords);
+            expect(socketMock.emit).toHaveBeenCalledWith('requestMovement', { lobbyId: 'lobby1', coordinates: coords });
+        });
+
+        it('should request teleport by emitting teleport with correct data', () => {
+            const coord: Coordinates = { x: 2, y: 3 };
+            service.requestTeleport('lobby1', coord);
+            expect(socketMock.emit).toHaveBeenCalledWith('teleport', { lobbyId: 'lobby1', coordinates: coord });
+        });
+
+        it('should request end turn by emitting endTurn', () => {
+            service.requestEndTurn('lobby1');
+            expect(socketMock.emit).toHaveBeenCalledWith('endTurn', { lobbyId: 'lobby1' });
+        });
+
+        it('should set debug by emitting setDebug with correct data', () => {
+            service.setDebug('lobby1', true);
+            expect(socketMock.emit).toHaveBeenCalledWith('setDebug', { lobbyId: 'lobby1', debug: true });
+        });
+
+        it('should verify room and complete observable', (done) => {
+            const response = { exists: true, isLocked: false };
+            socketMock.emit.and.callFake((event: string, data: any, callback: Function) => {
+                if (event === 'verifyRoom') {
+                    callback(response);
+                }
+            });
+            service.verifyRoom('game1').subscribe((res) => {
+                expect(res).toEqual(response);
+                done();
+            });
+            expect(socketMock.emit).toHaveBeenCalledWith('verifyRoom', { gameId: 'game1' }, jasmine.any(Function));
+        });
+
+        it('should verify avatars and complete observable', (done) => {
+            const response = { avatars: ['a1', 'a2'] };
+            socketMock.emit.and.callFake((event: string, data: any, callback: Function) => {
+                if (event === 'verifyAvatars') {
+                    callback(response);
+                }
+            });
+            service.verifyAvatars('lobby1').subscribe((res) => {
+                expect(res).toEqual(response);
+                done();
+            });
+            expect(socketMock.emit).toHaveBeenCalledWith('verifyAvatars', { lobbyId: 'lobby1' }, jasmine.any(Function));
+        });
+
+        it('should verify username and complete observable', (done) => {
+            const response = { usernames: ['u1', 'u2'] };
+            socketMock.emit.and.callFake((event: string, data: any, callback: Function) => {
+                if (event === 'verifyUsername') {
+                    callback(response);
+                }
+            });
+            service.verifyUsername('lobby1').subscribe((res) => {
+                expect(res).toEqual(response);
+                done();
+            });
+            expect(socketMock.emit).toHaveBeenCalledWith('verifyUsername', { lobbyId: 'lobby1' }, jasmine.any(Function));
+        });
+
+        it('should emit playerDefeated on handleDefeat', () => {
+            const player: Player = { id: 'p1', name: 'Defeated' } as Player;
+            service.handleDefeat(player, 'lobby1');
+            expect(socketMock.emit).toHaveBeenCalledWith('playerDefeated', { player, lobbyId: 'lobby1' });
+        });
+
+        it('should emit attack on attack()', () => {
+            const attacker: Player = { id: 'p1', name: 'Attacker' } as Player;
+            const defender: Player = { id: 'p2', name: 'Defender' } as Player;
+            service.attack('lobby1', attacker, defender);
+            expect(socketMock.emit).toHaveBeenCalledWith('attack', { lobbyId: 'lobby1', attacker, defender });
+        });
+
+        it('should emit flee on flee()', () => {
+            const player: Player = { id: 'p1', name: 'Runner' } as Player;
+            const opponent: Player = { id: 'p2', name: 'Chaser' } as Player;
+            service.flee('lobby1', player, opponent);
+            expect(socketMock.emit).toHaveBeenCalledWith('flee', { lobbyId: 'lobby1', player, opponent });
+        });
+
+        it('should start combat by emitting startBattle', () => {
+            const current: Player = { id: 'p1', name: 'Current' } as Player;
+            const opp: Player = { id: 'p2', name: 'Opponent' } as Player;
+            service.startCombat('lobby1', current, opp);
+            expect(socketMock.emit).toHaveBeenCalledWith('startBattle', { lobbyId: 'lobby1', currentPlayer: current, opponent: opp });
+        });
+
+        it('should subscribe to onStartCombat and receive data', (done) => {
+            const data = { firstPlayer: { id: 'p1', name: 'Starter' } as Player };
+            service
+                .onStartCombat()
+                .pipe(take(1))
+                .subscribe((res) => {
+                    expect(res).toEqual(data);
+                    done();
+                });
+            const callback = findSocketCallback('startCombat');
+            expect(callback).not.toBeNull();
+            if (callback) {
+                callback(data);
+            }
+        });
+
+        it('should subscribe to onCombatEnded and receive data', (done) => {
+            const data = { loser: { id: 'p2', name: 'Loser' } as Player };
+            service
+                .onCombatEnded()
+                .pipe(take(1))
+                .subscribe((res) => {
+                    expect(res).toEqual(data);
+                    done();
+                });
+            const callback = findSocketCallback('combatEnded');
+            expect(callback).not.toBeNull();
+            if (callback) {
+                callback(data);
+            }
+        });
+
+        it('should subscribe to onGameOver and receive data', (done) => {
+            const data = { winner: 'p1' };
+            service
+                .onGameOver()
+                .pipe(take(1))
+                .subscribe((res) => {
+                    expect(res).toEqual(data);
+                    done();
+                });
+            const callback = findSocketCallback('gameOver');
+            expect(callback).not.toBeNull();
+            if (callback) {
+                callback(data);
+            }
+        });
+
+        it('should subscribe to teamCreated and receive data', (done) => {
+            const data = {
+                team1Server: [{ id: 'p1', name: 'A' } as Player],
+                team2Server: [{ id: 'p2', name: 'B' } as Player],
+                updatedGameState: { id: 'game1' } as GameState,
+            };
+            service
+                .teamCreated()
+                .pipe(take(1))
+                .subscribe((res) => {
+                    expect(res).toEqual(data);
+                    done();
+                });
+            const callback = findSocketCallback('teamsCreated');
+            expect(callback).not.toBeNull();
+            if (callback) {
+                callback(data);
+            }
+        });
+
+        it('should subscribe to onFleeSuccess and receive data', (done) => {
+            const data = { fleeingPlayer: { id: 'p1', name: 'Runner' } as Player };
+            service
+                .onFleeSuccess()
+                .pipe(take(1))
+                .subscribe((res) => {
+                    expect(res).toEqual(data);
+                    done();
+                });
+            const callback = findSocketCallback('fleeSuccess');
+            expect(callback).not.toBeNull();
+            if (callback) {
+                callback(data);
+            }
+        });
+
+        it('should subscribe to onFleeFailure and receive data', (done) => {
+            const data = { fleeingPlayer: { id: 'p1', name: 'Runner' } as Player };
+            service
+                .onFleeFailure()
+                .pipe(take(1))
+                .subscribe((res) => {
+                    expect(res).toEqual(data);
+                    done();
+                });
+            const callback = findSocketCallback('fleeFailure');
+            expect(callback).not.toBeNull();
+            if (callback) {
+                callback(data);
+            }
+        });
+
+        it('should subscribe to onEventLog and receive data', (done) => {
+            const data = { gameState: { id: 'game1' } as GameState, eventType: 'TEST', description: 'An event' };
+            service
+                .onEventLog()
+                .pipe(take(1))
+                .subscribe((res) => {
+                    expect(res).toEqual(data);
+                    done();
+                });
+            const callback = findSocketCallback('eventLog');
+            expect(callback).not.toBeNull();
+            if (callback) {
+                callback(data);
+            }
+        });
+
+        it('should subscribe to onInventoryFull and receive data', (done) => {
+            const CURRENT_INVENTORY = 3;
+            const data = { item: 1, currentInventory: [1, 2, CURRENT_INVENTORY] };
+            service
+                .onInventoryFull()
+                .pipe(take(1))
+                .subscribe((res) => {
+                    expect(res).toEqual(data);
+                    done();
+                });
+            const callback = findSocketCallback('inventoryFull');
+            expect(callback).not.toBeNull();
+            if (callback) {
+                callback(data);
+            }
+        });
+
+        it('should call resolveInventory emitting resolveInventory with correct data', () => {
+            const keptItems = [1, 2];
+            service.resolveInventory('lobby1', keptItems);
+            expect(socketMock.emit).toHaveBeenCalledWith('resolveInventory', { lobbyId: 'lobby1', keptItems });
+        });
+
+        it('should call cancelInventoryChoice emitting cancelInventoryChoice', () => {
+            service.cancelInventoryChoice('lobby1');
+            expect(socketMock.emit).toHaveBeenCalledWith('cancelInventoryChoice', { lobbyId: 'lobby1' });
+        });
+
+        it('should subscribe to onBoardModified and receive data', (done) => {
+            const testData = { modified: true };
+            service
+                .onBoardModified()
+                .pipe(take(1))
+                .subscribe((res) => {
+                    expect(res).toEqual(testData);
+                    done();
+                });
+            const callback = findSocketCallback('boardModified');
+            expect(callback).not.toBeNull();
+            if (callback) {
+                callback(testData);
+            }
+        });
+
+        it('should create teams by emitting createTeams with correct data', () => {
+            const players: Player[] = [{ id: 'p1', name: 'A' } as Player, { id: 'p2', name: 'B' } as Player];
+            service.createTeams('lobby1', players);
+            expect(socketMock.emit).toHaveBeenCalledWith('createTeams', { lobbyId: 'lobby1', players });
+        });
+
+        describe('joinLobbyMessage and sendMessage methods', () => {
+            it('should call joinLobbyMessage immediately if connected', () => {
+                socketMock.connected = true;
+                service.joinLobbyMessage('lobby1');
+                expect(socketMock.emit).toHaveBeenCalledWith('joinLobby', 'lobby1');
+            });
+
+            it('should call sendMessage if connected', () => {
+                socketMock.connected = true;
+                service.sendMessage('lobby1', 'Tester', 'Hello');
+                expect(socketMock.emit).toHaveBeenCalledWith('sendMessage', { lobbyId: 'lobby1', playerName: 'Tester', message: 'Hello' });
+            });
+        });
+
+        it('should subscribe to onMessageReceived and receive data', (done) => {
+            const data = { playerName: 'Tester', message: 'Hi there' };
+            service
+                .onMessageReceived()
+                .pipe(take(1))
+                .subscribe((res) => {
+                    expect(res).toEqual(data);
+                    done();
+                });
+            const callback = findSocketCallback(GameEvents.ChatMessage);
+            expect(callback).not.toBeNull();
+            if (callback) {
+                callback(data);
+            }
+        });
+    });
+    describe('joinLobbyMessage', () => {
+        const testLobbyId = 'lobby-test';
+
+        it('should call emit immediately if socket is connected', () => {
+            socketMock.connected = true;
+            service.joinLobbyMessage(testLobbyId);
+            expect(socketMock.emit).toHaveBeenCalledWith('joinLobby', testLobbyId);
+        });
+
+        it('should call emit after connect if socket is not connected', () => {
+            socketMock.connected = false;
+            service.joinLobbyMessage(testLobbyId);
+            // Extract the callback that was registered for the 'connect' event
+            const onceCall = socketMock.once.calls.allArgs().find((args: any[]) => args[0] === 'connect');
+            expect(onceCall).toBeDefined();
+
+            // Simulate the 'connect' event
+            onceCall[1]();
+            expect(socketMock.emit).toHaveBeenCalledWith('joinLobby', testLobbyId);
         });
     });
 

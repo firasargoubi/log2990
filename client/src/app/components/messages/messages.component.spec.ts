@@ -4,7 +4,9 @@ import { CommonModule } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { ChatService } from '@app/services/chat.service';
+import { EventType } from '@common/events';
 import { Player } from '@common/player';
+import { Subject } from 'rxjs';
 import { MessagesComponent } from './messages.component';
 
 describe('MessagesComponent', () => {
@@ -13,7 +15,6 @@ describe('MessagesComponent', () => {
     let chatServiceMock: jasmine.SpyObj<ChatService>;
 
     beforeEach(async () => {
-        // Create a spy object for ChatService with the methods we need
         chatServiceMock = jasmine.createSpyObj('ChatService', ['sendMessage', 'addEvent', 'disconnect', 'resetMessages'], {
             chatMessages: [],
             eventLog: [],
@@ -27,7 +28,6 @@ describe('MessagesComponent', () => {
         fixture = TestBed.createComponent(MessagesComponent);
         component = fixture.componentInstance;
 
-        // Set required input properties
         component.lobbyId = 'test-lobby';
         component.playerName = 'test-player';
 
@@ -50,16 +50,13 @@ describe('MessagesComponent', () => {
 
     describe('chatMessages', () => {
         it('should return chat messages from service', () => {
-            // Arrange
             const testMessages = [{ playerName: 'player1', message: 'test', timestamp: '00:00:00' }];
 
-            // Directly set the mock value on the chatServiceMock
             Object.defineProperty(chatServiceMock, 'chatMessages', {
                 get: () => testMessages,
                 configurable: true,
             });
 
-            // Act & Assert
             expect(component.chatMessages).toEqual(testMessages);
             expect(component.chatMessages.length).toBe(1);
             expect(component.chatMessages[0]).toEqual({
@@ -180,6 +177,170 @@ describe('MessagesComponent', () => {
             component.newMessage = 'a'.repeat(201);
             component.sendMessage();
             expect(lobbyServiceMock.sendMessage).not.toHaveBeenCalled();
+        });
+    });
+    describe('gameListeners', () => {
+        let eventLogSubject: Subject<{
+            eventType: any;
+            gameState: any;
+            involvedPlayers?: string[];
+            involvedPlayer?: string;
+            description?: string;
+        }>;
+        let lobbyServiceMock: jasmine.SpyObj<any>;
+
+        const fakeGameState = {
+            id: 'game1',
+            board: [],
+            turnCounter: 0,
+            availableMoves: [],
+            currentPlayer: '1',
+            players: [
+                {
+                    id: '1',
+                    name: 'Player1',
+                    pendingItem: 0,
+                    avatar: '',
+                    isHost: false,
+                    life: 100,
+                    maxLife: 100,
+                    speed: 0,
+                    attack: 0,
+                    defense: 0,
+                    winCount: 0,
+                },
+            ],
+            shortestMoves: [],
+            playerPositions: [],
+            spawnPoints: [],
+            currentPlayerMovementPoints: 0,
+            currentPlayerActionPoints: 0,
+            debug: false,
+            gameMode: 'normal',
+        };
+
+        beforeEach(() => {
+            lobbyServiceMock = jasmine.createSpyObj('LobbyService', ['onEventLog']);
+            (component as any).lobbyService = lobbyServiceMock;
+            eventLogSubject = new Subject();
+            lobbyServiceMock.onEventLog.and.returnValue(eventLogSubject.asObservable());
+        });
+
+        it('should handle TurnStarted event and add log', () => {
+            spyOn<any>(component, 'addGameLog');
+            component.ngOnInit();
+
+            eventLogSubject.next({
+                eventType: EventType.TurnStarted,
+                gameState: fakeGameState,
+            });
+
+            expect((component as any).addGameLog).toHaveBeenCalledWith(EventType.TurnStarted, 'Player1');
+        });
+
+        it('should handle DoorClosed, DoorOpened, FlagPicked, and ItemPicked events and add logs correctly', () => {
+            const eventTypes = [EventType.DoorClosed, EventType.DoorOpened, EventType.FlagPicked, EventType.ItemPicked];
+            spyOn<any>(component, 'addGameLog');
+            component.ngOnInit();
+
+            eventTypes.forEach((eventType) => {
+                eventLogSubject.next({
+                    eventType,
+                    gameState: fakeGameState,
+                });
+                expect((component as any).addGameLog).toHaveBeenCalledWith(eventType, 'Player1');
+            });
+        });
+
+        it('should handle CombatStarted event and add log with involvedPlayers', () => {
+            spyOn<any>(component, 'addGameLog');
+            component.ngOnInit();
+
+            eventLogSubject.next({
+                eventType: EventType.CombatStarted,
+                gameState: fakeGameState,
+                involvedPlayers: ['Player1', 'Player2'],
+            });
+
+            expect((component as any).addGameLog).toHaveBeenCalledWith(EventType.CombatStarted, undefined, ['Player1', 'Player2']);
+        });
+
+        it('should handle DebugActivated and DebugDeactivated events and add logs without player info', () => {
+            spyOn<any>(component, 'addGameLog');
+            component.ngOnInit();
+
+            const emptyGameState = {} as any;
+            eventLogSubject.next({ eventType: EventType.DebugActivated, gameState: emptyGameState });
+            eventLogSubject.next({ eventType: EventType.DebugDeactivated, gameState: emptyGameState });
+
+            expect((component as any).addGameLog).toHaveBeenCalledWith(EventType.DebugActivated);
+            expect((component as any).addGameLog).toHaveBeenCalledWith(EventType.DebugDeactivated);
+        });
+
+        it('should handle AttackResult, FleeSuccess, FleeFailure, and CombatEnded events and add logs with involvedPlayers and description', () => {
+            const eventTypes = [EventType.AttackResult, EventType.FleeSuccess, EventType.FleeFailure, EventType.CombatEnded];
+            spyOn<any>(component, 'addGameLog');
+            component.ngOnInit();
+
+            eventTypes.forEach((eventType) => {
+                eventLogSubject.next({
+                    eventType,
+                    gameState: {} as any,
+                    involvedPlayers: ['Player1', 'Player2'],
+                    description: 'Test description',
+                });
+                expect((component as any).addGameLog).toHaveBeenCalledWith(eventType, undefined, ['Player1', 'Player2'], 'Test description');
+            });
+        });
+    });
+    describe('private addGameLog', () => {
+        beforeEach(() => {
+            chatServiceMock.getFormattedTime = jasmine.createSpy('getFormattedTime').and.returnValue('fixed-timestamp');
+        });
+
+        it('should add an event log with all parameters provided', () => {
+            (component as any).addGameLog('TestEvent', 'PlayerA', ['PlayerA', 'PlayerB'], 'Test description');
+            const gameLog = (component as any).gameLog;
+            const addedLog = gameLog[gameLog.length - 1];
+
+            expect(addedLog).toEqual({
+                timestamp: 'fixed-timestamp',
+                eventType: 'TestEvent',
+                involvedPlayer: 'PlayerA',
+                involvedPlayers: ['PlayerA', 'PlayerB'],
+                description: 'Test description',
+            });
+        });
+
+        it('should add an event log with only the event type provided', () => {
+            (component as any).addGameLog('SimpleEvent');
+            const gameLog = (component as any).gameLog;
+            const addedLog = gameLog[gameLog.length - 1];
+
+            expect(addedLog).toEqual({
+                timestamp: 'fixed-timestamp',
+                eventType: 'SimpleEvent',
+                involvedPlayer: undefined,
+                involvedPlayers: undefined,
+                description: undefined,
+            });
+        });
+    });
+    describe('chatInitialization', () => {
+        let messageSubject: Subject<{ playerName: string; message: string }>;
+
+        beforeEach(() => {
+            messageSubject = new Subject<{ playerName: string; message: string }>();
+            (component as any).lobbyService.onMessageReceived = () => messageSubject.asObservable();
+        });
+
+        it('should call chatService.addChatMessage when a new message is received', () => {
+            (component as any).chatService.addChatMessage = jasmine.createSpy('addChatMessage');
+            (component as any).chatInitialization();
+
+            const testPayload = { playerName: 'Alice', message: 'Hello, world!' };
+            messageSubject.next(testPayload);
+            expect((component as any).chatService.addChatMessage).toHaveBeenCalledWith('Alice', 'Hello, world!');
         });
     });
 });
