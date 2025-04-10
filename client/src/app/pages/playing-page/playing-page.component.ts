@@ -63,6 +63,12 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+        this.lobbyService.checkSocketStatus().subscribe(({ isConnected }) => {
+            if (!isConnected) {
+                this.notificationService.showError("Vous n'êtes pas connecté au serveur.");
+                this.router.navigate([PageUrl.Home], { replaceUrl: true });
+            }
+        });
         this.route.params.subscribe((params) => {
             const lobbyId = params['id'];
             if (lobbyId) {
@@ -194,7 +200,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             return;
         }
         if (this.lobbyId && this.currentPlayer) {
-            this.lobbyService.disconnect();
+            this.lobbyService.leaveGame(this.lobbyId, this.currentPlayer.name);
             this.router.navigate([PageUrl.Home], { replaceUrl: true });
         }
     }
@@ -308,7 +314,11 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                         this.router.navigate([PageUrl.Home], { replaceUrl: true });
                         return;
                     }
-                    this.lobbyService.updatePlayers(this.lobby.id, this.lobby.players);
+                    const opponentDeleted = this.lobby.players.find((p) => p.id === this.opponent?.id);
+                    if (opponentDeleted) {
+                        this.isInCombat = false;
+                        this.notificationService.showInfo(`${this.opponent?.name} a quitté la partie.`);
+                    }
                 }
             }),
 

@@ -60,13 +60,15 @@ export class SocketService {
         socket.on('verifyUsername', (data: { lobbyId: string }, callback: (response: { usernames: string[] }) => void) =>
             this.handleVerifyUsername(socket, data, callback),
         );
+        socket.on('checkSocketStatus', (callback: (data: { isConnected: boolean }) => void) =>
+            this.validationSocketHandlerService.verifySocketStatus(socket, callback),
+        );
 
         socket.on('requestStart', (lobbyId: string) => this.handleRequestStart(socket, lobbyId));
         socket.on('endTurn', (data: { lobbyId: string }) => this.handleEndTurn(socket, data));
         socket.on('requestMovement', (data: { lobbyId: string; coordinates: Coordinates[] }) => this.handleRequestMovement(socket, data));
         socket.on('teleport', (data: { lobbyId: string; coordinates: Coordinates }) => this.handleTeleport(socket, data));
         socket.on('setDebug', (data: { lobbyId: string; debug: boolean }) => this.handleSetDebug(socket, data));
-        socket.on('updatePlayers', (lobbyId: string, players: Player[]) => this.handlePlayersUpdate(socket, lobbyId, players));
         socket.on('openDoor', (data: { lobbyId: string; tile: Tile }) => this.handleOpenDoor(socket, data));
         socket.on('closeDoor', (data: { lobbyId: string; tile: Tile }) => this.handleCloseDoor(socket, data));
         socket.on('disconnect', () => this.handleDisconnect(socket));
@@ -283,10 +285,6 @@ export class SocketService {
             return;
         }
         this.gameActionService.closeDoor(socket, data.tile, data.lobbyId);
-    }
-
-    private handlePlayersUpdate(socket: Socket, lobbyId: string, players: Player[]): void {
-        this.gameLifecycleService.handlePlayersUpdate(socket, lobbyId, players);
     }
 
     private handleDisconnect(socket: Socket): void {

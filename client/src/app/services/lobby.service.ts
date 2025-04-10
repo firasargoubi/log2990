@@ -45,7 +45,7 @@ export class LobbyService {
         }
     }
 
-    createLobby(game: Game): void {
+    createLobby(game: Game | null): void {
         this.socket.emit('createLobby', game);
     }
 
@@ -197,6 +197,15 @@ export class LobbyService {
     verifyUsername(lobbyId: string): Observable<{ usernames: string[] }> {
         return new Observable((observer) => {
             this.socket.emit('verifyUsername', { lobbyId }, (response: { usernames: string[] }) => {
+                observer.next(response);
+                observer.complete();
+            });
+        });
+    }
+
+    checkSocketStatus(): Observable<{ isConnected: boolean }> {
+        return new Observable((observer) => {
+            this.socket.emit('checkSocketStatus', (response: { isConnected: boolean }) => {
                 observer.next(response);
                 observer.complete();
             });

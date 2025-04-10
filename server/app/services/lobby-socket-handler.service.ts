@@ -5,6 +5,7 @@ import { Player } from '@common/player';
 import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
 import { ValidationSocketHandlerService } from '@app/services/validation-socket-handler.service';
+import { EventBus } from '@app/services/event-bus';
 
 @Service()
 export class LobbySocketHandlerService {
@@ -12,6 +13,7 @@ export class LobbySocketHandlerService {
     constructor(
         private lobbies: Map<string, GameLobby>,
         private validationService: ValidationSocketHandlerService,
+        private eventBus: EventBus,
     ) {}
     setServer(server: Server) {
         this.io = server;
@@ -84,6 +86,7 @@ export class LobbySocketHandlerService {
 
         const playerIndex = lobby.players.findIndex((p) => p.name === playerName);
         if (playerIndex === -1) return;
+        const playerRemoved = lobby.players[playerIndex];
 
         lobby.players.splice(playerIndex, 1);
         if (lobby.players.length === 1) {
@@ -91,6 +94,7 @@ export class LobbySocketHandlerService {
             this.leaveGame(socket, lobbyId, player.name);
         }
         this.updateLobby(lobbyId);
+        this.eventBus.onPlayerUpdate(socket, lobbyId, playerRemoved);
     }
 
     lockLobby(socket: Socket, lobbyId: string) {

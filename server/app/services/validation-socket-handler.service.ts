@@ -55,6 +55,11 @@ export class ValidationSocketHandlerService {
         callback({ usernames: usedUsernames });
     }
 
+    verifySocketStatus(socket: Socket, callback: (data: { isConnected: boolean }) => void) {
+        const rooms = [...socket.rooms].filter((room) => room !== socket.id);
+        callback({ isConnected: rooms.length > 0 });
+    }
+
     getAvailableAvatar(lobbyId: string): string {
         const lobby = this.lobbies.get(lobbyId);
         if (!lobby) return AVATARS.fawn;
