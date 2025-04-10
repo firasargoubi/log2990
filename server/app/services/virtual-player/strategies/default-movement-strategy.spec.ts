@@ -30,7 +30,7 @@ describe('DefaultMovementStrategy', () => {
                 currentPlayer: '',
                 availableMoves: [],
                 shortestMoves: [],
-                spawnPoints: [{ x: 10, y: 10 }], // Point de spawn pour le joueur 0
+                spawnPoints: [{ x: 10, y: 10 }],
                 currentPlayerMovementPoints: 0,
                 currentPlayerActionPoints: 0,
                 debug: false,
@@ -71,7 +71,6 @@ describe('DefaultMovementStrategy', () => {
             const result = strategy.determineTarget(config, availableMoves, playerIndex);
 
             expect(result).to.deep.equal(expectedMove);
-            // expect(mockService['getClosest'].calledOnceWithExactly(config.gameState.spawnPoints[playerIndex], availableMoves)).to.be.true;
         });
 
         it('should handle empty available moves by returning spawn point', () => {
@@ -96,7 +95,6 @@ describe('DefaultMovementStrategy', () => {
             const result = strategy.determineTarget(config, availableMoves, testPlayerIndex);
 
             expect(result).to.deep.equal(expectedMove);
-            // expect(mockService['getClosest'].calledWith(config.gameState.spawnPoints[testPlayerIndex], availableMoves)).to.be.true;
         });
     });
 });
