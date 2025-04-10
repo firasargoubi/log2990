@@ -96,10 +96,6 @@ export class SocketService {
             this.handleChatMessage(data.lobbyId, data.playerName, data.message);
         });
 
-        socket.on('sendMessage', (data) => {
-            this.handleChatMessage(data.lobbyId, data.playerName, data.message);
-        });
-
         socket.on('createTeams', (data: { lobbyId: string; players: Player[] }) => {
             this.createTeams(data.lobbyId, data.players);
         });
