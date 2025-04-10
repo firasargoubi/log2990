@@ -15,6 +15,7 @@ import * as sinon from 'sinon';
 import { Server, Socket } from 'socket.io';
 import { BoardService } from './board.service';
 import { GameLifecycleService } from './game-life-cycle.service';
+import { ItemService } from './item.service';
 
 const createGameState = (): GameState => {
     return {
