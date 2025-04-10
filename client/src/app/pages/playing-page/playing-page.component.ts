@@ -56,7 +56,14 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     @HostListener('document:keydown', ['$event'])
+    @HostListener('document:keydown', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
+        const target = event.target as HTMLElement;
+
+        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.getAttribute('contenteditable') === 'true') {
+            return;
+        }
+
         if (event.key === PLAYING_PAGE.debugKey && this.currentPlayer.isHost) {
             this.setDebugMode();
         }

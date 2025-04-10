@@ -103,7 +103,7 @@ button {
 
 /* MESSAGE BUBBLE COMMON */
 .message-bubble {
-    max-width: 80%;
+    max-width: 50%;
     padding: 10px 15px;
     border-radius: 18px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -113,6 +113,8 @@ button {
     word-wrap: break-word;
     display: flex;
     flex-direction: column;
+    word-break: break-word; /* Coupe les mots longs */
+    overflow-wrap: break-word;
 }
 
 /* RECEIVED MESSAGES */
@@ -177,7 +179,6 @@ button {
     overflow-y: auto;
     font-size: 13px;
 }
-
 
 .game-log-container {
     border-radius: 8px;
@@ -258,7 +259,8 @@ button {
     flex-wrap: wrap;
 }
 
-.player, .players {
+.player,
+.players {
     color: #5c7235;
     font-weight: 600;
     padding-right: 6px;
