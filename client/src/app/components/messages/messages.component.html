@@ -5,7 +5,7 @@
 
     <div class="tabs">
         <button [class.active]="activeTab === 'chat'" (click)="activeTab = 'chat'">Chat</button>
-        <button [class.active]="activeTab === 'events'" (click)="activeTab = 'events'">Events</button>
+        <button (click)="activeTab = 'gameLog'" [class.active]="activeTab === 'gameLog'">Journal de Jeu</button>
     </div>
 
     @if (activeTab === 'chat') {
@@ -26,18 +26,35 @@
             <button (click)="sendMessage()">Envoyer</button>
         </div>
     </div>
-    } @if (activeTab === 'events') {
-    <div class="event-log">
-        @for (event of eventLog; track event) {
-        <div class="event">
-            <div class="event-details">
-                <span class="timestamp">{{ event.timestamp }}</span>
-                <span class="event-type">{{ event.eventType }}</span> :
-                <span class="event-description">{{ event.description }}</span>
-                <span class="involved-players"> Players: {{ event.involvedPlayers.join(', ') }} </span>
-            </div>
+    } @if (activeTab === 'gameLog') {
+    <div class="game-log-container" #gameLog>
+        <div class="game-log-header">
+            <button (click)="filterByCurrentPlayer = !filterByCurrentPlayer">
+                {{ filterByCurrentPlayer ? 'Afficher tous les événements' : 'Afficher mes événements' }}
+            </button>
         </div>
-        }
+        <div class="game-log-content">
+            <ul>
+                @for (event of filterGameLog; track event.timestamp) {
+                <li>
+                    <span class="timestamp">{{ event.timestamp }}</span>
+                    <span class="event">{{ event.eventType }}</span>
+                    <div class="event-details">
+                        <div class="players-wrapper">
+                            @if (event.involvedPlayer) {
+                            <span class="player">{{ event.involvedPlayer }}</span>
+                            } @if (event.involvedPlayers) {
+                            <span class="players">{{ event.involvedPlayers }}</span>
+                            }
+                        </div>
+                        @if (event.description) {
+                        <span class="description">{{ event.description }}</span>
+                        }
+                    </div>
+                </li>
+                }
+            </ul>
+        </div>
     </div>
     }
 </div>

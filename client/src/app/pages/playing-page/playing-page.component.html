@@ -55,9 +55,7 @@
     <div class="sidebar right-sidebar">
         <div class="chat-wrapper-playing">
             @if (currentPlayer && lobbyId) {
-            <app-messages [playerName]="currentPlayer.name" [lobbyId]="lobbyId"></app-messages>
-            <app-game-log [currentPlayer]="currentPlayer"></app-game-log>
-
+            <app-messages [playerName]="currentPlayer.name" [lobbyId]="lobbyId" [currentPlayer]="currentPlayer"></app-messages>
             }
         </div>
 
