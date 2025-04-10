@@ -6,7 +6,6 @@ import { CombatComponent } from '@app/components/combat/combat.component';
 import { CountdownPlayerComponent } from '@app/components/countdown-player/countdown-player.component';
 import { GameBoardComponent } from '@app/components/game-board/game-board.component';
 import { GameInfoComponent } from '@app/components/game-info/game-info.component';
-import { GameLogComponent } from '@app/components/game-log/game-log.component';
 import { InventoryComponent } from '@app/components/inventory/inventory.component';
 import { MessagesComponent } from '@app/components/messages/messages.component';
 import { MAP_SIZES, MapSize, PLAYING_PAGE, PLAYING_PAGE_DESCRIPTION } from '@app/Consts/app-constants';
@@ -25,16 +24,7 @@ import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-playing-page',
-    imports: [
-        CommonModule,
-        CountdownPlayerComponent,
-        InventoryComponent,
-        GameInfoComponent,
-        MessagesComponent,
-        GameBoardComponent,
-        CombatComponent,
-        GameLogComponent,
-    ],
+    imports: [CommonModule, CountdownPlayerComponent, InventoryComponent, GameInfoComponent, MessagesComponent, GameBoardComponent, CombatComponent],
     standalone: true,
     templateUrl: './playing-page.component.html',
     styleUrls: ['./playing-page.component.scss'],

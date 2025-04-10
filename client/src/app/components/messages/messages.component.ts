@@ -1,13 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, inject, Input, OnInit, ViewChild } from '@angular/core';
-import { PAD_TIME_VALUE } from '@app/Consts/app-constants';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { EventType } from '@common/events';
+import { MAX_MESSAGE_LENGTH } from '@app/Consts/app-constants';
 import { ChatService } from '@app/services/chat.service';
 import { LobbyService } from '@app/services/lobby.service';
+import { EventType } from '@common/events';
 import { Player } from '@common/player';
 
-const MAX_MESSAGE_LENGTH = 200;
 @Component({
     selector: 'app-messages',
     templateUrl: './messages.component.html',
@@ -19,8 +18,6 @@ export class MessagesComponent implements OnInit {
     @Input() lobbyId: string;
     @Input() playerName: string = '';
     @Input() currentPlayer: Player;
-    @ViewChild('gameLog') gameLogRef!: ElementRef<HTMLDivElement>;
-    messages: { playerName: string; message: string; timestamp: string }[] = [];
     activeTab: 'chat' | 'gameLog' = 'chat';
     newMessage: string = '';
     filterByCurrentPlayer = false;
@@ -49,10 +46,6 @@ export class MessagesComponent implements OnInit {
         if (!this.newMessage || this.newMessage.length > MAX_MESSAGE_LENGTH) return;
         this.chatService.sendMessage(this.lobbyId, this.playerName, this.newMessage);
         this.newMessage = '';
-    }
-
-    addEvent(eventType: string, description: string, involvedPlayers: string[]): void {
-        this.chatService.addEvent(eventType, description, involvedPlayers);
     }
 
     private gameListeners(): void {
@@ -91,8 +84,9 @@ export class MessagesComponent implements OnInit {
             }
         });
     }
+
     private addGameLog(eventType: string, involvedPlayer?: string, involvedPlayers?: string[], description?: string): void {
-        const timestamp = this.getFormattedTime();
+        const timestamp = this.chatService.getFormattedTime();
         const event = {
             timestamp,
             eventType,
@@ -101,27 +95,5 @@ export class MessagesComponent implements OnInit {
             description,
         };
         this.gameLog.push(event);
-        this.scrollToBottom();
-    }
-
-    private getFormattedTime(): string {
-        const now = new Date();
-        const hours = this.padTime(now.getHours());
-        const minutes = this.padTime(now.getMinutes());
-        const seconds = this.padTime(now.getSeconds());
-        return `${hours}:${minutes}:${seconds}`;
-    }
-
-    private padTime(value: number): string {
-        return value < PAD_TIME_VALUE ? `0${value}` : value.toString();
-    }
-
-    private scrollToBottom(): void {
-        setTimeout(() => {
-            const element = this.gameLogRef?.nativeElement;
-            if (element) {
-                element.scrollTop = element.scrollHeight;
-            }
-        }, 0);
     }
 }

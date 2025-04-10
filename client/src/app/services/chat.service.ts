@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { PAD_TIME_VALUE } from '@app/Consts/app-constants';
 import { GameEvents } from '@common/events';
 import { Subject } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
@@ -14,7 +15,7 @@ interface Message {
 })
 export class ChatService {
     chatMessages: { timestamp: string; playerName: string; message: string }[] = [];
-    eventLog: { timestamp: string; eventType: string; description: string; involvedPlayers: string[] }[] = [];
+    private eventLog: { timestamp: string; eventType: string; description: string; involvedPlayers: string[] }[] = [];
     private socket: Socket;
     private messageSubject = new Subject<Message>();
 
@@ -73,7 +74,7 @@ export class ChatService {
         this.chatMessages = [];
     }
 
-    private getFormattedTime(): string {
+    getFormattedTime(): string {
         const now = new Date();
         const hours = this.padTime(now.getHours());
         const minutes = this.padTime(now.getMinutes());
@@ -82,6 +83,6 @@ export class ChatService {
     }
 
     private padTime(value: number): string {
-        return value < 10 ? `0${value}` : value.toString();
+        return value < PAD_TIME_VALUE ? `0${value}` : value.toString();
     }
 }

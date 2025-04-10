@@ -98,18 +98,6 @@ describe('MessagesComponent', () => {
         });
     });
 
-    describe('addEvent()', () => {
-        it('should call chatService.addEvent with correct parameters', () => {
-            const eventType = 'test-event';
-            const description = 'test description';
-            const involvedPlayers = ['player1', 'player2'];
-
-            component.addEvent(eventType, description, involvedPlayers);
-
-            expect(chatServiceMock.addEvent).toHaveBeenCalledWith(eventType, description, involvedPlayers);
-        });
-    });
-
     describe('Template', () => {
         it('should display player name', () => {
             const element = fixture.nativeElement.querySelector('.chat-header strong');

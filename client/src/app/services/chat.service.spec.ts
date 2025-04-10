@@ -124,15 +124,6 @@ describe('ChatService', () => {
             expect(service.chatMessages[0].playerName).toBe(testMessage.playerName);
             expect(service.chatMessages[0].message).toBe(testMessage.message);
         });
-
-        it('should add event to eventLog', () => {
-            const initialCount = service.eventLog.length;
-            service.addEvent('combat', 'Player attacked', ['player1', 'player2']);
-            expect(service.eventLog.length).toBe(initialCount + 1);
-            expect(service.eventLog[initialCount].eventType).toBe('combat');
-            expect(service.eventLog[initialCount].description).toBe('Player attacked');
-            expect(service.eventLog[initialCount].involvedPlayers).toEqual(['player1', 'player2']);
-        });
     });
 
     describe('Utility Methods', () => {
