@@ -547,7 +547,7 @@ describe('LobbyService', () => {
         });
 
         it('should handle onGameOver event', (done) => {
-            const testData = { winner: 'Player 1' };
+            const testData = { winner: 'Player 1', lobby: 'lobby1', finalGameState: {} as GameState };
 
             service
                 .onGameOver()

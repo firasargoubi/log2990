@@ -45,7 +45,7 @@
                                     <span>{{ player.name }}</span>
                                 </div>
                             </td>
-                            <td>{{ player.winCount + player.loseCount }} combats</td>
+                            <td>{{ player.winCount + player.loseCount || 0 }} combats</td>
                             <td>{{ player.fleeCount }} évasions</td>
                             <td>{{ player.winCount }} victoires</td>
                             <td>{{ player.loseCount }} défaites</td>

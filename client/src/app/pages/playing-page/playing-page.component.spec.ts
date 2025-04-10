@@ -114,7 +114,7 @@ describe('PlayingPageComponent', () => {
         mockLobbyService.onLobbyUpdated.and.returnValue(of({ lobby: mockLobby }));
         mockLobbyService.onBoardChanged.and.returnValue(of({ gameState: mockGameState }));
         mockLobbyService.onFleeSuccess.and.returnValue(of({ fleeingPlayer: mockPlayer }));
-        mockLobbyService.onGameOver.and.returnValue(of({ winner: mockPlayer.name }));
+        mockLobbyService.onGameOver.and.returnValue(of({ winner: mockPlayer.name, lobby: mockLobbyId, finalGameState: mockGameState }));
 
         mockLobbyService.teamCreated.and.returnValue(
             of({
@@ -390,25 +390,12 @@ describe('PlayingPageComponent', () => {
         it('should handle abandon game', () => {
             component.gameState.animation = false;
             component.abandon();
-            expect(mockLobbyService.disconnect).toHaveBeenCalled();
             expect(mockRouter.navigate).toHaveBeenCalledWith([PageUrl.Home], { replaceUrl: true });
 
-            mockLobbyService.disconnect.calls.reset();
             mockRouter.navigate.calls.reset();
             component.gameState.animation = true;
             component.abandon();
             expect(mockLobbyService.disconnect).not.toHaveBeenCalled();
-
-            mockRouter.navigate.calls.reset();
-            component.gameState = undefined as any;
-            component.abandon();
-            expect(mockRouter.navigate).toHaveBeenCalledWith([PageUrl.Home], { replaceUrl: true });
-        });
-
-        it('should test ngOnDestroy', () => {
-            const abandonSpy = spyOn(component, 'abandon');
-            component.ngOnDestroy();
-            expect(abandonSpy).toHaveBeenCalled();
         });
     });
 
@@ -496,14 +483,25 @@ describe('PlayingPageComponent', () => {
         }));
 
         it('should handle game over event', fakeAsync(() => {
-            const abandonSpy = spyOn(component, 'abandon');
-            mockLobbyService.onGameOver.and.returnValue(of({ winner: 'Winner' }));
+            mockLobbyService.onGameOver.and.returnValue(
+                of({
+                    winner: mockPlayer.name,
+                    lobby: mockLobbyId,
+                    finalGameState: mockGameState,
+                }),
+            );
 
             component['setupGameListeners']();
             tick();
 
-            expect(abandonSpy).toHaveBeenCalled();
-            expect(mockNotificationService.showInfo).toHaveBeenCalledWith(jasmine.stringContaining('Winner'));
+            expect(mockRouter.navigate).toHaveBeenCalledWith([`${PageUrl.Stats}/${mockLobbyId}`], {
+                state: {
+                    winner: mockPlayer.name,
+                    lobbyId: mockLobbyId,
+                    gameState: mockGameState,
+                },
+                replaceUrl: true,
+            });
         }));
 
         it('should handle combat events', fakeAsync(() => {

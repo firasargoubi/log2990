@@ -30,10 +30,6 @@ export class StatsPageComponent {
         } else {
             this.winnersNames = ['Unknown'];
         }
-
-        console.log('Winners Names:', this.winnersNames);
-        console.log('Winners Avatars:', this.winnersAvatars);
-        console.log('Game State:', this.gameState);
     }
 
     return() {
