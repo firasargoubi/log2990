@@ -91,8 +91,9 @@ export class GameLifecycleService {
             this.gameStates.set(lobbyId, updatedGameState);
 
             this.io.to(lobbyId).emit(GameEvents.TurnStarted, { gameState: updatedGameState });
+            this.emitGlobalEvent(updatedGameState, EventType.TurnStarted, lobbyId);
         } catch (error) {
-            this.io.to(lobbyId).emit(GameEvents.Error, `${gameSocketMessages.turnError}${error.message}`);
+            this.io.to(lobbyId).emit(GameEvents.Error, '${gameSocketMessages.turnError}${error.message}');
         }
     }
 

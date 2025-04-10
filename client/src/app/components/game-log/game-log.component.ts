@@ -29,20 +29,7 @@ export class GameLogComponent implements OnInit {
         this.gameListeners();
     }
 
-    private addGameLog(eventType: string, involvedPlayer?: string, involvedPlayers?: string[], description?: string): void {
-        const timestamp = this.getFormattedTime();
-        const event = {
-            timestamp,
-            eventType,
-            involvedPlayer,
-            involvedPlayers,
-            description,
-        };
-        this.gameLog.push(event);
-        this.scrollToBottom();
-    }
-
-    private gameListeners(): void {
+    gameListeners(): void {
         this.lobbyService.onEventLog().subscribe((data) => {
             const eventType = data.eventType;
             switch (eventType) {
@@ -77,6 +64,18 @@ export class GameLogComponent implements OnInit {
                     break;
             }
         });
+    }
+    private addGameLog(eventType: string, involvedPlayer?: string, involvedPlayers?: string[], description?: string): void {
+        const timestamp = this.getFormattedTime();
+        const event = {
+            timestamp,
+            eventType,
+            involvedPlayer,
+            involvedPlayers,
+            description,
+        };
+        this.gameLog.push(event);
+        this.scrollToBottom();
     }
 
     private getFormattedTime(): string {

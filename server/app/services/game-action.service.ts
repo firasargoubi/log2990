@@ -42,7 +42,7 @@ export class GameActionService {
                 const result = this.boardService.handleMovement(updatedGameState, coordinate);
                 updatedGameState = result.gameState;
                 updatedGameState = this.boardService.updatePlayerMoves(updatedGameState);
-
+                this.itemEvent(result, lobbyId);
                 if (result.shouldStop) {
                     if (currentPlayer.pendingItem !== 0) {
                         this.handleInventoryFull(updatedGameState, currentPlayer, socket, lobbyId);
@@ -123,7 +123,7 @@ export class GameActionService {
             this.io.to(lobbyId).emit(GameEvents.TurnStarted, { gameState: updatedGameState });
             this.gameLifeCycleService.emitGlobalEvent(updatedGameState, EventType.TurnStarted, lobbyId);
         } catch (error) {
-            this.io.to(lobbyId).emit(GameEvents.Error, '${gameSocketMessages.turnError}${error.message}');
+            this.io.to(lobbyId).emit(GameEvents.Error, `${gameSocketMessages.turnError}${error.message}`);
         }
     }
     closeDoor(socket: Socket, tile: Tile, lobbyId: string) {
@@ -253,7 +253,7 @@ export class GameActionService {
             defender,
         });
 
-        const description = '${attacker.name} a attaqué ${defender.name} et lui a infligé ${damage} dégâts.';
+        const description = `${attacker.name} a attaqué ${defender.name} et lui a infligé ${damage} dégâts.`;
         this.gameLifeCycleService.emitEventToPlayers(EventType.AttackResult, [attacker.name, defender.name], description, attacker.id, defender.id);
     }
 
