@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/Consts/item-constants';
+import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/consts/item-constants';
 import { ObjectsTypes } from '@common/game.interface';
 import { ItemModel } from './item.model';
 

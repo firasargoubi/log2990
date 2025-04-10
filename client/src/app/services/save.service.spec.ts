@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { MapSize } from '@app/Consts/app-constants';
+import { MapSize } from '@app/consts/app-constants';
 import { Game, GameSize, GameType, ObjectsTypes, TileTypes } from '@common/game.interface';
 import { Tile } from '@common/tile';
 import { of, throwError } from 'rxjs';

@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { RouterLink } from '@angular/router';
 import { GameListComponent } from '@app/components/game-list/game-list.component';
-import { ADMIN_PAGE_CONSTANTS, GameSize, GameType } from '@app/Consts/app-constants';
+import { ADMIN_PAGE_CONSTANTS, GameSize, GameType } from '@app/consts/app-constants';
 import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
 import { SaveService } from '@app/services/save.service';

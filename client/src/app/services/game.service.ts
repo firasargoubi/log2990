@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { GAME_SERVICE_CONSTANTS } from '@app/Consts/app-constants';
+import { GAME_SERVICE_CONSTANTS } from '@app/consts/app-constants';
 import { ApiEndpoint, ApiRoutes } from '@common/api.endpoints';
 import { Game } from '@common/game.interface';
 import { EMPTY, Observable } from 'rxjs';

@@ -7,7 +7,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 import { ConfirmDeleteComponent } from '@app/components/confirm-delete/confirm-delete.component';
-import { GAME_CARD_CONSTANTS } from '@app/Consts/app-constants';
+import { GAME_CARD_CONSTANTS } from '@app/consts/app-constants';
 import { GameService } from '@app/services/game.service';
 import { NotificationService } from '@app/services/notification.service';
 import { Game } from '@common/game.interface';

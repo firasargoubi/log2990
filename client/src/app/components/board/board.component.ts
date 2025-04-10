@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, inject, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, Input, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { TileComponent } from '@app/components/tile/tile.component';
-import { RIGHT_CLICK } from '@app/Consts/app-constants';
+import { RIGHT_CLICK } from '@app/consts/app-constants';
 import { Coordinates } from '@app/interfaces/coordinates';
 import { BoardService } from '@app/services/board.service';
 import { MouseService } from '@app/services/mouse.service';
@@ -31,7 +31,7 @@ export class BoardComponent implements OnInit {
         board: [],
         objects: [],
     };
-    @ViewChildren(TileComponent) tileComponents!: QueryList<TileComponent>;
+    // @ViewChildren(TileComponent) tileComponents!: QueryList<TileComponent>;
 
     private mouseService = inject(MouseService);
     private tileService = inject(TileService);
@@ -42,7 +42,7 @@ export class BoardComponent implements OnInit {
     constructor() {
         this.saveService.isSave$.pipe(takeUntilDestroyed()).subscribe((isActive: boolean) => {
             if (isActive) {
-                this.reloadTiles();
+                this.boardService.notifyBoardUpdate();
                 this.saveService.verifyBoard(this.boardService.board);
             }
         });
@@ -111,15 +111,6 @@ export class BoardComponent implements OnInit {
     onObjectChanged(event: number, tile: Tile) {
         tile.object = event;
         this.boardService.notifyBoardChange();
-    }
-
-    reloadTiles() {
-        for (let i = 0; i < this.mapSize ** 2; i++) {
-            const tileComponent = this.tileComponents.get(i);
-            if (tileComponent) {
-                tileComponent.refreshObject();
-            }
-        }
     }
 
     modifyTile(tile: Coordinates): void {

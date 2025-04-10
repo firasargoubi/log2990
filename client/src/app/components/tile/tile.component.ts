@@ -3,8 +3,9 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ItemComponent } from '@app/components/item/item.component';
-import { DEFAULT_TILE_IMAGE, TILE_IMAGES } from '@app/Consts/tile-constants';
+import { DEFAULT_TILE_IMAGE, TILE_IMAGES } from '@app/consts/tile-constants';
 import { DEFAULT_ITEMS } from '@app/interfaces/default-items';
+import { BoardService } from '@app/services/board.service';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { TileTypes } from '@common/game.interface';
 @Component({
@@ -21,7 +22,10 @@ export class TileComponent implements OnInit {
     count: number;
     placedItem: ItemComponent[] = [];
 
-    constructor(private counterService: ObjectCounterService) {
+    constructor(
+        private counterService: ObjectCounterService,
+        private boardService: BoardService,
+    ) {
         if (!this.objectID) {
             this.counterService.spawnCounter$.subscribe((value: number) => {
                 this.count = value;
@@ -41,6 +45,9 @@ export class TileComponent implements OnInit {
                 this.decrementCounter(object);
             }
         }
+        this.boardService.boardUpdated$.subscribe(() => {
+            this.refreshObject();
+        });
     }
 
     refreshObject(): void {

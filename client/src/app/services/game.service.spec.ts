@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { GAME_SERVICE_CONSTANTS } from '@app/Consts/app-constants';
+import { GAME_SERVICE_CONSTANTS } from '@app/consts/app-constants';
 import { ApiEndpoint, ApiRoutes } from '@common/api.endpoints';
 import { Game, GameSize, GameType } from '@common/game.interface';
 import { environment } from 'src/environments/environment';

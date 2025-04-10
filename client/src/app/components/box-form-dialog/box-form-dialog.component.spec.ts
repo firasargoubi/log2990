@@ -6,12 +6,12 @@ import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testin
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
-import { CREATE_PAGE_CONSTANTS, MAIN_PAGE_CONSTANTS } from '@app/Consts/app-constants';
-import { AVATARS } from '@common/avatars';
-import { PageUrl } from '@app/Consts/route-constants';
+import { CREATE_PAGE_CONSTANTS, MAIN_PAGE_CONSTANTS } from '@app/consts/app-constants';
+import { PageUrl } from '@app/consts/route-constants';
 import { GameService } from '@app/services/game.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
+import { AVATARS } from '@common/avatars';
 import { GameLobby } from '@common/game-lobby';
 import { Game, GameSize, GameType } from '@common/game.interface';
 import { of, Subject, throwError } from 'rxjs';

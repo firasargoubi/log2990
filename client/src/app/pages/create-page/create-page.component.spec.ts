@@ -9,7 +9,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { BoxFormDialogComponent } from '@app/components/box-form-dialog/box-form-dialog.component';
 import { GameCreationCardComponent } from '@app/components/game-creation-card/game-creation-card.component';
-import { CREATE_PAGE_CONSTANTS } from '@app/Consts/app-constants';
+import { CREATE_PAGE_CONSTANTS } from '@app/consts/app-constants';
 import { GameService } from '@app/services/game.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';

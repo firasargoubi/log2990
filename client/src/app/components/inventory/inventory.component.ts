@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ItemReplacePopupComponent } from '@app/components/item-replace-popup/item-replace-popup.component';
-import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/Consts/item-constants';
+import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/consts/item-constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { ObjectsTypes } from '@common/game.interface';
 import { Player } from '@common/player';

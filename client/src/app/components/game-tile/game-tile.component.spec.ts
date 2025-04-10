@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/Consts/item-constants';
-import { DEFAULT_TILE_IMAGE, TILE_IMAGES } from '@app/Consts/tile-constants';
+import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/consts/item-constants';
+import { DEFAULT_TILE_IMAGE, TILE_IMAGES } from '@app/consts/tile-constants';
 import { ObjectsTypes, TileTypes } from '@common/game.interface';
 import { Tile } from '@common/tile';
 import { GameTileComponent } from './game-tile.component';

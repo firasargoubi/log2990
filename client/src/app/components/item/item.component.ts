@@ -2,7 +2,7 @@ import { CdkDrag } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/Consts/item-constants';
+import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/consts/item-constants';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { ObjectsTypes } from '@common/game.interface';
 import { Subscription } from 'rxjs';

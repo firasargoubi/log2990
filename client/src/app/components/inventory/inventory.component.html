@@ -3,13 +3,13 @@
     <div class="item-slot">
         <img [src]="getItemImage(item)" alt="Item {{ i + 1 }}" [matTooltip]="getItemDescription(item)" matTooltipPosition="above" />
     </div>
-    }
-
+    } @if (showPopup) {
     <app-item-replace-popup
-        *ngIf="showPopup"
         [items]="getAllInventoryItems()"
         [maxSelection]="2"
         (confirmReplace)="handleConfirmReplace($event)"
         (cancelReplace)="handleCancelReplace()"
     />
+    }
 </div>
+

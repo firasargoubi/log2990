@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/Consts/item-constants';
+import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/consts/item-constants';
 import { ObjectCounterService } from '@app/services/objects-counter.service';
 import { ObjectsTypes } from '@common/game.interface';
 import { Subject } from 'rxjs';
