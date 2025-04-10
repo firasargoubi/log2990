@@ -80,15 +80,6 @@ export class GameActionService {
         }
     }
 
-    itemEvent(result: { gameState: GameState; shouldStop: boolean; itemPicked?: boolean; item?: number }, lobbyId: string) {
-        if (result.itemPicked && result.item === ObjectsTypes.FLAG) {
-            this.gameLifeCycleService.emitGlobalEvent(result.gameState, EventType.FlagPicked, lobbyId);
-        } else if (result.itemPicked && result.item !== ObjectsTypes.FLAG) {
-            this.gameLifeCycleService.emitGlobalEvent(result.gameState, EventType.ItemPicked, lobbyId);
-        } else {
-            return;
-        }
-    }
     handleInventoryFull(updatedGameState: GameState, currentPlayer: Player, socket: Socket, lobbyId: string) {
         socket.emit('inventoryFull', {
             item: currentPlayer.pendingItem,
@@ -295,5 +286,15 @@ export class GameActionService {
 
         const tile = gameState.board[position.x][position.y];
         return tile === TileTypes.Ice;
+    }
+
+    private itemEvent(result: { gameState: GameState; shouldStop: boolean; itemPicked?: boolean; item?: number }, lobbyId: string) {
+        if (result.itemPicked && result.item === ObjectsTypes.FLAG) {
+            this.gameLifeCycleService.emitGlobalEvent(result.gameState, EventType.FlagPicked, lobbyId);
+        } else if (result.itemPicked && result.item !== ObjectsTypes.FLAG) {
+            this.gameLifeCycleService.emitGlobalEvent(result.gameState, EventType.ItemPicked, lobbyId);
+        } else {
+            return;
+        }
     }
 }

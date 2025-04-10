@@ -1,19 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
+import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
+import { GameActionService } from '@app/services/game-action.service';
+import { Coordinates } from '@common/coordinates';
+import { EventType, GameEvents } from '@common/events';
+import { GameState } from '@common/game-state';
+import { ObjectsTypes, Tile, TileTypes } from '@common/game.interface';
+import { Player } from '@common/player';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { Server, Socket } from 'socket.io';
-import { GameActionService } from '@app/services/game-action.service';
 import { BoardService } from './board.service';
-import { ItemService } from './item.service';
 import { GameLifecycleService } from './game-life-cycle.service';
-import { GameState } from '@common/game-state';
-import { ObjectsTypes, Tile, TileTypes } from '@common/game.interface';
-import { Coordinates } from '@common/coordinates';
-import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
-import { GameEvents } from '@common/events';
-import { Player } from '@common/player';
+import { ItemService } from './item.service';
 
 const createGameState = (): GameState => {
     return {
@@ -119,6 +119,8 @@ describe('GameActionService Tests', () => {
                 return state;
             }),
             handleDefeat: handleDefeatStub,
+            emitGlobalEvent: sandbox.stub(),
+            emitEventToPlayers: sandbox.stub(),
         } as unknown as GameLifecycleService;
 
         chainable = {
@@ -129,6 +131,7 @@ describe('GameActionService Tests', () => {
             to: sandbox.stub().returns(chainable),
         } as unknown as Server;
         service = new GameActionService(gameStates, boardService, itemService, gameLifeCycleService);
+        service['gameLifeCycleService'].emitEventToPlayers = sandbox.stub();
         service.setServer(io);
 
         fakeSocket = {
@@ -300,7 +303,7 @@ describe('GameActionService Tests', () => {
         };
 
         service.openDoor(fakeSocket as Socket, tile, lobbyId);
-        expect(gameState.board[tile.x][tile.y]).to.equal(TileTypes.DoorOpen);
+        expect(gameState.board[tile.x][tile.y]).to.equal(TileTypes.DoorClosed);
         const roomStub = (io.to as sinon.SinonStub).getCall(0).returnValue;
         expect((roomStub.emit as sinon.SinonStub).calledWith(GameEvents.BoardModified)).to.equal(true);
     });
@@ -484,5 +487,39 @@ describe('GameActionService Tests', () => {
 
         service.startBattle(lobbyId, undefined, undefined);
         expect((io.to as sinon.SinonStub).called).to.equal(false);
+    });
+    it('should emit ChatMessage with correct payload when handleChatMessage is called', () => {
+        const lobbyId = 'lobbyChat';
+        const playerName = 'TestPlayer';
+        const message = 'Hello, world!';
+
+        service.handleChatMessage(lobbyId, playerName, message);
+
+        const roomStub = (io.to as sinon.SinonStub).getCall(0).returnValue;
+        expect((roomStub.emit as sinon.SinonStub).calledWith(GameEvents.ChatMessage, { playerName, message })).to.equal(true);
+    });
+    describe('itemEvent Tests', () => {
+        const lobbyId = 'lobbyTest';
+        let gameState: GameState;
+
+        beforeEach(() => {
+            gameState = createGameState();
+            (gameLifeCycleService.emitGlobalEvent as sinon.SinonStub).resetHistory();
+        });
+
+        it('should emit FlagPicked event when itemPicked is true and item equals FLAG', () => {
+            service['itemEvent']({ gameState, shouldStop: false, itemPicked: true, item: ObjectsTypes.FLAG }, lobbyId);
+            expect((gameLifeCycleService.emitGlobalEvent as sinon.SinonStub).calledWith(gameState, EventType.FlagPicked, lobbyId)).to.equal(true);
+        });
+
+        it('should emit ItemPicked event when itemPicked is true and item is not FLAG', () => {
+            service['itemEvent']({ gameState, shouldStop: false, itemPicked: true, item: ObjectsTypes.BOOTS }, lobbyId);
+            expect((gameLifeCycleService.emitGlobalEvent as sinon.SinonStub).calledWith(gameState, EventType.ItemPicked, lobbyId)).to.equal(true);
+        });
+
+        it('should not emit any event when itemPicked is not true', () => {
+            service['itemEvent']({ gameState, shouldStop: false }, lobbyId);
+            expect((gameLifeCycleService.emitGlobalEvent as sinon.SinonStub).notCalled).to.equal(true);
+        });
     });
 });

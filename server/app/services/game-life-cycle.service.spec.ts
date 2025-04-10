@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { gameSocketMessages } from '@app/constants/game-socket-handler-const';
@@ -180,7 +181,7 @@ describe('GameLifecycleService', () => {
         } as unknown as GameState;
 
         gameStates.set('lobby1', gameState);
-        service.handleFlee('lobby1', { id: '1', amountEscape: 2 } as Player);
+        service.handleFlee('lobby1', { id: '1', amountEscape: 2 } as Player, { id: '2', amountEscape: 0 } as Player);
 
         expect((socket.emit as SinonStub).called).to.be.equal(false);
     });
@@ -191,9 +192,14 @@ describe('GameLifecycleService', () => {
         } as unknown as GameState;
 
         gameStates.set('lobby1', gameState);
-        service.setServer({ to: sandbox.stub().returns({ emit: sandbox.stub() }) } as unknown as any);
+        service.setServer({
+            to: sandbox.stub().returns({
+                emit: sandbox.stub(),
+                to: sandbox.stub().returnsThis(),
+            }),
+        } as unknown as any);
 
-        service.handleFlee('lobby1', { id: '1', amountEscape: 0 } as Player);
+        service.handleFlee('lobby1', { id: '1', amountEscape: 0 } as Player, { id: '2', amountEscape: 0 } as Player);
 
         expect(gameStates.get('lobby1')?.players[0].amountEscape).to.equal(0);
     });
@@ -225,7 +231,7 @@ describe('GameLifecycleService', () => {
         expect((socket.emit as SinonStub).calledWith(GameEvents.Error)).to.equal(true);
     });
     it('should return if gameState is missing on flee', () => {
-        service.handleFlee('unknown-lobby', { id: '1' } as Player);
+        service.handleFlee('unknown-lobby', { id: '1' } as Player, { id: '2' } as Player);
     });
 
     it('should emit FleeFailure if player escaped too much', () => {
@@ -234,7 +240,7 @@ describe('GameLifecycleService', () => {
         const emitStub = sandbox.stub();
         service.setServer({ to: sandbox.stub().returns({ emit: emitStub }) } as unknown as any);
 
-        service.handleFlee('lobby1', { id: '1', amountEscape: 2 } as Player);
+        service.handleFlee('lobby1', { id: '1', amountEscape: 2 } as Player, { id: '2', amountEscape: 0 } as Player);
 
         expect(emitStub.calledWith(GameEvents.FleeFailure)).to.equal(true);
     });
@@ -410,5 +416,100 @@ describe('GameLifecycleService', () => {
         await service.handleRequestStart(socket as Socket, 'lobby1');
 
         expect((socket.emit as SinonStub).calledWith(GameEvents.Error, gameSocketMessages.notEnoughPlayers)).to.equal(true);
+    });
+    it('should handleFlee and emit failure when random yields failure (non-debug mode)', () => {
+        const gameState = {
+            players: [
+                { id: '1', name: 'Player1', amountEscape: 0 },
+                { id: '2', name: 'Player2', amountEscape: 0 },
+            ],
+            debug: false,
+        } as unknown as GameState;
+        gameStates.set('lobby1', gameState);
+        service.setServer({
+            to: sandbox.stub().returns({
+                to: sandbox.stub().returns({ emit: sandbox.stub() }),
+            }),
+        } as unknown as any);
+
+        const randomStub = sandbox.stub(Math, 'random').returns(1);
+
+        const emitEventToPlayersSpy = sandbox.spy(service, 'emitEventToPlayers');
+
+        service.handleFlee(
+            'lobby1',
+            { id: '1', name: 'Player1', amountEscape: 0 } as Player,
+            { id: '2', name: 'Player2', amountEscape: 0 } as Player,
+        );
+
+        const updatedPlayer = gameState.players.find((p) => p.id === '1');
+        expect(updatedPlayer?.amountEscape).to.equal(1);
+        sinon.assert.calledWith(emitEventToPlayersSpy, sinon.match.any, ['Player1', 'Player2'], "Player1 n'a pas pu fuire.", '1', '2');
+        randomStub.restore();
+    });
+
+    it('should handleFlee and emit success when random yields success (non-debug mode)', () => {
+        const gameState = {
+            players: [
+                { id: '1', name: 'Player1', amountEscape: 0 },
+                { id: '2', name: 'Player2', amountEscape: 0 },
+            ],
+            debug: false,
+        } as unknown as GameState;
+        gameStates.set('lobby1', gameState);
+
+        const randomStub = sandbox.stub(Math, 'random').returns(0);
+
+        const socketEmitStub = sandbox.stub();
+        service.setServer({
+            to: sandbox.stub().returns({
+                to: sandbox.stub().returnsThis(),
+                emit: socketEmitStub,
+            }),
+        } as unknown as Server);
+
+        service.handleFlee(
+            'lobby1',
+            { id: '1', name: 'Player1', amountEscape: 0 } as Player,
+            { id: '2', name: 'Player2', amountEscape: 0 } as Player,
+        );
+
+        for (const player of gameState.players) {
+            expect(player.amountEscape).to.equal(0);
+        }
+
+        sinon.assert.calledWith(socketEmitStub, GameEvents.FleeSuccess, { fleeingPlayer: sinon.match.has('id', '1'), isSuccessful: true });
+        sinon.assert.calledWith(socketEmitStub, GameEvents.BoardModified, { gameState });
+
+        randomStub.restore();
+    });
+
+    it('should update fleeing player escape count when below limit and not emit io events for failure branch', () => {
+        const gameState = {
+            players: [
+                { id: '1', name: 'Player1', amountEscape: 0 },
+                { id: '2', name: 'Player2', amountEscape: 0 },
+            ],
+            debug: false,
+        } as unknown as GameState;
+        gameStates.set('lobby1', gameState);
+
+        const randomStub = sandbox.stub(Math, 'random').returns(1);
+
+        const emitEventToPlayersSpy = sandbox.spy(service, 'emitEventToPlayers');
+        const ioEmitStub = sandbox.stub();
+        service.setServer({ to: sandbox.stub().returns({ to: sandbox.stub().returnsThis(), emit: ioEmitStub }) } as unknown as Server);
+
+        service.handleFlee(
+            'lobby1',
+            { id: '1', name: 'Player1', amountEscape: 0 } as Player,
+            { id: '2', name: 'Player2', amountEscape: 0 } as Player,
+        );
+
+        const updatedPlayer = gameState.players.find((p) => p.id === '1');
+        expect(updatedPlayer?.amountEscape).to.equal(1);
+        sinon.assert.calledOnce(emitEventToPlayersSpy);
+
+        randomStub.restore();
     });
 });
