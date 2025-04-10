@@ -1,43 +1,57 @@
-<div class="game-info">
-    <div class="info-section">
-        <div class="info-item">
-            <span class="label">Mode de jeu:</span>
-            <span class="value">{{ gameMode }}</span>
-        </div>
-        <div class="info-item">
-            <span class="label">Taille de carte:</span>
-            <span class="value">{{ mapSize }}</span>
-        </div>
-        <div class="info-item">
-            <span class="label">Joueurs:</span>
-            <span class="value">{{ playerCount }}</span>
-        </div>
-    </div>
-
-    <!-- Liste des joueurs -->
-    <div class="player-list">
-        <ul>
-            @for (player of players; track player.id) {
-            <li [class.active]="gameState?.currentPlayer === player.id" [class.host]="player.isHost" [class.abandoned]="isPlayerAbandoned(player.id)">
-                <div class="player-name">
-                    @if (isPlayerAbandoned(player.id)) {
-                    <s>{{ player.name }}</s>
-                    } @else {
-                    {{ player.name }}
-                    }
-                </div>
-                <div class="player-info">
-                    <br />
-                    <!-- Ligne ajoutée ici -->
-                    <span class="battles-won">Victoires: {{ player.winCount || 0 }}</span>
-                    @if (isCTF) {
-                    <span class="team-badge" [class.team-red]="getTeam(player) === 'Red'" [class.team-blue]="getTeam(player) === 'Blue'">
-                        {{ getTeam(player) }}
-                    </span>
-                    }
-                </div>
-            </li>
+<ul class="players-container">
+    <!-- Joueurs actifs -->
+    @for (player of players; track player.id) {
+    <li [class.active]="gameState?.currentPlayer === player.id" [class.host]="player.isHost">
+        <div class="player-header">
+            @if (player.isHost) {
+            <span class="host-indicator" title="Organisateur de la partie">👑</span>
             }
-        </ul>
-    </div>
-</div>
+            <span class="player-name">
+                {{ player.name }}
+                @if (player.virtualPlayerData) {
+                <span class="virtual-indicator">💻</span>
+                } @if ((player?.items ?? []).includes(objectTypes.FLAG)) {
+                <span title="Ce joueur porte le drapeau">🏳️</span>
+                }
+            </span>
+        </div>
+
+        <div class="player-details">
+            <span class="battles-won">Victoires: {{ player.winCount || 0 }}</span>
+            @if (isCTF) {
+            <span class="team-badge" [class.team-red]="getTeam(player) === 'Red'" [class.team-blue]="getTeam(player) === 'Blue'">
+                {{ getTeam(player) }}
+            </span>
+            }
+        </div>
+    </li>
+    }
+
+    <!-- Joueurs abandonnés -->
+    @for (player of deletedPlayers; track player.id) {
+    <li class="abandoned">
+        <div class="player-header">
+            @if (player.isHost) {
+            <span class="host-indicator" title="Organisateur de la partie">👑</span>
+            }
+            <span class="player-name">
+                <del>{{ player.name }}</del>
+                @if (player.virtualPlayerData) {
+                <span class="virtual-indicator">💻</span>
+                } @if ((player?.items ?? []).includes(objectTypes.FLAG)) {
+                <span title="Ce joueur portait le drapeau">🏳️</span>
+                }
+            </span>
+        </div>
+
+        <div class="player-details">
+            <span class="battles-won">Victoires: {{ player.winCount || 0 }}</span>
+            @if (isCTF) {
+            <span class="team-badge" [class.team-red]="getTeam(player) === 'Red'" [class.team-blue]="getTeam(player) === 'Blue'">
+                {{ getTeam(player) }}
+            </span>
+            }
+        </div>
+    </li>
+    }
+</ul>
