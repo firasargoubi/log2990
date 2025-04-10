@@ -121,7 +121,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
-        this.abandon();
+        // this.abandon();
         this.subscriptions.forEach((sub) => sub.unsubscribe());
     }
 
@@ -185,18 +185,18 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     abandon() {
-        if (!this.gameState || !this.currentPlayer) {
-            this.router.navigate([PageUrl.Home], { replaceUrl: true });
-            return;
-        }
+        // if (!this.gameState || !this.currentPlayer) {
+        //     this.router.navigate([PageUrl.Home], { replaceUrl: true });
+        //     return;
+        // }
         const isAnimated = this.gameState.animation || false;
         if (isAnimated) {
             return;
         }
-        if (this.lobbyId && this.currentPlayer) {
-            this.lobbyService.disconnect();
-            this.router.navigate([PageUrl.Home], { replaceUrl: true });
-        }
+        // if (this.lobbyId && this.currentPlayer) {
+        //     this.lobbyService.disconnect();
+        // }
+        this.router.navigate([PageUrl.Home], { replaceUrl: true });
     }
 
     onInfoSent(details: string) {
@@ -329,9 +329,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             }),
 
             this.lobbyService.onGameOver().subscribe((data) => {
-                // this.abandon();
-                // this.notificationService.showInfo(`${data.winner} gagne(ent), La partie est terminée.`);
-                console.log(`${PageUrl.Stats}/${data.lobby}`);
                 this.router.navigate([`${PageUrl.Stats}/${data.lobby}`], { replaceUrl: true });
             }),
 
