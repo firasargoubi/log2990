@@ -15,6 +15,7 @@ import { Player } from '@common/player';
     imports: [FormsModule, CommonModule],
 })
 export class MessagesComponent implements OnInit {
+    private static listenersInitialized = false;
     @Input() lobbyId: string;
     @Input() playerName: string = '';
     @Input() currentPlayer: Player;
@@ -39,12 +40,16 @@ export class MessagesComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        if (!MessagesComponent.listenersInitialized) {
+            this.chatInitialization();
+            MessagesComponent.listenersInitialized = true;
+        }
         this.gameListeners();
     }
 
     sendMessage(): void {
         if (!this.newMessage || this.newMessage.length > MAX_MESSAGE_LENGTH) return;
-        this.chatService.sendMessage(this.lobbyId, this.playerName, this.newMessage);
+        this.lobbyService.sendMessage(this.lobbyId, this.playerName, this.newMessage);
         this.newMessage = '';
     }
 
@@ -82,6 +87,13 @@ export class MessagesComponent implements OnInit {
                 default:
                     break;
             }
+        });
+    }
+
+    private chatInitialization(): void {
+        this.lobbyService.onMessageReceived().subscribe((data) => {
+            const { playerName, message } = data;
+            this.chatService.addChatMessage(playerName, message);
         });
     }
 

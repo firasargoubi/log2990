@@ -11,7 +11,6 @@ import { MessagesComponent } from '@app/components/messages/messages.component';
 import { MAP_SIZES, MapSize, PLAYING_PAGE, PLAYING_PAGE_DESCRIPTION } from '@app/Consts/app-constants';
 import { PageUrl } from '@app/Consts/route-constants';
 import { ActionService } from '@app/services/action.service';
-import { ChatService } from '@app/services/chat.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { Coordinates } from '@common/coordinates';
@@ -47,7 +46,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     private route = inject(ActivatedRoute);
     private notificationService = inject(NotificationService);
     private subscriptions: Subscription[] = [];
-    private chatService: ChatService = inject(ChatService);
 
     get isAnimated(): boolean {
         return this.gameState.animation || false;
@@ -304,8 +302,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.lobbyService.onLobbyUpdated().subscribe((data) => {
                 if (data.lobby.id === this.lobbyId) {
                     this.lobby = data.lobby;
-                    this.chatService.joinLobby(this.lobbyId);
-
                     const currentPlayer = this.lobby.players.find((p) => p.id === this.currentPlayer.id);
                     if (!currentPlayer) {
                         this.lobbyService.disconnectFromRoom(this.lobbyId);
