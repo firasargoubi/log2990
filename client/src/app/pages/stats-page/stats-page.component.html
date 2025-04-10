@@ -1,68 +1,76 @@
 <div class="end-page">
-    <div class="section congratulations-section">
-        <h1 class="page-title">Félicitations à:</h1>
-        <div class="winner-name">joueur-1</div>
-    </div>
+    <div class="top-section">
+        <div class="quit-button">
+            <button (click)="return()">Retour au menu</button>
+        </div>
 
-    <div class="section stats-section">
-        <h2 class="section-title">Statistiques des joueurs</h2>
-        <div class="table-responsive">
-            <table class="stats-table">
-                <thead>
-                    <tr>
-                        <th>Nombre de combats</th>
-                        <th>Nombre d'évasions</th>
-                        <th>Nombre de victoires</th>
-                        <th>Nombre de défaites</th>
-                        <th>Total des PV perdus</th>
-                        <th>Total des dégâts infligés</th>
-                        <th>Nombre d'objets ramassés</th>
-                        <th>Pourcentage de tuiles visitées</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>10</td>
-                        <td>5.4</td>
-                        <td>3</td>
-                        <td>8</td>
-                        <td>42</td>
-                        <td>150</td>
-                        <td>5</td>
-                        <td>75%</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="congratulations-section">
+            <h1 class="page-title">Félicitations à:</h1>
+            <div class="winner-name">joueur-1</div>
         </div>
     </div>
 
-    <div class="section game-stats-section">
-        <h2 class="section-title">Statistiques de la partie</h2>
-        <div class="game-stats-list">
-            <div class="stat-item">
-                <span class="stat-label">Durée de partie (HH:MM:SS):</span>
-                <span class="stat-value">01:45:30</span>
+    <div class="main-content">
+        <div class="left-stats-section">
+            <h2 class="section-title">Statistiques des joueurs</h2>
+            <div class="table-responsive">
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre de combats</th>
+                            <th>Nombre d'évasions</th>
+                            <th>Nombre de victoires</th>
+                            <th>Nombre de défaites</th>
+                            <th>Total des PV perdus</th>
+                            <th>Total des dégâts infligés</th>
+                            <th>Nombre d'objets ramassés</th>
+                            <th>Pourcentage de tuiles visitées</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>10</td>
+                            <td>5.4</td>
+                            <td>3</td>
+                            <td>8</td>
+                            <td>42</td>
+                            <td>150</td>
+                            <td>5</td>
+                            <td>75%</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <div class="stat-item">
-                <span class="stat-label">Nombre de tours:</span>
-                <span class="stat-value">42</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Tuiles utilisées:</span>
-                <span class="stat-value">✓</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Plateau complété:</span>
-                <span class="stat-value">✓</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Bonus/pénalités appliqués:</span>
-                <span class="stat-value">✗</span>
+        </div>
+
+        <div class="right-stats-section">
+            <h2 class="section-title">Statistiques de la partie</h2>
+            <div class="game-stats-list">
+                <div class="stat-item">
+                    <span class="stat-label">Durée de partie (HH:MM:SS):</span>
+                    <span class="stat-value">01:45:30</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Nombre de tours:</span>
+                    <span class="stat-value">42</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Tuiles utilisées:</span>
+                    <span class="stat-value">✓</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Plateau complété:</span>
+                    <span class="stat-value">✓</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Bonus/pénalités appliqués:</span>
+                    <span class="stat-value">✗</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="section chat-section">
+    <div class="chat-sidebar">
         <h2 class="section-title">Clavardage</h2>
         <div class="chat-container">
             <div class="chat-messages"></div>

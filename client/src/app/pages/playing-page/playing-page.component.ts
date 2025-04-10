@@ -329,8 +329,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             }),
 
             this.lobbyService.onGameOver().subscribe((data) => {
-                this.abandon();
-                this.notificationService.showInfo(`${data.winner} gagne(ent), La partie est terminée.`);
+                // this.abandon();
+                // this.notificationService.showInfo(`${data.winner} gagne(ent), La partie est terminée.`);
+                console.log(`${PageUrl.Stats}/${data.lobby}`);
+                this.router.navigate([`${PageUrl.Stats}/${data.lobby}`], { replaceUrl: true });
             }),
 
             this.lobbyService.teamCreated().subscribe((data) => {

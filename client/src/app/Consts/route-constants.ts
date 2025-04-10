@@ -6,6 +6,7 @@ export enum PageUrl {
     Admin = '/admin',
     Waiting = '/waiting',
     Play = '/play',
+    Stats = '/statistics',
 }
 
 export enum ApiEndpoints {
