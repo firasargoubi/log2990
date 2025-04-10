@@ -13,6 +13,7 @@ import { VirtualMovementConfig } from '@app/interfaces/virtual-player.interface'
 import { Coordinates } from '@common/coordinates';
 import { VirtualPlayerService } from './virtual-player.service';
 import { GameActionService } from './game-action.service';
+import { ItemService } from './item.service';
 
 @Service()
 export class GameLifecycleService {
@@ -25,6 +26,7 @@ export class GameLifecycleService {
         private pathfindingService: PathfindingService,
         private virtualService: VirtualPlayerService,
         private gameActionService: GameActionService,
+        private itemService: ItemService,
     ) {
         this.gameActionService.setGameLifecycleService(this);
     }
@@ -165,6 +167,7 @@ export class GameLifecycleService {
         }
         loser.life = loser.maxLife;
         loser.items = [];
+        this.itemService.dropItems(loserIndex, gameState);
         gameState.playerPositions[loserIndex] = newSpawn;
         gameState.players[loserIndex] = loser;
 

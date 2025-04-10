@@ -55,6 +55,7 @@ export class Server {
             pathfindingService,
             virtualService,
             gameActionService,
+            itemService,
         );
         gameActionService.setGameLifecycleService(gameLifeCycleService);
 
