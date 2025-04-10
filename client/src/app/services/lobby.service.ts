@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Coordinates } from '@common/coordinates';
+import { GameEvents } from '@common/events';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
 import { Game, Tile } from '@common/game.interface';
@@ -333,5 +334,33 @@ export class LobbyService {
 
     createTeams(lobbyId: string, players: Player[]): void {
         this.socket.emit('createTeams', { lobbyId, players });
+    }
+
+    joinLobbyMessage(lobbyId: string): void {
+        if (this.socket.connected) {
+            this.socket.emit('joinLobby', lobbyId);
+        } else {
+            this.socket.once('connect', () => {
+                this.socket.emit('joinLobby', lobbyId);
+            });
+        }
+    }
+
+    sendMessage(lobbyId: string, playerName: string, message: string): void {
+        if (this.socket.connected) {
+            this.socket.emit('sendMessage', {
+                lobbyId,
+                playerName,
+                message,
+            });
+        }
+    }
+
+    onMessageReceived(): Observable<{ playerName: string; message: string }> {
+        return new Observable((observer) => {
+            this.socket.on(GameEvents.ChatMessage, (data: { playerName: string; message: string }) => {
+                observer.next(data);
+            });
+        });
     }
 }
