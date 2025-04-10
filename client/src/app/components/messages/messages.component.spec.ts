@@ -4,8 +4,8 @@ import { CommonModule } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { ChatService } from '@app/services/chat.service';
-import { MessagesComponent } from './messages.component';
 import { Player } from '@common/player';
+import { MessagesComponent } from './messages.component';
 
 describe('MessagesComponent', () => {
     let component: MessagesComponent;
@@ -132,12 +132,54 @@ describe('MessagesComponent', () => {
         it('should filter gameLog by current player when filterByCurrentPlayer is true', () => {
             component.filterByCurrentPlayer = true;
             const result = component.filterGameLog;
-            // Only logs with involvedPlayer "Alice" or with involvedPlayers array including "Alice" should be returned
             expect(result.length).toBe(2);
             expect(result).toEqual([
                 { timestamp: 't1', eventType: 'Test', involvedPlayer: 'Alice' },
                 { timestamp: 't3', eventType: 'Test', involvedPlayers: ['Alice', 'Charlie'] },
             ]);
+        });
+    });
+    describe('sendMessage', () => {
+        let lobbyServiceMock: jasmine.SpyObj<any>;
+
+        beforeEach(() => {
+            lobbyServiceMock = jasmine.createSpyObj('LobbyService', ['sendMessage', 'onEventLog', 'onMessageReceived']);
+            lobbyServiceMock.onEventLog.and.returnValue({
+                subscribe: () => ({
+                    unsubscribe: () => {
+                        /* no operation */
+                    },
+                }),
+            });
+            lobbyServiceMock.onMessageReceived.and.returnValue({
+                subscribe: () => ({
+                    unsubscribe: () => {
+                        /* no operation */
+                    },
+                }),
+            });
+            (component as any).lobbyService = lobbyServiceMock;
+            component.lobbyId = 'test-lobby';
+            component.playerName = 'test-player';
+        });
+
+        it('should send message when newMessage is valid', () => {
+            component.newMessage = 'Valid message';
+            component.sendMessage();
+            expect(lobbyServiceMock.sendMessage).toHaveBeenCalledWith('test-lobby', 'test-player', 'Valid message');
+            expect(component.newMessage).toBe('');
+        });
+
+        it('should not send message when newMessage is empty', () => {
+            component.newMessage = '';
+            component.sendMessage();
+            expect(lobbyServiceMock.sendMessage).not.toHaveBeenCalled();
+        });
+
+        it('should not send message when newMessage exceeds MAX_MESSAGE_LENGTH', () => {
+            component.newMessage = 'a'.repeat(201);
+            component.sendMessage();
+            expect(lobbyServiceMock.sendMessage).not.toHaveBeenCalled();
         });
     });
 });
