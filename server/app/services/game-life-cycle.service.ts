@@ -1,3 +1,4 @@
+/* eslint-disable max-params */
 import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
 import { VirtualMovementConfig } from '@app/interfaces/virtual-player.interface';
 import { Coordinates } from '@common/coordinates';
