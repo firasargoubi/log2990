@@ -8,8 +8,8 @@ import { GameBoardComponent } from '@app/components/game-board/game-board.compon
 import { GameInfoComponent } from '@app/components/game-info/game-info.component';
 import { InventoryComponent } from '@app/components/inventory/inventory.component';
 import { MessagesComponent } from '@app/components/messages/messages.component';
-import { MAP_SIZES, MapSize, PLAYING_PAGE, PLAYING_PAGE_DESCRIPTION } from '@app/Consts/app-constants';
-import { PageUrl } from '@app/Consts/route-constants';
+import { MAP_SIZES, MapSize, PLAYING_PAGE, PLAYING_PAGE_DESCRIPTION } from '@app/consts/app-constants';
+import { PageUrl } from '@app/consts/route-constants';
 import { ActionService } from '@app/services/action.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
@@ -423,6 +423,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         const itemDescriptions: Record<number, { name: string; description: string }> = {
             [ObjectsTypes.SPAWN]: { name: 'Point de départ', description: 'Le point de départ du jeu' },
         };
-        return itemDescriptions[itemId]?.name || 'Vides';
+        return itemDescriptions[itemId]?.name || 'Vide';
     }
 }

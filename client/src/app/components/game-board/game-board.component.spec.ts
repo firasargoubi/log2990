@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { SimpleChange } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { OBJECT_MULTIPLIER } from '@app/Consts/app-constants';
+import { OBJECT_MULTIPLIER } from '@app/consts/app-constants';
 import { LobbyService } from '@app/services/lobby.service';
 import { GameState } from '@common/game-state';
 import { Subject } from 'rxjs';

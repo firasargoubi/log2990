@@ -1,6 +1,6 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/Consts/item-constants';
 import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/consts/item-constants';
 
 @Component({
     selector: 'app-item-replace-popup',

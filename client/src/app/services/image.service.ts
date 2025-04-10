@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/Consts/item-constants';
-import { DEFAULT_TILE_IMAGE, TILE_IMAGES } from '@app/Consts/tile-constants';
+import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/consts/item-constants';
+import { DEFAULT_TILE_IMAGE, TILE_IMAGES } from '@app/consts/tile-constants';
 import { Tile } from '@common/tile';
 import html2canvas from 'html2canvas';
 

@@ -3,7 +3,7 @@
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TileComponent } from '@app/components/tile/tile.component';
-import { MapSize } from '@app/Consts/app-constants';
+import { MapSize } from '@app/consts/app-constants';
 import { Coordinates } from '@app/interfaces/coordinates';
 import { BoardService } from '@app/services/board.service';
 import { ErrorService } from '@app/services/error.service';

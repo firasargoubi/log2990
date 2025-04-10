@@ -1,4 +1,4 @@
-import { OBJECT_NAMES, OBJECTS_DESCRIPTION } from '@app/Consts/app-constants';
+import { OBJECT_NAMES, OBJECTS_DESCRIPTION } from '@app/consts/app-constants';
 import { ObjectsTypes } from '@common/game.interface';
 
 export const DEFAULT_ITEMS = [

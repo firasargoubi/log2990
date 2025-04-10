@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/Consts/item-constants';
-import { DEFAULT_TILE_IMAGE, TILE_IMAGES } from '@app/Consts/tile-constants';
+import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/consts/item-constants';
+import { DEFAULT_TILE_IMAGE, TILE_IMAGES } from '@app/consts/tile-constants';
 import { Player } from '@common/player';
 import { Tile } from '@common/tile';
 

@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TestBed } from '@angular/core/testing';
-import { ITEM_INFOS, UNKNOWN_ITEM } from '@app/Consts/item-constants';
-import { DEFAULT_TILE_IMAGE, TILE_IMAGES } from '@app/Consts/tile-constants';
+import { ITEM_INFOS } from '@app/consts/item-constants';
+import { DEFAULT_TILE_IMAGE, TILE_IMAGES } from '@app/consts/tile-constants';
 import { TileTypes } from '@common/game.interface';
 import { Tile } from '@common/tile';
 import { ImageService } from './image.service';

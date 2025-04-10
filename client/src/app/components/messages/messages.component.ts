@@ -1,5 +1,5 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { PAD_TIME_VALUE } from '@app/Consts/app-constants';
+import { PAD_TIME_VALUE } from '@app/consts/app-constants';
 
 @Component({
     selector: 'app-messages',
