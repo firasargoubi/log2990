@@ -305,8 +305,8 @@ export class SocketService {
         this.gameActionService.handleAttackAction(lobbyId, attacker, defender);
     }
 
-    private handleFlee(lobbyId: string, player: Player, opponent: Player) {
-        this.gameLifecycleService.handleFlee(lobbyId, player, opponent);
+    private handleFlee(lobbyId: string, player: Player) {
+        this.gameActionService.handleFlee(lobbyId, player);
     }
 
     private handleChatMessage(lobbyId: string, playerName: string, message: string) {
