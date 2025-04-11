@@ -8,7 +8,6 @@ import { Service } from 'typedi';
 import { GameService } from './game.service';
 import { ItemService } from './item.service';
 import { PathfindingService } from './pathfinding.service';
-
 @Service()
 export class BoardService {
     constructor(
@@ -100,12 +99,22 @@ export class BoardService {
         if (item !== ObjectsTypes.EMPTY && item !== ObjectsTypes.SPAWN) {
             player.items ??= [];
             player.itemsPicked ??= [];
+            gameState.flagPickedCounter ??= 0;
             if (player.items.length >= 2) {
                 player.pendingItem = item;
+                if (!player?.itemsPicked.includes(item)) {
+                    player?.itemsPicked.push(item);
+                    if (item === ObjectsTypes.FLAG) {
+                        gameState.flagPickedCounter += 1;
+                    }
+                }
             } else {
                 player.items.push(item);
                 if (!player?.itemsPicked.includes(item)) {
                     player?.itemsPicked.push(item);
+                    if (item === ObjectsTypes.FLAG) {
+                        gameState.flagPickedCounter += 1;
+                    }
                 }
                 gameState.board[targetCoordinate.x][targetCoordinate.y] = tile;
             }

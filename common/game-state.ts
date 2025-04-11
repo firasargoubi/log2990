@@ -22,7 +22,7 @@ export interface GameState {
     debug: boolean;
     gameMode: string;
     animation?: boolean;
-    flagePickedCounter?: number;
+    flagPickedCounter?: number;
     teams?: {
         team1: Player[];        
         team2: Player[];
