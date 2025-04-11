@@ -259,7 +259,8 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
     private setupGameListeners() {
         this.subscriptions.push(
-            this.lobbyService.onStartCombat().subscribe(() => {
+            this.lobbyService.onStartCombat().subscribe((data) => {
+                this.updateGameState(data.gameState);
                 this.isInCombat = true;
             }),
 
@@ -391,7 +392,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
     private updateGameState(newGameState: GameState): void {
         this.gameState = newGameState;
-
         const playerInGameState = this.gameState.players.find((p) => p.id === this.currentPlayer?.id);
         if (playerInGameState) {
             this.currentPlayer = playerInGameState;

@@ -1,4 +1,6 @@
-import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
+import { GameSocketConstants } from '@app/constants/game-socket-handler-const';
+import { VirtualMovementConfig } from '@app/interfaces/virtual-player.interface';
+import { VirtualPlayerService } from '@app/services/virtual-player.service';
 import { Coordinates } from '@common/coordinates';
 import { GameEvents } from '@common/events';
 import { GameState } from '@common/game-state';
@@ -7,10 +9,8 @@ import { Player } from '@common/player';
 import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
 import { BoardService } from './board.service';
-import { VirtualPlayerService } from '@app/services/virtual-player.service';
 import { GameLifecycleService } from './game-life-cycle.service';
 import { ItemService } from './item.service';
-import { VirtualMovementConfig } from '@app/interfaces/virtual-player.interface';
 
 @Service()
 export class GameActionService {
@@ -82,34 +82,41 @@ export class GameActionService {
                 (gameState.teams.team1.some((p) => p.id === currentPlayer.id) && gameState.teams.team1.some((p) => p.id === opponent.id)) ||
                 (gameState.teams.team2.some((p) => p.id === currentPlayer.id) && gameState.teams.team2.some((p) => p.id === opponent.id));
             if (isSameTeam) {
-                this.io.to(currentPlayer.id).to(opponent.id).emit(GameEvents.Error, gameSocketMessages.sameTeam);
+                this.io.to(currentPlayer.id).to(opponent.id).emit('startCombat', { firstPlayer: currentPlayer, gameState });
                 return;
             }
         }
-        gameState.currentPlayerActionPoints = 0;
-        currentPlayer.amountEscape = 0;
-        opponent.amountEscape = 0;
+
         const currentPlayerIndex = gameState.players.findIndex((p) => p.id === currentPlayer.id);
         const opponentIndex = gameState.players.findIndex((p) => p.id === opponent.id);
+        if (currentPlayerIndex === -1 || opponentIndex === -1) return;
 
-        if (currentPlayerIndex !== -1) {
-            gameState.players[currentPlayerIndex].amountEscape = 0;
-            gameState.players[currentPlayerIndex].currentAP = 0;
-        }
-        if (opponentIndex !== -1) gameState.players[opponentIndex].amountEscape = 0;
+        const attacker = gameState.players[currentPlayerIndex];
+        const defender = gameState.players[opponentIndex];
 
-        let firstPlayer = currentPlayer;
-        if (opponent.speed > currentPlayer.speed) {
-            firstPlayer = opponent;
-        } else if (opponent.speed === currentPlayer.speed) {
-            firstPlayer = currentPlayer;
+        attacker.fightCount = (attacker.fightCount || 0) + 1;
+        defender.fightCount = (defender.fightCount || 0) + 1;
+        attacker.amountEscape = 0;
+        defender.amountEscape = 0;
+        attacker.currentAP = 0;
+        gameState.currentPlayerActionPoints = 0;
+
+        let firstPlayer = attacker;
+        if (defender.speed > attacker.speed) {
+            firstPlayer = defender;
+        } else if (defender.speed === attacker.speed) {
+            firstPlayer = attacker;
         }
-        this.io.to(currentPlayer.id).to(opponent.id).emit('startCombat', { firstPlayer });
+
+        this.gameStates.set(lobbyId, gameState);
+        console.log('le gameState dans la liste des gameStates:', this.gameStates.get(lobbyId).players);
+        this.io.to(attacker.id).to(defender.id).emit('startCombat', { firstPlayer, gameState });
 
         if (firstPlayer.virtualPlayerData) {
-            setTimeout(() => this.handleVirtualCombatTurn(lobbyId, firstPlayer, currentPlayer, opponent), GameSocketConstants.CombatTurnDelay);
+            setTimeout(() => this.handleVirtualCombatTurn(lobbyId, firstPlayer, attacker, defender), GameSocketConstants.CombatTurnDelay);
         }
     }
+
     handleAttackAction(lobbyId: string, attacker: Player, defender: Player) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
@@ -118,6 +125,9 @@ export class GameActionService {
         if (attackerIndex === -1 || defenderIndex === -1) {
             return;
         }
+        const serverAttacker = gameState.players[attackerIndex];
+        const serverDefender = gameState.players[defenderIndex];
+
         let attackDice = Math.floor(Math.random() * this.getDiceValue(attacker.bonus.attack)) + 1;
         let defenseDice = Math.floor(Math.random() * this.getDiceValue(defender.bonus.defense)) + 1;
 
@@ -133,44 +143,42 @@ export class GameActionService {
             attackDice = attacker.attack;
             defenseDice = 1;
         }
-        const damage = Math.max(0, attackDice + attacker.attack - defenseDice - defender.defense);
-
-        this.itemService.applyPotionEffect(attacker, defender);
-
+        const damage = Math.max(0, attackDice + serverAttacker.attack - defenseDice - serverDefender.defense);
+        this.itemService.applyPotionEffect(serverAttacker, serverDefender);
         if (damage > 0) {
-            defender.life -= damage;
+            serverDefender.life -= damage;
         }
+        this.itemService.applyJuiceEffect(serverDefender);
 
-        this.itemService.applyJuiceEffect(defender);
-
-        if (defender.life <= 0) {
-            attacker.winCount += 1;
+        if (serverDefender.life <= 0) {
+            serverAttacker.winCount++;
+            serverDefender.loseCount++;
             for (const player of gameState.players) {
                 player.amountEscape = 0;
             }
-            if (attacker.winCount === GameSocketConstants.MaxWinCount) {
-                this.io.to(lobbyId).emit('gameOver', { winner: attacker.name, lobby: lobbyId, finalGameState: gameState });
+            if (serverAttacker.winCount === GameSocketConstants.MaxWinCount) {
+                this.io.to(lobbyId).emit('gameOver', { winner: serverAttacker.name, lobby: lobbyId, finalGameState: gameState });
                 return;
             }
-            this.gameLifeCycleService.handleDefeat(lobbyId, attacker, defender);
+            this.gameLifeCycleService.handleDefeat(lobbyId, serverAttacker, serverDefender);
             return;
         }
 
         this.io.to(lobbyId).emit('attackResult', {
-            attackRoll: attackDice + attacker.attack,
-            defenseRoll: defenseDice + defender.defense,
-            attackerHP: attacker.life,
-            defenderHP: defender.life,
+            attackRoll: attackDice + serverAttacker.attack,
+            defenseRoll: defenseDice + serverDefender.defense,
+            attackerHP: serverAttacker.life,
+            defenderHP: serverDefender.life,
             damage,
-            attacker,
-            defender,
+            attacker: serverAttacker,
+            defender: serverDefender,
         });
 
-        const nextPlayer = defender;
+        const nextPlayer = serverDefender;
         if (nextPlayer.virtualPlayerData) {
             gameState.currentPlayer = nextPlayer.id;
             this.gameStates.set(lobbyId, gameState);
-            setTimeout(() => this.handleVirtualCombatTurn(lobbyId, nextPlayer, attacker, defender), GameSocketConstants.CombatTurnDelay);
+            setTimeout(() => this.handleVirtualCombatTurn(lobbyId, nextPlayer, serverAttacker, serverDefender), GameSocketConstants.CombatTurnDelay);
         }
     }
 
@@ -207,10 +215,11 @@ export class GameActionService {
         }
 
         if (isSuccessful) {
+            fleeingPlayer.fleeCount++;
+            gameState.players[playerIndex] = fleeingPlayer;
             for (const player of gameState.players) {
                 player.amountEscape = 0;
             }
-            this.gameStates.set(lobbyId, gameState);
             this.io.to(lobbyId).emit(GameEvents.FleeSuccess, { fleeingPlayer, isSuccessful });
             this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState });
 

@@ -20,8 +20,9 @@ export interface Player {
     };
     currentMP?: number;
     currentAP?: number;
+    fightCount?: number;
     winCount: number;
-    loseCount?: number;
+    loseCount: number;
     items?: number[];
     fleeCount?: number;
     damageReceived?: number;
