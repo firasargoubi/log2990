@@ -56,9 +56,9 @@ describe('ChatService', () => {
         const mockDate = new Date(2023, 0, 1, 13, 5, 9);
         jasmine.clock().install();
         jasmine.clock().mockDate(mockDate);
-
         const time = (service as any).getFormattedTime();
         expect(time).toBe('13:05:09');
+        jasmine.clock().uninstall();
     });
     it('should pad time values correctly', () => {
         expect((service as any).padTime(9)).toBe('09');

@@ -252,7 +252,6 @@ describe('PlayingPageComponent', () => {
             mockActionService.findOpponent.and.returnValue(opponent);
 
             component.onActionRequest(mockTile);
-            expect(component.isInCombat).toBe(true);
             expect(mockLobbyService.startCombat).toHaveBeenCalledWith(mockLobbyId, mockPlayer, opponent);
         });
 
@@ -344,13 +343,6 @@ describe('PlayingPageComponent', () => {
             component.isInCombat = true;
             component['updateGameState'](combatGameState);
             expect(component.isInCombat).toBe(true);
-
-            const noCombatGameState = {
-                ...mockGameState,
-                combat: { isActive: false },
-            };
-            component['updateGameState'](noCombatGameState);
-            expect(component.isInCombat).toBe(false);
         });
 
         it('should notify players about turns', () => {

@@ -116,7 +116,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 }
                 return;
             }
-            this.isInCombat = true;
             if (opponent) {
                 this.lobbyService.startCombat(this.lobbyId, this.currentPlayer, opponent);
             }
@@ -267,8 +266,8 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     private setupGameListeners() {
         this.subscriptions.push(
             this.lobbyService.onStartCombat().subscribe((data) => {
-                this.isInCombat = true;
                 this.isFirstInCombat = data.firstPlayer.id === this.currentPlayer.id;
+                this.isInCombat = true;
             }),
 
             this.lobbyService.onCombatEnded().subscribe((data) => {
@@ -403,11 +402,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.currentPlayer = playerInGameState;
             this.inventoryItems = this.currentPlayer?.items ?? [];
             this.lobbyService.setCurrentPlayer(this.currentPlayer);
-        }
-
-        const combatState = this.gameState.combat;
-        if (!combatState || !combatState.isActive) {
-            this.isInCombat = false;
         }
     }
 
