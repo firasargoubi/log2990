@@ -46,7 +46,7 @@
                                 </div>
                             </td>
                             <td>{{ player.fightCount }} combats</td>
-                            <td>{{ player.fleeCount }} évasions</td>    
+                            <td>{{ player.fleeCount }} évasions</td>
                             <td>{{ player.winCount }} victoires</td>
                             <td>{{ player.loseCount }} défaites</td>
                             <td>{{ player.damageReceived }} PV</td>
@@ -65,11 +65,11 @@
             <div class="game-stats-list">
                 <div class="stat-item">
                     <span class="stat-label">Durée de partie (HH:MM:SS):</span>
-                    <span class="stat-value">01:45:30</span>
+                    <span class="stat-value">{{ formattedDuration }}</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Nombre de tours: </span>
-                    <span class="stat-value">{{gameState.turnCounter}}</span>
+                    <span class="stat-value">{{ gameState.turnCounter }}</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Tuiles utilisées:</span>

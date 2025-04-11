@@ -257,6 +257,7 @@ export class GameLifecycleService {
                     const isInSpawnPoints = JSON.stringify(originalSpawn) === JSON.stringify(gameState.playerPositions[indexPlayer]);
                     updatedGameState.animation = false;
                     if (hasFlag && isInSpawnPoints) {
+                        gameState.endDate = new Date();
                         const winningTeam = gameState.teams.team1.some((p) => p.id === currentPlayer.id) ? 'Red' : 'Blue';
                         const winningTeamPlayers =
                             winningTeam === 'Red'

@@ -26,4 +26,6 @@ export interface GameState {
         team1: Player[];        
         team2: Player[];
     };
+    startDate: Date | string;
+    endDate?: Date | string;
 }

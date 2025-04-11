@@ -152,6 +152,7 @@ export class GameActionService {
         if (serverDefender.life <= 0) {
             serverAttacker.winCount++;
             serverDefender.loseCount++;
+            gameState.endDate = new Date();
             for (const player of gameState.players) {
                 player.amountEscape = 0;
             }

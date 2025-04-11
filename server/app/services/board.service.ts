@@ -46,6 +46,7 @@ export class BoardService {
             currentPlayerActionPoints: BoardSocketConstants.DefaultActionPoints,
             debug: false,
             gameMode: gameData.mode,
+            startDate: new Date(),
         };
 
         this.itemService.randomizeItem(gameState);
