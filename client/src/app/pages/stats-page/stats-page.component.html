@@ -49,8 +49,8 @@
                             <td>{{ player.fleeCount }} évasions</td>    
                             <td>{{ player.winCount }} victoires</td>
                             <td>{{ player.loseCount }} défaites</td>
-                            <td>{{ player.damageReceived }} PV</td>
-                            <td>{{ player.damageDealt }} PV</td>
+                            <td>{{ player?.damageReceived }} PV</td>
+                            <td>{{ player?.damageDealt }} PV</td>
                             <td>{{ player.itemsPicked?.length || 0 }} objets</td>
                             <td>{{ player.tileVisited || 0 }}%</td>
                         </tr>
@@ -81,6 +81,10 @@
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Bonus/pénalités appliqués:</span>
+                    <span class="stat-value">✗</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Nombre de joueurs qui ont eu le drapeau</span>
                     <span class="stat-value">✗</span>
                 </div>
             </div>

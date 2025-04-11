@@ -138,10 +138,12 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
                     this.currentPlayer = data.attacker;
                     this.opponent = data.defender;
                     this.canAct = false;
+                    this.currentPlayer.damageDealt = data.attackerDamageDealt;
                 } else {
                     this.currentPlayer = data.defender;
                     this.opponent = data.attacker;
                     this.canAct = true;
+                    this.currentPlayer.damageReceived = data.defenderDamageReceived;
                 }
                 this.countDown = this.canEscape ? BASE_COUNTDOWN : LOWERED_COUNTDOWN;
                 this.startCountdown();
