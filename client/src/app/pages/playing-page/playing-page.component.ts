@@ -37,6 +37,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     tileInfo: Tile;
     isCTF: boolean = false;
     isInCombat: boolean = false;
+    isFirstInCombat: boolean = false;
     lobby: GameLobby;
     inventoryItems: number[] = [];
     private debug: boolean = false;
@@ -265,8 +266,9 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
     private setupGameListeners() {
         this.subscriptions.push(
-            this.lobbyService.onStartCombat().subscribe(() => {
+            this.lobbyService.onStartCombat().subscribe((data) => {
                 this.isInCombat = true;
+                this.isFirstInCombat = data.firstPlayer.id === this.currentPlayer.id;
             }),
 
             this.lobbyService.onCombatEnded().subscribe((data) => {
