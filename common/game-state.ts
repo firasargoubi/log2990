@@ -1,5 +1,6 @@
 import { Coordinates } from '@common/coordinates';
 import { Player } from '@common/player';
+import { Tile } from './game.interface';
 
 export interface GameState {
     id: string;
@@ -23,6 +24,10 @@ export interface GameState {
     gameMode: string;
     animation?: boolean;
     flagPickedCounter?: number;
+    doorOpenedCounter?: number;
+    percentageDoorOpened?: number;
+    amountClosedDoors?: number;
+    doorOpened?: Tile[];
     teams?: {
         team1: Player[];        
         team2: Player[];
