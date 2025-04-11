@@ -38,7 +38,6 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
         damageReceived: 0,
         damageDealt: 0,
         itemsPicked: [],
-        tileVisited: [],
         pendingItem: 0,
     };
     hostId: string = WAITING_PAGE.defaultPlayerId;

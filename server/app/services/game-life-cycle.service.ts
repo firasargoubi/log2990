@@ -236,6 +236,7 @@ export class GameLifecycleService {
                 if (!idx) {
                     continue;
                 }
+                this.updateVisitedTiles(currentPlayer, coordinate);
                 const result = this.boardService.handleMovement(updatedGameState, coordinate);
                 updatedGameState = result.gameState;
                 updatedGameState = this.boardService.updatePlayerMoves(updatedGameState);
@@ -351,5 +352,15 @@ export class GameLifecycleService {
 
     private async delay(ms: number): Promise<void> {
         return new Promise<void>((resolve) => setTimeout(resolve, ms));
+    }
+
+    private updateVisitedTiles(player: Player, coordinates: { x: number; y: number }) {
+        if (!player.visitedTiles) {
+            player.visitedTiles = [];
+        }
+
+        if (!player.visitedTiles.some((tile) => tile.x === coordinates.x && tile.y === coordinates.y)) {
+            player.visitedTiles.push(coordinates);
+        }
     }
 }

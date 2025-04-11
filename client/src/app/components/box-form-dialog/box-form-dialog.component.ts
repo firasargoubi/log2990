@@ -283,7 +283,6 @@ export class BoxFormDialogComponent implements OnDestroy {
             damageReceived: 0,
             damageDealt: 0,
             itemsPicked: [],
-            tileVisited: [],
             pendingItem: 0,
         };
     }

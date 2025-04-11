@@ -71,7 +71,6 @@ export class VirtualPlayerDialogComponent implements OnInit {
             damageReceived: 0,
             damageDealt: 0,
             itemsPicked: [],
-            tileVisited: [],
             pendingItem: 0,
             virtualPlayerData: {
                 profile: this.selectedProfile,

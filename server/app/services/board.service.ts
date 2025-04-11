@@ -51,14 +51,15 @@ export class BoardService {
         this.itemService.randomizeItem(gameState);
         this.sortPlayersBySpeed(gameState);
         await this.assignSpawnPoints(gameState);
-
+        gameState.players.forEach((player, index) => {
+            player.visitedTiles = [gameState.playerPositions[index]];
+        });
         if (gameState.players.length > 0) {
             gameState.players[0].currentMP = this.getPlayerMovementPoints(gameState.players[0]);
             gameState.players[0].currentAP = BoardSocketConstants.DefaultActionPoints;
             gameState.currentPlayer = gameState.players[0].id;
             gameState.currentPlayerMovementPoints = this.getPlayerMovementPoints(gameState.players[0]);
         }
-
         return gameState;
     }
 

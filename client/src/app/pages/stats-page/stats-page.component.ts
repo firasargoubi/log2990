@@ -16,6 +16,7 @@ export class StatsPageComponent {
     timeSeconds: number = 0;
     timeMinutes: number = 0;
     timeHours: number = 0;
+    boardSize: number;
 
     constructor(private router: Router) {
         const navigation = this.router.getCurrentNavigation();
@@ -28,6 +29,7 @@ export class StatsPageComponent {
         if (state) {
             this.winnersNames = Array.isArray(state.winner) ? state.winner : state.winner.split(', ').map((name) => name.trim());
             this.gameState = state.gameState;
+            this.boardSize = this.gameState.board.length * this.gameState.board[0].length;
 
             if (this.gameState.endDate) {
                 this.gameState.startDate = this.parseDate(this.gameState.startDate);
@@ -57,6 +59,10 @@ export class StatsPageComponent {
 
     trackByName(index: number, name: string) {
         return name;
+    }
+
+    floor(number: number): number {
+        return Math.floor(number);
     }
 
     private parseDate(value: Date | string): Date {

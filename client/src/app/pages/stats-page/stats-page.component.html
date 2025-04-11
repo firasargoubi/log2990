@@ -52,7 +52,7 @@
                             <td>{{ player?.damageReceived }} PV</td>
                             <td>{{ player?.damageDealt }} PV</td>
                             <td>{{ player.itemsPicked?.length || 0 }} objets</td>
-                            <td>{{ player.tileVisited || 0 }}%</td>
+                            <td>{{ floor(((player.visitedTiles?.length || 0) / boardSize) * 100) }}%</td>
                         </tr>
                         }
                     </tbody>
