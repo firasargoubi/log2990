@@ -109,7 +109,6 @@ export class GameActionService {
         }
 
         this.gameStates.set(lobbyId, gameState);
-        console.log('le gameState dans la liste des gameStates:', this.gameStates.get(lobbyId).players);
         this.io.to(attacker.id).to(defender.id).emit('startCombat', { firstPlayer, gameState });
 
         if (firstPlayer.virtualPlayerData) {

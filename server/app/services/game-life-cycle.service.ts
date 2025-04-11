@@ -166,8 +166,8 @@ export class GameLifecycleService {
             newSpawn = this.pathfindingService.findClosestAvailableSpot(gameState, originalSpawn);
         }
         loser.life = loser.maxLife;
-        loser.items = [];
         this.itemService.dropItems(loserIndex, gameState);
+        loser.items = [];
         gameState.playerPositions[loserIndex] = newSpawn;
         gameState.players[loserIndex] = loser;
 
