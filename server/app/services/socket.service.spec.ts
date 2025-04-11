@@ -44,6 +44,7 @@ describe('SocketService', () => {
             handleEndTurn: sandbox.stub(),
             handleSetDebug: sandbox.stub(),
             handlePlayersUpdate: sandbox.stub(),
+            handleRequestMovement: sandbox.stub(),
             handleFlee: sandbox.stub(),
             getGameStateOrEmitError: sandbox.stub(),
             createTeams: sandbox.stub(),
@@ -51,7 +52,6 @@ describe('SocketService', () => {
 
         gameActionService = {
             setServer: sandbox.stub(),
-            handleRequestMovement: sandbox.stub(),
             startBattle: sandbox.stub(),
             handleAttackAction: sandbox.stub(),
             handleTeleport: sandbox.stub(),
@@ -427,7 +427,7 @@ describe('SocketService', () => {
         if (requestMovementHandler) {
             const coordinates = [{ x: 1, y: 2 }];
             requestMovementHandler({ lobbyId: 'lobby1', coordinates });
-            expect(gameActionService.handleRequestMovement.calledWith(mockSocket, 'lobby1', coordinates)).to.equal(true);
+            expect(gameLifecycleService.handleRequestMovement.calledWith(mockSocket, 'lobby1', coordinates)).to.equal(true);
 
             mockSocket.emit.resetHistory();
             requestMovementHandler({ lobbyId: 'lobby1', coordinates: null });
