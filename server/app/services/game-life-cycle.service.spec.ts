@@ -22,7 +22,6 @@ import { VirtualPlayerService } from './virtual-player.service';
 
 const TILE_DOOR_OPEN = 3;
 const ANIMATION_DELAY_MS = 100;
-// const PLAYER_TEAM_CONST = 0.5;
 
 describe('GameLifecycleService', () => {
     let sandbox: SinonSandbox;

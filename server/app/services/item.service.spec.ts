@@ -299,8 +299,8 @@ describe('ItemService - applyPotionEffect & applyJuiceEffect', () => {
         it('should remove BOOTS effect (-2 speed, +1 attack)', () => {
             itemService.removeAttributeEffects(player, ObjectsTypes.BOOTS);
 
-            expect(player.speed).to.equal(3); // 5 - 2
-            expect(player.attack).to.equal(4); // 3 - (-1)
+            expect(player.speed).to.equal(3);
+            expect(player.attack).to.equal(4);
         });
 
         it('should not decrease life below 0', () => {
@@ -309,7 +309,7 @@ describe('ItemService - applyPotionEffect & applyJuiceEffect', () => {
             ITEM_EFFECTS[lifeItem] = { life: 5 };
 
             itemService.removeAttributeEffects(player, lifeItem);
-            expect(player.life).to.equal(0); // 1 - 5 → max(0, -4)
+            expect(player.life).to.equal(0);
         });
 
         it('should do nothing if item has no effect', () => {

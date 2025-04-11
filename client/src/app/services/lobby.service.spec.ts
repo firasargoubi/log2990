@@ -694,7 +694,6 @@ describe('LobbyService', () => {
         });
     });
     describe('Additional methods for 100% coverage', () => {
-        // Helper to get socket.on callbacks
         const findSocketCallback = (event: string): Function | null => {
             const call = socketMock.on.calls.allArgs().find((args: any[]) => args[0] === event);
             return call ? call[1] : null;
@@ -1065,11 +1064,9 @@ describe('LobbyService', () => {
         it('should call emit after connect if socket is not connected', () => {
             socketMock.connected = false;
             service.joinLobbyMessage(testLobbyId);
-            // Extract the callback that was registered for the 'connect' event
             const onceCall = socketMock.once.calls.allArgs().find((args: any[]) => args[0] === 'connect');
             expect(onceCall).toBeDefined();
 
-            // Simulate the 'connect' event
             onceCall[1]();
             expect(socketMock.emit).toHaveBeenCalledWith('joinLobby', testLobbyId);
         });

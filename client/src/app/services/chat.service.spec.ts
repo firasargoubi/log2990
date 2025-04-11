@@ -30,7 +30,6 @@ describe('ChatService', () => {
             connected: false,
         };
 
-        // Mock the io function
         mockIo = jasmine.createSpy('io').and.returnValue(mockSocket);
         (window as any).io = mockIo;
 

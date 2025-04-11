@@ -76,7 +76,7 @@ const createGameState = (): GameState => {
 describe('GameActionService Updated Tests', () => {
     let sandbox: sinon.SinonSandbox;
     let gameStates: Map<string, GameState>;
-    let clock: sinon.SinonFakeTimers; // Declare clock variable
+    let clock: sinon.SinonFakeTimers;
     let boardService: BoardService;
     let itemService: ItemService;
     let virtualService: VirtualPlayerService;
@@ -131,8 +131,8 @@ describe('GameActionService Updated Tests', () => {
             handleEndTurn: sandbox.stub(),
             handleDefeat: sandbox.stub(),
             delay: sandbox.stub(),
-            emitGlobalEvent: sandbox.stub(), // ✅ ajouté
-            emitEventToPlayers: sandbox.stub(), // ✅ ajouté
+            emitGlobalEvent: sandbox.stub(),
+            emitEventToPlayers: sandbox.stub(),
         } as unknown as GameLifecycleService;
 
         io = {
@@ -153,7 +153,7 @@ describe('GameActionService Updated Tests', () => {
     afterEach(() => {
         if (clock) {
             clock.restore();
-            clock = undefined as any; // ✅ Important pour éviter les doublons
+            clock = undefined as any;
         }
         sandbox.restore();
     });
@@ -368,7 +368,7 @@ describe('GameActionService Updated Tests', () => {
             state.playerPositions[0] = { x: 0, y: 0 };
             service.handleAttackAction(lobbyId, attacker, defender);
             const attackRoll = (chainable.emit as sinon.SinonStub).getCall(0).args[1].attackRoll;
-            expect(attackRoll).to.equal(9); // 5 (attack) + 2 (dice) - 2 (ice) = 5
+            expect(attackRoll).to.equal(9);
         });
 
         it('should reduce defenseDice by 2 when defender is on ice tile', () => {
@@ -376,7 +376,7 @@ describe('GameActionService Updated Tests', () => {
             state.playerPositions[1] = { x: 1, y: 0 };
             service.handleAttackAction(lobbyId, attacker, defender);
             const defenseRoll = (chainable.emit as sinon.SinonStub).getCall(0).args[1].defenseRoll;
-            expect(defenseRoll).to.equal(6); // 3 (defense) + 3 (dice) - 2 (ice) = 4
+            expect(defenseRoll).to.equal(6);
         });
 
         it('should set attackDice to attacker.attack and defenseDice to 1 when debug is true', () => {
@@ -384,8 +384,8 @@ describe('GameActionService Updated Tests', () => {
             service.handleAttackAction(lobbyId, attacker, defender);
             const attackRoll = (chainable.emit as sinon.SinonStub).getCall(0).args[1].attackRoll;
             const defenseRoll = (chainable.emit as sinon.SinonStub).getCall(0).args[1].defenseRoll;
-            expect(attackRoll).to.equal(9); // 5 (attack) * 2 = 10
-            expect(defenseRoll).to.equal(4); // 3 (defense) + 1 = 4
+            expect(attackRoll).to.equal(9);
+            expect(defenseRoll).to.equal(4);
         });
 
         it('should increase attacker winCount and reset amountEscape for all players when defender.life <= 0', () => {
@@ -484,20 +484,6 @@ describe('GameActionService Updated Tests', () => {
             chainable.emit.resetHistory();
             service.handleFlee(lobbyId, fleeingPlayer);
         });
-
-        // it('should reset amountEscape (to 0) on successful flee and emit FleeSuccess and BoardModified', () => {
-        //     state.debug = true;
-        //     fleeingPlayer.amountEscape = 1;
-        //     chainable.emit.resetHistory();
-        //     service.handleFlee(lobbyId, fleeingPlayer);
-        //     expect(fleeingPlayer.amountEscape).to.equal(2);
-        //     sinon.assert.calledWith(chainable.emit, GameEvents.FleeSuccess, {
-        //         fleeingPlayer,
-        //         isSuccessful: true,
-        //     });
-        //     sinon.assert.calledWith(chainable.emit, GameEvents.BoardModified, { gameState: state });
-        // });
-
         it('should trigger virtual movement on successful flee when opponent is virtual with MP > 0', () => {
             fleeingPlayer.amountEscape = 0;
             opponent.currentMP = 5;
@@ -517,7 +503,6 @@ describe('GameActionService Updated Tests', () => {
             randomStub.returns(0.9);
             chainable.emit.resetHistory();
             service.handleFlee(lobbyId, fleeingPlayer);
-            // sinon.assert.calledWith(chainable.emit, GameEvents.FleeFailure, { fleeingPlayer });
             clock.tick(GameSocketConstants.CombatTurnDelay);
             clock.restore();
             done();

@@ -455,11 +455,6 @@ describe('SocketService', () => {
         beforeEach(() => {
             openDoorStub = gameActionService.openDoor;
         });
-
-        afterEach(() => {
-            // Do not restore the sandbox here; the outer afterEach handles it.
-        });
-
         it('should handle openDoor event', () => {
             socketService.init();
             const connectionHandler = ioStub.on.firstCall.args[1];
