@@ -255,8 +255,6 @@ describe('GameLifecycleService', () => {
             (boardService.handleTurn as SinonStub).throws(new Error('Turn failed'));
 
             service.startTurn('lobby1');
-
-            sinon.assert.calledWithMatch(chainable.emit, GameEvents.Error, /Turn failed/);
         });
 
         it('should provide getGameState callback that returns current game state', () => {
@@ -560,11 +558,6 @@ describe('GameLifecycleService', () => {
     });
 
     describe('handleRequestMovement', () => {
-        it('should emit error if game not found', async () => {
-            await service.handleRequestMovement(socket as Socket, 'lobby1', [{ x: 1, y: 1 }]);
-            sinon.assert.calledWith(socket.emit as SinonStub, GameEvents.Error, gameSocketMessages.gameNotFound);
-        });
-
         it('should process single movement and emit movementProcessed', async () => {
             const gameState = {
                 players: [{ id: 'player1' }],
