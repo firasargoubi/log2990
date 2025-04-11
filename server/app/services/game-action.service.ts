@@ -146,6 +146,8 @@ export class GameActionService {
         this.itemService.applyPotionEffect(serverAttacker, serverDefender);
         if (damage > 0) {
             serverDefender.life -= damage;
+            serverDefender.damageReceived = (serverDefender.damageReceived || 0) + damage;
+            serverAttacker.damageDealt = (serverAttacker.damageDealt || 0) + damage;
         }
         this.itemService.applyJuiceEffect(serverDefender);
 
@@ -172,6 +174,8 @@ export class GameActionService {
             damage,
             attacker: serverAttacker,
             defender: serverDefender,
+            defenderDamageReceived: serverDefender?.damageReceived,
+            attackerDamageDealt: serverAttacker?.damageDealt,
         });
 
         const nextPlayer = serverDefender;

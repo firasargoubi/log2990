@@ -233,6 +233,8 @@ export class LobbyService {
         damage: number;
         attacker: Player;
         defender: Player;
+        defenderDamageReceived: number;
+        attackerDamageDealt: number;
     }> {
         return new Observable((observer) => {
             this.socket.on('attackResult', (data) => {
@@ -245,7 +247,7 @@ export class LobbyService {
         this.socket.emit('startBattle', { lobbyId, currentPlayer, opponent });
     }
 
-    onStartCombat(): Observable<{ firstPlayer: Player, gameState: GameState }> {
+    onStartCombat(): Observable<{ firstPlayer: Player; gameState: GameState }> {
         return new Observable((observer) => {
             this.socket.on('startCombat', (data) => {
                 observer.next(data);
