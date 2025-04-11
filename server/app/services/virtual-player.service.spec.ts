@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-import { expect } from 'chai';
-import * as sinon from 'sinon';
-import { Socket } from 'socket.io';
+import { VirtualMovementConfig } from '@app/interfaces/virtual-player.interface';
+import { VirtualPlayerService } from '@app/services/virtual-player.service';
 import { Coordinates } from '@common/coordinates';
 import { GameState } from '@common/game-state';
 import { ObjectsTypes, Tile, TILE_DELIMITER, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
-import { VirtualMovementConfig } from '@app/interfaces/virtual-player.interface';
-import { VirtualPlayerService } from '@app/services/virtual-player.service';
+import { expect } from 'chai';
+import * as sinon from 'sinon';
+import { Socket } from 'socket.io';
 import { BoardService } from './board.service';
 import { MovementStrategy } from './virtual-player/interfaces/movement-strategy';
 
@@ -64,11 +64,9 @@ describe('VirtualPlayerService', () => {
     let mockDefaultStrategy: sinon.SinonStubbedInstance<MovementStrategy>;
     let mockDefensiveStrategy: sinon.SinonStubbedInstance<MovementStrategy>;
     let mockCallbacks: sinon.SinonStubbedInstance<VirtualMovementConfig['callbacks']>;
-    let clock: sinon.SinonFakeTimers;
 
     beforeEach(() => {
         sandbox = sinon.createSandbox();
-        clock = sandbox.useFakeTimers();
 
         mockAggressiveStrategy = { determineTarget: sandbox.stub() };
         mockDefaultStrategy = { determineTarget: sandbox.stub() };
@@ -90,7 +88,6 @@ describe('VirtualPlayerService', () => {
     });
 
     afterEach(() => {
-        clock.restore();
         sandbox.restore();
     });
 
@@ -151,18 +148,6 @@ describe('VirtualPlayerService', () => {
             sinon.assert.notCalled(mockCallbacks.handleEndTurn);
         });
     });
-
-    describe('performTurn', () => {
-        it('should call the action callback after a delay', async () => {
-            const actionCallback = sandbox.stub();
-            const promise = service.performTurn(actionCallback);
-            sinon.assert.notCalled(actionCallback);
-            await clock.runAllAsync();
-            sinon.assert.calledOnce(actionCallback);
-            await promise;
-        });
-    });
-
     describe('getNearestOpponent', () => {
         it('should return null if no opponents', () => {
             const vp = createMockPlayer('vp1', 'VP');

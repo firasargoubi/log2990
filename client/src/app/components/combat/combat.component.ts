@@ -18,6 +18,7 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
     @Input() lobbyId!: string;
     @Input() gameState: GameState | null = null;
     @Input() opponent!: Player;
+    @Input() isFirstTurn: boolean = false;
     isPlayerTurn = false;
     playerTurn = '';
     countDown = 0;
@@ -39,12 +40,14 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
 
     ngOnInit() {
         this.setupSubscriptions();
-        if (this.currentPlayer.id !== this.gameState?.currentPlayer) {
+        if (this.isFirstTurn) {
+            this.canAct = true;
+            this.isPlayerTurn = true;
+            this.playerTurn = this.currentPlayer.id;
+        } else {
             this.playerTurn = this.gameState?.currentPlayer || '';
             this.isPlayerTurn = false;
             this.canAct = false;
-        } else {
-            this.canAct = true;
         }
 
         this.countDown = BASE_COUNTDOWN;
@@ -112,7 +115,7 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
         }
 
         this.stopCombatCountdown();
-        this.lobbyService.flee(this.gameState.id, this.currentPlayer);
+        this.lobbyService.flee(this.gameState.id, this.currentPlayer, this.opponent);
     }
 
     isCountdownActive(): boolean {
