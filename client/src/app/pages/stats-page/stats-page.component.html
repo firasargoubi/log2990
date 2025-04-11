@@ -51,7 +51,7 @@
                             <td>{{ player.loseCount }} défaites</td>
                             <td>{{ player.damageReceived }} PV</td>
                             <td>{{ player.damageDealt }} PV</td>
-                            <td>{{ player.itemsPicked || 0 }} objets</td>
+                            <td>{{ player.itemsPicked?.length || 0 }} objets</td>
                             <td>{{ player.tileVisited || 0 }}%</td>
                         </tr>
                         }

@@ -98,10 +98,14 @@ export class BoardService {
 
         if (item !== ObjectsTypes.EMPTY && item !== ObjectsTypes.SPAWN) {
             player.items ??= [];
+            player.itemsPicked ??= [];
             if (player.items.length >= 2) {
                 player.pendingItem = item;
             } else {
                 player.items.push(item);
+                if (!player?.itemsPicked.includes(item)) {
+                    player?.itemsPicked.push(item);
+                }
                 gameState.board[targetCoordinate.x][targetCoordinate.y] = tile;
             }
             if (ITEM_EFFECTS[item as ObjectsTypes]) {
