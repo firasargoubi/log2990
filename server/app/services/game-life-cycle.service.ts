@@ -5,7 +5,7 @@ import { Coordinates } from '@common/coordinates';
 import { GameEvents } from '@common/events';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
-import { ObjectsTypes, TILE_DELIMITER } from '@common/game.interface';
+import { ObjectsTypes, TILE_DELIMITER, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
@@ -52,6 +52,7 @@ export class GameLifecycleService {
 
         try {
             const gameState = await this.boardService.initializeGameState(lobby);
+            gameState.amountClosedDoors = gameState.board.flat().filter((boardTile) => boardTile === TileTypes.DoorClosed).length;
 
             if (gameState.gameMode === 'capture' && lobby.players.length % 2 !== 0) {
                 socket.emit(GameEvents.Error, gameSocketMessages.notEnoughPlayers);

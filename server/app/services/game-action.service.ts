@@ -11,6 +11,7 @@ import { Service } from 'typedi';
 import { BoardService } from './board.service';
 import { GameLifecycleService } from './game-life-cycle.service';
 import { ItemService } from './item.service';
+import { GAME_ACTION_CONSTS } from '@app/constants/game-action-consts';
 
 @Service()
 export class GameActionService {
@@ -62,8 +63,17 @@ export class GameActionService {
     openDoor(socket: Socket, tile: Tile, lobbyId: string) {
         const gameState = this.gameLifeCycleService.getGameStateOrEmitError(socket, lobbyId);
         if (!gameState) return;
+        gameState.doorOpenedCounter ??= 0;
+        gameState.percentageDoorOpened ??= 0;
+        gameState.doorOpened ??= [];
         const currentPlayerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
         gameState.board = gameState.board.map((row) => [...row]);
+        const alreadyOpened = gameState.doorOpened.some((t) => t.x === tile.x && t.y === tile.y);
+        if (!alreadyOpened) {
+            gameState.doorOpenedCounter += 1;
+            gameState.doorOpened.push(tile);
+        }
+        gameState.percentageDoorOpened = Math.floor((gameState.doorOpenedCounter / gameState.amountClosedDoors) * GAME_ACTION_CONSTS.percentage);
         gameState.board[tile.x][tile.y] = TileTypes.DoorOpen;
         gameState.currentPlayerActionPoints = 0;
         if (currentPlayerIndex !== -1) {
