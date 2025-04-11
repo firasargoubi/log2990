@@ -7,7 +7,7 @@ import { ObjectsTypes } from '@common/game.interface';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { AggressiveMovementStrategy } from './aggressive-movement-strategy';
-import { DefaultMovementStrategy } from './default-movement-strategy'; // Add this import
+import { DefaultMovementStrategy } from './default-movement-strategy';
 
 describe('AggressiveMovementStrategy', () => {
     let strategy: AggressiveMovementStrategy;
@@ -55,8 +55,8 @@ describe('AggressiveMovementStrategy', () => {
             },
             lobbyId: 'test-lobby',
             getGameState: () => config.gameState,
-            boardService: {} as any, // Mock or provide a valid BoardService instance
-            callbacks: {} as any, // Mock or provide valid callbacks
+            boardService: {} as any,
+            callbacks: {} as any,
         };
     });
 
@@ -127,7 +127,7 @@ describe('AggressiveMovementStrategy', () => {
         });
 
         it('should collect desired items when inventory is not full', () => {
-            config.virtualPlayer.items = []; // Inventory not full
+            config.virtualPlayer.items = [];
             const availableMoves = [{ x: 3, y: 3 }];
             const itemPos = { x: 3, y: 3 };
 
@@ -145,7 +145,7 @@ describe('AggressiveMovementStrategy', () => {
         });
 
         it('should collect other items when desired items are not available', () => {
-            config.virtualPlayer.items = []; // Inventory not full
+            config.virtualPlayer.items = [];
             const availableMoves = [{ x: 4, y: 4 }];
             const itemPos = { x: 4, y: 4 };
 
@@ -170,11 +170,9 @@ describe('AggressiveMovementStrategy', () => {
             ];
             const defaultMove = { x: 0, y: 1 };
 
-            // Mock no targets available
             mockService.getNearestOpponent.returns(null);
             mockService.findNearestItemTile.returns(null);
 
-            // Mock the default strategy's behavior
             const originalDefaultStrategy = DefaultMovementStrategy.prototype.determineTarget;
             DefaultMovementStrategy.prototype.determineTarget = () => defaultMove;
 
@@ -182,7 +180,6 @@ describe('AggressiveMovementStrategy', () => {
 
             expect(result).to.deep.equal(defaultMove);
 
-            // Restore original implementation
             DefaultMovementStrategy.prototype.determineTarget = originalDefaultStrategy;
         });
         it('should not collect items when inventory is full', () => {
@@ -194,7 +191,7 @@ describe('AggressiveMovementStrategy', () => {
                 virtualPlayer: {
                     id: 'vp1',
                     name: 'AggroBot',
-                    items: [ObjectsTypes.SWORD, ObjectsTypes.BOOTS], // full
+                    items: [ObjectsTypes.SWORD, ObjectsTypes.BOOTS],
                     pendingItem: 0,
                     avatar: '',
                     isHost: false,
@@ -209,8 +206,8 @@ describe('AggressiveMovementStrategy', () => {
                     board: [
                         [0, 0],
                         [0, 0],
-                    ], // minimal dummy board
-                    playerPositions: [{ x: 0, y: 0 }], // virtual player position
+                    ],
+                    playerPositions: [{ x: 0, y: 0 }],
                     players: [],
                     currentPlayer: 'vp1',
                     id: 'game-id',
@@ -229,8 +226,8 @@ describe('AggressiveMovementStrategy', () => {
                 },
                 lobbyId: 'test-lobby',
                 getGameState: () => config.gameState,
-                boardService: {} as any, // Mock or provide a valid BoardService instance
-                callbacks: {} as any, // Mock or provide valid callbacks
+                boardService: {} as any,
+                callbacks: {} as any,
             };
 
             mockService.getNearestOpponent.returns({
@@ -251,7 +248,7 @@ describe('AggressiveMovementStrategy', () => {
                 },
             });
 
-            mockService.getAdjacentPositions.returns([]); // No adjacent moves
+            mockService.getAdjacentPositions.returns([]);
             mockService.getClosest.withArgs(opponentPos, availableMoves).returns(closestMove);
 
             const result = strategy.determineTarget(config, availableMoves, 0);

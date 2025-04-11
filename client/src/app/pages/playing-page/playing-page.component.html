@@ -53,9 +53,14 @@
     </div>
 
     <div class="sidebar right-sidebar">
-        <app-messages></app-messages>
-
-        <!-- Countdown for the active player or others -->
+        <div class="chat-wrapper-playing">
+            @if (currentPlayer && lobbyId) {
+            <div class="sidebar right-sidebar playing-chat-narrow">
+                <app-messages [playerName]="currentPlayer.name" [lobbyId]="lobbyId" [currentPlayer]="currentPlayer"></app-messages>
+                ...
+            </div>
+            }
+        </div>
 
         @if (isCurrentPlayerTurn()) {
         <app-countdown-player
@@ -75,11 +80,11 @@
 
         @if (isInCombat) {
         <div class="action-buttons">
-            <app-combat [gameState]="gameState" [currentPlayer]="currentPlayer!" [opponent]="opponent!" [lobbyId]="lobbyId"></app-combat>
+            <app-combat [gameState]="gameState" [currentPlayer]="currentPlayer!" [opponent]="opponent!" [lobbyId]="lobbyId" [isFirstTurn]="isFirstInCombat"></app-combat>
         </div>
         } @else {
         <div class="action-buttons">
-            @if(action) {
+            @if (action) {
             <button class="action-buttons selected" (click)="handleAction()">Action</button>
             } @else {
             <button (click)="handleAction()">Action</button>
