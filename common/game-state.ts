@@ -23,7 +23,7 @@ export interface GameState {
     gameMode: string;
     animation?: boolean;
     teams?: {
-        team1: Player[];        
+        team1: Player[];
         team2: Player[];
     };
 }

@@ -250,7 +250,7 @@ export class SocketService {
             socket.emit('error', 'Invalid coordinates');
             return;
         }
-        this.gameActionService.handleRequestMovement(socket, data.lobbyId, data.coordinates);
+        this.gameLifecycleService.handleRequestMovement(socket, data.lobbyId, data.coordinates);
     }
 
     private handleOpenDoor(socket: Socket, data: { lobbyId: string; tile: Tile }): void {

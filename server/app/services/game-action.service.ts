@@ -249,10 +249,6 @@ export class GameActionService {
         this.gameStates.set(lobbyId, gameState);
     }
 
-    async handleRequestMovement(socket: Socket, lobbyId: string, coordinates: Coordinates[]): Promise<void> {
-        await this.gameLifeCycleService.handleRequestMovement(socket, lobbyId, coordinates);
-    }
-
     private handleVirtualCombatTurn(lobbyId: string, currentTurnPlayer: Player, originalCombatant1: Player, originalCombatant2: Player) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
