@@ -6,7 +6,6 @@ import { MessagesComponent } from '@app/components/messages/messages.component';
 import { PlayerListComponent } from '@app/components/player-list/player-list.component';
 import { WAITING_PAGE, WAITING_PAGE_CONSTANTS } from '@app/Consts/app-constants';
 import { PageUrl } from '@app/Consts/route-constants';
-import { ChatService } from '@app/services/chat.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { AVATARS } from '@common/avatars';
@@ -45,14 +44,13 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
     private lobbyService = inject(LobbyService);
     private router = inject(Router);
     private notificationService = inject(NotificationService);
-    private chatService = inject(ChatService);
 
     ngOnInit(): void {
         const lobbyId = this.route.snapshot.paramMap.get(WAITING_PAGE.lobbyIdParam);
         const player = this.route.snapshot.paramMap.get(WAITING_PAGE.playerIdParam);
 
         if (lobbyId && player) {
-            this.chatService.joinLobby(lobbyId);
+            this.lobbyService.joinLobbyMessage(lobbyId);
             this.lobbyService.getLobby(lobbyId).subscribe((lobby) => {
                 this.lobby = lobby;
                 this.currentPlayer = lobby.players.find((p) => p.id === player) || this.currentPlayer;

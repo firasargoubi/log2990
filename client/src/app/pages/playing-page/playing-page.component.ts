@@ -11,7 +11,6 @@ import { MessagesComponent } from '@app/components/messages/messages.component';
 import { MAP_SIZES, MapSize, PLAYING_PAGE, PLAYING_PAGE_DESCRIPTION } from '@app/Consts/app-constants';
 import { PageUrl } from '@app/Consts/route-constants';
 import { ActionService } from '@app/services/action.service';
-import { ChatService } from '@app/services/chat.service';
 import { LobbyService } from '@app/services/lobby.service';
 import { NotificationService } from '@app/services/notification.service';
 import { Coordinates } from '@common/coordinates';
@@ -38,6 +37,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     tileInfo: Tile;
     isCTF: boolean = false;
     isInCombat: boolean = false;
+    isFirstInCombat: boolean = false;
     lobby: GameLobby;
     inventoryItems: number[] = [];
     private debug: boolean = false;
@@ -47,7 +47,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     private route = inject(ActivatedRoute);
     private notificationService = inject(NotificationService);
     private subscriptions: Subscription[] = [];
-    private chatService: ChatService = inject(ChatService);
 
     get isAnimated(): boolean {
         return this.gameState.animation || false;
@@ -59,6 +58,12 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
     @HostListener('document:keydown', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
+        const target = event.target as HTMLElement;
+
+        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.getAttribute('contenteditable') === 'true') {
+            return;
+        }
+
         if (event.key === PLAYING_PAGE.debugKey && this.currentPlayer.isHost) {
             this.setDebugMode();
         }
@@ -111,7 +116,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                 }
                 return;
             }
-            this.isInCombat = true;
             if (opponent) {
                 this.lobbyService.startCombat(this.lobbyId, this.currentPlayer, opponent);
             }
@@ -261,7 +265,8 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
 
     private setupGameListeners() {
         this.subscriptions.push(
-            this.lobbyService.onStartCombat().subscribe(() => {
+            this.lobbyService.onStartCombat().subscribe((data) => {
+                this.isFirstInCombat = data.firstPlayer.id === this.currentPlayer.id;
                 this.isInCombat = true;
             }),
 
@@ -304,8 +309,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.lobbyService.onLobbyUpdated().subscribe((data) => {
                 if (data.lobby.id === this.lobbyId) {
                     this.lobby = data.lobby;
-                    this.chatService.joinLobby(this.lobbyId);
-
                     const currentPlayer = this.lobby.players.find((p) => p.id === this.currentPlayer.id);
                     if (!currentPlayer) {
                         this.lobbyService.disconnectFromRoom(this.lobbyId);
@@ -399,11 +402,6 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             this.currentPlayer = playerInGameState;
             this.inventoryItems = this.currentPlayer?.items ?? [];
             this.lobbyService.setCurrentPlayer(this.currentPlayer);
-        }
-
-        const combatState = this.gameState.combat;
-        if (!combatState || !combatState.isActive) {
-            this.isInCombat = false;
         }
     }
 

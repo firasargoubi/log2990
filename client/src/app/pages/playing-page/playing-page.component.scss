@@ -13,6 +13,13 @@ body {
     background-position: center;
 }
 
+.chat-box {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 10px 0;
+}
+
 .game-container {
     display: flex;
     justify-content: space-between;
@@ -190,10 +197,29 @@ img {
 
 .chat-container {
     max-height: 300px;
-    overflow-y: auto;
+    max-width: 250px;
     margin-bottom: 1rem;
     border: 1px solid #ccc;
     border-radius: 6px;
     padding: 8px;
     background-color: #f7f7f7;
+}
+
+.playing-chat-narrow {
+    max-width: 340px; // ou la valeur qui te convient
+    padding: 10px;
+
+    app-messages {
+        width: 100%;
+    }
+
+    .messages {
+        max-width: 100%;
+    }
+
+    .message-bubble {
+        max-width: 90%; // ou plus petit encore
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
 }

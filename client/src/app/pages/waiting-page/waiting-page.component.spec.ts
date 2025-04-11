@@ -65,18 +65,35 @@ describe('WaitingPageComponent', () => {
         errorSubject = new Subject();
         gameStartedSubject = new Subject<{ gameState: any }>();
 
-        mockLobbyService = jasmine.createSpyObj<LobbyService>('LobbyService', {
-            getLobby: of(mockLobby),
-            onLobbyUpdated: lobbyUpdatedSubject.asObservable(),
-            onHostDisconnected: hostDisconnectedSubject.asObservable(),
-            onError: errorSubject.asObservable(),
-            onGameStarted: gameStartedSubject.asObservable(),
-            leaveLobby: undefined,
-            lockLobby: undefined,
-            requestStartGame: undefined,
-            setCurrentPlayer: undefined,
-            disconnectFromRoom: undefined,
-        });
+        mockLobbyService = jasmine.createSpyObj<LobbyService>('LobbyService', [
+            'getLobby',
+            'onLobbyUpdated',
+            'onHostDisconnected',
+            'onError',
+            'onGameStarted',
+            'leaveLobby',
+            'lockLobby',
+            'requestStartGame',
+            'setCurrentPlayer',
+            'disconnectFromRoom',
+            'joinLobbyMessage',
+            'onMessageReceived',
+            'onEventLog',
+        ]);
+
+        mockLobbyService.getLobby.and.returnValue(of(mockLobby));
+        mockLobbyService.onLobbyUpdated.and.returnValue(lobbyUpdatedSubject.asObservable());
+        mockLobbyService.onHostDisconnected.and.returnValue(hostDisconnectedSubject.asObservable());
+        mockLobbyService.onError.and.returnValue(errorSubject.asObservable());
+        mockLobbyService.onGameStarted.and.returnValue(gameStartedSubject.asObservable());
+        mockLobbyService.leaveLobby.and.callFake(() => undefined);
+        mockLobbyService.lockLobby.and.callFake(() => undefined);
+        mockLobbyService.requestStartGame.and.callFake(() => undefined);
+        mockLobbyService.setCurrentPlayer.and.callFake(() => undefined);
+        mockLobbyService.disconnectFromRoom.and.callFake(() => undefined);
+        mockLobbyService.joinLobbyMessage.and.callFake(() => undefined);
+        mockLobbyService.onMessageReceived.and.callFake(() => of({ playerName: '', message: '' }));
+        mockLobbyService.onEventLog.and.returnValue(of({ gameState: {} as any, eventType: '', involvedPlayers: [], description: '' }));
 
         mockNotificationService = jasmine.createSpyObj<NotificationService>('NotificationService', ['showError', 'showSuccess']);
 

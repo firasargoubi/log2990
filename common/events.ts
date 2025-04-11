@@ -17,4 +17,21 @@ export enum GameEvents {
     PlayerJoinedChat = 'playerJoinedChat',
     ChatJoined = 'chatJoined',
     TeamsCreated = 'teamsCreated',
+    EventLog = 'eventLog',
+}
+
+export enum EventType {
+    TurnStarted = 'Le tour a commencé',
+    CombatStarted = 'Un combat a commencé',
+    CombatEnded = 'Un combat a terminé',
+    DoorClosed = 'Une porte a été fermée',
+    DoorOpened = 'Une porte a été ouverte',
+    DebugActivated = 'Debug activé',
+    DebugDeactivated = 'Debug désactivé',
+    FlagPicked = 'Le drapeau a été ramassé',
+    ItemPicked = 'Un objet a été ramassé',
+    PlayerAbandonned = 'Un joueur a abandonné',
+    AttackResult = "Résultat de l'attaque",
+    FleeSuccess = 'Fuite réussie',
+    FleeFailure = 'Fuite échouée',
 }
