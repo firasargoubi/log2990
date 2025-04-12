@@ -119,7 +119,6 @@
                 <div class="stat-item">
                     <span class="stat-label">Pourcentage de tuiles visitées:</span>
                     <span class="stat-value">{{ coveredTilePercentage }}%</span>
-                    <span class="stat-value">{{ coveredTilePercentage }}%</span>
                 </div>
                 @if (gameState.gameMode === 'capture') {
                 <div class="stat-item">
@@ -131,7 +130,7 @@
                     <span class="stat-label">Nombre de joueurs qui ont eu le drapeau</span>
                     <span class="stat-value"> - </span>
                 </div>
-                } @if (gameState.amountDoors !== 0) {
+                } @if (gameState.percentageDoorHandled) {
                 <div class="stat-item">
                     <span class="stat-label">Pourcentage de portes ouvertes</span>
                     <span class="stat-value">{{ gameState.percentageDoorHandled }} %</span>

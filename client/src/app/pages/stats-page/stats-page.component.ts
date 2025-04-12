@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { PageUrl } from '@app/Consts/route-constants';
+import { STATS_CONSTS } from '@app/Consts/stats-constants';
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
-import { STATS_CONSTS } from '@app/Consts/stats-constants';
 
 @Component({
     selector: 'app-stats-page',
@@ -22,8 +22,6 @@ export class StatsPageComponent {
     timeHours: number = 0;
     boardSize: number = 0;
     coveredTilePercentage: number = 0;
-    sortColumn: string = '';
-    sortDirection: 'asc' | 'desc' = 'asc';
     sortColumn: string = '';
     sortDirection: 'asc' | 'desc' = 'asc';
 
