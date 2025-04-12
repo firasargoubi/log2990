@@ -206,23 +206,9 @@ export class VirtualPlayerService {
         const { boardService, virtualPlayer, gameState } = config;
         const currentPos = gameState.playerPositions[playerIndex];
 
-        let availableMoves = boardService.findAllPaths(gameState, currentPos);
+        const availableMoves = boardService.findAllPaths(gameState, currentPos);
         if (!availableMoves || availableMoves.length === 0) {
             return null;
-        }
-
-        const inventoryFull = virtualPlayer.items?.length >= 2;
-        if (inventoryFull) {
-            availableMoves = availableMoves.filter((move) => {
-                const tileValue = gameState.board[move.x]?.[move.y];
-                if (tileValue === undefined) return false;
-                const itemOnTile = Math.floor(tileValue / TILE_DELIMITER);
-                return itemOnTile === ObjectsTypes.EMPTY || itemOnTile === ObjectsTypes.SPAWN;
-            });
-
-            if (availableMoves.length === 0) {
-                return null;
-            }
         }
 
         const movementStrategy = this.getMovementStrategy(virtualPlayer);
