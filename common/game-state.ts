@@ -34,4 +34,5 @@ export interface GameState {
     };
     startDate: Date | string;
     endDate?: Date | string;
+    visitedTiles?: { x: number, y: number}[];
 }

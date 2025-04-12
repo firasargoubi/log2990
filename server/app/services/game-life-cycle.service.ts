@@ -237,7 +237,7 @@ export class GameLifecycleService {
                 if (!idx) {
                     continue;
                 }
-                this.updateVisitedTiles(currentPlayer, coordinate);
+                this.updateVisitedTiles(currentPlayer, coordinate, gameState);
                 const result = this.boardService.handleMovement(updatedGameState, coordinate);
                 updatedGameState = result.gameState;
                 updatedGameState = this.boardService.updatePlayerMoves(updatedGameState);
@@ -355,13 +355,18 @@ export class GameLifecycleService {
         return new Promise<void>((resolve) => setTimeout(resolve, ms));
     }
 
-    private updateVisitedTiles(player: Player, coordinates: { x: number; y: number }) {
+    private updateVisitedTiles(player: Player, coordinates: { x: number; y: number }, gameState: GameState) {
         if (!player.visitedTiles) {
             player.visitedTiles = [];
         }
 
-        if (!player.visitedTiles.some((tile) => tile.x === coordinates.x && tile.y === coordinates.y)) {
+        if (!gameState.visitedTiles) {
+            gameState.visitedTiles = [];
+        }
+
+        if (!gameState.visitedTiles.some((tile) => tile.x === coordinates.x && tile.y === coordinates.y)) {
             player.visitedTiles.push(coordinates);
+            gameState.visitedTiles.push(coordinates);
         }
     }
 }

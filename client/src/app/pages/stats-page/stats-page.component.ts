@@ -17,6 +17,7 @@ export class StatsPageComponent {
     timeMinutes: number = 0;
     timeHours: number = 0;
     boardSize: number;
+    coveredTilePercentage: number = 0;
 
     constructor(private router: Router) {
         const navigation = this.router.getCurrentNavigation();
@@ -30,6 +31,10 @@ export class StatsPageComponent {
             this.winnersNames = Array.isArray(state.winner) ? state.winner : state.winner.split(', ').map((name) => name.trim());
             this.gameState = state.gameState;
             this.boardSize = this.gameState.board.length * this.gameState.board[0].length;
+
+            if (this.gameState.visitedTiles){
+                this.coveredTilePercentage = Math.floor((this.gameState.visitedTiles.length / this.boardSize) * 100);
+            }
 
             if (this.gameState.endDate) {
                 this.gameState.startDate = this.parseDate(this.gameState.startDate);
