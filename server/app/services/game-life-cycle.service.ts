@@ -262,6 +262,7 @@ export class GameLifecycleService {
                     updatedGameState.animation = false;
                     if (hasFlag && isInSpawnPoints) {
                         gameState.endDate = new Date();
+                        gameState.turnCounter++;
                         const winningTeam = gameState.teams.team1.some((p) => p.id === currentPlayer.id) ? 'Red' : 'Blue';
                         const winningTeamPlayers =
                             winningTeam === 'Red'

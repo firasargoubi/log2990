@@ -25,61 +25,48 @@
                 <table class="stats-table">
                     <thead>
                         <tr>
-                            <th (click)="sortTable('name')">
-                              Joueur
-                              @if (sortColumn === 'name') {
-                                <span>{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-                              }
-                            </th>
+                            <th>Joueur</th>
                             <th (click)="sortTable('fightCount')">
-                              Combats
-                              @if (sortColumn === 'fightCount') {
+                                Combats @if (sortColumn === 'fightCount') {
                                 <span>{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-                              }
+                                }
                             </th>
                             <th (click)="sortTable('fleeCount')">
-                              Évasions
-                              @if (sortColumn === 'fleeCount') {
+                                Évasions @if (sortColumn === 'fleeCount') {
                                 <span>{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-                              }
+                                }
                             </th>
                             <th (click)="sortTable('winCount')">
-                              Nombre de victoires
-                              @if (sortColumn === 'winCount') {
+                                Nombre de victoires @if (sortColumn === 'winCount') {
                                 <span>{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-                              }
+                                }
                             </th>
                             <th (click)="sortTable('loseCount')">
-                              Nombre de défaites
-                              @if (sortColumn === 'loseCount') {
+                                Nombre de défaites @if (sortColumn === 'loseCount') {
                                 <span>{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-                              }
+                                }
                             </th>
                             <th (click)="sortTable('damageReceived')">
-                              Total des PV perdus
-                              @if (sortColumn === 'damageReceived') {
+                                Total des PV perdus @if (sortColumn === 'damageReceived') {
                                 <span>{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-                              }
+                                }
                             </th>
                             <th (click)="sortTable('damageDealt')">
-                              Total des dégâts infligés
-                              @if (sortColumn === 'damageDealt') {
+                                Total des dégâts infligés @if (sortColumn === 'damageDealt') {
                                 <span>{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-                              }
+                                }
                             </th>
                             <th (click)="sortTable('itemsPicked')">
-                              Nombre d'objets ramassés
-                              @if (sortColumn === 'itemsPicked') {
+                                Nombre d'objets ramassés @if (sortColumn === 'itemsPicked') {
                                 <span>{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-                              }
+                                }
                             </th>
                             <th (click)="sortTable('tilesVisited')">
-                              Pourcentage de tuiles visitées
-                              @if (sortColumn === 'tilesVisited') {
+                                Pourcentage de tuiles visitées @if (sortColumn === 'tilesVisited') {
                                 <span>{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-                              }
+                                }
                             </th>
-                          </tr>
+                        </tr>
                     </thead>
                     <tbody>
                         @for (player of gameState.players; track player.name) {
@@ -135,9 +122,10 @@
                     <span class="stat-label">Pourcentage de portes ouvertes</span>
                     <span class="stat-value">{{ gameState.percentageDoorHandled }} %</span>
                 </div>
-                } @else { <div class="stat-item">
-                <span class="stat-label">Pourcentage de portes ouvertes</span>
-                <span class="stat-value"> - </span>
+                } @else {
+                <div class="stat-item">
+                    <span class="stat-label">Pourcentage de portes ouvertes</span>
+                    <span class="stat-value"> - </span>
                 </div>
                 }
             </div>

@@ -173,11 +173,12 @@ export class GameActionService {
         if (serverDefender.life <= 0) {
             serverAttacker.winCount++;
             serverDefender.loseCount++;
-            gameState.endDate = new Date();
             for (const player of gameState.players) {
                 player.amountEscape = 0;
             }
             if (serverAttacker.winCount === GameSocketConstants.MaxWinCount) {
+                gameState.endDate = new Date();
+                gameState.turnCounter++;
                 this.io.to(lobbyId).emit('gameOver', { winner: serverAttacker.name, lobby: lobbyId, finalGameState: gameState });
                 return;
             }
