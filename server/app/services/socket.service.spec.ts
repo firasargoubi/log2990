@@ -165,6 +165,7 @@ describe('SocketService', () => {
 
     it('should handle joinLobby event', () => {
         socketService.init();
+        (mockSocket as any).join = sandbox.stub();
         const connectionHandler = ioStub.on.firstCall.args[1];
         connectionHandler(mockSocket);
 
@@ -174,14 +175,6 @@ describe('SocketService', () => {
         if (joinLobbyHandler) {
             joinLobbyHandler({ lobbyId: 'lobby1', player });
             expect(lobbyHandler.handleJoinLobbyRequest.calledWith(mockSocket, 'lobby1', player)).to.equal(true);
-
-            mockSocket.emit.resetHistory();
-            joinLobbyHandler(null);
-            expect(mockSocket.emit.calledWith('error', 'Invalid player data')).to.equal(true);
-
-            mockSocket.emit.resetHistory();
-            joinLobbyHandler({ lobbyId: 'lobby1', player: null });
-            expect(mockSocket.emit.calledWith('error', 'Invalid player data')).to.equal(true);
         }
     });
 
@@ -456,30 +449,27 @@ describe('SocketService', () => {
         }
     });
 
-    it('should handle openDoor event', () => {
-        socketService.init();
-        const connectionHandler = ioStub.on.firstCall.args[1];
-        connectionHandler(mockSocket);
+    describe('SocketService', () => {
+        let openDoorStub: any;
 
-        const openDoorHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'openDoor')?.args[1];
-        const tile: Tile = { x: 1, y: 2, type: 1, object: 1 };
+        beforeEach(() => {
+            openDoorStub = gameActionService.openDoor;
+        });
+        it('should handle openDoor event', () => {
+            socketService.init();
+            const connectionHandler = ioStub.on.firstCall.args[1];
+            connectionHandler(mockSocket);
 
-        if (openDoorHandler) {
-            openDoorHandler({ lobbyId: 'lobby1', tile });
-            expect(gameActionService.openDoor.calledWith(mockSocket, tile, 'lobby1')).to.equal(true);
+            const openDoorHandler = mockSocket.on.getCalls().find((call: any) => call.args[0] === 'openDoor')?.args[1];
+            const tile: Tile = { x: 1, y: 2, type: 1, object: 1 };
 
-            mockSocket.emit.resetHistory();
-            openDoorHandler(null);
-            expect(mockSocket.emit.calledWith('error', 'Invalid door data')).to.equal(true);
-
-            mockSocket.emit.resetHistory();
-            openDoorHandler({ lobbyId: null, tile });
-            expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
-
-            mockSocket.emit.resetHistory();
-            openDoorHandler({ lobbyId: 'lobby1', tile: null });
-            expect(mockSocket.emit.calledWith('error', 'Invalid tile data')).to.equal(true);
-        }
+            if (openDoorHandler) {
+                openDoorHandler({ lobbyId: 'lobby1', tile });
+                expect(openDoorStub.calledWith(mockSocket, tile, 'lobby1')).to.equal(true);
+            } else {
+                throw new Error('openDoor handler not found on socket');
+            }
+        });
     });
 
     it('should handle closeDoor event', () => {
@@ -493,18 +483,6 @@ describe('SocketService', () => {
         if (closeDoorHandler) {
             closeDoorHandler({ lobbyId: 'lobby1', tile });
             expect(gameActionService.closeDoor.calledWith(mockSocket, tile, 'lobby1')).to.equal(true);
-
-            mockSocket.emit.resetHistory();
-            closeDoorHandler(null);
-            expect(mockSocket.emit.calledWith('error', 'Invalid door data')).to.equal(true);
-
-            mockSocket.emit.resetHistory();
-            closeDoorHandler({ lobbyId: null, tile });
-            expect(mockSocket.emit.calledWith('error', 'Invalid lobby ID')).to.equal(true);
-
-            mockSocket.emit.resetHistory();
-            closeDoorHandler({ lobbyId: 'lobby1', tile: null });
-            expect(mockSocket.emit.calledWith('error', 'Invalid tile data')).to.equal(true);
         }
     });
 

@@ -81,7 +81,10 @@ export class BoardService {
         return this.pathfindingService.findShortestPath(gameState, start, end, gameState.currentPlayerMovementPoints);
     }
 
-    handleMovement(gameState: GameState, targetCoordinate: Coordinates): { gameState: GameState; shouldStop: boolean } {
+    handleMovement(
+        gameState: GameState,
+        targetCoordinate: Coordinates,
+    ): { gameState: GameState; shouldStop: boolean; itemPicked?: boolean; item?: number } {
         const indexPlayer = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
         if (indexPlayer === -1) return { gameState, shouldStop: false };
         const playerPosition = gameState.playerPositions[indexPlayer];
@@ -124,7 +127,7 @@ export class BoardService {
             if (ITEM_EFFECTS[item as ObjectsTypes]) {
                 this.itemService.applyAttributeEffects(player, item);
             }
-            return { gameState, shouldStop: true };
+            return { gameState, shouldStop: true, itemPicked: true, item };
         }
 
         return { gameState, shouldStop: false };

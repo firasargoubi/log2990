@@ -77,7 +77,7 @@
                                     <span>{{ player.name }}</span>
                                 </div>
                             </td>
-                            <td>{{ player.fightCount }} combats</td>
+                            <td>{{ player.fightCount || 0 }} combats</td>
                             <td>{{ player.fleeCount }} évasions</td>
                             <td>{{ player.winCount }} victoires</td>
                             <td>{{ player.loseCount }} défaites</td>
@@ -117,9 +117,9 @@
                     <span class="stat-label">Nombre de joueurs qui ont eu le drapeau</span>
                     <span class="stat-value"> - </span>
                 </div>
-                } @if (gameState.percentageDoorHandled) {
+                } @if (gameState.amountDoors !== 0) {
                 <div class="stat-item">
-                    <span class="stat-label">Pourcentage de portes ouvertes</span>
+                    <span class="stat-label">Pourcentage de portes manipulées</span>
                     <span class="stat-value">{{ gameState.percentageDoorHandled }} %</span>
                 </div>
                 } @else {
@@ -135,11 +135,7 @@
     <div class="chat-sidebar">
         <h2 class="section-title">Clavardage</h2>
         <div class="chat-container">
-            <div class="chat-messages"></div>
-            <div class="chat-input-container">
-                <input type="text" placeholder="Écrire un message..." class="chat-input" />
-                <button class="chat-send-btn">Envoyer</button>
-            </div>
+            <app-messages [playerName]="currentPlayer.name" [lobbyId]="lobbyId" [currentPlayer]="currentPlayer"></app-messages>
         </div>
     </div>
 </div>

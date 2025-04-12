@@ -5,11 +5,12 @@ import { PageUrl } from '@app/Consts/route-constants';
 import { STATS_CONSTS } from '@app/Consts/stats-constants';
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
+import { MessagesComponent } from '@app/components/messages/messages.component';
 
 @Component({
     selector: 'app-stats-page',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, MessagesComponent],
     templateUrl: './stats-page.component.html',
     styleUrls: ['./stats-page.component.scss'],
 })
@@ -24,6 +25,8 @@ export class StatsPageComponent {
     coveredTilePercentage: number = 0;
     sortColumn: string = '';
     sortDirection: 'asc' | 'desc' = 'asc';
+    lobbyId: string = '';
+    currentPlayer: Player;
 
     constructor(private router: Router) {
         const navigation = this.router.getCurrentNavigation();
@@ -31,9 +34,12 @@ export class StatsPageComponent {
             winner: string;
             lobbyId: string;
             gameState: GameState;
+            currentPlayer: Player;
         };
 
         if (state) {
+            this.lobbyId = state.lobbyId;
+            this.currentPlayer = state.currentPlayer;
             this.winnersNames = Array.isArray(state.winner) ? state.winner : state.winner.split(', ').map((name) => name.trim());
             this.gameState = state.gameState;
             this.boardSize = this.gameState.board.length * this.gameState.board[0].length;

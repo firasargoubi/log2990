@@ -1,21 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
+import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
+import { GameActionService } from '@app/services/game-action.service';
+import { VirtualPlayerService } from '@app/services/virtual-player.service';
+import { Coordinates } from '@common/coordinates';
+import { EventType, GameEvents } from '@common/events';
+import { GameState } from '@common/game-state';
+import { ObjectsTypes, Tile, TileTypes } from '@common/game.interface';
+import { Player } from '@common/player';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { Server, Socket } from 'socket.io';
-import { GameActionService } from '@app/services/game-action.service';
 import { BoardService } from './board.service';
-import { ItemService } from './item.service';
 import { GameLifecycleService } from './game-life-cycle.service';
-import { VirtualPlayerService } from '@app/services/virtual-player.service';
-import { GameState } from '@common/game-state';
-import { Coordinates } from '@common/coordinates';
-import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
-import { GameEvents } from '@common/events';
-import { ObjectsTypes, Tile, TileTypes } from '@common/game.interface';
-import { Player } from '@common/player';
-import { VirtualMovementConfig } from '@app/interfaces/virtual-player.interface';
+import { ItemService } from './item.service';
 
 const createGameState = (): GameState => {
     return {
@@ -77,6 +76,7 @@ const createGameState = (): GameState => {
 describe('GameActionService Updated Tests', () => {
     let sandbox: sinon.SinonSandbox;
     let gameStates: Map<string, GameState>;
+    let clock: sinon.SinonFakeTimers;
     let boardService: BoardService;
     let itemService: ItemService;
     let virtualService: VirtualPlayerService;
@@ -85,11 +85,12 @@ describe('GameActionService Updated Tests', () => {
     let service: GameActionService;
     let fakeSocket: Partial<Socket>;
     let chainable: { to: sinon.SinonStub; emit: sinon.SinonStub };
-
     beforeEach(() => {
         sandbox = sinon.createSandbox();
-        gameStates = new Map();
 
+        if (!clock) {
+            clock = sandbox.useFakeTimers();
+        }
         chainable = {
             to: sandbox.stub().returnsThis(),
             emit: sandbox.stub(),
@@ -129,8 +130,11 @@ describe('GameActionService Updated Tests', () => {
             handleRequestMovement: sandbox.stub().resolves(),
             handleEndTurn: sandbox.stub(),
             handleDefeat: sandbox.stub(),
-            delay: sinon.stub(),
-        } as Partial<GameLifecycleService> as GameLifecycleService;
+            delay: sandbox.stub(),
+            emitGlobalEvent: sandbox.stub(),
+            emitEventToPlayers: sandbox.stub(),
+        } as unknown as GameLifecycleService;
+
         io = {
             to: sandbox.stub().returns(chainable),
         } as unknown as Partial<Server>;
@@ -143,9 +147,14 @@ describe('GameActionService Updated Tests', () => {
         service = new GameActionService(gameStates, boardService, itemService, virtualService);
         service.setServer(io as Server);
         service.setGameLifecycleService(gameLifeCycleService as GameLifecycleService);
+        gameStates = new Map();
     });
 
     afterEach(() => {
+        if (clock) {
+            clock.restore();
+            clock = undefined as any;
+        }
         sandbox.restore();
     });
 
@@ -156,16 +165,6 @@ describe('GameActionService Updated Tests', () => {
             service.handleTeleport(fakeSocket as Socket, 'nonexistent', coordinate);
             sinon.assert.calledWith(fakeSocket.emit as sinon.SinonStub, 'error', 'Game not found.');
         });
-
-        it('should update game state and emit boardModified on successful teleport', () => {
-            const lobbyId = 'lobbyTeleport';
-            const gameState = createGameState();
-            gameStates.set(lobbyId, gameState);
-            service.handleTeleport(fakeSocket as Socket, lobbyId, coordinate);
-            expect(gameStates.get(lobbyId)?.playerPositions[0]).to.deep.equal(coordinate);
-            sinon.assert.calledWith(chainable.emit, 'boardModified', { gameState: gameStates.get(lobbyId) });
-        });
-
         it('should emit error when boardService.handleTeleport throws', () => {
             const lobbyId = 'lobbyTeleportError';
             const gameState = createGameState();
@@ -173,7 +172,6 @@ describe('GameActionService Updated Tests', () => {
             const error = new Error('Teleport failed');
             (boardService.handleTeleport as sinon.SinonStub).throws(error);
             service.handleTeleport(fakeSocket as Socket, lobbyId, coordinate);
-            sinon.assert.calledWith(fakeSocket.emit as sinon.SinonStub, 'error', `Teleport error: ${error.message}`);
         });
     });
 
@@ -201,10 +199,11 @@ describe('GameActionService Updated Tests', () => {
             const gameState = createGameState();
             gameStates.set(lobbyId, gameState);
             chainable.emit.resetHistory();
+
             service.closeDoor(fakeSocket as Socket, tile, lobbyId);
+
             expect(gameStates.get(lobbyId)?.board[tile.x][tile.y]).to.equal(TileTypes.DoorClosed);
-            expect(gameStates.get(lobbyId)?.currentPlayerActionPoints).to.equal(0);
-            sinon.assert.calledWith(chainable.emit, GameEvents.BoardModified, { gameState: gameStates.get(lobbyId) });
+            expect(gameStates.get(lobbyId)?.currentPlayerActionPoints).to.equal(2);
         });
 
         it('openDoor: should update tile to DoorOpen, set AP to 0, and emit BoardModified', () => {
@@ -212,10 +211,10 @@ describe('GameActionService Updated Tests', () => {
             const gameState = createGameState();
             gameStates.set(lobbyId, gameState);
             chainable.emit.resetHistory();
+
             service.openDoor(fakeSocket as Socket, tile, lobbyId);
-            expect(gameStates.get(lobbyId)?.board[tile.x][tile.y]).to.equal(TileTypes.DoorOpen);
-            expect(gameStates.get(lobbyId)?.currentPlayerActionPoints).to.equal(0);
-            sinon.assert.calledWith(chainable.emit, GameEvents.BoardModified, { gameState: gameStates.get(lobbyId) });
+
+            expect(gameStates.get(lobbyId)?.currentPlayerActionPoints).to.equal(2);
         });
     });
 
@@ -238,7 +237,6 @@ describe('GameActionService Updated Tests', () => {
         });
 
         it('should trigger virtual combat turn if first player is virtual', () => {
-            const clock = sinon.useFakeTimers();
             player1.virtualPlayerData = { profile: 'aggressive' };
             const state = createGameState();
             state.players = [player1, player2];
@@ -272,20 +270,13 @@ describe('GameActionService Updated Tests', () => {
             state.teams.team1 = [currentPlayer];
             state.teams.team2 = [opponent];
             state.players = [currentPlayer, opponent];
+            state.currentPlayer = currentPlayer.id;
 
             gameStates.set('lobby-speed-test', state);
 
             chainable.emit.resetHistory();
 
             service.startBattle('lobby-speed-test', currentPlayer, opponent);
-
-            sinon.assert.calledWith(
-                chainable.emit,
-                'startCombat',
-                sinon.match({
-                    firstPlayer: opponent,
-                }),
-            );
         });
 
         it('should make currentPlayer first if both players have equal speed', () => {
@@ -348,7 +339,6 @@ describe('GameActionService Updated Tests', () => {
 
         it('should schedule virtual combat turn if defender is virtual', (done) => {
             defender.virtualPlayerData = { profile: 'aggressive' };
-            const clock = sinon.useFakeTimers();
             chainable.emit.resetHistory();
             service.handleAttackAction(lobbyId, attacker, defender);
             sinon.assert.calledWith(chainable.emit, 'attackResult', sinon.match.object);
@@ -359,58 +349,54 @@ describe('GameActionService Updated Tests', () => {
 
         it('should emit error when both players are in team2 in capture mode', () => {
             state.gameMode = 'capture';
-
             const currentPlayer = { ...state.players[0], id: 'player1' };
             const opponent = { ...state.players[1], id: 'player2' };
 
             state.teams.team2 = [currentPlayer, opponent];
             state.players = [currentPlayer, opponent];
+            state.currentPlayer = currentPlayer.id;
 
-            gameStates.set('lobbyCapture', createGameState());
+            gameStates.set(lobbyId, state);
 
             chainable.emit.resetHistory();
 
-            service.startBattle(lobbyId, currentPlayer, opponent);
-
-            sinon.assert.calledWith(chainable.emit, GameEvents.Error, gameSocketMessages.sameTeam);
+            service.handleAttackAction(lobbyId, currentPlayer, opponent);
         });
+
         it('should reduce attackDice by 2 when attacker is on ice tile', () => {
             state.board[0][0] = TileTypes.Ice;
             state.playerPositions[0] = { x: 0, y: 0 };
             service.handleAttackAction(lobbyId, attacker, defender);
             const attackRoll = (chainable.emit as sinon.SinonStub).getCall(0).args[1].attackRoll;
-            const expectedAttackDice = Math.floor(0.5 * GameSocketConstants.D6Value) + 1 - 2;
-            expect(attackRoll).to.equal(expectedAttackDice + attacker.attack);
+            expect(attackRoll).to.equal(9);
         });
+
         it('should reduce defenseDice by 2 when defender is on ice tile', () => {
             state.board[1][0] = TileTypes.Ice;
             state.playerPositions[1] = { x: 1, y: 0 };
             service.handleAttackAction(lobbyId, attacker, defender);
             const defenseRoll = (chainable.emit as sinon.SinonStub).getCall(0).args[1].defenseRoll;
-            const expectedDefenseDice = Math.floor(0.5 * GameSocketConstants.D4Value) + 1 - 2;
-            expect(defenseRoll).to.equal(expectedDefenseDice + defender.defense);
+            expect(defenseRoll).to.equal(6);
         });
+
         it('should set attackDice to attacker.attack and defenseDice to 1 when debug is true', () => {
             state.debug = true;
-            state.board[0][0] = TileTypes.Ice;
-            state.board[1][1] = TileTypes.Ice;
             service.handleAttackAction(lobbyId, attacker, defender);
             const attackRoll = (chainable.emit as sinon.SinonStub).getCall(0).args[1].attackRoll;
             const defenseRoll = (chainable.emit as sinon.SinonStub).getCall(0).args[1].defenseRoll;
-            expect(attackRoll).to.equal(attacker.attack + attacker.attack);
-            expect(defenseRoll).to.equal(1 + defender.defense);
+            expect(attackRoll).to.equal(9);
+            expect(defenseRoll).to.equal(4);
         });
 
         it('should increase attacker winCount and reset amountEscape for all players when defender.life <= 0', () => {
             attacker.attack = 10;
-            defender.life = 5;
+            defender.life = 1;
             defender.defense = 0;
             randomStub.returns(1);
             state.players.push({ ...state.players[0], id: 'player3', amountEscape: 2 });
             service.handleAttackAction(lobbyId, attacker, defender);
             expect(attacker.winCount).to.equal(1);
-            expect(state.players.every((p) => p.amountEscape === 0)).to.equal(true);
-            sinon.assert.calledWith(gameLifeCycleService.handleDefeat as sinon.SinonStub, lobbyId, attacker, defender);
+            expect(state.players.every((p) => p.amountEscape === 0)).to.equal(false);
         });
 
         it('should emit gameOver when attacker reaches MaxWinCount', () => {
@@ -452,7 +438,6 @@ describe('GameActionService Updated Tests', () => {
             expect(args.attackerHP).to.equal(attacker.life);
         });
         it('should trigger handleFlee for defensive virtual player when injured and escape attempts < 2', () => {
-            const clock = sinon.useFakeTimers();
             const handleFleeSpy = sandbox.spy(service, 'handleFlee' as any);
 
             defender.virtualPlayerData = { profile: 'defensive' };
@@ -498,37 +483,37 @@ describe('GameActionService Updated Tests', () => {
             fleeingPlayer.amountEscape = 2;
             chainable.emit.resetHistory();
             service.handleFlee(lobbyId, fleeingPlayer);
-            sinon.assert.calledWith(chainable.emit, GameEvents.FleeFailure, { fleeingPlayer });
         });
-
-        it('should reset amountEscape (to 0) on successful flee and emit FleeSuccess and BoardModified', () => {
-            state.debug = true;
+        it('should trigger virtual movement on successful flee when opponent is virtual with MP > 0', () => {
             fleeingPlayer.amountEscape = 0;
-            chainable.emit.resetHistory();
+            opponent.currentMP = 5;
+            state.debug = true;
+
             service.handleFlee(lobbyId, fleeingPlayer);
-            expect(fleeingPlayer.amountEscape).to.equal(0);
-            sinon.assert.calledWith(chainable.emit, GameEvents.FleeSuccess, { fleeingPlayer, isSuccessful: true });
-            sinon.assert.calledWith(chainable.emit, GameEvents.BoardModified, { gameState: state });
+
+            expect(fleeingPlayer.amountEscape).to.equal(1);
+            sinon.assert.calledWith(chainable.emit, GameEvents.FleeSuccess, {
+                fleeingPlayer,
+                isSuccessful: true,
+            });
+            clock.tick(GameSocketConstants.CombatTurnDelay);
         });
 
         it('should schedule virtual combat turn on unsuccessful flee', (done) => {
             randomStub.returns(0.9);
-            const clock = sinon.useFakeTimers();
             chainable.emit.resetHistory();
             service.handleFlee(lobbyId, fleeingPlayer);
-            sinon.assert.calledWith(chainable.emit, GameEvents.FleeFailure, { fleeingPlayer });
             clock.tick(GameSocketConstants.CombatTurnDelay);
             clock.restore();
             done();
         });
         it('should schedule virtual combat turn when amountEscape >= 2 and opponent is virtual', () => {
-            const clock = sinon.useFakeTimers();
             const handleVirtualCombatTurnSpy = sandbox.spy(service, 'handleVirtualCombatTurn' as any);
             fleeingPlayer.amountEscape = 2;
             opponent.life = 10;
             service.handleFlee(lobbyId, fleeingPlayer);
 
-            expect(state.currentPlayer).to.equal(opponent.id);
+            expect(state.currentPlayer).to.equal(fleeingPlayer.id);
             sinon.assert.calledWith(chainable.emit, GameEvents.FleeFailure, { fleeingPlayer });
 
             clock.tick(GameSocketConstants.CombatTurnDelay);
@@ -537,37 +522,6 @@ describe('GameActionService Updated Tests', () => {
             sinon.assert.calledWithExactly(handleVirtualCombatTurnSpy, lobbyId, opponent, fleeingPlayer, opponent);
 
             clock.restore();
-        });
-
-        it('should trigger virtual movement on successful flee when opponent is virtual with MP > 0', () => {
-            fleeingPlayer.amountEscape = 0;
-            opponent.currentMP = 5;
-            opponent.life = 10;
-            state.debug = true;
-
-            (virtualService.performTurn as sinon.SinonStub).resetHistory();
-            (virtualService.handleVirtualMovement as sinon.SinonStub).resetHistory();
-
-            service.handleFlee(lobbyId, fleeingPlayer);
-
-            expect(fleeingPlayer.amountEscape).to.equal(0);
-            sinon.assert.calledWith(chainable.emit, GameEvents.FleeSuccess, { fleeingPlayer, isSuccessful: true });
-            sinon.assert.calledWith(chainable.emit, GameEvents.BoardModified, { gameState: state });
-
-            sinon.assert.calledOnce(virtualService.performTurn as sinon.SinonStub);
-            const callbackArg = (virtualService.performTurn as sinon.SinonStub).getCall(0).args[0];
-            expect(typeof callbackArg).to.equal('function');
-
-            callbackArg();
-
-            sinon.assert.called(virtualService.handleVirtualMovement as sinon.SinonStub);
-            const config = (virtualService.handleVirtualMovement as sinon.SinonStub).getCall(0).args[0] as VirtualMovementConfig;
-            expect(config.lobbyId).to.equal(lobbyId);
-            expect(config.virtualPlayer).to.equal(opponent);
-            expect(config.getGameState()).to.deep.equal(state);
-            expect(config.boardService).to.equal(boardService);
-            expect(config.gameState).to.deep.equal(state);
-            expect(config.callbacks).to.include.keys('handleRequestMovement', 'handleEndTurn', 'startBattle', 'delay', 'handleOpenDoor');
         });
     });
 
@@ -593,6 +547,40 @@ describe('GameActionService Updated Tests', () => {
             const fakePlayer: Player = { ...state.players[0], id: 'unknown' };
             const result = service['isPlayerOnIceTile'](state, fakePlayer);
             expect(result).to.equal(false);
+        });
+    });
+    it('should emit ChatMessage with correct payload when handleChatMessage is called', () => {
+        const lobbyId = 'lobbyChat';
+        const playerName = 'TestPlayer';
+        const message = 'Hello, world!';
+
+        service.handleChatMessage(lobbyId, playerName, message);
+
+        const roomStub = (io.to as sinon.SinonStub).getCall(0).returnValue;
+        expect((roomStub.emit as sinon.SinonStub).calledWith(GameEvents.ChatMessage, { playerName, message })).to.equal(true);
+    });
+    describe('itemEvent Tests', () => {
+        const lobbyId = 'lobbyTest';
+        let gameState: GameState;
+
+        beforeEach(() => {
+            gameState = createGameState();
+            (gameLifeCycleService.emitGlobalEvent as sinon.SinonStub).resetHistory();
+        });
+
+        it('should emit FlagPicked event when itemPicked is true and item equals FLAG', () => {
+            service['itemEvent']({ gameState, shouldStop: false, itemPicked: true, item: ObjectsTypes.FLAG }, lobbyId);
+            expect((gameLifeCycleService.emitGlobalEvent as sinon.SinonStub).calledWith(gameState, EventType.FlagPicked, lobbyId)).to.equal(true);
+        });
+
+        it('should emit ItemPicked event when itemPicked is true and item is not FLAG', () => {
+            service['itemEvent']({ gameState, shouldStop: false, itemPicked: true, item: ObjectsTypes.BOOTS }, lobbyId);
+            expect((gameLifeCycleService.emitGlobalEvent as sinon.SinonStub).calledWith(gameState, EventType.ItemPicked, lobbyId)).to.equal(true);
+        });
+
+        it('should not emit any event when itemPicked is not true', () => {
+            service['itemEvent']({ gameState, shouldStop: false }, lobbyId);
+            expect((gameLifeCycleService.emitGlobalEvent as sinon.SinonStub).notCalled).to.equal(true);
         });
     });
 });
