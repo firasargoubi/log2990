@@ -1,5 +1,6 @@
 import { Application } from '@app/app';
 import { SocketService } from '@app/services/socket.service';
+import { VirtualPlayerService } from '@app/services/virtual-player.service';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
 import * as http from 'http';
@@ -15,7 +16,6 @@ import { ItemService } from './services/item.service';
 import { LobbySocketHandlerService } from './services/lobby-socket-handler.service';
 import { PathfindingService } from './services/pathfinding.service';
 import { ValidationSocketHandlerService } from './services/validation-socket-handler.service';
-import { VirtualPlayerService } from '@app/services/virtual-player.service';
 const uri = 'mongodb+srv://admin:admin@log2990-perso.mf3fg.mongodb.net/?retryWrites=true&w=majority&appName=LOG2990-perso';
 @Service()
 export class Server {
@@ -65,6 +65,8 @@ export class Server {
             lobbyHandler,
             validationHandler,
             disconnectHandler,
+            boardService,
+            itemService,
             gameActionService,
             gameLifeCycleService,
         );

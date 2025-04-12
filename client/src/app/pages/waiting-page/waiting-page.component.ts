@@ -44,60 +44,13 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
     private lobbyService = inject(LobbyService);
     private router = inject(Router);
     private notificationService = inject(NotificationService);
-
     ngOnInit(): void {
         const lobbyId = this.route.snapshot.paramMap.get(WAITING_PAGE.lobbyIdParam);
-        const player = this.route.snapshot.paramMap.get(WAITING_PAGE.playerIdParam);
+        const playerId = this.route.snapshot.paramMap.get(WAITING_PAGE.playerIdParam);
 
-        if (lobbyId && player) {
-            this.lobbyService.joinLobbyMessage(lobbyId);
-            this.lobbyService.getLobby(lobbyId).subscribe((lobby) => {
-                this.lobby = lobby;
-                this.currentPlayer = lobby.players.find((p) => p.id === player) || this.currentPlayer;
-                if (this.currentPlayer.id === WAITING_PAGE.defaultHostId) {
-                    this.router.navigate([PageUrl.Home], { replaceUrl: true });
-                    return;
-                }
-                this.hostId = lobby.players.find((p) => p.isHost)?.id || '';
-            });
-
-            this.subscriptions.push(
-                this.lobbyService.onLobbyUpdated().subscribe((data) => {
-                    if (data.lobby.id === lobbyId) {
-                        this.lobby = data.lobby;
-                        const currentPlayer = data.lobby.players.find((p) => p.id === player);
-                        if (!currentPlayer) {
-                            this.lobbyService.disconnectFromRoom(lobbyId);
-                            this.router.navigate([PageUrl.Home], { replaceUrl: true });
-                            return;
-                        }
-                        this.currentPlayer = currentPlayer;
-                        this.hostId = data.lobby.players.find((p) => p.isHost)?.id || '';
-                    }
-                }),
-            );
-
-            this.subscriptions.push(
-                this.lobbyService.onHostDisconnected().subscribe(() => {
-                    this.notificationService.showError(WAITING_PAGE_CONSTANTS.lobbyCancelled);
-                    this.router.navigate([PageUrl.Home], { replaceUrl: true });
-                }),
-            );
-
-            this.subscriptions.push(
-                this.lobbyService.onError().subscribe({
-                    next: (error) => {
-                        this.notificationService.showError(error);
-                    },
-                }),
-            );
-
-            this.subscriptions.push(
-                this.lobbyService.onGameStarted().subscribe(() => {
-                    this.lobbyService.setCurrentPlayer(this.currentPlayer);
-                    this.router.navigate([`${PageUrl.Play}/${lobbyId}`]);
-                }),
-            );
+        if (lobbyId && playerId) {
+            this.initializeLobby(lobbyId, playerId);
+            this.setupLobbyListeners(lobbyId, playerId);
         }
     }
     ngOnDestroy(): void {
@@ -131,5 +84,49 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
         } else {
             this.notificationService.showError(WAITING_PAGE_CONSTANTS.errorStartGame);
         }
+    }
+    private initializeLobby(lobbyId: string, playerId: string): void {
+        this.lobbyService.getLobby(lobbyId).subscribe((lobby) => {
+            this.lobby = lobby;
+            this.currentPlayer = lobby.players.find((p) => p.id === playerId) || this.currentPlayer;
+
+            if (this.currentPlayer.id === WAITING_PAGE.defaultHostId) {
+                this.router.navigate([PageUrl.Home], { replaceUrl: true });
+                return;
+            }
+
+            this.hostId = lobby.players.find((p) => p.isHost)?.id || '';
+        });
+    }
+    private setupLobbyListeners(lobbyId: string, playerId: string): void {
+        this.subscriptions.push(
+            this.lobbyService.onLobbyUpdated().subscribe((data) => {
+                if (data.lobby.id === lobbyId) {
+                    this.lobby = data.lobby;
+                    const currentPlayer = data.lobby.players.find((p) => p.id === playerId);
+                    if (!currentPlayer) {
+                        this.lobbyService.disconnectFromRoom(lobbyId);
+                        this.router.navigate([PageUrl.Home], { replaceUrl: true });
+                        return;
+                    }
+                    this.currentPlayer = currentPlayer;
+                    this.hostId = data.lobby.players.find((p) => p.isHost)?.id || '';
+                }
+            }),
+
+            this.lobbyService.onHostDisconnected().subscribe(() => {
+                this.notificationService.showError(WAITING_PAGE_CONSTANTS.lobbyCancelled);
+                this.router.navigate([PageUrl.Home], { replaceUrl: true });
+            }),
+
+            this.lobbyService.onError().subscribe((error) => {
+                this.notificationService.showError(error);
+            }),
+
+            this.lobbyService.onGameStarted().subscribe(() => {
+                this.lobbyService.setCurrentPlayer(this.currentPlayer);
+                this.router.navigate([`${PageUrl.Play}/${lobbyId}`]);
+            }),
+        );
     }
 }
