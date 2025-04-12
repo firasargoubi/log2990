@@ -52,7 +52,9 @@ export class GameLifecycleService {
 
         try {
             const gameState = await this.boardService.initializeGameState(lobby);
-            gameState.amountClosedDoors = gameState.board.flat().filter((boardTile) => boardTile === TileTypes.DoorClosed).length;
+            gameState.amountDoors =
+                gameState.board.flat().filter((boardTile) => boardTile === TileTypes.DoorClosed).length +
+                gameState.board.flat().filter((boardTile) => boardTile === TileTypes.DoorOpen).length;
 
             if (gameState.gameMode === 'capture' && lobby.players.length % 2 !== 0) {
                 socket.emit(GameEvents.Error, gameSocketMessages.notEnoughPlayers);
