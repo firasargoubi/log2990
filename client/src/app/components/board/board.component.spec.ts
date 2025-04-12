@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component, Input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import { TileComponent } from '@app/components/tile/tile.component';
 import { MapSize } from '@app/consts/app-constants';
 import { BoardService } from '@app/services/board.service';
@@ -17,7 +18,6 @@ import { GameSize } from '@common/game.interface';
 import { Tile } from '@common/tile';
 import { of, Subject } from 'rxjs';
 import { BoardComponent } from './board.component';
-import { FormsModule } from '@angular/forms';
 
 @Component({
     selector: 'app-tile',
@@ -243,10 +243,9 @@ describe('BoardComponent', () => {
     });
 
     it('should subscribe to isSave$ observable in constructor', () => {
-        const reloadTilesSpy = spyOn<any>(component, 'reloadTiles');
         (saveServiceSpy.isSave$ as Subject<boolean>).next(true);
-        expect(reloadTilesSpy).toHaveBeenCalled();
         expect(saveServiceSpy.verifyBoard).toHaveBeenCalledWith(boardServiceSpy.board);
+        expect(boardServiceSpy.notifyBoardUpdate).toHaveBeenCalled();
     });
 
     it('should delete object on right-click if tile has an object', () => {

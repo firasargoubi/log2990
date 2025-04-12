@@ -106,20 +106,11 @@ describe('GameActionService Updated Tests', () => {
                 return gameState;
             }),
             handleBoardChange: sandbox.stub().callsFake((gameState: GameState) => gameState),
-            findAllPaths: sandbox.stub().callsFake((gameState: GameState, coordinate: Coordinates) => {
-                gameState.playerPositions[0] = coordinate;
-                return [coordinate];
-            }),
-            calculateShortestMoves: sandbox.stub().callsFake((gameState: GameState, coordinate: Coordinates) => {
-                gameState.playerPositions[0] = coordinate;
-                return [[coordinate]];
-            }),
         } as unknown as BoardService;
 
         itemService = {
             applyPotionEffect: sandbox.stub(),
             applyJuiceEffect: sandbox.stub(),
-            removeAttributeEffects: sandbox.stub(),
         } as unknown as ItemService;
 
         virtualService = {

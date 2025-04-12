@@ -22,6 +22,8 @@ describe('SocketService', () => {
     let gameActionService: any;
     let validationHandler: any;
     let disconnectHandler: any;
+    let boardService: any;
+    let itemService: any;
 
     beforeEach(() => {
         sandbox = createSandbox();
@@ -59,6 +61,8 @@ describe('SocketService', () => {
         };
         validationHandler = { verifyRoom: sandbox.stub(), verifyAvatars: sandbox.stub(), verifyUsername: sandbox.stub() };
         disconnectHandler = { handleDisconnect: sandbox.stub(), handleDisconnectFromRoom: sandbox.stub() };
+        boardService = { findAllPaths: sandbox.stub(), calculateShortestMoves: sandbox.stub() };
+        itemService = { removeAttributeEffects: sandbox.stub() };
 
         mockSocket = {
             emit: sandbox.stub(),
@@ -71,7 +75,16 @@ describe('SocketService', () => {
             to: sandbox.stub().returns({ emit: sandbox.stub() }),
         };
 
-        socketService = new SocketService(httpServer, lobbyHandler, validationHandler, disconnectHandler, gameActionService, gameLifecycleService);
+        socketService = new SocketService(
+            httpServer,
+            lobbyHandler,
+            validationHandler,
+            disconnectHandler,
+            boardService,
+            itemService,
+            gameActionService,
+            gameLifecycleService,
+        );
 
         (socketService as any).io = ioStub;
     });
