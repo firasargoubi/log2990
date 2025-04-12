@@ -53,16 +53,22 @@ export class VirtualPlayerService {
     getNearestOpponent(gameState: GameState, virtualPlayer: Player, currentPos: Coordinates): { player: Player; pos: Coordinates } | null {
         const opponents = gameState.players
             .map((p, idx) => ({ player: p, pos: gameState.playerPositions[idx] }))
-            .filter((item) => item.player.id !== virtualPlayer.id);
+            .filter((item) => item.player.id !== virtualPlayer.id && this.isOpponent(virtualPlayer, item.player, gameState));
         if (!opponents.length) return null;
-        const nearest = opponents.reduce((prev, curr) => (this.distance(curr.pos, currentPos) < this.distance(prev.pos, currentPos) ? curr : prev));
+        const nearestByDistance = opponents.reduce((prev, curr) =>
+            this.distance(curr.pos, currentPos) < this.distance(prev.pos, currentPos) ? curr : prev,
+        );
 
-        const adjacents = this.getAdjacentPositions(nearest.pos, gameState.board);
-        if (adjacents.length === 0) return nearest;
+        const adjacents = this.getAdjacentPositions(nearestByDistance.pos, gameState.board);
+        if (adjacents.length === 0) return nearestByDistance;
 
         const closestAdjacent = adjacents.reduce((prev, curr) => (this.distance(curr, currentPos) < this.distance(prev, currentPos) ? curr : prev));
 
-        return { player: nearest.player, pos: closestAdjacent };
+        if (this.distance(closestAdjacent, currentPos) < this.distance(nearestByDistance.pos, currentPos)) {
+            return { player: nearestByDistance.player, pos: closestAdjacent };
+        }
+
+        return nearestByDistance;
     }
 
     getClosest(target: Coordinates, positions: Coordinates[]): Coordinates {
@@ -116,6 +122,64 @@ export class VirtualPlayerService {
 
     distance(a: Coordinates, b: Coordinates): number {
         return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
+    }
+
+    findFlagPosition(gameState: GameState): Coordinates | null {
+        if (gameState.gameMode !== 'capture') return null;
+        for (let x = 0; x < gameState.board.length; x++) {
+            for (let y = 0; y < gameState.board[x].length; y++) {
+                const tileValue = gameState.board[x][y];
+                const objectType = Math.floor(tileValue / TILE_DELIMITER);
+                if (objectType === ObjectsTypes.FLAG) {
+                    return { x, y };
+                }
+            }
+        }
+        return null;
+    }
+
+    findFlagCarrier(gameState: GameState): Player | null {
+        if (gameState.gameMode !== 'capture') return null;
+        for (const player of gameState.players) {
+            if (player.items?.includes(ObjectsTypes.FLAG)) {
+                return player;
+            }
+        }
+        return null;
+    }
+
+    isTeammate(player1: Player, player2: Player, gameState: GameState): boolean {
+        if (gameState.gameMode !== 'capture' || !gameState.teams) return false;
+        const team1Ids = new Set(gameState.teams.team1.map((p) => p.id));
+        const team2Ids = new Set(gameState.teams.team2.map((p) => p.id));
+        return (team1Ids.has(player1.id) && team1Ids.has(player2.id)) || (team2Ids.has(player1.id) && team2Ids.has(player2.id));
+    }
+
+    isOpponent(player1: Player, player2: Player, gameState: GameState): boolean {
+        if (gameState.gameMode !== 'capture' || !gameState.teams) {
+            return player1.id !== player2.id;
+        }
+        const team1Ids = new Set(gameState.teams.team1.map((p) => p.id));
+        const team2Ids = new Set(gameState.teams.team2.map((p) => p.id));
+        return (team1Ids.has(player1.id) && team2Ids.has(player2.id)) || (team2Ids.has(player1.id) && team1Ids.has(player2.id));
+    }
+
+    getOpponentsNearTarget(
+        gameState: GameState,
+        perspectivePlayer: Player,
+        targetPos: Coordinates,
+        maxDistance: number,
+    ): { player: Player; pos: Coordinates }[] {
+        const nearbyOpponents: { player: Player; pos: Coordinates }[] = [];
+        gameState.players.forEach((player, index) => {
+            if (player.id === perspectivePlayer.id) return;
+
+            const playerPos = gameState.playerPositions[index];
+            if (playerPos && this.isOpponent(perspectivePlayer, player, gameState) && this.distance(playerPos, targetPos) <= maxDistance) {
+                nearbyOpponents.push({ player, pos: playerPos });
+            }
+        });
+        return nearbyOpponents;
     }
 
     private async prepareTurn(config: VirtualMovementConfig): Promise<{ currentGameState: GameState; playerIndex: number } | null> {
@@ -200,13 +264,15 @@ export class VirtualPlayerService {
         const { gameState, virtualPlayer, callbacks, lobbyId, boardService } = config;
 
         const finalPos = gameState.playerPositions[playerIndex];
+
         if (finalPos) {
             const opponents = gameState.players
                 .map((p, idx) => ({ player: p, pos: gameState.playerPositions[idx] }))
                 .filter((item) => item.player.id !== virtualPlayer.id);
-            const adjacentOpponent = opponents.find((item) => this.distance(finalPos, item.pos) <= ADJACENT_DISTANCE_THRESHOLD);
-            if (adjacentOpponent) {
-                callbacks.startBattle(lobbyId, virtualPlayer, adjacentOpponent.player);
+            const adjacentPlayer = opponents.find((item) => this.distance(finalPos, item.pos) <= ADJACENT_DISTANCE_THRESHOLD);
+
+            if (adjacentPlayer && this.isOpponent(virtualPlayer, adjacentPlayer.player, gameState)) {
+                callbacks.startBattle(lobbyId, virtualPlayer, adjacentPlayer.player);
                 return;
             }
         }

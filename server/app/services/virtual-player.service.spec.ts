@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
@@ -100,6 +101,78 @@ describe('VirtualPlayerService', () => {
         gameState,
     });
 
+    describe('performTurn', () => {
+        let clock: sinon.SinonFakeTimers;
+
+        beforeEach(() => {
+            clock = sandbox.useFakeTimers();
+        });
+
+        afterEach(() => {
+            clock.restore();
+        });
+
+        it('should execute callback after calculated delay and resolve', async () => {
+            const randomStub = sandbox.stub(Math, 'random').returns(0.5);
+            const actionSpy = sinon.spy();
+
+            const promise = service.performTurn(actionSpy);
+
+            expect(actionSpy.called).to.equal(false);
+
+            await clock.tickAsync(2000);
+
+            await promise;
+
+            expect(actionSpy.calledOnce).to.equal(true);
+            randomStub.restore();
+        });
+
+        it('should handle minimum delay correctly', async () => {
+            const randomStub = sandbox.stub(Math, 'random').returns(0);
+            const actionSpy = sinon.spy();
+
+            const promise = service.performTurn(actionSpy);
+            await clock.tickAsync(1000);
+            await promise;
+
+            expect(actionSpy.calledOnce).to.equal(true);
+            randomStub.restore();
+        });
+
+        it('should handle maximum delay range correctly', async () => {
+            const randomStub = sandbox.stub(Math, 'random').returns(0.99999);
+            const actionSpy = sinon.spy();
+
+            const promise = service.performTurn(actionSpy);
+            await clock.tickAsync(1000 + 2000 * 0.99999);
+            await promise;
+
+            expect(actionSpy.calledOnce).to.equal(true);
+            randomStub.restore();
+        });
+
+        it('should resolve promise after timeout completes', async () => {
+            const randomStub = sandbox.stub(Math, 'random').returns(0.5);
+            const actionSpy = sinon.spy();
+            let resolved = false;
+
+            service.performTurn(actionSpy).then(() => {
+                resolved = true;
+            });
+
+            await clock.tickAsync(500);
+            expect(resolved).to.equal(false);
+
+            await clock.tickAsync(1500);
+            await Promise.resolve();
+
+            expect(resolved).to.equal(true);
+            expect(actionSpy.calledOnce).to.equal(true);
+            randomStub.restore();
+        });
+    });
+
     describe('handleVirtualMovement', () => {
         it('should end turn if prepareTurn returns null', async () => {
             const player = createMockPlayer('vp1', 'Virtual', true);
@@ -146,6 +219,25 @@ describe('VirtualPlayerService', () => {
             sinon.assert.calledOnceWithExactly(executeMovementStub, sinon.match.object, target, 0);
             sinon.assert.calledOnceWithExactly(completeTurnStub, sinon.match.object, 0);
             sinon.assert.notCalled(mockCallbacks.handleEndTurn);
+        });
+        it('should exclude moves with out-of-bounds x coordinate', () => {
+            const player = createMockPlayer('vp1', 'Virtual', true);
+            player.items = [ObjectsTypes.SWORD, ObjectsTypes.BOOTS];
+            const gameState = createMockGameState(
+                [player],
+                [{ x: 0, y: 0 }],
+                [
+                    [0, 0, 0],
+                    [0, 0, 0],
+                    [0, 0, 0],
+                ],
+            );
+
+            const dangerousMove = { x: -1, y: 0 };
+            mockBoardService.findAllPaths.returns([dangerousMove, { x: 1, y: 1 }]);
+
+            const result = (service as any).planMovement(createMockConfig(gameState, player), 0);
+            expect(result?.target).to.equal(undefined);
         });
     });
     describe('getNearestOpponent', () => {
@@ -206,6 +298,53 @@ describe('VirtualPlayerService', () => {
             const result = service.getNearestOpponent(gameState, vp, vpPos);
             expect(result?.player.id).to.equal(opp.id);
             expect(result?.pos).to.deep.equal({ x: 2, y: 3 });
+        });
+        it('should return original opponent position when adjacent tiles are not closer', () => {
+            const virtualPlayer = createMockPlayer('vp1', 'Virtual');
+            const opponent = createMockPlayer('opp1', 'Opponent');
+
+            const virtualPlayerPos: Coordinates = { x: 0, y: 0 };
+            const opponentPos: Coordinates = { x: 2, y: 2 };
+
+            const gameState = createMockGameState(
+                [virtualPlayer, opponent],
+                [virtualPlayerPos, opponentPos],
+                [
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                ],
+            );
+
+            const adjacentPos = { x: 3, y: 2 };
+            sandbox.stub(service, 'getAdjacentPositions').withArgs(opponentPos, gameState.board).returns([adjacentPos]);
+
+            const result = service.getNearestOpponent(gameState, virtualPlayer, virtualPlayerPos);
+
+            expect(result).to.deep.equal({
+                player: opponent,
+                pos: opponentPos,
+            });
+        });
+        it('should select first opponent when multiple opponents have same distance', () => {
+            const virtualPlayer = createMockPlayer('vp1', 'Virtual');
+            const opponent1 = createMockPlayer('opp1', 'Opponent1');
+            const opponent2 = createMockPlayer('opp2', 'Opponent2');
+
+            const gameState = createMockGameState(
+                [virtualPlayer, opponent1, opponent2],
+                [
+                    { x: 0, y: 0 },
+                    { x: 1, y: 0 },
+                    { x: 0, y: 1 },
+                ],
+            );
+
+            sandbox.stub(service, 'getAdjacentPositions').returns([]);
+            const result = service.getNearestOpponent(gameState, virtualPlayer, { x: 0, y: 0 });
+
+            expect(result?.player.id).to.equal(opponent1.id);
         });
     });
 
@@ -298,6 +437,26 @@ describe('VirtualPlayerService', () => {
                 { x: 0, y: 2 },
             ]);
             expect(result.length).to.equal(3);
+        });
+        it('should select closest adjacent when multiple adjacents exist', () => {
+            const virtualPlayer = createMockPlayer('vp1', 'Virtual');
+            const opponent = createMockPlayer('opp1', 'Opponent');
+            const currentPos: Coordinates = { x: 0, y: 0 };
+            const opponentPos: Coordinates = { x: 3, y: 3 };
+
+            const adjacents: Coordinates[] = [
+                { x: 4, y: 3 },
+                { x: 2, y: 3 },
+                { x: 3, y: 2 },
+            ];
+
+            const gameState = createMockGameState([virtualPlayer, opponent], [currentPos, opponentPos]);
+            sandbox.stub(service, 'getAdjacentPositions').returns(adjacents);
+
+            const result = service.getNearestOpponent(gameState, virtualPlayer, currentPos);
+
+            const expectedAdjacent = { x: 2, y: 3 };
+            expect(result?.pos).to.deep.equal(expectedAdjacent);
         });
     });
 
@@ -729,6 +888,349 @@ describe('VirtualPlayerService', () => {
 
             expect(result).to.equal(config.gameState);
             sinon.assert.callCount(handleDoorStub, 1);
+        });
+        it('should abort if initial game state is missing', async () => {
+            const nullConfig = createMockConfig(null as any, createMockPlayer('vp1', 'Virtual', true));
+            await (service as any).followPath([{ x: 0, y: 0 }], nullConfig);
+            sinon.assert.notCalled(mockCallbacks.handleRequestMovement);
+        });
+
+        it('should abort mid-execution if game state disappears', async () => {
+            const fakeBoard = [
+                [0, 0],
+                [TileTypes.DoorClosed, 0],
+            ];
+            const fakeGameState = createMockGameState([createMockPlayer('vp1', 'Virtual', true)], [{ x: 0, y: 0 }], fakeBoard);
+
+            const getGameStateStub = sandbox.stub().onFirstCall().returns(fakeGameState).onSecondCall().returns(null);
+
+            const config = createMockConfig(fakeGameState, createMockPlayer('vp1', 'Virtual', true), getGameStateStub);
+
+            const path: Coordinates[] = [
+                { x: 0, y: 0 },
+                { x: 1, y: 0 },
+            ];
+
+            await (service as any).followPath(path, config);
+
+            sinon.assert.neverCalledWith(mockCallbacks.handleRequestMovement, sinon.match.any, sinon.match.any, sinon.match.any);
+        });
+
+        it('should abort if player missing from game state', async () => {
+            const emptyGameState = createMockGameState([], []);
+            const config = createMockConfig(emptyGameState, createMockPlayer('vp1', 'Virtual', true));
+            await (service as any).followPath([{ x: 0, y: 0 }], config);
+            sinon.assert.notCalled(mockCallbacks.handleOpenDoor);
+        });
+    });
+    describe('findFlagPosition', () => {
+        it('should return null when game mode is not capture', () => {
+            const gameState = createMockGameState([], []);
+            gameState.gameMode = 'classic';
+            const result = service.findFlagPosition(gameState);
+            expect(result).to.equal(null);
+        });
+
+        it('should find flag position in capture mode', () => {
+            const flagPos = { x: 2, y: 2 };
+            const board = [
+                [0, 0, 0],
+                [0, 0, 0],
+                [0, 0, ObjectsTypes.FLAG * TILE_DELIMITER],
+            ];
+            const gameState = createMockGameState([], [], board);
+            gameState.gameMode = 'capture';
+
+            const result = service.findFlagPosition(gameState);
+            expect(result).to.deep.equal(flagPos);
+        });
+
+        it('should return null when no flag exists in capture mode', () => {
+            const board = [
+                [0, 0],
+                [0, 0],
+            ];
+            const gameState = createMockGameState([], [], board);
+            gameState.gameMode = 'capture';
+
+            const result = service.findFlagPosition(gameState);
+            expect(result).to.equal(null);
+        });
+
+        it('should return first flag position when multiple flags exist', () => {
+            const firstFlagPos = { x: 0, y: 1 };
+            const board = [
+                [0, ObjectsTypes.FLAG * TILE_DELIMITER],
+                [ObjectsTypes.FLAG * TILE_DELIMITER, 0],
+            ];
+            const gameState = createMockGameState([], [], board);
+            gameState.gameMode = 'capture';
+
+            const result = service.findFlagPosition(gameState);
+            expect(result).to.deep.equal(firstFlagPos);
+        });
+    });
+
+    describe('findFlagCarrier', () => {
+        it('should return null when game mode is not capture', () => {
+            const gameState = createMockGameState([createMockPlayer('p1', 'Player')], []);
+            gameState.gameMode = 'classic';
+            const result = service.findFlagCarrier(gameState);
+            expect(result).to.equal(null);
+        });
+
+        it('should find player carrying flag in capture mode', () => {
+            const carrier = createMockPlayer('carrier', 'Flag Carrier');
+            carrier.items = [ObjectsTypes.FLAG];
+            const gameState = createMockGameState([carrier], []);
+            gameState.gameMode = 'capture';
+
+            const result = service.findFlagCarrier(gameState);
+            expect(result).to.equal(carrier);
+        });
+
+        it('should return null when no player carries flag in capture mode', () => {
+            const players = [createMockPlayer('p1', 'Player 1'), createMockPlayer('p2', 'Player 2')];
+            const gameState = createMockGameState(players, []);
+            gameState.gameMode = 'capture';
+
+            const result = service.findFlagCarrier(gameState);
+            expect(result).to.equal(null);
+        });
+
+        it('should return first player carrying flag when multiple have it', () => {
+            const firstCarrier = createMockPlayer('p1', 'First Carrier');
+            firstCarrier.items = [ObjectsTypes.FLAG];
+            const secondCarrier = createMockPlayer('p2', 'Second Carrier');
+            secondCarrier.items = [ObjectsTypes.FLAG];
+
+            const gameState = createMockGameState([firstCarrier, secondCarrier], []);
+            gameState.gameMode = 'capture';
+
+            const result = service.findFlagCarrier(gameState);
+            expect(result).to.equal(firstCarrier);
+        });
+        it('should handle players with undefined items array', () => {
+            const playerWithUndefinedItems = createMockPlayer('p1', 'Player1');
+            delete playerWithUndefinedItems.items;
+            const playerWithFlag = createMockPlayer('p2', 'Player2');
+            playerWithFlag.items = [ObjectsTypes.FLAG];
+
+            const gameState = createMockGameState([playerWithUndefinedItems, playerWithFlag], []);
+            gameState.gameMode = 'capture';
+
+            const result = service.findFlagCarrier(gameState);
+            expect(result?.id).to.equal('p2');
+        });
+    });
+
+    describe('isTeammate', () => {
+        const player1 = createMockPlayer('p1', 'Player 1');
+        const player2 = createMockPlayer('p2', 'Player 2');
+        const player3 = createMockPlayer('p3', 'Player 3');
+
+        it('should return false when game mode is not capture', () => {
+            const gameState = createMockGameState([], []);
+            gameState.gameMode = 'classic';
+            const result = service.isTeammate(player1, player2, gameState);
+            expect(result).to.equal(false);
+        });
+
+        it('should return false when teams are not defined', () => {
+            const gameState = createMockGameState([], []);
+            gameState.gameMode = 'capture';
+            const result = service.isTeammate(player1, player2, gameState);
+            expect(result).to.equal(false);
+        });
+
+        it('should return true when both players are in team1', () => {
+            const gameState = createMockGameState([], []);
+            gameState.gameMode = 'capture';
+            gameState.teams = {
+                team1: [player1, player2],
+                team2: [player3],
+            };
+
+            const result = service.isTeammate(player1, player2, gameState);
+            expect(result).to.equal(true);
+        });
+
+        it('should return true when both players are in team2', () => {
+            const gameState = createMockGameState([], []);
+            gameState.gameMode = 'capture';
+            gameState.teams = {
+                team1: [player3],
+                team2: [player1, player2],
+            };
+
+            const result = service.isTeammate(player1, player2, gameState);
+            expect(result).to.equal(true);
+        });
+
+        it('should return false when players are in different teams', () => {
+            const gameState = createMockGameState([], []);
+            gameState.gameMode = 'capture';
+            gameState.teams = {
+                team1: [player1],
+                team2: [player2],
+            };
+
+            const result = service.isTeammate(player1, player2, gameState);
+            expect(result).to.equal(false);
+        });
+
+        it('should return false when one player is not in any team', () => {
+            const gameState = createMockGameState([], []);
+            gameState.gameMode = 'capture';
+            gameState.teams = {
+                team1: [player1],
+                team2: [player2],
+            };
+
+            const result = service.isTeammate(player1, player3, gameState);
+            expect(result).to.equal(false);
+        });
+
+        it('should handle large team configurations', () => {
+            const gameState = createMockGameState([], []);
+            gameState.gameMode = 'capture';
+            gameState.teams = {
+                team1: Array(10)
+                    .fill(null)
+                    .map((_, i) => createMockPlayer(`t1-p${i}`, `Team1 Player ${i}`)),
+                team2: Array(10)
+                    .fill(null)
+                    .map((_, i) => createMockPlayer(`t2-p${i}`, `Team2 Player ${i}`)),
+            };
+
+            const teammate1 = gameState.teams.team1[0];
+            const teammate2 = gameState.teams.team1[5];
+            const opponent = gameState.teams.team2[0];
+
+            expect(service.isTeammate(teammate1, teammate2, gameState)).to.equal(true);
+            expect(service.isTeammate(teammate1, opponent, gameState)).to.equal(false);
+        });
+    });
+    const playerA = createMockPlayer('A', 'PlayerA');
+    const playerB = createMockPlayer('B', 'PlayerB');
+    const playerC = createMockPlayer('C', 'PlayerC');
+    const playerD = createMockPlayer('D', 'PlayerD');
+
+    describe('isOpponent', () => {
+        const baseGameState = createMockGameState([], []);
+
+        it('should return true for different players in non-capture mode', () => {
+            baseGameState.gameMode = 'classic';
+            expect(service.isOpponent(playerA, playerB, baseGameState)).to.equal(true);
+        });
+
+        it('should return false for same player in non-capture mode', () => {
+            baseGameState.gameMode = 'classic';
+            expect(service.isOpponent(playerA, playerA, baseGameState)).to.equal(false);
+        });
+
+        it('should handle capture mode without teams as basic opponent check', () => {
+            baseGameState.gameMode = 'capture';
+            baseGameState.teams = undefined;
+            expect(service.isOpponent(playerA, playerB, baseGameState)).to.equal(true);
+            expect(service.isOpponent(playerA, playerA, baseGameState)).to.equal(false);
+        });
+
+        it('should identify cross-team players as opponents in capture mode', () => {
+            baseGameState.gameMode = 'capture';
+            baseGameState.teams = {
+                team1: [playerA, playerC],
+                team2: [playerB, playerD],
+            };
+
+            expect(service.isOpponent(playerA, playerB, baseGameState)).to.equal(true);
+            expect(service.isOpponent(playerC, playerD, baseGameState)).to.equal(true);
+
+            expect(service.isOpponent(playerA, playerC, baseGameState)).to.equal(false);
+            expect(service.isOpponent(playerB, playerD, baseGameState)).to.equal(false);
+        });
+
+        it('should handle players not in any team as non-opponents', () => {
+            baseGameState.gameMode = 'capture';
+            baseGameState.teams = {
+                team1: [playerA],
+                team2: [playerB],
+            };
+
+            expect(service.isOpponent(playerA, playerC, baseGameState)).to.equal(false);
+            expect(service.isOpponent(playerC, playerD, baseGameState)).to.equal(false);
+        });
+
+        it('should handle partial team membership', () => {
+            baseGameState.gameMode = 'capture';
+            baseGameState.teams = {
+                team1: [playerA],
+                team2: [playerB],
+            };
+
+            expect(service.isOpponent(playerA, playerC, baseGameState)).to.equal(false);
+            expect(service.isOpponent(playerC, playerB, baseGameState)).to.equal(false);
+        });
+    });
+
+    describe('getOpponentsNearTarget', () => {
+        const targetPos: Coordinates = { x: 5, y: 5 };
+        const maxDistance = 3;
+        let gameState: GameState;
+
+        beforeEach(() => {
+            gameState = createMockGameState(
+                [playerA, playerB, playerC, playerD],
+                [
+                    { x: 5, y: 6 },
+                    { x: 5, y: 4 },
+                    { x: 7, y: 7 },
+                    { x: 9, y: 9 },
+                ],
+            );
+            gameState.gameMode = 'capture';
+            gameState.teams = {
+                team1: [playerA, playerC],
+                team2: [playerB, playerD],
+            };
+        });
+
+        it('should exclude perspective player themselves', () => {
+            const result = service.getOpponentsNearTarget(gameState, playerA, targetPos, maxDistance);
+            expect(result.some((p) => p.player.id === playerA.id)).to.equal(false);
+        });
+
+        it('should exclude teammates', () => {
+            const result = service.getOpponentsNearTarget(gameState, playerA, targetPos, maxDistance);
+            expect(result.some((p) => p.player.id === playerC.id)).to.equal(false);
+        });
+
+        it('should include opponents within range', () => {
+            const result = service.getOpponentsNearTarget(gameState, playerA, targetPos, maxDistance);
+            expect(result.map((p) => p.player.id)).to.have.members(['B']);
+        });
+
+        it('should exclude opponents beyond range', () => {
+            const result = service.getOpponentsNearTarget(gameState, playerA, targetPos, maxDistance);
+            expect(result.some((p) => p.player.id === 'D')).to.equal(false);
+        });
+
+        it('should handle exact distance threshold', () => {
+            const result = service.getOpponentsNearTarget(gameState, playerB, targetPos, 3);
+            expect(result.some((p) => p.player.id === 'C')).to.equal(true);
+        });
+
+        it('should ignore players with missing positions', () => {
+            gameState.playerPositions[2] = undefined!;
+            const result = service.getOpponentsNearTarget(gameState, playerA, targetPos, maxDistance);
+            expect(result.some((p) => p.player.id === 'C')).to.equal(false);
+        });
+
+        it('should return empty array when no valid opponents', () => {
+            gameState.playerPositions[1] = { x: 10, y: 10 };
+            gameState.playerPositions[3] = { x: 10, y: 10 };
+            const result = service.getOpponentsNearTarget(gameState, playerA, targetPos, 2);
+            expect(result).to.deep.equal([]);
         });
     });
 });
