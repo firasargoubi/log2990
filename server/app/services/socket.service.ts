@@ -41,7 +41,15 @@ export class SocketService {
 
     private onConnection(socket: Socket) {
         socket.on('createLobby', (game: Game) => this.handleCreateLobby(socket, game));
-        socket.on('joinLobby', (data: { lobbyId: string; player: Player }) => this.handleJoinLobby(socket, data));
+        socket.on('joinLobby', (data: string | { lobbyId: string; player: Player }) => {
+            if (typeof data === 'string') {
+                socket.join(data);
+            } else if (typeof data === 'object' && data.lobbyId && data.player) {
+                this.handleJoinLobby(socket, data);
+                socket.join(data.lobbyId);
+            }
+        });
+
         socket.on('leaveLobby', (data: { lobbyId: string; playerName: string }) => this.handleLeaveLobby(socket, data));
         socket.on('leaveGame', (lobbyId: string, playerName: string) => this.handleLeaveGame(socket, lobbyId, playerName));
         socket.on('lockLobby', (lobbyId: string) => this.handleLockLobby(socket, lobbyId));
@@ -78,6 +86,10 @@ export class SocketService {
 
         socket.on('flee', (data: { lobbyId: string; player: Player }) => {
             this.handleFlee(data.lobbyId, data.player);
+        });
+
+        socket.on('sendMessage', (data) => {
+            this.handleChatMessage(data.lobbyId, data.playerName, data.message);
         });
 
         socket.on('createTeams', (data: { lobbyId: string; players: Player[] }) => {
@@ -214,36 +226,20 @@ export class SocketService {
             socket.emit('error', 'Invalid coordinates');
             return;
         }
-        this.gameActionService.handleRequestMovement(socket, data.lobbyId, data.coordinates);
+        this.gameLifecycleService.handleRequestMovement(socket, data.lobbyId, data.coordinates);
     }
 
     private handleOpenDoor(socket: Socket, data: { lobbyId: string; tile: Tile }): void {
-        if (!data) {
-            socket.emit('error', 'Invalid door data');
-            return;
-        }
-        if (!data.lobbyId) {
-            socket.emit('error', 'Invalid lobby ID');
-            return;
-        }
-        if (!data.tile) {
-            socket.emit('error', 'Invalid tile data');
+        if (!data || !data.lobbyId || !data.tile) {
+            socket.emit('error', 'Invalid door or lobby data');
             return;
         }
         this.gameActionService.openDoor(socket, data.tile, data.lobbyId);
     }
 
     private handleCloseDoor(socket: Socket, data: { lobbyId: string; tile: Tile }): void {
-        if (!data) {
-            socket.emit('error', 'Invalid door data');
-            return;
-        }
-        if (!data.lobbyId) {
-            socket.emit('error', 'Invalid lobby ID');
-            return;
-        }
-        if (!data.tile) {
-            socket.emit('error', 'Invalid tile data');
+        if (!data || !data.lobbyId || !data.tile) {
+            socket.emit('error', 'Invalid door or lobby data');
             return;
         }
         this.gameActionService.closeDoor(socket, data.tile, data.lobbyId);
@@ -274,7 +270,11 @@ export class SocketService {
     }
 
     private handleFlee(lobbyId: string, player: Player) {
-        this.gameLifecycleService.handleFlee(lobbyId, player);
+        this.gameActionService.handleFlee(lobbyId, player);
+    }
+
+    private handleChatMessage(lobbyId: string, playerName: string, message: string) {
+        this.gameActionService.handleChatMessage(lobbyId, playerName, message);
     }
 
     private createTeams(lobbyId: string, players: Player[]) {

@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { GameState } from '@common/game-state';
-import { GameType, ITEM_EFFECTS, ObjectsTypes } from '@common/game.interface';
+import { GameType, ITEM_EFFECTS, ObjectsTypes, TILE_DELIMITER, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
@@ -296,8 +299,8 @@ describe('ItemService - applyPotionEffect & applyJuiceEffect', () => {
         it('should remove BOOTS effect (-2 speed, +1 attack)', () => {
             itemService.removeAttributeEffects(player, ObjectsTypes.BOOTS);
 
-            expect(player.speed).to.equal(3); // 5 - 2
-            expect(player.attack).to.equal(4); // 3 - (-1)
+            expect(player.speed).to.equal(3);
+            expect(player.attack).to.equal(4);
         });
 
         it('should not decrease life below 0', () => {
@@ -306,7 +309,7 @@ describe('ItemService - applyPotionEffect & applyJuiceEffect', () => {
             ITEM_EFFECTS[lifeItem] = { life: 5 };
 
             itemService.removeAttributeEffects(player, lifeItem);
-            expect(player.life).to.equal(0); // 1 - 5 → max(0, -4)
+            expect(player.life).to.equal(0);
         });
 
         it('should do nothing if item has no effect', () => {
@@ -314,5 +317,93 @@ describe('ItemService - applyPotionEffect & applyJuiceEffect', () => {
             itemService.removeAttributeEffects(player, ObjectsTypes.POTION);
             expect(player).to.deep.equal(original);
         });
+    });
+});
+
+describe('ItemService - randomizeItem()', () => {
+    let itemService: ItemService;
+
+    beforeEach(() => {
+        const dummyPathfinding = {} as PathfindingService;
+        itemService = new ItemService(dummyPathfinding);
+    });
+
+    it('should replace RANDOM tiles with a random object type', () => {
+        const gameState: GameState = {
+            board: [[ObjectsTypes.RANDOM * TILE_DELIMITER + TileTypes.Grass], [0, 0]],
+        } as any;
+
+        itemService.randomizeItem(gameState);
+
+        const newTile = gameState.board[0][0];
+        const objectValue = Math.floor(newTile / TILE_DELIMITER);
+        const tileType = newTile % TILE_DELIMITER;
+
+        expect([ObjectsTypes.BOOTS, ObjectsTypes.SWORD, ObjectsTypes.POTION, ObjectsTypes.WAND, ObjectsTypes.JUICE, ObjectsTypes.CRYSTAL]).to.include(
+            objectValue,
+        );
+        expect(tileType).to.equal(TileTypes.Grass);
+    });
+
+    it('should not modify non-RANDOM tiles', () => {
+        const gameState: GameState = {
+            board: [[ObjectsTypes.SPAWN * TILE_DELIMITER + TileTypes.Grass], [ObjectsTypes.BOOTS * TILE_DELIMITER + TileTypes.Wall]],
+        } as any;
+
+        itemService.randomizeItem(gameState);
+
+        expect(gameState.board[0][0]).to.equal(ObjectsTypes.SPAWN * TILE_DELIMITER + TileTypes.Grass);
+        expect(gameState.board[1][0]).to.equal(ObjectsTypes.BOOTS * TILE_DELIMITER + TileTypes.Wall);
+    });
+
+    it('should handle empty board without errors', () => {
+        const gameState: GameState = { board: [] } as any;
+
+        expect(() => itemService.randomizeItem(gameState)).to.not.throw();
+        expect(gameState.board).to.deep.equal([]);
+    });
+
+    it('should exclude already present object types from randomization', () => {
+        const gameState: GameState = {
+            board: [[ObjectsTypes.BOOTS * TILE_DELIMITER + TileTypes.Grass], [ObjectsTypes.RANDOM * TILE_DELIMITER + TileTypes.Grass]],
+        } as any;
+
+        itemService.randomizeItem(gameState);
+
+        const newTile = gameState.board[1][0];
+        const objectValue = Math.floor(newTile / TILE_DELIMITER);
+
+        expect(objectValue).to.not.equal(ObjectsTypes.BOOTS);
+        expect([ObjectsTypes.SWORD, ObjectsTypes.POTION, ObjectsTypes.WAND, ObjectsTypes.JUICE, ObjectsTypes.CRYSTAL]).to.include(objectValue);
+    });
+
+    it('should preserve tile type when replacing RANDOM', () => {
+        const gameState: GameState = {
+            board: [[ObjectsTypes.RANDOM * TILE_DELIMITER + TileTypes.Wall]],
+        } as any;
+
+        itemService.randomizeItem(gameState);
+
+        const newTile = gameState.board[0][0];
+        const tileType = newTile % TILE_DELIMITER;
+
+        expect(tileType).to.equal(TileTypes.Wall);
+    });
+
+    it('should throw an error if randomization fails for a tile', () => {
+        const gameState = {
+            board: [[ObjectsTypes.RANDOM * TILE_DELIMITER]],
+        };
+
+        const originalRandom = Math.random;
+        Math.random = () => {
+            throw new Error('Random error');
+        };
+
+        try {
+            expect(() => itemService.randomizeItem(gameState as any)).to.throw('Failed to randomize tile at (0, 0): Error: Random error');
+        } finally {
+            Math.random = originalRandom;
+        }
     });
 });

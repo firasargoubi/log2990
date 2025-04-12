@@ -22,6 +22,8 @@ import { Subscription } from 'rxjs';
 })
 export class WaitingPageComponent implements OnInit, OnDestroy {
     lobby: GameLobby;
+    messages: string[] = [];
+
     currentPlayer: Player = {
         id: WAITING_PAGE.defaultPlayerId,
         name: WAITING_PAGE.defaultPlayerName,
@@ -48,6 +50,7 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
         const player = this.route.snapshot.paramMap.get(WAITING_PAGE.playerIdParam);
 
         if (lobbyId && player) {
+            this.lobbyService.joinLobbyMessage(lobbyId);
             this.lobbyService.getLobby(lobbyId).subscribe((lobby) => {
                 this.lobby = lobby;
                 this.currentPlayer = lobby.players.find((p) => p.id === player) || this.currentPlayer;
@@ -97,7 +100,6 @@ export class WaitingPageComponent implements OnInit, OnDestroy {
             );
         }
     }
-
     ngOnDestroy(): void {
         this.subscriptions.forEach((sub) => sub.unsubscribe());
     }
