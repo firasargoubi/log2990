@@ -31,6 +31,7 @@ export class BoardComponent implements OnInit {
         board: [],
         objects: [],
     };
+    // @ViewChildren(TileComponent) tileComponents!: QueryList<TileComponent>;
 
     private mouseService = inject(MouseService);
     private tileService = inject(TileService);

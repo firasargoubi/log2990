@@ -22,6 +22,7 @@ export class BoardService {
     notifyBoardUpdate(): void {
         this.boardUpdated$.next();
     }
+
     get board(): Tile[][] {
         return this.boardSubject.value;
     }
