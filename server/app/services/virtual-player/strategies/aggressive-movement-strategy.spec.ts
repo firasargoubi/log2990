@@ -8,6 +8,8 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { AggressiveMovementStrategy } from './aggressive-movement-strategy';
 import { DefaultMovementStrategy } from './default-movement-strategy';
+import { Player } from '@common/player';
+import { GameState } from '@common/game-state';
 
 describe('AggressiveMovementStrategy', () => {
     let strategy: AggressiveMovementStrategy;
@@ -255,8 +257,126 @@ describe('AggressiveMovementStrategy', () => {
 
             expect(result).to.deep.equal(closestMove);
         });
-    });
+        it('should treat undefined items as inventory not full and then collect desired items', () => {
+            config.virtualPlayer.items = undefined;
 
+            const availableMoves = [{ x: 7, y: 7 }];
+            const desiredItemPos = { x: 7, y: 7 };
+
+            mockService.getNearestOpponent.returns(null);
+
+            mockService.findNearestItemTile
+                .withArgs(config.gameState, config.gameState.playerPositions[playerIndex], [
+                    ObjectsTypes.SWORD,
+                    ObjectsTypes.BOOTS,
+                    ObjectsTypes.CRYSTAL,
+                ])
+                .returns(desiredItemPos);
+
+            const result = strategy.determineTarget(config, availableMoves, playerIndex);
+            expect(result).to.deep.equal(desiredItemPos);
+        });
+    });
+    describe('determineTarget (Capture Mode)', () => {
+        beforeEach(() => {
+            config.gameState.gameMode = 'capture';
+            config.gameState.spawnPoints = [
+                { x: 0, y: 0 },
+                { x: 9, y: 9 },
+            ];
+
+            config.gameState.teams = {
+                team1: [{ id: 'vp1' } as Player, { id: 'teammate' } as Player],
+                team2: [{ id: 'opponent' } as Player],
+            };
+        });
+
+        it('should return spawn point when virtual player is flag carrier', () => {
+            config.virtualPlayer.id = 'vp1';
+            const spawnPoint = config.gameState.spawnPoints[playerIndex];
+            const availableMoves = [spawnPoint, { x: 1, y: 1 }];
+
+            mockService.isOpponent = sinon.stub<[Player, Player, GameState], boolean>().returns(false);
+            mockService.isTeammate = sinon.stub<[Player, Player, GameState], boolean>().returns(true);
+
+            mockService.findFlagPosition.returns(null);
+            mockService.findFlagCarrier.returns({ id: 'vp1' } as Player);
+            mockService.getClosest.withArgs(spawnPoint, availableMoves).returns(spawnPoint);
+
+            const result = strategy.determineTarget(config, availableMoves, playerIndex);
+            expect(result).to.deep.equal(spawnPoint);
+        });
+
+        it('should chase opponent flag carrier', () => {
+            const opponentPos = { x: 5, y: 5 };
+            const availableMoves = [opponentPos, { x: 4, y: 5 }];
+
+            const opponentPlayer = { id: 'opponent' } as Player;
+            config.gameState.players = [config.virtualPlayer, opponentPlayer];
+            config.gameState.playerPositions = [{ x: 0, y: 0 }, opponentPos];
+
+            mockService.findFlagCarrier.returns(opponentPlayer);
+            mockService.isOpponent = sinon.stub<[Player, Player, GameState], boolean>().returns(true);
+            mockService.getClosest.withArgs(opponentPos, availableMoves).returns(opponentPos);
+
+            mockService.getNearestOpponent.returns({
+                pos: opponentPos,
+                player: opponentPlayer,
+            });
+
+            const result = strategy.determineTarget(config, availableMoves, playerIndex);
+            expect(result).to.deep.equal(opponentPos);
+        });
+        it('should defend teammate flag carrier by targeting nearest opponent', () => {
+            const opponentPos = { x: 5, y: 5 };
+            const availableMoves = [{ x: 5, y: 5 }];
+
+            mockService.findFlagCarrier.returns({ id: 'teammate' } as Player);
+            mockService.isTeammate = sinon.stub<[Player, Player, GameState], boolean>().returns(true);
+            mockService.getNearestOpponent.returns({ pos: opponentPos, player: {} as Player });
+            mockService.getClosest.withArgs(opponentPos, availableMoves).returns(opponentPos);
+
+            const result = strategy.determineTarget(config, availableMoves, playerIndex);
+            expect(result).to.deep.equal(opponentPos);
+        });
+    });
+    describe('determineCaptureTarget flag position handling', () => {
+        beforeEach(() => {
+            config.gameState.gameMode = 'capture';
+            config.virtualPlayer.id = 'vp1';
+        });
+
+        it('should move to closest available position when flag is on ground', () => {
+            const flagPos = { x: 3, y: 3 };
+            const availableMoves = [
+                { x: 2, y: 3 },
+                { x: 3, y: 2 },
+                { x: 4, y: 3 },
+            ];
+            const expectedMove = { x: 2, y: 3 };
+
+            mockService.findFlagCarrier.returns(null);
+            mockService.findFlagPosition.returns(flagPos);
+            mockService.getClosest.withArgs(flagPos, availableMoves).returns(expectedMove);
+
+            const result = strategy.determineTarget(config, availableMoves, playerIndex);
+            expect(result).to.deep.equal(expectedMove);
+        });
+
+        it('should return null when no flag position exists', () => {
+            const availableMoves = [{ x: 1, y: 1 }];
+
+            mockService.findFlagCarrier.returns(null);
+            mockService.findFlagPosition.returns(null);
+
+            const defaultMove = { x: 1, y: 1 };
+            const stub = sinon.stub(DefaultMovementStrategy.prototype, 'determineTarget').returns(defaultMove);
+
+            const result = strategy.determineTarget(config, availableMoves, playerIndex);
+            expect(result).to.deep.equal(defaultMove);
+            stub.restore();
+        });
+    });
     describe('findReachableOpponentTarget', () => {
         it('should return null when no opponents are available', () => {
             mockService.getNearestOpponent.returns(null);
@@ -475,5 +595,40 @@ describe('AggressiveMovementStrategy', () => {
             expect(result).to.not.include(ObjectsTypes.SPAWN);
             expect(result).to.not.include(ObjectsTypes.RANDOM);
         });
+    });
+    it('should prioritize other items when desired items are not available and they are closer than the opponent', () => {
+        const availableMoves = [{ x: 2, y: 2 }];
+        const opponentPos = { x: 7, y: 7 };
+        const otherItemPos = { x: 2, y: 2 };
+        const closestMove = otherItemPos;
+
+        mockService.getNearestOpponent.returns({
+            pos: opponentPos,
+            player: {
+                items: [],
+                name: 'Opponent',
+                pendingItem: 0,
+                id: '',
+                avatar: '',
+                isHost: false,
+                life: 0,
+                maxLife: 0,
+                speed: 0,
+                attack: 0,
+                defense: 0,
+                winCount: 0,
+            },
+        });
+
+        mockService.findNearestItemTile.onCall(0).returns(null);
+        mockService.findNearestItemTile.onCall(1).returns(otherItemPos);
+
+        mockService.distance.withArgs(config.gameState.playerPositions[playerIndex], opponentPos).returns(10);
+        mockService.distance.withArgs(config.gameState.playerPositions[playerIndex], otherItemPos).returns(3);
+
+        mockService.getClosest.withArgs(otherItemPos, availableMoves).returns(closestMove);
+
+        const result = (strategy as any).determinePrimaryTargetAndMove(config, availableMoves, playerIndex, false);
+        expect(result).to.deep.equal(closestMove);
     });
 });
