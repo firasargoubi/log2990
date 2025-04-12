@@ -73,7 +73,7 @@
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Pourcentage de tuiles visitées:</span>
-                    <span class="stat-value">{{coveredTilePercentage}}%</span>
+                    <span class="stat-value">{{ coveredTilePercentage }}%</span>
                 </div>
                 @if (gameState.gameMode === 'capture') {
                 <div class="stat-item">
@@ -90,10 +90,11 @@
                     <span class="stat-label">Pourcentage de portes ouvertes</span>
                     <span class="stat-value">{{ gameState.percentageDoorHandled }} %</span>
                 </div>
-                }
-                @else {
+                } @else {
+                <div class="stat-item">
                     <span class="stat-label">Pourcentage de portes ouvertes</span>
                     <span class="stat-value"> - </span>
+                </div>
                 }
             </div>
         </div>
