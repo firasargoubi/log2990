@@ -25,23 +25,68 @@
                 <table class="stats-table">
                     <thead>
                         <tr>
-                            <th>Joueur</th>
-                            <th>Nombre de combats</th>
-                            <th>Nombre d'évasions</th>
-                            <th>Nombre de victoires</th>
-                            <th>Nombre de défaites</th>
-                            <th>Total des PV perdus</th>
-                            <th>Total des dégâts infligés</th>
-                            <th>Nombre d'objets ramassés</th>
-                            <th>Pourcentage de tuiles visitées</th>
-                        </tr>
+                            <th (click)="sortTable('name')">
+                              Joueur
+                              @if (sortColumn === 'name') {
+                                <span>{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                              }
+                            </th>
+                            <th (click)="sortTable('fightCount')">
+                              Combats
+                              @if (sortColumn === 'fightCount') {
+                                <span>{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                              }
+                            </th>
+                            <th (click)="sortTable('fleeCount')">
+                              Évasions
+                              @if (sortColumn === 'fleeCount') {
+                                <span>{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                              }
+                            </th>
+                            <th (click)="sortTable('winCount')">
+                              Nombre de victoires
+                              @if (sortColumn === 'winCount') {
+                                <span>{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                              }
+                            </th>
+                            <th (click)="sortTable('loseCount')">
+                              Nombre de défaites
+                              @if (sortColumn === 'loseCount') {
+                                <span>{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                              }
+                            </th>
+                            <th (click)="sortTable('damageReceived')">
+                              Total des PV perdus
+                              @if (sortColumn === 'damageReceived') {
+                                <span>{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                              }
+                            </th>
+                            <th (click)="sortTable('damageDealt')">
+                              Total des dégâts infligés
+                              @if (sortColumn === 'damageDealt') {
+                                <span>{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                              }
+                            </th>
+                            <th (click)="sortTable('itemsPicked')">
+                              Nombre d'objets ramassés
+                              @if (sortColumn === 'itemsPicked') {
+                                <span>{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                              }
+                            </th>
+                            <th (click)="sortTable('tilesVisited')">
+                              Pourcentage de tuiles visitées
+                              @if (sortColumn === 'tilesVisited') {
+                                <span>{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                              }
+                            </th>
+                          </tr>
                     </thead>
                     <tbody>
-                        @for (player of gameState.players; track player) {
+                        @for (player of gameState.players; track player.name) {
                         <tr>
                             <td>
                                 <div class="player-avatar">
-                                    <img src="{{ player.avatar }}" alt="Avatar de {{ player.name }}" class="avatar-image" />
+                                    <img [src]="player.avatar" [alt]="'Avatar de ' + player.name" class="avatar-image" />
                                     <span>{{ player.name }}</span>
                                 </div>
                             </td>

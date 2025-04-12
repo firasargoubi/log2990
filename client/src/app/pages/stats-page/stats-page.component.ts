@@ -1,11 +1,14 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { PageUrl } from '@app/Consts/route-constants';
 import { GameState } from '@common/game-state';
+import { Player } from '@common/player';
 
 @Component({
     selector: 'app-stats-page',
-    imports: [],
+    standalone: true,
+    imports: [CommonModule],
     templateUrl: './stats-page.component.html',
     styleUrls: ['./stats-page.component.scss'],
 })
@@ -16,8 +19,10 @@ export class StatsPageComponent {
     timeSeconds: number = 0;
     timeMinutes: number = 0;
     timeHours: number = 0;
-    boardSize: number;
+    boardSize: number = 0;
     coveredTilePercentage: number = 0;
+    sortColumn: string = '';
+    sortDirection: 'asc' | 'desc' = 'asc';
 
     constructor(private router: Router) {
         const navigation = this.router.getCurrentNavigation();
@@ -32,7 +37,7 @@ export class StatsPageComponent {
             this.gameState = state.gameState;
             this.boardSize = this.gameState.board.length * this.gameState.board[0].length;
 
-            if (this.gameState.visitedTiles){
+            if (this.gameState.visitedTiles) {
                 this.coveredTilePercentage = Math.floor((this.gameState.visitedTiles.length / this.boardSize) * 100);
             }
 
@@ -68,6 +73,41 @@ export class StatsPageComponent {
 
     floor(number: number): number {
         return Math.floor(number);
+    }
+
+    sortTable(column: string): void {
+        if (this.sortColumn === column) {
+            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.sortColumn = column;
+            this.sortDirection = 'asc';
+        }
+
+        this.gameState.players.sort((a: Player, b: Player) => {
+            const aVal = this.getValue(a, column);
+            const bVal = this.getValue(b, column);
+
+            if (aVal < bVal) return this.sortDirection === 'asc' ? -1 : 1;
+            if (aVal > bVal) return this.sortDirection === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
+
+    private getValue(p: Player, column: string): string | number {
+        const valueGetters: Record<string, (player: Player) => string | number> = {
+            name: (player) => player.name.toLowerCase(),
+            fightCount: (player) => player.fightCount ?? 0,
+            fleeCount: (player) => player.fleeCount ?? 0,
+            winCount: (player) => player.winCount ?? 0,
+            loseCount: (player) => player.loseCount ?? 0,
+            damageReceived: (player) => player.damageReceived ?? 0,
+            damageDealt: (player) => player.damageDealt ?? 0,
+            itemsPicked: (player) => player.itemsPicked?.length ?? 0,
+            tilesVisited: (player) => player.visitedTiles?.length ?? 0,
+        };
+
+        const getter = valueGetters[column];
+        return getter ? getter(p) : 0;
     }
 
     private parseDate(value: Date | string): Date {
