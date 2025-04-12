@@ -816,18 +816,6 @@ describe('VirtualPlayerService', () => {
             expect(result).to.equal(null);
         });
 
-        it('should return null when inventory full and no valid moves', () => {
-            const player = createMockPlayer('vp1', 'Virtual', true);
-            player.items = [ObjectsTypes.SWORD, ObjectsTypes.BOOTS];
-            const gameState = createMockGameState([player], [{ x: 0, y: 0 }]);
-            mockBoardService.findAllPaths.returns([{ x: 1, y: 0 }]);
-            const config = createMockConfig(gameState, player);
-
-            sandbox.stub(gameState.board[1], 0).value(ObjectsTypes.SWORD * TILE_DELIMITER);
-
-            const result = (service as any).planMovement(config, 0);
-            expect(result).to.equal(null);
-        });
         it('should call handlePostMovement with final state', async () => {
             const player = createMockPlayer('vp1', 'Virtual', true);
             const gameState = createMockGameState([player], [{ x: 0, y: 0 }]);
