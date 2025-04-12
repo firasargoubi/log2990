@@ -16,6 +16,8 @@ export class CountdownPlayerComponent implements OnInit, OnDestroy, OnChanges {
     @Input() lobbyId: string = '';
     @Input() isInCombat: boolean = false;
     @Input() isAnimated: boolean = false;
+    secondsLeft = 30;
+    percentage = 100;
 
     private remainingTime: number;
     private interval: number | null = null;
@@ -42,7 +44,7 @@ export class CountdownPlayerComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     getDisplayTime(): string {
-        return this.remainingTime > 0 ? `${this.remainingTime}s` : 'Temps écoulé';
+        return this.remainingTime > 0 ? `${this.remainingTime}s` : ' ';
     }
 
     private startCountdown(countdown: number): void {

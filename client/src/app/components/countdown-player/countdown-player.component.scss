@@ -1,6 +1,33 @@
-.countdown-timer {
-    font-size: 24px;
-    font-weight: bold;
-    color: #4caf50;
-    text-align: center;
+.clock-timer {
+    width: 80px;
+    height: 80px;
+    margin: auto;
+}
+
+.circular-timer {
+    width: 45%;
+    height: 45%;
+    transform: rotate(-90deg);
+}
+
+.circle-bg {
+    fill: #eeead4;
+    stroke: #e6e6e6;
+    stroke-width: 3.8;
+}
+
+.circle-progress {
+    fill: none;
+    stroke: #4caf50;
+    stroke-width: 3.8;
+    stroke-linecap: round;
+    transition: stroke-dasharray 1s linear;
+}
+
+.circle-text {
+    fill: #333;
+    font-size: 0.5em;
+    text-anchor: middle;
+    transform: rotate(90deg);
+    transform-origin: center;
 }

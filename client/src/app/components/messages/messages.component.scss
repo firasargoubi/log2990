@@ -7,6 +7,7 @@
     border-radius: 12px;
     border: 1px solid #c5d8a4;
     font-family: 'Segoe UI', sans-serif;
+    max-height: 350px;
 }
 
 .chat-header {
@@ -85,7 +86,7 @@ button {
     background: #ffffff;
     border-radius: 12px;
     padding: 10px;
-    max-height: 300px;
+    max-height: 180px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -270,4 +271,8 @@ button {
     color: #5c7235;
     font-weight: 600;
     padding-right: 6px;
+}
+
+.messages {
+    min-height: 100px; /* ou 200px selon ton design */
 }

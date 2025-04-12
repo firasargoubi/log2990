@@ -45,6 +45,7 @@
             (infoSent)="onInfoSent($event)"
         >
         </app-game-board>
+
         } @else {
         <div class="loading">
             <div class="loading-spinner"></div>
@@ -63,6 +64,8 @@
             }
         </div>
 
+        <app-inventory [player]="currentPlayer" [lobbyId]="lobbyId"></app-inventory>
+
         @if (isCurrentPlayerTurn()) {
         <app-countdown-player
             [countdown]="30"
@@ -75,13 +78,15 @@
         </app-countdown-player>
         } @else {
         <app-countdown-player [countdown]="30" [isPlayerTurn]="false" [isInCombat]="isInCombat" [isTransitioning]="false"> </app-countdown-player>
-        }
-
-        <app-inventory [player]="currentPlayer" [lobbyId]="lobbyId"></app-inventory>
-
-        @if (isInCombat) {
+        } @if (isInCombat) {
         <div class="action-buttons">
-            <app-combat [gameState]="gameState" [currentPlayer]="currentPlayer!" [opponent]="opponent!" [lobbyId]="lobbyId" [isFirstTurn]="isFirstInCombat"></app-combat>
+            <app-combat
+                [gameState]="gameState"
+                [currentPlayer]="currentPlayer!"
+                [opponent]="opponent!"
+                [lobbyId]="lobbyId"
+                [isFirstTurn]="isFirstInCombat"
+            ></app-combat>
         </div>
         } @else {
         <div class="action-buttons">

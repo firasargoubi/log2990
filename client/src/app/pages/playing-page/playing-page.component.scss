@@ -3,16 +3,12 @@
     margin: 0;
     padding: 0;
 }
-
-body {
-    font-family: 'Press Start 2P', cursive;
-    background-color: #143018;
-    color: #e8f0d8;
-    background-image: linear-gradient(rgba(20, 48, 24, 0.9), rgba(20, 48, 24, 0.8));
-    background-size: cover;
-    background-position: center;
+:host {
+    display: block;
+    min-height: 100vh;
+    background: url('../../../assets/images/water3.jpg') no-repeat center center / cover;
+    position: relative;
 }
-
 .chat-box {
     display: flex;
     justify-content: space-between;
@@ -31,24 +27,25 @@ body {
 
 .sidebar-left,
 .sidebar-right {
-    background-color: rgba(35, 75, 41, 0.9);
+    background: #f4fbe3;
+    border-radius: 12px;
+    border: 1px solid #c5d8a4;
     padding: 20px;
     border-radius: 15px;
-    border: 3px solid #6a9c3c;
-    box-shadow:
-        0 0 20px rgba(105, 221, 82, 0.3),
-        inset 0 0 30px rgba(21, 56, 20, 0.6);
+
     overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: #75b94a #143018;
+    scrollbar-color: #869665 #2f3b2a;
 }
 
 .sidebar-left {
-    width: 25%;
+    width: 20%;
 }
 
 .sidebar-right {
     width: 30%;
+    background-color: #dae4c3; /* Beige-vert clair de la palette */
+    border: 1px solid #869665; /* Vert olive de la palette */
 }
 
 .sidebar-left::-webkit-scrollbar,
@@ -58,20 +55,20 @@ body {
 
 .sidebar-left::-webkit-scrollbar-thumb,
 .sidebar-right::-webkit-scrollbar-thumb {
-    background-color: #75b94a;
+    background-color: #869665; /* Vert olive moyen de la palette */
     border-radius: 10px;
 }
 
 .sidebar-left::-webkit-scrollbar-track,
 .sidebar-right::-webkit-scrollbar-track {
-    background-color: #143018;
+    background-color: #2f3b2a; /* Vert foncé de la palette */
     border-radius: 10px;
 }
 
 h3,
 h4 {
-    background-color: #3a7d23;
-    color: #f8ffd0;
+    background-color: #769387; /* Vert-bleu de la palette */
+    color: #e9e5d0; /* Beige clair de la palette */
     text-align: center;
     padding: 10px;
     border-radius: 8px;
@@ -79,14 +76,14 @@ h4 {
     font-weight: bold;
     letter-spacing: 1px;
     text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
-    border: 2px solid #94c661;
+    border: 2px solid #869665; /* Vert olive de la palette */
     position: relative;
 }
 
 ul li,
 .app-game-info p,
 .app-messages p {
-    color: #c5e0a5;
+    color: #2f3b2a; /* Vert foncé de la palette pour contraste sur fond clair */
     font-family: 'Courier New', monospace;
     margin-bottom: 10px;
     line-height: 1.4;
@@ -95,20 +92,12 @@ ul li,
 ul li strong,
 .app-game-info strong,
 .app-countdown-timer h4 {
-    color: #94ff96;
+    color: #6a7756; /* Vert olive foncé de la palette */
 }
 
 ul {
     list-style-type: none;
     padding-left: 5px;
-}
-
-img {
-    border-radius: 50%;
-    border: 3px solid #6a9c3c;
-    box-shadow: 0 0 15px rgba(105, 221, 82, 0.4);
-    display: block;
-    margin: 0 auto 15px auto;
 }
 
 .action-buttons {
@@ -119,15 +108,15 @@ img {
 }
 
 .action-buttons button {
-    background-color: #4d8c3d;
-    color: white;
+    background-color: #6a7756; /* Vert olive foncé de la palette */
+    color: #e9e5d0; /* Beige clair de la palette */
     border: none;
     border-radius: 25px;
     padding: 12px 15px;
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 1px;
-    box-shadow: 0 4px 0 #2d5f1a;
+    box-shadow: 0 4px 0 #2f3b2a; /* Vert foncé de la palette */
     transition:
         transform 0.1s,
         box-shadow 0.1s,
@@ -144,9 +133,9 @@ img {
 }
 
 .action-buttons button:hover {
-    background-color: #5da84a;
+    background-color: #869665; /* Vert olive moyen de la palette */
     transform: translateY(2px);
-    box-shadow: 0 2px 0 #2d5f1a;
+    box-shadow: 0 2px 0 #2f3b2a; /* Vert foncé de la palette */
 }
 
 .action-buttons button:active {
@@ -155,39 +144,37 @@ img {
 }
 
 .selected {
-    background-color: #75b94a !important;
-    box-shadow: 0 0 10px rgba(148, 255, 150, 0.5) !important;
+    background-color: #869665 !important; /* Vert olive moyen de la palette */
+    box-shadow: 0 0 10px rgba(134, 150, 101, 0.5) !important;
     transform: translateY(2px);
 }
 
 .main-content {
-    width: 40%;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
 .board-container {
-    width: 100%;
-    height: 100%;
-    background-color: #e9d8b6;
-    border-radius: 15px;
+    background-color: #eeead4; /* Beige clair de la palette */
+    border-radius: 12px;
     box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
-    border: 8px solid #5d4037;
+    border: 8px solid #736759; /* Gris-brun de la palette */
     background-size: cover;
     background-position: center;
     overflow: hidden;
     position: relative;
+    width: 48%;
 }
 
 .debug-indicator {
-    background-color: #75b94a;
-    color: #143018;
+    background-color: #869665; /* Vert olive moyen de la palette */
+    color: #2f3b2a; /* Vert foncé de la palette */
     padding: 5px;
     text-align: center;
     font-weight: bold;
-    border: 2px solid #477a2d;
-    box-shadow: 0 0 10px rgba(148, 255, 150, 0.5);
+    border: 2px solid #6a7756; /* Vert olive foncé de la palette */
+    box-shadow: 0 0 10px rgba(134, 150, 101, 0.5);
     position: fixed;
     top: 0;
     left: 0;
@@ -199,27 +186,30 @@ img {
     max-height: 300px;
     max-width: 250px;
     margin-bottom: 1rem;
-    border: 1px solid #ccc;
+    border: 1px solid #869665; /* Vert olive de la palette */
     border-radius: 6px;
     padding: 8px;
-    background-color: #f7f7f7;
+    background-color: #e9e5d0; /* Beige clair de la palette */
 }
 
 .playing-chat-narrow {
-    max-width: 340px; // ou la valeur qui te convient
+    max-width: 340px; /* ou la valeur qui te convient */
     padding: 10px;
+}
 
-    app-messages {
-        width: 100%;
-    }
+.playing-chat-narrow app-messages {
+    width: 100%;
+}
 
-    .messages {
-        max-width: 100%;
-    }
+.playing-chat-narrow .messages {
+    max-width: 100%;
+}
 
-    .message-bubble {
-        max-width: 90%; // ou plus petit encore
-        word-break: break-word;
-        overflow-wrap: break-word;
-    }
+.playing-chat-narrow .message-bubble {
+    max-width: 90%; /* ou plus petit encore */
+    word-break: break-word;
+    overflow-wrap: break-word;
+    background-color: #dae4c3; /* Beige-vert clair de la palette */
+    border: 1px solid #869665; /* Vert olive de la palette */
+    color: #2f3b2a; /* Vert foncé de la palette */
 }
