@@ -386,6 +386,7 @@ describe('LobbyService', () => {
                     shortestMoves: [],
                     debug: false,
                     gameMode: 'default',
+                    startDate: new Date(),
                 } as GameState,
                 playerMoved: 'player1',
                 newPosition: { x: 1, y: 1 },
@@ -505,6 +506,8 @@ describe('LobbyService', () => {
                 damage: 3,
                 attacker: { id: 'player1' } as Player,
                 defender: { id: 'player2' } as Player,
+                defenderDamageReceived: 5,
+                attackerDamageDealt: 5,
             };
 
             service
@@ -520,7 +523,7 @@ describe('LobbyService', () => {
         });
 
         it('should handle onStartCombat event', (done) => {
-            const testData = { firstPlayer: { id: 'player1' } as Player };
+            const testData = { firstPlayer: { id: 'player1' } as Player, gameState: {} as GameState };
 
             service
                 .onStartCombat()
@@ -857,7 +860,7 @@ describe('LobbyService', () => {
         });
 
         it('should subscribe to onStartCombat and receive data', (done) => {
-            const data = { firstPlayer: { id: 'p1', name: 'Starter' } as Player };
+            const data = { firstPlayer: { id: 'p1', name: 'Starter' } as Player, gameState: {} as GameState };
             service
                 .onStartCombat()
                 .pipe(take(1))
@@ -889,7 +892,7 @@ describe('LobbyService', () => {
         });
 
         it('should subscribe to onGameOver and receive data', (done) => {
-            const data = { winner: 'p1' };
+            const data = { winner: 'p1', lobby: 'lobby123', finalGameState: {} as GameState };
             service
                 .onGameOver()
                 .pipe(take(1))

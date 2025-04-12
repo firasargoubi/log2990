@@ -32,6 +32,7 @@ describe('PlayerListComponent', () => {
                 maxLife: 0,
                 winCount: 0,
                 pendingItem: 0,
+                loseCount: 0,
             },
             {
                 id: '2',
@@ -45,6 +46,7 @@ describe('PlayerListComponent', () => {
                 maxLife: 0,
                 winCount: 0,
                 pendingItem: 0,
+                loseCount: 0,
             },
         ];
 
@@ -101,6 +103,7 @@ describe('PlayerListComponent', () => {
             maxLife: 0,
             winCount: 0,
             pendingItem: 0,
+            loseCount: 0,
         };
 
         mockDialogRef.afterClosed.and.returnValue(of(mockResult));

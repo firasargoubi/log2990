@@ -33,6 +33,7 @@ describe('GameBoardComponent', () => {
                 maxLife: 0,
                 winCount: 0,
                 pendingItem: 0,
+                loseCount: 0,
             },
             {
                 id: 'player2',
@@ -46,6 +47,7 @@ describe('GameBoardComponent', () => {
                 maxLife: 0,
                 winCount: 0,
                 pendingItem: 0,
+                loseCount: 0,
             },
         ],
         playerPositions: [
@@ -70,6 +72,7 @@ describe('GameBoardComponent', () => {
         currentPlayerActionPoints: 0,
         debug: false,
         gameMode: 'default',
+        startDate: new Date().toISOString(),
     });
 
     beforeEach(async () => {

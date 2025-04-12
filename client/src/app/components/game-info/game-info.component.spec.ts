@@ -34,6 +34,7 @@ describe('GameInfoComponent', () => {
                 defense: 3,
                 winCount: 0,
                 pendingItem: 0,
+                loseCount: 0,
             },
         ];
         component.deletedPlayers = deletedPlayers;
@@ -56,6 +57,7 @@ describe('GameInfoComponent', () => {
             defense: 3,
             winCount: 0,
             pendingItem: 0,
+            loseCount: 0,
         };
         component.gameState = {
             id: 'game1',
@@ -79,6 +81,7 @@ describe('GameInfoComponent', () => {
             currentPlayerActionPoints: 0,
             debug: false,
             gameMode: 'default',
+            startDate: new Date(),
         } as GameState;
         expect(component.getTeam(player)).toBe('Red');
     });
@@ -96,6 +99,7 @@ describe('GameInfoComponent', () => {
             defense: 4,
             winCount: 0,
             pendingItem: 0,
+            loseCount: 0,
         };
         component.gameState = {
             id: 'game1',
@@ -119,6 +123,7 @@ describe('GameInfoComponent', () => {
             currentPlayerActionPoints: 0,
             debug: false,
             gameMode: 'default',
+            startDate: new Date(),
         } as GameState;
         expect(component.getTeam(player)).toBe('Blue');
     });
@@ -136,6 +141,7 @@ describe('GameInfoComponent', () => {
             defense: 1,
             winCount: 0,
             pendingItem: 0,
+            loseCount: 0,
         };
         component.gameState = undefined;
         expect(component.getTeam(player)).toBe('');

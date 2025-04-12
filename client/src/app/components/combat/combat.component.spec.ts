@@ -26,9 +26,11 @@ describe('CombatComponent', () => {
         defenderHP: number;
         attacker: Player;
         defender: Player;
+        defenderDamageReceived: 5;
+        attackerDamageDealt: 5;
     }>;
     let fleeFailureSubject: BehaviorSubject<{ fleeingPlayer: Player }>;
-    let startCombatSubject: BehaviorSubject<{ firstPlayer: Player }>;
+    let startCombatSubject: BehaviorSubject<{ firstPlayer: Player; gameState: GameState }>;
     let combatEndedSubject: BehaviorSubject<{ loser: Player }>;
 
     beforeEach(async () => {
@@ -44,11 +46,34 @@ describe('CombatComponent', () => {
             defenderHP: 6,
             attacker: { id: 'player1' } as Player,
             defender: { id: 'player2' } as Player,
+            defenderDamageReceived: 5,
+            attackerDamageDealt: 5,
         });
         fleeFailureSubject = new BehaviorSubject({
             fleeingPlayer: { id: 'player1', name: 'Joueur 1', amountEscape: 2 } as Player,
         });
-        startCombatSubject = new BehaviorSubject({ firstPlayer: { id: 'player1' } as Player });
+        startCombatSubject = new BehaviorSubject({
+            firstPlayer: { id: 'player1' } as Player,
+            gameState: {
+                id: 'game1',
+                players: [],
+                currentPlayer: 'player1',
+                board: [],
+                turnCounter: 0,
+                availableMoves: [],
+                shortestMoves: [],
+                winner: null,
+                isGameOver: false,
+                playerPositions: [],
+                spawnPoints: [],
+                currentPlayerMovementPoints: 0,
+                currentPlayerActionPoints: 0,
+                combatLog: [],
+                debug: false,
+                gameMode: 'standard',
+                startDate: new Date(),
+            } as GameState,
+        });
         combatEndedSubject = new BehaviorSubject({ loser: { name: 'Joueur 2' } as Player });
 
         mockLobbyService = jasmine.createSpyObj('LobbyService', [
@@ -191,6 +216,8 @@ describe('CombatComponent', () => {
             defenderHP: 40,
             attacker: component.currentPlayer,
             defender: component.opponent,
+            defenderDamageReceived: 5,
+            attackerDamageDealt: 5,
         });
 
         fixture.detectChanges();
@@ -389,6 +416,8 @@ describe('CombatComponent', () => {
                 defenderHP: 40,
                 attacker: newAttacker,
                 defender: newDefender,
+                defenderDamageReceived: 5,
+                attackerDamageDealt: 5,
             });
             fixture.detectChanges();
             expect(component.currentPlayer).toEqual(newDefender);
@@ -405,7 +434,7 @@ describe('CombatComponent', () => {
                 }),
             );
 
-            startCombatSubject.next({ firstPlayer: { id: 'player2', name: 'Joueur 2' } as Player });
+            startCombatSubject.next({ firstPlayer: { id: 'player2', name: 'Joueur 2' } as Player, gameState: {} as GameState });
             fixture.detectChanges();
 
             expect(component.playerTurn).toBe('player2');
@@ -437,6 +466,8 @@ describe('CombatComponent', () => {
                 defenderHP: 40,
                 attacker: component.currentPlayer,
                 defender: component.opponent,
+                defenderDamageReceived: 5,
+                attackerDamageDealt: 5,
             });
             fixture.detectChanges();
             expect(component.canAct).toBeFalse();

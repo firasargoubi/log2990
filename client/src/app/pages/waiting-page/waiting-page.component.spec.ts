@@ -35,6 +35,7 @@ describe('WaitingPageComponent', () => {
                 maxLife: 0,
                 winCount: 0,
                 pendingItem: 0,
+                loseCount: 0,
             },
             {
                 id: mockPlayerId,
@@ -48,6 +49,7 @@ describe('WaitingPageComponent', () => {
                 maxLife: 0,
                 winCount: 0,
                 pendingItem: 0,
+                loseCount: 0,
             },
         ],
         maxPlayers: 0,

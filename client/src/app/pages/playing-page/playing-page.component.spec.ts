@@ -61,6 +61,7 @@ describe('PlayingPageComponent', () => {
         availableMoves: [],
         combat: { isActive: false },
         gameMode: 'standard',
+        startDate: new Date(),
     } as GameState;
 
     const mockLobby: GameLobby = {
@@ -104,7 +105,7 @@ describe('PlayingPageComponent', () => {
         mockLobbyService.getCurrentPlayer.and.returnValue(mockPlayer);
         mockLobbyService.getSocketId.and.returnValue(mockPlayer.id);
 
-        mockLobbyService.onStartCombat.and.returnValue(of({ firstPlayer: mockPlayer }));
+        mockLobbyService.onStartCombat.and.returnValue(of({ firstPlayer: mockPlayer, gameState: {} as GameState }));
         mockLobbyService.onCombatEnded.and.returnValue(of({ loser: mockPlayer }));
         mockLobbyService.onTurnStarted.and.returnValue(of({ gameState: mockGameState, currentPlayer: mockPlayer.id, availableMoves: [] }));
         mockLobbyService.onMovementProcessed.and.returnValue(
@@ -514,7 +515,7 @@ describe('PlayingPageComponent', () => {
         }));
 
         it('should handle combat events', fakeAsync(() => {
-            mockLobbyService.onStartCombat.and.returnValue(of({ firstPlayer: mockPlayer }));
+            mockLobbyService.onStartCombat.and.returnValue(of({ firstPlayer: mockPlayer, gameState: {} as GameState }));
             component['setupGameListeners']();
             tick();
             expect(component.isInCombat).toBe(false);
@@ -622,6 +623,7 @@ describe('PlayingPageComponent', () => {
                             attack: 15,
                             defense: 5,
                             winCount: 0,
+                            loseCount: 0,
                         },
                     ],
                     team2: [],
@@ -652,6 +654,7 @@ describe('PlayingPageComponent', () => {
                             attack: 5,
                             defense: 3,
                             winCount: 0,
+                            loseCount: 0,
                         },
                     ],
                 },
@@ -680,6 +683,7 @@ describe('PlayingPageComponent', () => {
                             attack: 5,
                             defense: 3,
                             winCount: 0,
+                            loseCount: 0,
                         },
                     ],
                 },

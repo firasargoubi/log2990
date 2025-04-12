@@ -18,6 +18,7 @@ describe('PlayerCardComponent', () => {
         maxLife: 0,
         winCount: 0,
         pendingItem: 0,
+        loseCount: 0,
     };
 
     beforeEach(async () => {
