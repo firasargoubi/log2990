@@ -26,14 +26,46 @@
                     <thead>
                         <tr>
                             <th>Joueur</th>
-                            <th>Nombre de combats</th>
-                            <th>Nombre d'évasions</th>
-                            <th>Nombre de victoires</th>
-                            <th>Nombre de défaites</th>
-                            <th>Total des PV perdus</th>
-                            <th>Total des dégâts infligés</th>
-                            <th>Nombre d'objets ramassés</th>
-                            <th>Pourcentage de tuiles visitées</th>
+                            <th (click)="sortPlayersBy('fightCount')">
+                                Nombre de combats @if (sortColumn === 'fightCount') {
+                                {{ sortDirection === 'asc' ? '▲' : '▼' }}
+                                }
+                            </th>
+                            <th (click)="sortPlayersBy('fleeCount')">
+                                Nombre de combats @if (sortColumn === 'fleeCount') {
+                                {{ '▼' }}
+                                }
+                            </th>
+                            <th (click)="sortPlayersBy('winCount')">
+                                Nombre de combats @if (sortColumn === 'winCount') {
+                                {{ '▼' }}
+                                }
+                            </th>
+                            <th (click)="sortPlayersBy('loseCount')">
+                                Nombre de combats @if (sortColumn === 'loseCount') {
+                                {{ '▼' }}
+                                }
+                            </th>
+                            <th (click)="sortPlayersBy('damageReceived')">
+                                Total des PV perdus @if (sortColumn === 'damageReceived') {
+                                {{ '▼' }}
+                                }
+                            </th>
+                            <th (click)="sortPlayersBy('damageDealt')">
+                                Total des dégâts infligés @if (sortColumn === 'damageDealt') {
+                                {{ '▼' }}
+                                }
+                            </th>
+                            <th (click)="sortPlayersBy('itemsPicked')">
+                                Nombre d'objets ramassés @if (sortColumn === 'itemsPicked') {
+                                {{ '▼' }}
+                                }
+                            </th>
+                            <th (click)="sortPlayersBy('visitedTiles')">
+                                Nombre de tuiles visitées @if (sortColumn === 'visitedTiles') {
+                                {{ '▼' }}
+                                }
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -73,7 +105,7 @@
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Pourcentage de tuiles visitées:</span>
-                    <span class="stat-value">{{coveredTilePercentage}}%</span>
+                    <span class="stat-value">{{ coveredTilePercentage }}%</span>
                 </div>
                 @if (gameState.gameMode === 'capture') {
                 <div class="stat-item">
@@ -90,10 +122,9 @@
                     <span class="stat-label">Pourcentage de portes ouvertes</span>
                     <span class="stat-value">{{ gameState.percentageDoorHandled }} %</span>
                 </div>
-                }
-                @else {
-                    <span class="stat-label">Pourcentage de portes ouvertes</span>
-                    <span class="stat-value"> - </span>
+                } @else {
+                <span class="stat-label">Pourcentage de portes ouvertes</span>
+                <span class="stat-value"> - </span>
                 }
             </div>
         </div>
