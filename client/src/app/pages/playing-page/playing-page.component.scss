@@ -183,6 +183,8 @@ ul {
 }
 
 .chat-container {
+    margin-right: auto;
+
     max-height: 300px;
     max-width: 250px;
     margin-bottom: 1rem;
@@ -212,4 +214,57 @@ ul {
     background-color: #dae4c3; /* Beige-vert clair de la palette */
     border: 1px solid #869665; /* Vert olive de la palette */
     color: #2f3b2a; /* Vert foncé de la palette */
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.info-row app-inventory {
+    flex: 1;
+    margin-right: auto;
+}
+
+.info-row app-countdown-player {
+    flex-shrink: 0;
+    width: 120px; /* légèrement plus grand qu'avant */
+    height: 120px;
+    margin-left: auto;
+}
+
+.player-info {
+    background-color: #f4fbe3; /* fond doux */
+    border: 1px solid #c5d8a4; /* vert olive clair */
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: #2f3b2a; /* texte vert foncé */
+    line-height: 1.8;
+    bottom: 20px;
+}
+
+.player-info ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.player-info li {
+    margin-bottom: 8px;
+}
+
+.player-info li strong {
+    font-weight: bold;
+    color: #5c7235; /* vert olive foncé */
+}
+
+.player-info img {
+    vertical-align: middle;
+    margin-left: 8px;
+    width: 40px;
+    height: 40px;
 }

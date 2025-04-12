@@ -18,17 +18,18 @@
                 <div class="debug-indicator">Mode Debug Activé</div>
                 }
             </div>
-
-            <ul>
-                <li><strong>Nom:</strong> {{ currentPlayer.name }}</li>
-                <li><strong>Avatar:</strong> <img [src]="currentPlayer.avatar" alt="Avatar" width="50" height="50" /></li>
-                <li><strong>Vie:</strong> {{ currentPlayer.life }}</li>
-                <li><strong>Rapidité:</strong> {{ currentPlayer.speed }}</li>
-                <li><strong>Attaque:</strong> D{{ currentPlayer.attack }}</li>
-                <li><strong>Défense:</strong> D{{ currentPlayer.defense }}</li>
-                <li><strong>Points de mouvement restants:</strong> {{ currentPlayer.currentMP ?? currentPlayer.speed }}</li>
-                <li><strong>Points d'Actions restants:</strong> {{ currentPlayer.currentAP ?? 1 }}</li>
-            </ul>
+            <div class="player-info">
+                <ul>
+                    <li><strong>Nom:</strong> {{ currentPlayer.name }}</li>
+                    <li><strong>Avatar:</strong> <img [src]="currentPlayer.avatar" alt="Avatar" width="50" height="50" /></li>
+                    <li><strong>Vie:</strong> {{ currentPlayer.life }}</li>
+                    <li><strong>Rapidité:</strong> {{ currentPlayer.speed }}</li>
+                    <li><strong>Attaque:</strong> D{{ currentPlayer.attack }}</li>
+                    <li><strong>Défense:</strong> D{{ currentPlayer.defense }}</li>
+                    <li><strong>Points de mouvement restants:</strong> {{ currentPlayer.currentMP ?? currentPlayer.speed }}</li>
+                    <li><strong>Points d'Actions restants:</strong> {{ currentPlayer.currentAP ?? 1 }}</li>
+                </ul>
+            </div>
         </div>
     </div>
 
@@ -59,26 +60,28 @@
             @if (currentPlayer && lobbyId) {
             <div class="sidebar right-sidebar playing-chat-narrow">
                 <app-messages [playerName]="currentPlayer.name" [lobbyId]="lobbyId" [currentPlayer]="currentPlayer"></app-messages>
-                ...
             </div>
             }
         </div>
 
-        <app-inventory [player]="currentPlayer" [lobbyId]="lobbyId"></app-inventory>
+        <div class="info-row">
+            <app-inventory [player]="currentPlayer" [lobbyId]="lobbyId"></app-inventory>
 
-        @if (isCurrentPlayerTurn()) {
-        <app-countdown-player
-            [countdown]="30"
-            [isPlayerTurn]="true"
-            [isInCombat]="isInCombat"
-            [lobbyId]="lobbyId"
-            [isTransitioning]="false"
-            [isAnimated]="isAnimated"
-        >
-        </app-countdown-player>
-        } @else {
-        <app-countdown-player [countdown]="30" [isPlayerTurn]="false" [isInCombat]="isInCombat" [isTransitioning]="false"> </app-countdown-player>
-        } @if (isInCombat) {
+            @if (isCurrentPlayerTurn()) {
+            <app-countdown-player
+                [countdown]="30"
+                [isPlayerTurn]="true"
+                [isInCombat]="isInCombat"
+                [lobbyId]="lobbyId"
+                [isTransitioning]="false"
+                [isAnimated]="isAnimated"
+            >
+            </app-countdown-player>
+            } @else {
+            <app-countdown-player [countdown]="30" [isPlayerTurn]="false" [isInCombat]="isInCombat" [isTransitioning]="false"> </app-countdown-player>
+            }
+        </div>
+        @if (isInCombat) {
         <div class="action-buttons">
             <app-combat
                 [gameState]="gameState"

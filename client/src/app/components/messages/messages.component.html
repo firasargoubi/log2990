@@ -22,7 +22,14 @@
             }
         </div>
         <div class="message-input">
-            <input type="text" [(ngModel)]="newMessage" placeholder="Tapez un message..." maxlength="200" />
+            <input
+                type="text"
+                [(ngModel)]="newMessage"
+                placeholder="Tapez un message..."
+                maxlength="200"
+                (keydown.enter)="sendMessage()"
+                #messageInput
+            />
             <button (click)="sendMessage()">Envoyer</button>
         </div>
     </div>
