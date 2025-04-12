@@ -1,3 +1,4 @@
+import { GAME_ACTION_CONSTS } from '@app/constants/game-action-consts';
 import { GameSocketConstants } from '@app/constants/game-socket-handler-const';
 import { VirtualMovementConfig } from '@app/interfaces/virtual-player.interface';
 import { VirtualPlayerService } from '@app/services/virtual-player.service';
@@ -11,7 +12,6 @@ import { Service } from 'typedi';
 import { BoardService } from './board.service';
 import { GameLifecycleService } from './game-life-cycle.service';
 import { ItemService } from './item.service';
-import { GAME_ACTION_CONSTS } from '@app/constants/game-action-consts';
 
 @Service()
 export class GameActionService {
@@ -48,10 +48,19 @@ export class GameActionService {
     closeDoor(socket: Socket, tile: Tile, lobbyId: string) {
         const gameState = this.gameLifeCycleService.getGameStateOrEmitError(socket, lobbyId);
         if (!gameState) return;
+        gameState.doorHandled = gameState.doorHandled || [];
+        gameState.doorCounter = gameState.doorCounter || 0;
+        gameState.percentageDoorHandled = gameState.percentageDoorHandled || 0;
         const currentPlayerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
         gameState.board = gameState.board.map((row) => [...row]);
         gameState.board[tile.x][tile.y] = TileTypes.DoorClosed;
         gameState.currentPlayerActionPoints = 0;
+        const alreadyClosed = gameState.doorHandled.some((t) => t.x === tile.x && t.y === tile.y);
+        if (!alreadyClosed) {
+            gameState.doorCounter += 1;
+            gameState.doorHandled.push(tile);
+        }
+        gameState.percentageDoorHandled = Math.floor((gameState.doorCounter / gameState.amountDoors) * GAME_ACTION_CONSTS.percentage);
         if (currentPlayerIndex !== -1) {
             gameState.players[currentPlayerIndex].currentAP = 0;
         }
@@ -63,17 +72,17 @@ export class GameActionService {
     openDoor(socket: Socket, tile: Tile, lobbyId: string) {
         const gameState = this.gameLifeCycleService.getGameStateOrEmitError(socket, lobbyId);
         if (!gameState) return;
-        gameState.doorOpenedCounter ??= 0;
-        gameState.percentageDoorOpened ??= 0;
-        gameState.doorOpened ??= [];
+        gameState.doorHandled = gameState.doorHandled || [];
+        gameState.doorCounter = gameState.doorCounter || 0;
+        gameState.percentageDoorHandled = gameState.percentageDoorHandled || 0;
         const currentPlayerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
         gameState.board = gameState.board.map((row) => [...row]);
-        const alreadyOpened = gameState.doorOpened.some((t) => t.x === tile.x && t.y === tile.y);
+        const alreadyOpened = gameState.doorHandled.some((t) => t.x === tile.x && t.y === tile.y);
         if (!alreadyOpened) {
-            gameState.doorOpenedCounter += 1;
-            gameState.doorOpened.push(tile);
+            gameState.doorCounter += 1;
+            gameState.doorHandled.push(tile);
         }
-        gameState.percentageDoorOpened = Math.floor((gameState.doorOpenedCounter / gameState.amountClosedDoors) * GAME_ACTION_CONSTS.percentage);
+        gameState.percentageDoorHandled = Math.floor((gameState.doorCounter / gameState.amountDoors) * GAME_ACTION_CONSTS.percentage);
         gameState.board[tile.x][tile.y] = TileTypes.DoorOpen;
         gameState.currentPlayerActionPoints = 0;
         if (currentPlayerIndex !== -1) {

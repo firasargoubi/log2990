@@ -24,10 +24,10 @@ export interface GameState {
     gameMode: string;
     animation?: boolean;
     flagPickedCounter?: number;
-    doorOpenedCounter?: number;
-    percentageDoorOpened?: number;
-    amountClosedDoors?: number;
-    doorOpened?: Tile[];
+    doorCounter?: number;
+    percentageDoorHandled?: number;
+    amountDoors?: number;
+    doorHandled?: Tile[];
     teams?: {
         team1: Player[];        
         team2: Player[];
