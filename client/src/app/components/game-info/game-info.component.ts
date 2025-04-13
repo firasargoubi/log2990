@@ -23,7 +23,7 @@ export class GameInfoComponent {
     @Input() gameState: GameState | undefined;
 
     objectTypes = ObjectsTypes;
-    isPlayerAbandoned(playerId: string): boolean {
+    getPlayersDeleted(playerId: string): boolean {
         return this.deletedPlayers?.some((p) => p.id === playerId) || false;
     }
 

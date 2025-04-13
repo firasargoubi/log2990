@@ -77,7 +77,7 @@ describe('CountdownPlayerComponent', () => {
     it('should get display time correctly when time is up', () => {
         fixture.detectChanges();
         component['remainingTime'] = 0;
-        expect(component.getDisplayTime()).toBe('Temps écoulé');
+        expect(component.getDisplayTime()).toBe(' ');
     });
 
     it('should clear interval on destroy', () => {

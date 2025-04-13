@@ -3,6 +3,8 @@ import { Component, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
 import { TIMEOUT_START_COMBAT, TURN_START_TIME } from '@app/Consts/app-constants';
 import { LobbyService } from '@app/services/lobby.service';
 
+const SECONDS_LEFT = 30;
+const PERCENTAGE = 100;
 @Component({
     selector: 'app-countdown-player',
     templateUrl: './countdown-player.component.html',
@@ -16,8 +18,8 @@ export class CountdownPlayerComponent implements OnInit, OnDestroy, OnChanges {
     @Input() lobbyId: string = '';
     @Input() isInCombat: boolean = false;
     @Input() isAnimated: boolean = false;
-    secondsLeft = 30;
-    percentage = 100;
+    secondsLeft = SECONDS_LEFT;
+    percentage = PERCENTAGE;
 
     private remainingTime: number;
     private interval: number | null = null;

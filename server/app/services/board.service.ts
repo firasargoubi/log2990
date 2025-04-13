@@ -21,7 +21,7 @@ export class BoardService {
         try {
             const game = await this.gameService.getGameById(gameId);
             if (!game) {
-                // throw new Error(`${ERROR_MESSAGES.gameNotFound}`);
+                throw new Error(`${ERROR_MESSAGES.gameNotFound}`);
             }
             return game;
         } catch (error) {
