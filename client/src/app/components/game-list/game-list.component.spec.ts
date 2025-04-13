@@ -6,6 +6,7 @@ import { of } from 'rxjs';
 import { Game, GameSize, GameType } from '@common/game.interface';
 import { GameModeDialogComponent } from '@app/components/game-mode/game-mode.component';
 import { MatDialogRef } from '@angular/material/dialog';
+import { PageUrl } from '@app/consts/route-constants';
 
 describe('GameListComponent', () => {
     let component: GameListComponent;
@@ -134,8 +135,9 @@ describe('GameListComponent', () => {
 
         component.openCreateDialog();
 
-        expect(routerSpy).toHaveBeenCalledWith(['/edit'], {
+        expect(routerSpy).toHaveBeenCalledWith([PageUrl.Edit], {
             queryParams: { mode: 'Classic', size: 'Medium' },
+            replaceUrl: true,
         });
     });
 

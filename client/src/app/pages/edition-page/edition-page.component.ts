@@ -6,6 +6,7 @@ import { BoardComponent } from '@app/components/board/board.component';
 import { ObjectsComponent } from '@app/components/objects/objects.component';
 import { TileOptionsComponent } from '@app/components/tile-options/tile-options.component';
 import { EDITION_PAGE_CONSTANTS, GameSize, GameType, MapSize, OBJECT_COUNT } from '@app/consts/app-constants';
+import { PageUrl } from '@app/consts/route-constants';
 import { BoardService } from '@app/services/board.service';
 import { ErrorService } from '@app/services/error.service';
 import { GameService } from '@app/services/game.service';
@@ -140,7 +141,7 @@ export class EditionPageComponent implements OnInit {
         this.errorMessage = '';
         this.showErrorPopup = false;
         if (this.saveState) {
-            this.router.navigate(['/admin']);
+            this.router.navigate([PageUrl.Admin], { replaceUrl: true });
         }
         this.saveState = false;
     }

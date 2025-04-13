@@ -5,6 +5,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { GameCardComponent } from '@app/components/game-card/game-card.component';
 import { GameModeDialogComponent } from '@app/components/game-mode/game-mode.component';
+import { PageUrl } from '@app/consts/route-constants';
 import { Game } from '@common/game.interface';
 
 @Component({
@@ -30,8 +31,9 @@ export class GameListComponent {
 
         dialogRef.afterClosed().subscribe((result) => {
             if (result) {
-                this.router.navigate(['/edit'], {
+                this.router.navigate([PageUrl.Edit], {
                     queryParams: { mode: result.type, size: result.size },
+                    replaceUrl: true,
                 });
             }
         });
