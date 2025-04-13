@@ -23,7 +23,7 @@ import { Observable, Subscription } from 'rxjs';
 export class CreatePageComponent implements OnInit {
     @Input() games$: Observable<Game[]> = new Observable<Game[]>();
     games: Game[] = [];
-    currentGame: Game;
+    currentGame: Game | null = null;
     lobbyId: string = '';
 
     private notificationService = inject(NotificationService);
@@ -78,7 +78,10 @@ export class CreatePageComponent implements OnInit {
         return size as GameSize;
     }
 
-    private openBoxFormDialog(game: Game): void {
+    private openBoxFormDialog(game: Game | null): void {
+        if (!game) {
+            return;
+        }
         const dialogRef = this.dialog.open(BoxFormDialogComponent, {
             data: { boxId: game.id, game, gameList: this.games, lobbyId: this.lobbyId, isJoining: false },
         });
@@ -88,6 +91,10 @@ export class CreatePageComponent implements OnInit {
                 if (result) {
                     this.loadGames();
                 }
+                this.currentGame = null;
+                this.lobbyId = '';
+                this.subscriptions.forEach((sub) => sub.unsubscribe());
+                this.subscriptions = [];
             },
         });
     }

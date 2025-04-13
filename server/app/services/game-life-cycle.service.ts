@@ -94,8 +94,8 @@ export class GameLifecycleService {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) return;
         try {
-            const updatedGameState = this.boardService.handleTurn(gameState);
-
+            const updatedGameState = this.boardService.handleTurn(gameState, true);
+            console.log("Turn Started :", updatedGameState);
             this.gameStates.set(lobbyId, updatedGameState);
 
             this.io.to(lobbyId).emit(GameEvents.TurnStarted, { gameState: updatedGameState });
@@ -123,31 +123,30 @@ export class GameLifecycleService {
         }
     }
 
-    handlePlayersUpdate(socket: Socket, lobbyId: string, players: Player[]) {
+    handlePlayersUpdate(socket: Socket, lobbyId: string, player: Player) {
         const gameState = this.getGameStateOrEmitError(socket, lobbyId);
         if (!gameState) return;
-
-        let deletedPlayer: Player | undefined;
-        for (const player of gameState.players) {
-            if (!players.find((p) => p.id === player.id)) {
-                deletedPlayer = player;
-            }
+        if (!player) return;
+        if (gameState.players.length <= 1) return;
+        const playerIndex = gameState.players.findIndex((p) => p.id === player.id);
+        gameState.players.splice(playerIndex, 1);
+        const spawnPoint = gameState.spawnPoints[playerIndex];
+        gameState.board[spawnPoint.x][spawnPoint.y] = gameState.board[spawnPoint.x][spawnPoint.y] % TILE_DELIMITER;
+        gameState.spawnPoints.splice(playerIndex, 1);
+        gameState.playerPositions.splice(playerIndex, 1);
+        if (!gameState.deletedPlayers) {
+            gameState.deletedPlayers = [];
         }
-        if (deletedPlayer) {
-            const playerIndex = gameState.players.findIndex((p) => p.id === deletedPlayer.id);
-            gameState.currentPlayer = gameState.players[(playerIndex + 1) % gameState.players.length].id;
-            gameState.players.splice(playerIndex, 1);
-            const spawnPoint = gameState.spawnPoints[playerIndex];
-            gameState.board[spawnPoint.x][spawnPoint.y] = gameState.board[spawnPoint.x][spawnPoint.y] % TILE_DELIMITER;
-            gameState.spawnPoints.splice(playerIndex, 1);
-            gameState.playerPositions.splice(playerIndex, 1);
-            if (!gameState.deletedPlayers) {
-                gameState.deletedPlayers = [];
-            }
-            gameState.deletedPlayers.push(deletedPlayer);
-            this.emitGlobalEvent(gameState, EventType.PlayerAbandonned, lobbyId, [deletedPlayer.name]);
+        gameState.deletedPlayers.push(player);
+        if (gameState.currentPlayer === player.id) {
+            gameState.currentPlayer = gameState.players[playerIndex].id;
+            this.gameStates.set(lobbyId, gameState);
+            this.emitGlobalEvent(gameState, EventType.PlayerAbandonned, lobbyId, [player.name]);
+            this.startTurn(lobbyId);
+            return;
         }
         const newGameState = this.boardService.handleBoardChange(gameState);
+        this.emitGlobalEvent(newGameState, EventType.PlayerAbandonned, lobbyId, [player.name]);
         this.gameStates.set(lobbyId, gameState);
         this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: newGameState });
     }

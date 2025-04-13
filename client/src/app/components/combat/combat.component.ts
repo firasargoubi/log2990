@@ -97,6 +97,8 @@ export class CombatComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     onAttack() {
+        console.log("Attack with gamestate :", this.gameState);
+        console.log("attack with canAct : ", this.canAct);
         if (!this.gameState || !this.canAct) return;
         this.stopCombatCountdown();
         this.lobbyService.attack(this.lobbyId, this.currentPlayer, this.opponent);

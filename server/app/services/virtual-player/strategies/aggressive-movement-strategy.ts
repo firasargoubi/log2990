@@ -9,8 +9,15 @@ export class AggressiveMovementStrategy implements MovementStrategy {
     constructor(private service: VirtualPlayerService) {}
 
     determineTarget(config: VirtualMovementConfig, availableMoves: Coordinates[], playerIndex: number): Coordinates {
-        const { virtualPlayer } = config;
+        const { virtualPlayer, gameState } = config;
         const inventoryFull = virtualPlayer.items?.length >= 2;
+
+        if (gameState.gameMode === 'capture') {
+            const captureTarget = this.determineCaptureTarget(config, availableMoves, playerIndex);
+            if (captureTarget) {
+                return captureTarget;
+            }
+        }
 
         const opponentTarget = this.findReachableOpponentTarget(config, availableMoves, playerIndex);
         if (opponentTarget) {
@@ -39,6 +46,34 @@ export class AggressiveMovementStrategy implements MovementStrategy {
         }
 
         return new DefaultMovementStrategy(this.service).determineTarget(config, availableMoves, playerIndex);
+    }
+
+    private determineCaptureTarget(config: VirtualMovementConfig, availableMoves: Coordinates[], playerIndex: number): Coordinates | null {
+        const { gameState, virtualPlayer } = config;
+        const flagPos = this.service.findFlagPosition(gameState);
+        const flagCarrier = this.service.findFlagCarrier(gameState);
+        const currentPos = gameState.playerPositions[playerIndex];
+
+        if (flagCarrier?.id === virtualPlayer.id) {
+            const spawnPoint = gameState.spawnPoints[playerIndex];
+            return this.service.getClosest(spawnPoint, availableMoves);
+        } else if (flagCarrier) {
+            if (this.service.isOpponent(virtualPlayer, flagCarrier, gameState)) {
+                const opponentPos = gameState.playerPositions[gameState.players.findIndex((p) => p.id === flagCarrier.id)];
+                if (opponentPos) {
+                    return this.service.getClosest(opponentPos, availableMoves);
+                }
+            } else if (this.service.isTeammate(virtualPlayer, flagCarrier, gameState)) {
+                const nearestOpponent = this.service.getNearestOpponent(gameState, virtualPlayer, currentPos);
+                if (nearestOpponent) {
+                    return this.service.getClosest(nearestOpponent.pos, availableMoves);
+                }
+            }
+        } else if (flagPos) {
+            return this.service.getClosest(flagPos, availableMoves);
+        }
+
+        return null;
     }
 
     private findReachableOpponentTarget(config: VirtualMovementConfig, availableMoves: Coordinates[], playerIndex: number): Coordinates | null {

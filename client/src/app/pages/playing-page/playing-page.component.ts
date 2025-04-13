@@ -70,6 +70,12 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+        this.lobbyService.checkSocketStatus().subscribe(({ isConnected }) => {
+            if (!isConnected) {
+                this.notificationService.showError("Vous n'êtes pas connecté au serveur.");
+                this.router.navigate([PageUrl.Home], { replaceUrl: true });
+            }
+        });
         this.route.params.subscribe((params) => {
             const lobbyId = params['id'];
             if (lobbyId) {
@@ -200,7 +206,7 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
             return;
         }
         if (this.lobbyId && this.currentPlayer) {
-            this.lobbyService.disconnect();
+            this.lobbyService.leaveGame(this.lobbyId, this.currentPlayer.name);
             this.router.navigate([PageUrl.Home], { replaceUrl: true });
         }
     }
@@ -267,6 +273,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
         this.subscriptions.push(
             this.lobbyService.onStartCombat().subscribe((data) => {
                 this.isFirstInCombat = data.firstPlayer.id === this.currentPlayer.id;
+                if (!this.isFirstInCombat) {
+                    this.opponent = data.firstPlayer;
+                }
+                console.log('Opponent:', this.opponent);
                 this.isInCombat = true;
             }),
 
@@ -315,7 +325,12 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
                         this.router.navigate([PageUrl.Home], { replaceUrl: true });
                         return;
                     }
-                    this.lobbyService.updatePlayers(this.lobby.id, this.lobby.players);
+                    console.log("Someone left :", this.lobby);
+                    const opponentDeleted = this.lobby.players.findIndex((p) => p.id === this.opponent?.id);
+                    if (opponentDeleted === -1) {
+                        this.isInCombat = false;
+                        this.notificationService.showInfo(`${this.opponent?.name} a quitté la partie.`);
+                    }
                 }
             }),
 
