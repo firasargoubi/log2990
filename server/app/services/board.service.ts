@@ -62,10 +62,10 @@ export class BoardService {
         return gameState;
     }
 
-    handleTurn(gameState: GameState): GameState {
+    handleTurn(gameState: GameState, firstTurn: boolean = false): GameState {
         const playerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
         if (playerIndex === -1) return gameState;
-        return this.updatePlayerMoves(gameState);
+        return this.updatePlayerMoves(gameState, firstTurn);
     }
 
     handleBoardChange(gameState: GameState): GameState {
@@ -78,7 +78,10 @@ export class BoardService {
         return this.pathfindingService.findShortestPath(gameState, start, end, gameState.currentPlayerMovementPoints);
     }
 
-    handleMovement(gameState: GameState, targetCoordinate: Coordinates): { gameState: GameState; shouldStop: boolean } {
+    handleMovement(
+        gameState: GameState,
+        targetCoordinate: Coordinates,
+    ): { gameState: GameState; shouldStop: boolean; itemPicked?: boolean; item?: number } {
         const indexPlayer = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
         if (indexPlayer === -1) return { gameState, shouldStop: false };
         const playerPosition = gameState.playerPositions[indexPlayer];
@@ -107,7 +110,7 @@ export class BoardService {
             if (ITEM_EFFECTS[item as ObjectsTypes]) {
                 this.itemService.applyAttributeEffects(player, item);
             }
-            return { gameState, shouldStop: true };
+            return { gameState, shouldStop: true, itemPicked: true, item };
         }
 
         return { gameState, shouldStop: false };
@@ -168,7 +171,7 @@ export class BoardService {
         return gameState;
     }
 
-    updatePlayerMoves(gameState: GameState): GameState {
+    updatePlayerMoves(gameState: GameState, firstTurn: boolean = false): GameState {
         const playerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
         if (playerIndex === -1) {
             return gameState;
@@ -179,6 +182,11 @@ export class BoardService {
 
         if (!playerPosition) {
             return gameState;
+        }
+        if (firstTurn) {
+            gameState.players[playerIndex].currentMP = this.getPlayerMovementPoints(gameState.players[playerIndex]);
+        } else {
+            gameState.players[playerIndex].currentMP = gameState.currentPlayerMovementPoints;
         }
 
         const availableMoves = this.findAllPaths(gameState, playerPosition);

@@ -2,7 +2,7 @@
 import { Node, PathContext } from '@app/interface/pathfinding-interfaces';
 import { Coordinates } from '@common/coordinates';
 import { GameState } from '@common/game-state';
-import { TileTypes, ObjectsTypes } from '@common/game.interface';
+import { TileTypes, ObjectsTypes, TILE_DELIMITER } from '@common/game.interface';
 import { Service } from 'typedi';
 
 @Service()
@@ -23,7 +23,21 @@ export class PathfindingService {
         }
 
         const playerIndex = gameState.players.findIndex((p) => p.id === gameState.currentPlayer);
+        if (playerIndex === -1) {
+            return Infinity;
+        }
         const player = gameState.players[playerIndex];
+        const tileValue = gameState.board[x][y];
+
+        const isVirtualPlayer = !!player.virtualPlayerData;
+        const inventoryFull = player.items?.length >= 2;
+
+        if (isVirtualPlayer && inventoryFull) {
+            const itemOnTile = Math.floor(tileValue / TILE_DELIMITER);
+            if (itemOnTile !== ObjectsTypes.EMPTY && itemOnTile !== ObjectsTypes.SPAWN) {
+                return Infinity;
+            }
+        }
 
         if (player.items) {
             for (const item of player.items) {
@@ -32,7 +46,7 @@ export class PathfindingService {
                 }
             }
         }
-        const tileValue = gameState.board[x][y];
+
         const tileType = tileValue % 10;
         const cost = this.getTileCost(tileType);
 

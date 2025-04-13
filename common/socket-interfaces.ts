@@ -2,7 +2,6 @@ import { Coordinates } from './coordinates';
 import { Tile } from './game.interface';
 import { Player } from './player';
 
-// Action payloads
 export interface MoveActionPayload {
     coordinates: Coordinates[];
 }
@@ -19,8 +18,6 @@ export interface ActionResult {
     success: boolean;
     message?: string;
 }
-
-// For game updates
 export interface GameUpdateData {
     eventType: 'turnEnded' | 'movementProcessed' | 'doorOpened' | 'doorClosed' | 'teleported' | 'boardModified';
     previousPlayer?: string;
@@ -33,7 +30,6 @@ export interface GameUpdateData {
     newPosition?: Coordinates;
 }
 
-// For combat results
 export interface AttackResult {
     attackDice: number;
     defenseDice: number;
@@ -58,7 +54,6 @@ export interface CombatEndResult {
     actionId: string;
 }
 
-// For client acknowledgment
 export interface ClientAcknowledgment {
     playerId: string;
     actionId: string;

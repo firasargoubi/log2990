@@ -92,6 +92,7 @@ export class LobbySocketHandlerService {
         if (lobby.players.length === 1) {
             const player = lobby.players[0];
             this.leaveGame(socket, lobbyId, player.name);
+            return;
         }
         this.updateLobby(lobbyId);
         this.eventBus.onPlayerUpdate(socket, lobbyId, playerRemoved);
