@@ -38,7 +38,7 @@ describe('GameListComponent', () => {
             id: '1',
             name: 'Test Game',
             description: 'Test Description',
-            mode: GameType.classic,
+            mode: GameType.Classic,
             mapSize: GameSize.medium,
             isVisible: true,
             board: [
@@ -61,7 +61,7 @@ describe('GameListComponent', () => {
             id: '1',
             name: 'Test Game',
             description: 'Test Description',
-            mode: GameType.classic,
+            mode: GameType.Classic,
             mapSize: GameSize.medium,
             isVisible: true,
             board: [
@@ -85,7 +85,7 @@ describe('GameListComponent', () => {
                 id: '1',
                 name: 'Test Game 1',
                 description: 'Test Description 1',
-                mode: GameType.classic,
+                mode: GameType.Classic,
                 mapSize: GameSize.medium,
                 isVisible: true,
                 board: [
@@ -100,7 +100,7 @@ describe('GameListComponent', () => {
                 id: '2',
                 name: 'Test Game 2',
                 description: 'Test Description 2',
-                mode: GameType.classic,
+                mode: GameType.Classic,
                 mapSize: GameSize.medium,
                 isVisible: true,
                 board: [

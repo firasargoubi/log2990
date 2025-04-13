@@ -53,14 +53,14 @@ describe('GameModeDialogComponent', () => {
 
         expect(radioButtons.length).toBeGreaterThan(0);
 
-        component.selectedMode.type = GameType.classic;
+        component.selectedMode.type = GameType.Classic;
 
         radioButtons[1].checked = true;
         radioButtons[1].dispatchEvent(new Event('change'));
 
         fixture.detectChanges();
 
-        expect(component.selectedMode.type).toBe(GameType.capture);
+        expect(component.selectedMode.type).toBe(GameType.Capture);
     });
 
     it('should update selectedMode.size when a size is selected', () => {

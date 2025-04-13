@@ -14,7 +14,7 @@ describe('GameCardComponent', () => {
         id: '1',
         name: 'Test Game',
         mapSize: GameSize.large,
-        mode: GameType.capture,
+        mode: GameType.Capture,
         previewImage: 'https://via.placeholder.com/150',
         description: 'A test game description',
         lastModified: new Date(),

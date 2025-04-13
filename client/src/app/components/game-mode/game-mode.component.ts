@@ -15,7 +15,7 @@ export class GameModeDialogComponent {
     gameType = GameType;
     gameSize = GameSize;
     selectedMode: GameMode = {
-        type: GameType.classic,
+        type: GameType.Classic,
         size: GameSize.medium,
     };
 

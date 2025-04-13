@@ -71,7 +71,7 @@ describe('ObjectsComponent', () => {
         });
 
         it('should generate range from 1 to 9 when gameMode is "capture"', () => {
-            component.gameMode = GameType.capture;
+            component.gameMode = GameType.Capture;
             component.ngOnInit();
             expect(component['range']).toEqual([
                 ObjectsTypes.BOOTS,

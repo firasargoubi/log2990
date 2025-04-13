@@ -35,7 +35,7 @@ export class ValidationService {
         this.saveService.alertBoardForVerification(true);
         const saveStatus: Partial<SaveMessage> = this.saveService.currentStatus;
 
-        if (game.mode === GameType.capture && !saveStatus.ctfPlaced) {
+        if (game.mode === GameType.Capture && !saveStatus.ctfPlaced) {
             this.errorService.addMessage(EDITION_PAGE_CONSTANTS.missingFlag);
             isValid = false;
         }

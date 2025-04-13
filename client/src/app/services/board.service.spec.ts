@@ -13,7 +13,7 @@ describe('BoardService', () => {
         id: '1',
         name: 'Test Game',
         mapSize: GameSize.small,
-        mode: GameType.classic,
+        mode: GameType.Classic,
         previewImage: '',
         description: 'Test description',
         lastModified: new Date(),

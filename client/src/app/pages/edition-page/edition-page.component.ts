@@ -151,7 +151,7 @@ export class EditionPageComponent implements OnInit {
             id: '',
             name: '',
             mapSize: GameSize.small,
-            mode: GameType.classic,
+            mode: GameType.Classic,
             previewImage: '',
             description: '',
             lastModified: new Date(),

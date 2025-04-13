@@ -69,7 +69,7 @@ export class ObjectsComponent implements OnInit, OnDestroy {
 
     private generateRange(): number[] {
         let rangeEnd = 8;
-        if (this.gameMode === GameType.capture) {
+        if (this.gameMode === GameType.Capture) {
             rangeEnd++;
         }
 

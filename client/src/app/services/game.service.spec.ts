@@ -19,7 +19,7 @@ describe('GameService', () => {
         id: '123',
         name: 'Test Game',
         mapSize: GameSize.medium,
-        mode: GameType.classic,
+        mode: GameType.Classic,
         previewImage: 'test-image.png',
         description: 'This is a test game.',
         lastModified: new Date(),

@@ -1,6 +1,6 @@
 export enum GameType {
-    classic = 'classic',
-    capture = 'capture',
+    Classic = 'classic',
+    Capture = 'capture',
 }
 
 export enum GameSize {
