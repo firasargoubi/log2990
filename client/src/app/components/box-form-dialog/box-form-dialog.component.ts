@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Inject, OnDestroy } from '@angular/core';
+import { Component, Inject, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
@@ -44,14 +44,15 @@ export class BoxFormDialogComponent implements OnDestroy {
     private increasedAttribute: string | null = null;
     private subscriptions: Subscription[] = [];
     private gameList: Game[] = [];
-    private notificationService = inject(NotificationService);
-    private router = inject(Router);
 
+    // eslint-disable-next-line max-params
     constructor(
         public dialogRef: MatDialogRef<BoxFormDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: { boxId: string; game: Game; gameList: Game[]; lobbyId: string; isJoining: boolean },
         private gameService: GameService,
         private lobbyService: LobbyService,
+        private notificationService: NotificationService,
+        private router: Router,
     ) {
         this.loadGames();
 
