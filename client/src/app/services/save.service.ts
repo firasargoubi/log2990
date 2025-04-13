@@ -1,17 +1,13 @@
 /* eslint-disable @typescript-eslint/member-ordering */
 import { inject, Injectable } from '@angular/core';
-import { OBJECT_COUNT, OBJECT_MULTIPLIER } from '@app/consts/app-constants';
+import { OBJECT_COUNT, OBJECT_MULTIPLIER, WANTED_TILE_PERCENTAGE } from '@app/consts/app-constants';
+import { LARGE_MAP, MEDIUM_MAP, SMALL_MAP } from '@app/consts/map-constants';
 import { SaveMessage } from '@app/interfaces/save-message';
 import { Game, ObjectsTypes, TileTypes } from '@common/game.interface';
 import { Tile } from '@common/tile';
 import { Subject } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { GameService } from './game.service';
-
-const WANTED_TILE_PERCENTAGE = 0.5;
-const SMALL_MAP = 10;
-const MEDIUM_MAP = 15;
-const LARGE_MAP = 20;
 
 @Injectable({
     providedIn: 'root',

@@ -5,6 +5,7 @@ import { Tile } from '@common/tile';
 import { TileTypes } from '@common/game.interface';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TileService } from '@app/services/tile.service';
+import { MAX_TILE } from '@app/consts/app-constants';
 
 @Component({
     selector: 'app-tile-options',
@@ -44,7 +45,6 @@ export class TileOptionsComponent implements OnInit {
 
     private initializeOptions(): void {
         this.options = [];
-        const MAX_TILE = 6;
         for (let i = TileTypes.Water; i <= MAX_TILE; i++) {
             if (i !== TileTypes.DoorOpen)
                 this.options.push({

@@ -134,7 +134,7 @@ export class BoxFormDialogComponent implements OnDestroy {
 
             const currentValue = this.form.get(attribute)?.value;
 
-            if (currentValue !== undefined) {
+            if (currentValue !== null) {
                 const newValue = currentValue + 2;
                 this.form.get(attribute)?.setValue(newValue);
             }

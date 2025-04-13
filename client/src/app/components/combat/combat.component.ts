@@ -4,10 +4,7 @@ import { NotificationService } from '@app/services/notification.service';
 import { GameState } from '@common/game-state';
 import { Player } from '@common/player';
 import { Subscription } from 'rxjs';
-
-const TO_SECONDS = 1000;
-const BASE_COUNTDOWN = 5;
-const LOWERED_COUNTDOWN = 3;
+import { BASE_COUNTDOWN, LOWERED_COUNTDOWN, TO_SECONDS } from '@app/consts/combat-constants';
 @Component({
     selector: 'app-combat',
     templateUrl: './combat.component.html',

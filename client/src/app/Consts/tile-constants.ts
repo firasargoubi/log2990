@@ -11,3 +11,5 @@ export const TILE_IMAGES: Record<number, string> = {
 };
 
 export const DEFAULT_TILE_IMAGE = GAME_IMAGES.default;
+
+export const MAX_TILE = 6;
