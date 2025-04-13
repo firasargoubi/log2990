@@ -52,12 +52,6 @@ export class PlayerStateService {
         return gameState?.currentPlayer === currentPlayer?.id;
     }
 
-    getActivePlayerName(gameState: GameState | null): string {
-        if (!gameState) return 'Unknown';
-        const player = gameState.players.find((p) => p.id === gameState.currentPlayer);
-        return player?.name || 'Unknown';
-    }
-
     getPlayerCount(gameState: GameState | null): number {
         return gameState?.players?.length || 0;
     }

@@ -219,14 +219,14 @@ export class PathfindingService {
             }
 
             const directions = [
-                { x: -1, y: 0 }, // gauche
-                { x: 1, y: 0 }, // droite
-                { x: 0, y: -1 }, // haut
-                { x: 0, y: 1 }, // bas
-                { x: -1, y: -1 }, // diagonale haut-gauche
-                { x: -1, y: 1 }, // diagonale bas-gauche
-                { x: 1, y: -1 }, // diagonale haut-droite
-                { x: 1, y: 1 }, // diagonale bas-droite
+                { x: -1, y: 0 },
+                { x: 1, y: 0 },
+                { x: 0, y: -1 },
+                { x: 0, y: 1 },
+                { x: -1, y: -1 },
+                { x: -1, y: 1 },
+                { x: 1, y: -1 },
+                { x: 1, y: 1 },
             ];
 
             for (const dir of directions) {
