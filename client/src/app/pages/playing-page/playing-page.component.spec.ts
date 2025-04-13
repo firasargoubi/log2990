@@ -105,7 +105,12 @@ describe('PlayingPageComponent', () => {
         mockLobbyService.getCurrentPlayer.and.returnValue(mockPlayer);
         mockLobbyService.getSocketId.and.returnValue(mockPlayer.id);
 
-        mockLobbyService.onStartCombat.and.returnValue(of({ firstPlayer: mockPlayer, gameState: {} as GameState }));
+        mockLobbyService.onStartCombat.and.returnValue(
+            of({
+                firstPlayer: mockPlayer,
+                gameState: { ...mockGameState, players: [mockPlayer] } as GameState,
+            }),
+        );
         mockLobbyService.onCombatEnded.and.returnValue(of({ loser: mockPlayer }));
         mockLobbyService.onTurnStarted.and.returnValue(of({ gameState: mockGameState, currentPlayer: mockPlayer.id, availableMoves: [] }));
         mockLobbyService.onMovementProcessed.and.returnValue(
@@ -509,25 +514,30 @@ describe('PlayingPageComponent', () => {
                     winner: mockPlayer.name,
                     lobbyId: mockLobbyId,
                     gameState: mockGameState,
+                    currentPlayer: component.currentPlayer,
                 },
                 replaceUrl: true,
             });
         }));
-
         it('should handle combat events', fakeAsync(() => {
-            mockLobbyService.onStartCombat.and.returnValue(of({ firstPlayer: mockPlayer, gameState: {} as GameState }));
-            component['setupGameListeners']();
-            tick();
-            expect(component.isInCombat).toBe(false);
+            mockLobbyService.onStartCombat.and.returnValue(
+                of({
+                    firstPlayer: mockPlayer,
+                    gameState: { ...mockGameState, players: [mockPlayer] },
+                }),
+            );
 
-            component.isInCombat = true;
-            mockLobbyService.onCombatEnded.and.returnValue(of({ loser: mockPlayer }));
             component['setupGameListeners']();
             tick();
+
+            mockLobbyService.onCombatEnded.and.returnValue(of({ loser: mockPlayer }));
+
+            component['setupGameListeners']();
+            tick();
+
             expect(component.isInCombat).toBe(false);
             expect(component.currentPlayer.amountEscape).toBe(0);
         }));
-
         it('should handle turn started event', fakeAsync(() => {
             const notifyPlayerTurnSpy = spyOn<any>(component, 'notifyPlayerTurn');
             const updateGameStateSpy = spyOn<any>(component, 'updateGameState');
