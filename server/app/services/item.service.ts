@@ -12,19 +12,20 @@ export class ItemService {
         const effect = this.getEffect(item);
         if (!effect) return;
 
-        if (effect.attack !== undefined) player.attack = Math.max(0, player.attack + effect.attack);
-        if (effect.defense !== undefined) player.defense = Math.max(0, player.defense + effect.defense);
-        if (effect.speed !== undefined) player.speed = Math.max(0, player.speed + effect.speed);
-        if (effect.life !== undefined) player.life = Math.min(player.maxLife, player.life + effect.life);
+        if (effect.attack != null) player.attack = Math.max(0, (player.attack ?? 0) + effect.attack);
+        if (effect.defense != null) player.defense = Math.max(0, (player.defense ?? 0) + effect.defense);
+        if (effect.speed != null) player.speed = Math.max(0, (player.speed ?? 0) + effect.speed);
+        if (effect.life != null) player.life = Math.min(player.maxLife, (player.life ?? 0) + effect.life);
     }
+
     removeAttributeEffects(player: Player, item: ObjectsTypes): void {
         const effect = this.getEffect(item);
         if (!effect) return;
 
-        if (effect.attack !== undefined) player.attack = Math.max(0, player.attack - effect.attack);
-        if (effect.defense !== undefined) player.defense = Math.max(0, player.defense - effect.defense);
-        if (effect.speed !== undefined) player.speed = Math.max(0, player.speed - effect.speed);
-        if (effect.life !== undefined) player.life = Math.max(0, player.life - effect.life);
+        if (effect.attack != null) player.attack = Math.max(0, (player.attack ?? 0) - effect.attack);
+        if (effect.defense != null) player.defense = Math.max(0, (player.defense ?? 0) - effect.defense);
+        if (effect.speed != null) player.speed = Math.max(0, (player.speed ?? 0) - effect.speed);
+        if (effect.life != null) player.life = Math.max(0, (player.life ?? 0) - effect.life);
     }
 
     dropItems(loserIndex: number, gameState: GameState): void {

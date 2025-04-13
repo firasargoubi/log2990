@@ -126,7 +126,7 @@ export class SocketService {
         player.items = data.keptItems;
         player.pendingItem = 0;
 
-        if (refusedItem !== undefined) {
+        if (refusedItem !== null) {
             gameState.board[playerPosition.x][playerPosition.y] = refusedItem * TILE_DELIMITER + tileValue;
         }
 
