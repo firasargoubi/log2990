@@ -25,13 +25,13 @@ export class ObjectCounterService {
 
     incrementCounter(type: number): void {
         switch (type) {
-            case ObjectsTypes.SPAWN:
+            case ObjectsTypes.Spawn:
                 this.spawnCounterSubject.next(this.spawnCounterSubject.value + 1);
                 break;
-            case ObjectsTypes.FLAG:
+            case ObjectsTypes.Flag:
                 this.flagPlacedSubject.next(false);
                 break;
-            case ObjectsTypes.RANDOM:
+            case ObjectsTypes.Random:
                 this.itemCounterSubject.next(this.itemCounterSubject.value + 1);
                 break;
             default:
@@ -43,15 +43,15 @@ export class ObjectCounterService {
 
     decrementCounter(type: number): void {
         switch (type) {
-            case ObjectsTypes.SPAWN:
+            case ObjectsTypes.Spawn:
                 if (this.spawnCounterSubject.value > 0) {
                     this.spawnCounterSubject.next(this.spawnCounterSubject.value - 1);
                 }
                 break;
-            case ObjectsTypes.FLAG:
+            case ObjectsTypes.Flag:
                 this.flagPlacedSubject.next(true);
                 break;
-            case ObjectsTypes.RANDOM:
+            case ObjectsTypes.Random:
                 if (this.itemCounterSubject.value > 0) {
                     this.itemCounterSubject.next(this.itemCounterSubject.value - 1);
                 }
@@ -66,13 +66,13 @@ export class ObjectCounterService {
     }
 
     isItemPlaced(type: number): boolean {
-        if (type === ObjectsTypes.SPAWN) {
+        if (type === ObjectsTypes.Spawn) {
             return this.spawnCounterSubject.value <= 0;
         }
-        if (type === ObjectsTypes.FLAG) {
+        if (type === ObjectsTypes.Flag) {
             return this.flagPlacedSubject.value;
         }
-        if (type === ObjectsTypes.RANDOM) {
+        if (type === ObjectsTypes.Random) {
             return this.itemCounterSubject.value <= 0;
         }
         return this.uniqueItemsPlaced.has(type);

@@ -32,7 +32,7 @@ describe('CreatePageComponent', () => {
             {
                 id: '1',
                 name: 'Chess',
-                mapSize: GameSize.medium,
+                mapSize: GameSize.Medium,
                 mode: GameType.Classic,
                 previewImage: 'chess.png',
                 description: 'A normal board game.',
@@ -47,7 +47,7 @@ describe('CreatePageComponent', () => {
             {
                 id: '2',
                 name: 'Poker',
-                mapSize: GameSize.medium,
+                mapSize: GameSize.Medium,
                 mode: GameType.Classic,
                 previewImage: 'poker.png',
                 description: 'A popular card game.',
@@ -108,7 +108,7 @@ describe('CreatePageComponent', () => {
                 {
                     id: '1',
                     name: 'Chess',
-                    mapSize: GameSize.medium,
+                    mapSize: GameSize.Medium,
                     mode: GameType.Classic,
                     previewImage: 'chess.png',
                     description: 'A normal board game.',

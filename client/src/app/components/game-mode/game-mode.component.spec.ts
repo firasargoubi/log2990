@@ -68,14 +68,14 @@ describe('GameModeDialogComponent', () => {
 
         expect(radioButtons.length).toBeGreaterThan(0);
 
-        component.selectedMode.size = GameSize.small;
+        component.selectedMode.size = GameSize.Small;
 
         radioButtons[2].checked = true;
         radioButtons[2].dispatchEvent(new Event('change'));
 
         fixture.detectChanges();
 
-        expect(component.selectedMode.size).toBe(GameSize.large);
+        expect(component.selectedMode.size).toBe(GameSize.Large);
     });
 
     it('should call dialogRef.close() with no data when cancel is clicked', () => {

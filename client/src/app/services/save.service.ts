@@ -96,7 +96,7 @@ export class SaveService {
         let count = 0;
         for (const row of this.board) {
             for (const tile of row) {
-                if (tile.object === ObjectsTypes.SPAWN) count++;
+                if (tile.object === ObjectsTypes.Spawn) count++;
             }
         }
         switch (size) {
@@ -114,7 +114,7 @@ export class SaveService {
     verifyFlag(): boolean {
         for (const row of this.board) {
             for (const tile of row) {
-                if (tile.object === ObjectsTypes.FLAG) return true;
+                if (tile.object === ObjectsTypes.Flag) return true;
             }
         }
         return false;

@@ -4,9 +4,9 @@ export enum GameType {
 }
 
 export enum GameSize {
-    small = 'small',
-    medium = 'medium',
-    large = 'large',
+    Small = 'small',
+    Medium = 'medium',
+    Large = 'large',
 }
 
 export interface GameObjectPlacement {
@@ -29,17 +29,17 @@ export interface Game {
 }
 
 export enum ObjectsTypes {
-    BOOTS = 1,
-    SWORD = 2,
-    POTION = 3,
-    WAND = 4,
-    CRYSTAL = 5,
-    JUICE = 6,
-    SPAWN = 7,
-    RANDOM = 8,
-    FLAG = 9,
-    EMPTY = 0,
-    WALL,
+    Boots = 1,
+    Sword = 2,
+    Potion = 3,
+    Wand = 4,
+    Crystal = 5,
+    Juice = 6,
+    Spawn = 7,
+    Random = 8,
+    Flag = 9,
+    Empty = 0,
+    Wall,
 }
 
 export enum TileTypes {
@@ -69,8 +69,8 @@ interface Effect {
 }
 
 export const ITEM_EFFECTS: Partial<Record<ObjectsTypes, Effect>>  = {
-    [ObjectsTypes.BOOTS]: { speed: 2, attack: -1 },
-    [ObjectsTypes.SWORD]: { attack: 1, defense: -1 },
+    [ObjectsTypes.Boots]: { speed: 2, attack: -1 },
+    [ObjectsTypes.Sword]: { attack: 1, defense: -1 },
 };
 
 

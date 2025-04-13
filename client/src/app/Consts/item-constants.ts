@@ -8,47 +8,47 @@ export interface ItemInfo {
 }
 
 export const ITEM_INFOS: Record<number, ItemInfo> = {
-    [ObjectsTypes.BOOTS]: {
+    [ObjectsTypes.Boots]: {
         image: GAME_IMAGES.boots,
         description: OBJECTS_DESCRIPTION.boots,
         name: OBJECT_NAMES.boots,
     },
-    [ObjectsTypes.SWORD]: {
+    [ObjectsTypes.Sword]: {
         image: GAME_IMAGES.sword,
         description: OBJECTS_DESCRIPTION.sword,
         name: OBJECT_NAMES.sword,
     },
-    [ObjectsTypes.POTION]: {
+    [ObjectsTypes.Potion]: {
         image: GAME_IMAGES.potion,
         description: OBJECTS_DESCRIPTION.potion,
         name: OBJECT_NAMES.potion,
     },
-    [ObjectsTypes.WAND]: {
+    [ObjectsTypes.Wand]: {
         image: GAME_IMAGES.wand,
         description: OBJECTS_DESCRIPTION.wand,
         name: OBJECT_NAMES.wand,
     },
-    [ObjectsTypes.CRYSTAL]: {
+    [ObjectsTypes.Crystal]: {
         image: GAME_IMAGES.crystalBall,
         description: OBJECTS_DESCRIPTION.crystal,
         name: OBJECT_NAMES.crystalBall,
     },
-    [ObjectsTypes.JUICE]: {
+    [ObjectsTypes.Juice]: {
         image: GAME_IMAGES.berryJuice,
         description: OBJECTS_DESCRIPTION.berryJuice,
         name: OBJECT_NAMES.berryJuice,
     },
-    [ObjectsTypes.RANDOM]: {
+    [ObjectsTypes.Random]: {
         image: GAME_IMAGES.gnome,
         description: OBJECTS_DESCRIPTION.gnome,
         name: OBJECT_NAMES.gnome,
     },
-    [ObjectsTypes.FLAG]: {
+    [ObjectsTypes.Flag]: {
         image: GAME_IMAGES.flag,
         description: OBJECTS_DESCRIPTION.flag,
         name: OBJECT_NAMES.flag,
     },
-    [ObjectsTypes.SPAWN]: {
+    [ObjectsTypes.Spawn]: {
         image: GAME_IMAGES.vortex,
         description: OBJECTS_DESCRIPTION.vortex,
         name: OBJECT_NAMES.vortex,

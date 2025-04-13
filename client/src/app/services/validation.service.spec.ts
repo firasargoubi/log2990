@@ -14,7 +14,7 @@ describe('ValidationService', () => {
     const mockGame: Game = {
         id: '1',
         name: 'Test Game',
-        mapSize: GameSize.small,
+        mapSize: GameSize.Small,
         mode: GameType.Classic,
         previewImage: '',
         description: 'Test description',
@@ -26,7 +26,7 @@ describe('ValidationService', () => {
     const mockCtfGame: Game = {
         id: '2',
         name: 'Test CTF Game',
-        mapSize: GameSize.small,
+        mapSize: GameSize.Small,
         mode: GameType.Capture,
         previewImage: '',
         description: 'Test description',

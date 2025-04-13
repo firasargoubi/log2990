@@ -28,7 +28,7 @@ export class InventoryComponent implements OnInit {
 
     ngOnInit(): void {
         this.lobbyService.onInventoryFull().subscribe(({ item, currentInventory }) => {
-            if (!item || item === ObjectsTypes.EMPTY || !currentInventory || currentInventory.length < 2) return;
+            if (!item || item === ObjectsTypes.Empty || !currentInventory || currentInventory.length < 2) return;
 
             this.pendingItem = item;
             this.showPopup = true;
@@ -36,7 +36,7 @@ export class InventoryComponent implements OnInit {
     }
 
     getAllInventoryItems(): number[] {
-        const allItems = this.pendingItem && this.pendingItem !== ObjectsTypes.EMPTY ? [...this.items, this.pendingItem] : this.items;
+        const allItems = this.pendingItem && this.pendingItem !== ObjectsTypes.Empty ? [...this.items, this.pendingItem] : this.items;
         return allItems;
     }
     handleConfirmReplace(keptItems: number[]) {

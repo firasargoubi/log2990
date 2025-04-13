@@ -12,7 +12,7 @@ describe('BoardService', () => {
     const mockGame: Game = {
         id: '1',
         name: 'Test Game',
-        mapSize: GameSize.small,
+        mapSize: GameSize.Small,
         mode: GameType.Classic,
         previewImage: '',
         description: 'Test description',

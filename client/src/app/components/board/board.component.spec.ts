@@ -207,30 +207,30 @@ describe('BoardComponent', () => {
     });
 
     it('should return the correct map size for small', () => {
-        component.game.mapSize = GameSize.small;
+        component.game.mapSize = GameSize.Small;
 
         boardServiceSpy.getMapSize.and.returnValue(MapSize.SMALL);
 
         expect(component.mapSize).toBe(MapSize.SMALL);
-        expect(boardServiceSpy.getMapSize).toHaveBeenCalledWith(GameSize.small);
+        expect(boardServiceSpy.getMapSize).toHaveBeenCalledWith(GameSize.Small);
     });
 
     it('should return the correct map size for medium', () => {
-        component.game.mapSize = GameSize.medium;
+        component.game.mapSize = GameSize.Medium;
 
         boardServiceSpy.getMapSize.and.returnValue(MapSize.MEDIUM);
 
         expect(component.mapSize).toBe(MapSize.MEDIUM);
-        expect(boardServiceSpy.getMapSize).toHaveBeenCalledWith(GameSize.medium);
+        expect(boardServiceSpy.getMapSize).toHaveBeenCalledWith(GameSize.Medium);
     });
 
     it('should return the correct map size for large', () => {
-        component.game.mapSize = GameSize.large;
+        component.game.mapSize = GameSize.Large;
 
         boardServiceSpy.getMapSize.and.returnValue(MapSize.LARGE);
 
         expect(component.mapSize).toBe(MapSize.LARGE);
-        expect(boardServiceSpy.getMapSize).toHaveBeenCalledWith(GameSize.large);
+        expect(boardServiceSpy.getMapSize).toHaveBeenCalledWith(GameSize.Large);
     });
 
     it('should return the default map size for an unknown size', () => {

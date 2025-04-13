@@ -44,8 +44,8 @@ describe('ObjectCounterService', () => {
 
     it('should reset all counters and state properly', (done) => {
         service.initializeCounter(5);
-        service.incrementCounter(ObjectsTypes.SPAWN);
-        service.decrementCounter(ObjectsTypes.FLAG);
+        service.incrementCounter(ObjectsTypes.Spawn);
+        service.decrementCounter(ObjectsTypes.Flag);
         service.decrementCounter(999);
         service.initializeCounter(0);
 
@@ -68,7 +68,7 @@ describe('ObjectCounterService', () => {
         });
 
         it('should increment spawn counter for SPAWN type', (done) => {
-            service.incrementCounter(ObjectsTypes.SPAWN);
+            service.incrementCounter(ObjectsTypes.Spawn);
             service.spawnCounter$.pipe(take(1)).subscribe((value) => {
                 expect(value).toBe(1);
                 done();
@@ -76,8 +76,8 @@ describe('ObjectCounterService', () => {
         });
 
         it('should set flagPlaced to false for FLAG type', (done) => {
-            service.decrementCounter(ObjectsTypes.FLAG);
-            service.incrementCounter(ObjectsTypes.FLAG);
+            service.decrementCounter(ObjectsTypes.Flag);
+            service.incrementCounter(ObjectsTypes.Flag);
             service.flagPlaced$.pipe(take(1)).subscribe((value) => {
                 expect(value).toBeFalse();
                 done();
@@ -85,7 +85,7 @@ describe('ObjectCounterService', () => {
         });
 
         it('should increment item counter for RANDOM type', (done) => {
-            service.incrementCounter(ObjectsTypes.RANDOM);
+            service.incrementCounter(ObjectsTypes.Random);
             service.itemCounter$.pipe(take(1)).subscribe((value) => {
                 expect(value).toBe(1);
                 done();
@@ -111,7 +111,7 @@ describe('ObjectCounterService', () => {
         });
 
         it('should decrement spawn counter for SPAWN type if > 0', (done) => {
-            service.decrementCounter(ObjectsTypes.SPAWN);
+            service.decrementCounter(ObjectsTypes.Spawn);
             service.spawnCounter$.pipe(take(1)).subscribe((value) => {
                 expect(value).toBe(1);
                 done();
@@ -120,7 +120,7 @@ describe('ObjectCounterService', () => {
 
         it('should not decrement spawn counter below 0', (done) => {
             service.initializeCounter(0);
-            service.decrementCounter(ObjectsTypes.SPAWN);
+            service.decrementCounter(ObjectsTypes.Spawn);
             service.spawnCounter$.pipe(take(1)).subscribe((value) => {
                 expect(value).toBe(0);
                 done();
@@ -128,7 +128,7 @@ describe('ObjectCounterService', () => {
         });
 
         it('should set flagPlaced to true for FLAG type', (done) => {
-            service.decrementCounter(ObjectsTypes.FLAG);
+            service.decrementCounter(ObjectsTypes.Flag);
             service.flagPlaced$.pipe(take(1)).subscribe((value) => {
                 expect(value).toBeTrue();
                 done();
@@ -136,7 +136,7 @@ describe('ObjectCounterService', () => {
         });
 
         it('should decrement item counter for RANDOM type if > 0', (done) => {
-            service.decrementCounter(ObjectsTypes.RANDOM);
+            service.decrementCounter(ObjectsTypes.Random);
             service.itemCounter$.pipe(take(1)).subscribe((value) => {
                 expect(value).toBe(1);
                 done();
@@ -145,7 +145,7 @@ describe('ObjectCounterService', () => {
 
         it('should not decrement item counter below 0 for RANDOM type', (done) => {
             service.initializeCounter(0);
-            service.decrementCounter(ObjectsTypes.RANDOM);
+            service.decrementCounter(ObjectsTypes.Random);
             service.itemCounter$.pipe(take(1)).subscribe((value) => {
                 expect(value).toBe(0);
                 done();
@@ -178,21 +178,21 @@ describe('ObjectCounterService', () => {
         });
 
         it('should return true for SPAWN when spawnCounter <= 0', () => {
-            expect(service.isItemPlaced(ObjectsTypes.SPAWN)).toBeTrue();
-            service.incrementCounter(ObjectsTypes.SPAWN);
-            expect(service.isItemPlaced(ObjectsTypes.SPAWN)).toBeFalse();
+            expect(service.isItemPlaced(ObjectsTypes.Spawn)).toBeTrue();
+            service.incrementCounter(ObjectsTypes.Spawn);
+            expect(service.isItemPlaced(ObjectsTypes.Spawn)).toBeFalse();
         });
 
         it('should return flagPlaced value for FLAG type', () => {
-            expect(service.isItemPlaced(ObjectsTypes.FLAG)).toBeFalse();
-            service.decrementCounter(ObjectsTypes.FLAG);
-            expect(service.isItemPlaced(ObjectsTypes.FLAG)).toBeTrue();
+            expect(service.isItemPlaced(ObjectsTypes.Flag)).toBeFalse();
+            service.decrementCounter(ObjectsTypes.Flag);
+            expect(service.isItemPlaced(ObjectsTypes.Flag)).toBeTrue();
         });
 
         it('should return true for RANDOM when itemCounter <= 0', () => {
-            expect(service.isItemPlaced(ObjectsTypes.RANDOM)).toBeTrue();
-            service.incrementCounter(ObjectsTypes.RANDOM);
-            expect(service.isItemPlaced(ObjectsTypes.RANDOM)).toBeFalse();
+            expect(service.isItemPlaced(ObjectsTypes.Random)).toBeTrue();
+            service.incrementCounter(ObjectsTypes.Random);
+            expect(service.isItemPlaced(ObjectsTypes.Random)).toBeFalse();
         });
 
         it('should return true if type is considered placed for other types', () => {

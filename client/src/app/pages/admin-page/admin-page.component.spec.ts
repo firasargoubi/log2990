@@ -24,7 +24,7 @@ describe('AdminPageComponent', () => {
                 {
                     id: '1',
                     name: 'Test Game',
-                    mapSize: GameSize.small,
+                    mapSize: GameSize.Small,
                     mode: GameType.Capture,
                     previewImage: '',
                     description: '',
@@ -55,7 +55,7 @@ describe('AdminPageComponent', () => {
             {
                 id: '1',
                 name: 'Test Game',
-                mapSize: GameSize.small,
+                mapSize: GameSize.Small,
                 mode: GameType.Capture,
                 previewImage: '',
                 description: '',

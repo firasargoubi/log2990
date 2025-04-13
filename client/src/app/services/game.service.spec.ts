@@ -18,7 +18,7 @@ describe('GameService', () => {
     const mockGame: Game = {
         id: '123',
         name: 'Test Game',
-        mapSize: GameSize.medium,
+        mapSize: GameSize.Medium,
         mode: GameType.Classic,
         previewImage: 'test-image.png',
         description: 'This is a test game.',

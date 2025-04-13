@@ -5,17 +5,17 @@ import { ItemModel } from './item.model';
 
 describe('ItemModel', () => {
     it('should create an instance with the correct type', () => {
-        const itemModel = new ItemModel(ObjectsTypes.BOOTS);
-        expect(itemModel.type).toBe(ObjectsTypes.BOOTS);
+        const itemModel = new ItemModel(ObjectsTypes.Boots);
+        expect(itemModel.type).toBe(ObjectsTypes.Boots);
     });
 
     it('should initialize isPlaced to false by default', () => {
-        const itemModel = new ItemModel(ObjectsTypes.BOOTS);
+        const itemModel = new ItemModel(ObjectsTypes.Boots);
         expect(itemModel.isPlaced).toBeFalse();
     });
 
     it('should initialize tooltipText to null by default', () => {
-        const itemModel = new ItemModel(ObjectsTypes.BOOTS);
+        const itemModel = new ItemModel(ObjectsTypes.Boots);
         expect(itemModel.tooltipText).toBeNull();
     });
 

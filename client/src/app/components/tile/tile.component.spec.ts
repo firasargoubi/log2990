@@ -77,15 +77,15 @@ describe('TileComponent', () => {
 
     it('should decrement counter and set isPlaced to true', () => {
         const item = new ItemComponent(counterService);
-        item.type = ObjectsTypes.SPAWN;
+        item.type = ObjectsTypes.Spawn;
         component.decrementCounter(item);
-        expect(counterService.decrementCounter).toHaveBeenCalledWith(ObjectsTypes.SPAWN);
+        expect(counterService.decrementCounter).toHaveBeenCalledWith(ObjectsTypes.Spawn);
         expect(item.isPlaced).toBeFalse();
     });
 
     it('should handle drop event correctly', () => {
         const item = new ItemComponent(counterService);
-        item.type = ObjectsTypes.SPAWN;
+        item.type = ObjectsTypes.Spawn;
         const event: CdkDragDrop<ItemComponent[]> = {
             previousContainer: { data: [item], id: 'objects-container' } as any,
             container: { data: [], id: 'tile-container' } as any,
@@ -147,14 +147,14 @@ describe('TileComponent', () => {
     });
     it('should decrement counter and set isPlaced to true for RANDOM type', () => {
         const item = new ItemComponent(counterService);
-        item.type = ObjectsTypes.RANDOM;
+        item.type = ObjectsTypes.Random;
         component.decrementCounter(item);
-        expect(counterService.decrementCounter).toHaveBeenCalledWith(ObjectsTypes.RANDOM);
+        expect(counterService.decrementCounter).toHaveBeenCalledWith(ObjectsTypes.Random);
         expect(item.isPlaced).toBeFalse();
     });
     it('should not change if dragged to the same place', () => {
         const item = new ItemComponent(counterService);
-        item.type = ObjectsTypes.SPAWN;
+        item.type = ObjectsTypes.Spawn;
         component.placedItem.push(item);
         const event: CdkDragDrop<ItemComponent[]> = {
             previousContainer: { data: component.placedItem, id: 'tile-container' } as any,
@@ -175,7 +175,7 @@ describe('TileComponent', () => {
 
     it('should add dragged item if dropped from another tile and the tile is empty', () => {
         const item = new ItemComponent(counterService);
-        item.type = ObjectsTypes.SPAWN;
+        item.type = ObjectsTypes.Spawn;
 
         spyOn(component.objectMoved, 'emit');
 
@@ -200,7 +200,7 @@ describe('TileComponent', () => {
 
     it('should not change if dragged to an illegal place', () => {
         const item = new ItemComponent(counterService);
-        item.type = ObjectsTypes.SPAWN;
+        item.type = ObjectsTypes.Spawn;
         const event: CdkDragDrop<ItemComponent[]> = {
             previousContainer: { data: [item], id: 'objects-container' } as any,
             container: { data: [] } as any,
@@ -221,7 +221,7 @@ describe('TileComponent', () => {
 
     it('should delete the tile object and increment the counter', () => {
         const item = new ItemComponent(counterService);
-        item.type = ObjectsTypes.SPAWN;
+        item.type = ObjectsTypes.Spawn;
         component.placedItem.push(item);
         component.objectID = item.type;
 

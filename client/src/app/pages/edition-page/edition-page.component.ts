@@ -56,11 +56,11 @@ export class EditionPageComponent implements OnInit {
 
     get mapSize(): number {
         switch (this.game.mapSize) {
-            case GameSize.small:
+            case GameSize.Small:
                 return MapSize.SMALL;
-            case GameSize.medium:
+            case GameSize.Medium:
                 return MapSize.MEDIUM;
-            case GameSize.large:
+            case GameSize.Large:
                 return MapSize.LARGE;
             default:
                 return MapSize.SMALL;
@@ -69,11 +69,11 @@ export class EditionPageComponent implements OnInit {
 
     get objectNumber(): number {
         switch (this.game.mapSize) {
-            case GameSize.small:
+            case GameSize.Small:
                 return OBJECT_COUNT.small;
-            case GameSize.medium:
+            case GameSize.Medium:
                 return OBJECT_COUNT.medium;
-            case GameSize.large:
+            case GameSize.Large:
                 return OBJECT_COUNT.large;
             default:
                 return OBJECT_COUNT.small;
@@ -150,7 +150,7 @@ export class EditionPageComponent implements OnInit {
         return {
             id: '',
             name: '',
-            mapSize: GameSize.small,
+            mapSize: GameSize.Small,
             mode: GameType.Classic,
             previewImage: '',
             description: '',

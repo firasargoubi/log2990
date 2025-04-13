@@ -54,7 +54,7 @@ describe('ItemComponent', () => {
     });
 
     it('should set isPlaced correctly for SPAWN type', () => {
-        component.type = ObjectsTypes.SPAWN;
+        component.type = ObjectsTypes.Spawn;
         component.ngOnInit();
 
         spawnCounterSubject.next(0);
@@ -65,7 +65,7 @@ describe('ItemComponent', () => {
     });
 
     it('should set isPlaced correctly for FLAG type', () => {
-        component.type = ObjectsTypes.FLAG;
+        component.type = ObjectsTypes.Flag;
         component.ngOnInit();
 
         flagPlacedSubject.next(true);
@@ -76,7 +76,7 @@ describe('ItemComponent', () => {
     });
 
     it('should set isPlaced correctly for RANDOM type', () => {
-        component.type = ObjectsTypes.RANDOM;
+        component.type = ObjectsTypes.Random;
         component.ngOnInit();
 
         itemCounterSubject.next(0);
@@ -87,7 +87,7 @@ describe('ItemComponent', () => {
     });
 
     it('should set isPlaced correctly for other items (BOOTS)', () => {
-        component.type = ObjectsTypes.BOOTS;
+        component.type = ObjectsTypes.Boots;
 
         objectCounterServiceSpy.isItemPlaced.and.returnValue(false);
         objectCounterServiceSpy.getItemCounter.and.returnValue(1);
@@ -116,7 +116,7 @@ describe('ItemComponent', () => {
     });
 
     it('should unsubscribe on destroy', () => {
-        component.type = ObjectsTypes.SPAWN;
+        component.type = ObjectsTypes.Spawn;
         component.ngOnInit();
 
         const unsubscribeSpy = spyOn(component['subscriptions'][0], 'unsubscribe');

@@ -63,7 +63,7 @@ describe('EditionPageComponent Standalone', () => {
     const mockGame: Game = {
         id: '123',
         name: 'Test Game',
-        mapSize: GameSize.small,
+        mapSize: GameSize.Small,
         mode: GameType.Classic,
         previewImage: '',
         description: 'Test description',
@@ -163,13 +163,13 @@ describe('EditionPageComponent Standalone', () => {
     });
 
     it('should return correct mapSize number', () => {
-        component.game.mapSize = GameSize.small;
+        component.game.mapSize = GameSize.Small;
         expect(component.mapSize).toBe(10);
 
-        component.game.mapSize = GameSize.medium;
+        component.game.mapSize = GameSize.Medium;
         expect(component.mapSize).toBe(15);
 
-        component.game.mapSize = GameSize.large;
+        component.game.mapSize = GameSize.Large;
         expect(component.mapSize).toBe(20);
     });
 
@@ -179,13 +179,13 @@ describe('EditionPageComponent Standalone', () => {
     });
 
     it('should return correct objectNumber based on mapSize', () => {
-        component.game.mapSize = GameSize.small;
+        component.game.mapSize = GameSize.Small;
         expect(component.objectNumber).toBe(2);
 
-        component.game.mapSize = GameSize.medium;
+        component.game.mapSize = GameSize.Medium;
         expect(component.objectNumber).toBe(4);
 
-        component.game.mapSize = GameSize.large;
+        component.game.mapSize = GameSize.Large;
         expect(component.objectNumber).toBe(6);
     });
 

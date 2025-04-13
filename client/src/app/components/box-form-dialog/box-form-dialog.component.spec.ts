@@ -388,7 +388,7 @@ describe('BoxFormDialogComponent', () => {
                 {
                     id: 'game1',
                     name: '',
-                    mapSize: GameSize.small,
+                    mapSize: GameSize.Small,
                     mode: GameType.Classic,
                     previewImage: '',
                     description: '',
@@ -400,7 +400,7 @@ describe('BoxFormDialogComponent', () => {
                 {
                     id: 'game2',
                     name: '',
-                    mapSize: GameSize.small,
+                    mapSize: GameSize.Small,
                     mode: GameType.Classic,
                     previewImage: '',
                     description: '',

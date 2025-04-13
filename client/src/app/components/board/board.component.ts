@@ -22,7 +22,7 @@ export class BoardComponent implements OnInit {
     @Input() game: Game = {
         id: '',
         name: '',
-        mapSize: GameSize.small,
+        mapSize: GameSize.Small,
         mode: GameType.Classic,
         previewImage: '',
         description: '',

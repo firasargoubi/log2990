@@ -59,14 +59,14 @@ describe('ObjectsComponent', () => {
             component.gameMode = 'normal' as GameType;
             component.ngOnInit();
             expect(component['range']).toEqual([
-                ObjectsTypes.BOOTS,
-                ObjectsTypes.SWORD,
-                ObjectsTypes.POTION,
-                ObjectsTypes.WAND,
-                ObjectsTypes.CRYSTAL,
-                ObjectsTypes.JUICE,
-                ObjectsTypes.SPAWN,
-                ObjectsTypes.RANDOM,
+                ObjectsTypes.Boots,
+                ObjectsTypes.Sword,
+                ObjectsTypes.Potion,
+                ObjectsTypes.Wand,
+                ObjectsTypes.Crystal,
+                ObjectsTypes.Juice,
+                ObjectsTypes.Spawn,
+                ObjectsTypes.Random,
             ]);
         });
 
@@ -74,15 +74,15 @@ describe('ObjectsComponent', () => {
             component.gameMode = GameType.Capture;
             component.ngOnInit();
             expect(component['range']).toEqual([
-                ObjectsTypes.BOOTS,
-                ObjectsTypes.SWORD,
-                ObjectsTypes.POTION,
-                ObjectsTypes.WAND,
-                ObjectsTypes.CRYSTAL,
-                ObjectsTypes.JUICE,
-                ObjectsTypes.SPAWN,
-                ObjectsTypes.RANDOM,
-                ObjectsTypes.FLAG,
+                ObjectsTypes.Boots,
+                ObjectsTypes.Sword,
+                ObjectsTypes.Potion,
+                ObjectsTypes.Wand,
+                ObjectsTypes.Crystal,
+                ObjectsTypes.Juice,
+                ObjectsTypes.Spawn,
+                ObjectsTypes.Random,
+                ObjectsTypes.Flag,
             ]);
         });
     });
@@ -91,7 +91,7 @@ describe('ObjectsComponent', () => {
         it('should set isPlaced to true for spawn item when spawnCounter$ emits 0', () => {
             component.gameMode = 'normal' as GameType;
             component.ngOnInit();
-            const spawnItem = component.items.find((item) => item.type === ObjectsTypes.SPAWN);
+            const spawnItem = component.items.find((item) => item.type === ObjectsTypes.Spawn);
             expect(spawnItem).toBeDefined();
             expect(spawnItem?.isPlaced).toBeFalse();
 
@@ -107,7 +107,7 @@ describe('ObjectsComponent', () => {
             component.ngOnInit();
             expect(component.items.length).toBe(8);
 
-            const spawnItem = component.items.find((item) => item.type === ObjectsTypes.SPAWN);
+            const spawnItem = component.items.find((item) => item.type === ObjectsTypes.Spawn);
             expect(spawnItem).toBeDefined();
             if (spawnItem) {
                 spawnItem.isPlaced = true;
@@ -117,7 +117,7 @@ describe('ObjectsComponent', () => {
             fixture.detectChanges();
 
             expect(component.items.length).toBe(8);
-            const newSpawnItem = component.items.find((item) => item.type === ObjectsTypes.SPAWN);
+            const newSpawnItem = component.items.find((item) => item.type === ObjectsTypes.Spawn);
             expect(newSpawnItem).toBeDefined();
             expect(newSpawnItem?.isPlaced).toBeFalse();
         });

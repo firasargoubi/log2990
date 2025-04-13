@@ -29,7 +29,7 @@ export class ObjectsComponent implements OnInit, OnDestroy {
     ) {
         this.counterService.spawnCounter$.pipe(takeUntilDestroyed()).subscribe((value) => {
             if (value === 0) {
-                const spawnItem = this.items.find((item) => item.type === ObjectsTypes.SPAWN);
+                const spawnItem = this.items.find((item) => item.type === ObjectsTypes.Spawn);
                 if (spawnItem) {
                     spawnItem.isPlaced = true;
                 }

@@ -272,7 +272,7 @@ describe('PlayingPageComponent', () => {
         });
 
         it('should handle item info messages', () => {
-            component.onInfoSent(`Item: ${ObjectsTypes.SPAWN}`);
+            component.onInfoSent(`Item: ${ObjectsTypes.Spawn}`);
             expect(mockNotificationService.showInfo).toHaveBeenCalledWith(jasmine.stringContaining('Point de départ'));
 
             mockNotificationService.showInfo.calls.reset();

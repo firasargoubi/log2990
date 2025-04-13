@@ -13,7 +13,7 @@ describe('GameCardComponent', () => {
     const mockGame: Game = {
         id: '1',
         name: 'Test Game',
-        mapSize: GameSize.large,
+        mapSize: GameSize.Large,
         mode: GameType.Capture,
         previewImage: 'https://via.placeholder.com/150',
         description: 'A test game description',

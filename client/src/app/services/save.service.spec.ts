@@ -189,8 +189,8 @@ describe('SaveService', () => {
     describe('Spawn points verification', () => {
         it('should verify spawn points for a small map', () => {
             const board: Tile[][] = [
-                [{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: ObjectsTypes.SPAWN }],
-                [{ type: TileTypes.Grass, x: 1, y: 0, id: '2', object: ObjectsTypes.SPAWN }],
+                [{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: ObjectsTypes.Spawn }],
+                [{ type: TileTypes.Grass, x: 1, y: 0, id: '2', object: ObjectsTypes.Spawn }],
             ];
 
             service.verifyBoard(board);
@@ -200,10 +200,10 @@ describe('SaveService', () => {
 
         it('should verify spawn points for a medium map', () => {
             const board: Tile[][] = [
-                [{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: ObjectsTypes.SPAWN }],
-                [{ type: TileTypes.Grass, x: 1, y: 0, id: '2', object: ObjectsTypes.SPAWN }],
-                [{ type: TileTypes.Grass, x: 2, y: 0, id: '3', object: ObjectsTypes.SPAWN }],
-                [{ type: TileTypes.Grass, x: 3, y: 0, id: '4', object: ObjectsTypes.SPAWN }],
+                [{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: ObjectsTypes.Spawn }],
+                [{ type: TileTypes.Grass, x: 1, y: 0, id: '2', object: ObjectsTypes.Spawn }],
+                [{ type: TileTypes.Grass, x: 2, y: 0, id: '3', object: ObjectsTypes.Spawn }],
+                [{ type: TileTypes.Grass, x: 3, y: 0, id: '4', object: ObjectsTypes.Spawn }],
             ];
 
             service.verifyBoard(board);
@@ -213,12 +213,12 @@ describe('SaveService', () => {
 
         it('should verify spawn points for a large map', () => {
             const board: Tile[][] = [
-                [{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: ObjectsTypes.SPAWN }],
-                [{ type: TileTypes.Grass, x: 1, y: 0, id: '2', object: ObjectsTypes.SPAWN }],
-                [{ type: TileTypes.Grass, x: 2, y: 0, id: '3', object: ObjectsTypes.SPAWN }],
-                [{ type: TileTypes.Grass, x: 3, y: 0, id: '4', object: ObjectsTypes.SPAWN }],
-                [{ type: TileTypes.Grass, x: 4, y: 0, id: '5', object: ObjectsTypes.SPAWN }],
-                [{ type: TileTypes.Grass, x: 5, y: 0, id: '6', object: ObjectsTypes.SPAWN }],
+                [{ type: TileTypes.Grass, x: 0, y: 0, id: '1', object: ObjectsTypes.Spawn }],
+                [{ type: TileTypes.Grass, x: 1, y: 0, id: '2', object: ObjectsTypes.Spawn }],
+                [{ type: TileTypes.Grass, x: 2, y: 0, id: '3', object: ObjectsTypes.Spawn }],
+                [{ type: TileTypes.Grass, x: 3, y: 0, id: '4', object: ObjectsTypes.Spawn }],
+                [{ type: TileTypes.Grass, x: 4, y: 0, id: '5', object: ObjectsTypes.Spawn }],
+                [{ type: TileTypes.Grass, x: 5, y: 0, id: '6', object: ObjectsTypes.Spawn }],
             ];
 
             service.verifyBoard(board);
@@ -254,7 +254,7 @@ describe('SaveService', () => {
             const game: Game = {
                 id: '',
                 name: 'Test Game',
-                mapSize: GameSize.medium,
+                mapSize: GameSize.Medium,
                 mode: GameType.Classic,
                 previewImage: 'test-image.png',
                 description: 'This is a test game.',
@@ -275,7 +275,7 @@ describe('SaveService', () => {
             const game: Game = {
                 id: '123',
                 name: 'Test Game',
-                mapSize: GameSize.medium,
+                mapSize: GameSize.Medium,
                 mode: GameType.Classic,
                 previewImage: 'test-image.png',
                 description: 'This is a test game.',
@@ -296,7 +296,7 @@ describe('SaveService', () => {
             const game: Game = {
                 id: '123',
                 name: 'Test Game',
-                mapSize: GameSize.medium,
+                mapSize: GameSize.Medium,
                 mode: GameType.Classic,
                 previewImage: 'test-image.png',
                 description: 'This is a test game.',

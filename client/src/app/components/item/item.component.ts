@@ -38,19 +38,19 @@ export class ItemComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        if (this.type === ObjectsTypes.SPAWN) {
+        if (this.type === ObjectsTypes.Spawn) {
             const subscription = this.objectCounterService.spawnCounter$.subscribe((value) => {
                 this.spawnCounter = value;
                 this.isPlaced = value > 0 ? false : true;
             });
             this.subscriptions.push(subscription);
-        } else if (this.type === ObjectsTypes.FLAG) {
+        } else if (this.type === ObjectsTypes.Flag) {
             this.subscriptions.push(
                 this.objectCounterService.flagPlaced$.subscribe((placed) => {
                     this.isPlaced = placed;
                 }),
             );
-        } else if (this.type === ObjectsTypes.RANDOM) {
+        } else if (this.type === ObjectsTypes.Random) {
             this.subscriptions.push(
                 this.objectCounterService.itemCounter$.subscribe((value) => {
                     this.itemCounter = value;
@@ -72,7 +72,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     }
 
     private updateIsPlaced(): void {
-        if (this.type !== ObjectsTypes.SPAWN && this.type !== ObjectsTypes.FLAG) {
+        if (this.type !== ObjectsTypes.Spawn && this.type !== ObjectsTypes.Flag) {
             const isThisItemPlaced = this.objectCounterService.isItemPlaced(this.type);
             const maxItemsPlaced = this.objectCounterService.getItemCounter() <= 0;
             this.isPlaced = isThisItemPlaced || maxItemsPlaced;

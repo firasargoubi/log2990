@@ -51,8 +51,8 @@ describe('GameTileComponent', () => {
 
     describe('getObjectImage()', () => {
         it('should return correct object image for known object', () => {
-            component.tile = { ...component.tile, object: ObjectsTypes.BOOTS };
-            expect(component.getObjectImage()).toBe(ITEM_INFOS[ObjectsTypes.BOOTS].image);
+            component.tile = { ...component.tile, object: ObjectsTypes.Boots };
+            expect(component.getObjectImage()).toBe(ITEM_INFOS[ObjectsTypes.Boots].image);
         });
 
         it('should return UNKNOWN_ITEM.image for unknown object', () => {
@@ -73,8 +73,8 @@ describe('GameTileComponent', () => {
 
     describe('getObjectDescription()', () => {
         it('should return correct description for known object', () => {
-            component.tile = { ...component.tile, object: ObjectsTypes.SWORD };
-            expect(component.getObjectDescription()).toBe(ITEM_INFOS[ObjectsTypes.SWORD].description);
+            component.tile = { ...component.tile, object: ObjectsTypes.Sword };
+            expect(component.getObjectDescription()).toBe(ITEM_INFOS[ObjectsTypes.Sword].description);
         });
 
         it('should return UNKNOWN_ITEM.description for unknown object', () => {
