@@ -2,7 +2,7 @@ import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-soc
 import { VirtualMovementConfig } from '@app/interfaces/virtual-player.interface';
 import { VirtualPlayerService } from '@app/services/virtual-player.service';
 import { Coordinates } from '@common/coordinates';
-import { EventType, GameEvents } from '@common/events';
+import { EventsMessages, EventType, GameEvents } from '@common/events';
 import { GameState } from '@common/game-state';
 import { ObjectsTypes, Tile, TileTypes } from '@common/game.interface';
 import { Player } from '@common/player';
@@ -33,15 +33,15 @@ export class GameActionService {
     handleTeleport(socket: Socket, lobbyId: string, coordinates: Coordinates) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) {
-            socket.emit('error', 'Game not found.');
+            socket.emit(GameEvents.Error, EventsMessages.GameNotFound);
             return;
         }
         try {
             const updatedGameState = this.boardService.handleTeleport(gameState, coordinates);
             this.gameStates.set(lobbyId, updatedGameState);
-            this.io.to(lobbyId).emit('boardModified', { gameState: updatedGameState });
+            this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: updatedGameState });
         } catch (error) {
-            socket.emit('error', `Teleport error: ${error.message}`);
+            socket.emit(GameEvents.Error, `${EventsMessages.TeleportError}:${error.message}`);
         }
     }
     closeDoor(socket: Socket, tile: Tile, lobbyId: string) {
@@ -114,7 +114,7 @@ export class GameActionService {
             firstPlayer = currentPlayer;
         }
         this.gameLifeCycleService.emitGlobalEvent(gameState, EventType.CombatStarted, lobbyId, [currentPlayer.name, opponent.name]);
-        this.io.to(currentPlayer.id).to(opponent.id).emit('startCombat', { firstPlayer });
+        this.io.to(currentPlayer.id).to(opponent.id).emit(GameEvents.StartCombat, { firstPlayer });
 
         if (firstPlayer.virtualPlayerData) {
             setTimeout(() => this.handleVirtualCombatTurn(lobbyId, firstPlayer, currentPlayer, opponent), GameSocketConstants.CombatTurnDelay);
@@ -159,7 +159,7 @@ export class GameActionService {
                 player.amountEscape = 0;
             }
             if (attacker.winCount === GameSocketConstants.MaxWinCount) {
-                this.io.to(lobbyId).emit('gameOver', { winner: attacker.name });
+                this.io.to(lobbyId).emit(GameEvents.GameOver, { winner: attacker.name });
                 return;
             }
             this.gameLifeCycleService.handleDefeat(lobbyId, attacker, defender);

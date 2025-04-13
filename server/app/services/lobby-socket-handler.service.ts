@@ -5,6 +5,7 @@ import { Player } from '@common/player';
 import { Server, Socket } from 'socket.io';
 import { Service } from 'typedi';
 import { ValidationSocketHandlerService } from '@app/services/validation-socket-handler.service';
+import { EventsMessages, GameEvents, LobbyEvents } from '@common/events';
 
 @Service()
 export class LobbySocketHandlerService {
@@ -36,12 +37,12 @@ export class LobbySocketHandlerService {
     handleJoinLobbyRequest(socket: Socket, lobbyId: string, player: Player): void {
         const lobby = this.lobbies.get(lobbyId);
         if (!lobby) {
-            socket.emit('error', 'Lobby not found.');
+            socket.emit(GameEvents.Error, EventsMessages.LobbyNotFound);
             return;
         }
 
         if (lobby.isLocked || lobby.players.length >= lobby.maxPlayers) {
-            socket.emit('error', 'Lobby is locked or full.');
+            socket.emit(GameEvents.Error, EventsMessages.LobbyLockedOrFull);
             return;
         }
 
@@ -70,7 +71,7 @@ export class LobbySocketHandlerService {
         const player = lobby.players[playerIndex];
         if (player.isHost) {
             this.lobbies.delete(lobbyId);
-            this.io.to(lobbyId).emit('hostDisconnected');
+            this.io.to(lobbyId).emit(GameEvents.HostDisconnected);
             return;
         }
 
@@ -96,7 +97,7 @@ export class LobbySocketHandlerService {
     lockLobby(socket: Socket, lobbyId: string) {
         const lobby = this.lobbies.get(lobbyId);
         if (!lobby) {
-            socket.emit('error', 'Lobby not found.');
+            socket.emit(GameEvents.Error, EventsMessages.LobbyNotFound);
             return;
         }
 
@@ -107,7 +108,7 @@ export class LobbySocketHandlerService {
     updateLobby(lobbyId: string): void {
         const lobby = this.lobbies.get(lobbyId);
         if (lobby) {
-            this.io.to(lobbyId).emit('lobbyUpdated', { lobby });
+            this.io.to(lobbyId).emit(LobbyEvents.LobbyUpdated, { lobby });
         }
     }
     getLobby(lobbyId: string): GameLobby | undefined {

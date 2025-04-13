@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Coordinates } from '@common/coordinates';
-import { GameEvents } from '@common/events';
+import { GameEvents, LobbyEvents } from '@common/events';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
 import { Game, Tile } from '@common/game.interface';
@@ -47,56 +47,56 @@ export class LobbyService {
     }
 
     createLobby(game: Game): void {
-        this.socket.emit('createLobby', game);
+        this.socket.emit(LobbyEvents.CreateLobby, game);
     }
 
     onLobbyCreated(): Observable<{ lobby: GameLobby }> {
         return new Observable((observer) => {
-            this.socket.on('lobbyCreated', (data: { lobby: GameLobby }) => {
+            this.socket.on(LobbyEvents.LobbyCreated, (data: { lobby: GameLobby }) => {
                 observer.next(data);
             });
         });
     }
 
     joinLobby(lobbyId: string, player: Player): void {
-        this.socket.emit('joinLobby', { lobbyId, player });
+        this.socket.emit(LobbyEvents.JoinLobby, { lobbyId, player });
     }
 
     leaveLobby(lobbyId: string, playerName: string): void {
-        this.socket.emit('leaveLobby', { lobbyId, playerName });
+        this.socket.emit(LobbyEvents.LeaveLobby, { lobbyId, playerName });
     }
 
     leaveGame(lobbyId: string, playerName: string): void {
-        this.socket.emit('leaveGame', lobbyId, playerName);
+        this.socket.emit(LobbyEvents.LeaveGame, lobbyId, playerName);
     }
 
     lockLobby(lobbyId: string): void {
-        this.socket.emit('lockLobby', lobbyId);
+        this.socket.emit(LobbyEvents.LockLobby, lobbyId);
     }
 
     disconnectFromRoom(lobbyId: string): void {
-        this.socket.emit('disconnectFromRoom', lobbyId);
+        this.socket.emit(LobbyEvents.DisconnectFromRoom, lobbyId);
     }
 
     updatePlayers(lobbyId: string, players: Player[]): void {
-        this.socket.emit('updatePlayers', lobbyId, players);
+        this.socket.emit(LobbyEvents.UpdatePlayers, lobbyId, players);
     }
 
     onLobbyLocked(): Observable<{ lobbyId: string }> {
         return new Observable((observer) => {
-            this.socket.on('lobbyLocked', (data: { lobbyId: string }) => {
+            this.socket.on(LobbyEvents.LobbyLocked, (data: { lobbyId: string }) => {
                 observer.next(data);
             });
         });
     }
 
     requestStartGame(lobbyId: string): void {
-        this.socket.emit('requestStart', lobbyId);
+        this.socket.emit(LobbyEvents.RequestStart, lobbyId);
     }
 
     onGameStarted(): Observable<{ gameState: GameState }> {
         return new Observable((observer) => {
-            this.socket.on('gameStarted', (data: { gameState: GameState }) => {
+            this.socket.on(GameEvents.GameStarted, (data: { gameState: GameState }) => {
                 observer.next(data);
             });
         });
@@ -104,23 +104,23 @@ export class LobbyService {
 
     onTurnStarted(): Observable<{ gameState: GameState; currentPlayer: string; availableMoves: Coordinates[] }> {
         return new Observable((observer) => {
-            this.socket.on('turnStarted', (data: { gameState: GameState; currentPlayer: string; availableMoves: Coordinates[] }) => {
+            this.socket.on(GameEvents.TurnStarted, (data: { gameState: GameState; currentPlayer: string; availableMoves: Coordinates[] }) => {
                 observer.next(data);
             });
         });
     }
 
     requestMovement(lobbyId: string, coordinates: Coordinates[]): void {
-        this.socket.emit('requestMovement', { lobbyId, coordinates });
+        this.socket.emit(LobbyEvents.RequestMovement, { lobbyId, coordinates });
     }
 
     requestTeleport(lobbyId: string, coordinates: Coordinates): void {
-        this.socket.emit('teleport', { lobbyId, coordinates });
+        this.socket.emit(LobbyEvents.Teleport, { lobbyId, coordinates });
     }
 
     onMovementProcessed(): Observable<{ gameState: GameState; playerMoved: string; newPosition: Coordinates }> {
         return new Observable((observer) => {
-            this.socket.on('movementProcessed', (data: { gameState: GameState; playerMoved: string; newPosition: Coordinates }) => {
+            this.socket.on(GameEvents.MovementProcessed, (data: { gameState: GameState; playerMoved: string; newPosition: Coordinates }) => {
                 if (!data.gameState.availableMoves) {
                     data.gameState.availableMoves = [];
                 }
@@ -131,19 +131,19 @@ export class LobbyService {
     }
 
     requestEndTurn(lobbyId: string): void {
-        this.socket.emit('endTurn', { lobbyId });
+        this.socket.emit(LobbyEvents.EndTurn, { lobbyId });
     }
 
     onBoardChanged(): Observable<{ gameState: GameState }> {
         return new Observable((observer) => {
-            this.socket.on('boardModified', (data: { gameState: GameState }) => {
+            this.socket.on(GameEvents.BoardModified, (data: { gameState: GameState }) => {
                 observer.next(data);
             });
         });
     }
     onError(): Observable<string> {
         return new Observable((observer) => {
-            this.socket.on('error', (error: string) => {
+            this.socket.on(GameEvents.Error, (error: string) => {
                 observer.next(error);
             });
         });
@@ -151,7 +151,7 @@ export class LobbyService {
 
     getLobby(lobbyId: string): Observable<GameLobby> {
         return new Observable((observer) => {
-            this.socket.emit('getLobby', lobbyId, (lobby: GameLobby) => {
+            this.socket.emit(LobbyEvents.GetLobby, lobbyId, (lobby: GameLobby) => {
                 observer.next(lobby);
             });
         });
@@ -159,7 +159,7 @@ export class LobbyService {
 
     getGameId(lobbyId: string): Observable<string> {
         return new Observable((observer) => {
-            this.socket.emit('getGameId', lobbyId, (gameId: string) => {
+            this.socket.emit(LobbyEvents.GetGameId, lobbyId, (gameId: string) => {
                 observer.next(gameId);
             });
         });
@@ -167,19 +167,19 @@ export class LobbyService {
 
     onLobbyUpdated(): Observable<{ lobby: GameLobby }> {
         return new Observable((observer) => {
-            this.socket.on('lobbyUpdated', (data: { lobby: GameLobby }) => {
+            this.socket.on(LobbyEvents.LobbyUpdated, (data: { lobby: GameLobby }) => {
                 observer.next(data);
             });
         });
     }
 
     setDebug(lobbyId: string, debug: boolean): void {
-        this.socket.emit('setDebug', { lobbyId, debug });
+        this.socket.emit(LobbyEvents.SetDebug, { lobbyId, debug });
     }
 
     verifyRoom(gameId: string): Observable<{ exists: boolean; isLocked?: boolean }> {
         return new Observable((observer) => {
-            this.socket.emit('verifyRoom', { gameId }, (response: { exists: boolean; isLocked?: boolean }) => {
+            this.socket.emit(LobbyEvents.VerifyRoom, { gameId }, (response: { exists: boolean; isLocked?: boolean }) => {
                 observer.next(response);
                 observer.complete();
             });
@@ -188,7 +188,7 @@ export class LobbyService {
 
     verifyAvatars(lobbyId: string): Observable<{ avatars: string[] }> {
         return new Observable((observer) => {
-            this.socket.emit('verifyAvatars', { lobbyId }, (response: { avatars: string[] }) => {
+            this.socket.emit(LobbyEvents.VerifyAvatars, { lobbyId }, (response: { avatars: string[] }) => {
                 observer.next(response);
                 observer.complete();
             });
@@ -197,7 +197,7 @@ export class LobbyService {
 
     verifyUsername(lobbyId: string): Observable<{ usernames: string[] }> {
         return new Observable((observer) => {
-            this.socket.emit('verifyUsername', { lobbyId }, (response: { usernames: string[] }) => {
+            this.socket.emit(LobbyEvents.VerifyUsername, { lobbyId }, (response: { usernames: string[] }) => {
                 observer.next(response);
                 observer.complete();
             });
@@ -206,22 +206,22 @@ export class LobbyService {
 
     onHostDisconnected(): Observable<void> {
         return new Observable((observer) => {
-            this.socket.on('hostDisconnected', () => {
+            this.socket.on(GameEvents.HostDisconnected, () => {
                 observer.next();
             });
         });
     }
 
     handleDefeat(player: Player, lobbyId: string) {
-        this.socket.emit('playerDefeated', { player, lobbyId });
+        this.socket.emit(LobbyEvents.PlayerDefeated, { player, lobbyId });
     }
 
     attack(lobbyId: string, attacker: Player, defender: Player): void {
-        this.socket.emit('attack', { lobbyId, attacker, defender });
+        this.socket.emit(LobbyEvents.Attack, { lobbyId, attacker, defender });
     }
 
     flee(lobbyId: string, player: Player, opponent: Player): void {
-        this.socket.emit('flee', { lobbyId, player, opponent });
+        this.socket.emit(LobbyEvents.Flee, { lobbyId, player, opponent });
     }
 
     onAttackResult(): Observable<{
@@ -236,19 +236,19 @@ export class LobbyService {
         defender: Player;
     }> {
         return new Observable((observer) => {
-            this.socket.on('attackResult', (data) => {
+            this.socket.on(GameEvents.AttackResult, (data) => {
                 observer.next(data);
             });
         });
     }
 
     startCombat(lobbyId: string, currentPlayer: Player, opponent: Player): void {
-        this.socket.emit('startBattle', { lobbyId, currentPlayer, opponent });
+        this.socket.emit(LobbyEvents.StartBattle, { lobbyId, currentPlayer, opponent });
     }
 
     onStartCombat(): Observable<{ firstPlayer: Player }> {
         return new Observable((observer) => {
-            this.socket.on('startCombat', (data) => {
+            this.socket.on(GameEvents.StartCombat, (data) => {
                 observer.next(data);
             });
         });
@@ -256,7 +256,7 @@ export class LobbyService {
 
     onCombatEnded(): Observable<{ loser: Player }> {
         return new Observable((observer) => {
-            this.socket.on('combatEnded', (data) => {
+            this.socket.on(GameEvents.CombatEnded, (data) => {
                 observer.next(data);
             });
         });
@@ -264,7 +264,7 @@ export class LobbyService {
 
     onGameOver(): Observable<{ winner: string }> {
         return new Observable((observer) => {
-            this.socket.on('gameOver', (data) => {
+            this.socket.on(GameEvents.GameOver, (data) => {
                 observer.next(data);
             });
         });
@@ -272,7 +272,7 @@ export class LobbyService {
 
     teamCreated(): Observable<{ team1Server: Player[]; team2Server: Player[]; updatedGameState: GameState }> {
         return new Observable((observer) => {
-            this.socket.on('teamsCreated', (data) => {
+            this.socket.on(GameEvents.TeamsCreated, (data) => {
                 observer.next(data);
             });
         });
@@ -280,7 +280,7 @@ export class LobbyService {
 
     onFleeSuccess(): Observable<{ fleeingPlayer: Player }> {
         return new Observable((observer) => {
-            this.socket.on('fleeSuccess', (data) => {
+            this.socket.on(GameEvents.FleeSuccess, (data) => {
                 observer.next(data);
             });
         });
@@ -288,7 +288,7 @@ export class LobbyService {
 
     onFleeFailure(): Observable<{ fleeingPlayer: Player }> {
         return new Observable((observer) => {
-            this.socket.on('fleeFailure', (data) => {
+            this.socket.on(GameEvents.FleeFailure, (data) => {
                 observer.next(data);
             });
         });
@@ -296,7 +296,7 @@ export class LobbyService {
 
     onEventLog(): Observable<{ gameState: GameState; eventType: string; involvedPlayers?: string[]; description?: string }> {
         return new Observable((observer) => {
-            this.socket.on('eventLog', (data) => {
+            this.socket.on(GameEvents.EventLog, (data) => {
                 observer.next(data);
             });
         });
@@ -304,51 +304,51 @@ export class LobbyService {
 
     onInventoryFull(): Observable<{ item: number; currentInventory: number[] }> {
         return new Observable((observer) => {
-            this.socket.on('inventoryFull', (data) => {
+            this.socket.on(GameEvents.InventoryFull, (data) => {
                 observer.next(data);
             });
         });
     }
     resolveInventory(lobbyId: string, keptItems: number[]) {
-        this.socket.emit('resolveInventory', { lobbyId, keptItems });
+        this.socket.emit(LobbyEvents.ResolveInventory, { lobbyId, keptItems });
     }
 
     cancelInventoryChoice(lobbyId: string): void {
-        this.socket.emit('cancelInventoryChoice', { lobbyId });
+        this.socket.emit(LobbyEvents.CancelInventoryChoice, { lobbyId });
     }
     onBoardModified(): Observable<unknown> {
         return new Observable((observer) => {
-            this.socket.on('boardModified', (data) => {
+            this.socket.on(GameEvents.BoardModified, (data) => {
                 observer.next(data);
             });
         });
     }
 
     openDoor(lobbyId: string, tile: Tile): void {
-        this.socket.emit('openDoor', { lobbyId, tile });
+        this.socket.emit(LobbyEvents.OpenDoor, { lobbyId, tile });
     }
 
     closeDoor(lobbyId: string, tile: Tile): void {
-        this.socket.emit('closeDoor', { lobbyId, tile });
+        this.socket.emit(LobbyEvents.CloseDoor, { lobbyId, tile });
     }
 
     createTeams(lobbyId: string, players: Player[]): void {
-        this.socket.emit('createTeams', { lobbyId, players });
+        this.socket.emit(LobbyEvents.CreateTeams, { lobbyId, players });
     }
 
     joinLobbyMessage(lobbyId: string): void {
         if (this.socket.connected) {
-            this.socket.emit('joinLobby', lobbyId);
+            this.socket.emit(LobbyEvents.JoinLobby, lobbyId);
         } else {
-            this.socket.once('connect', () => {
-                this.socket.emit('joinLobby', lobbyId);
+            this.socket.once(GameEvents.Connect, () => {
+                this.socket.emit(LobbyEvents.JoinLobby, lobbyId);
             });
         }
     }
 
     sendMessage(lobbyId: string, playerName: string, message: string): void {
         if (this.socket.connected) {
-            this.socket.emit('sendMessage', {
+            this.socket.emit(LobbyEvents.SendMessage, {
                 lobbyId,
                 playerName,
                 message,

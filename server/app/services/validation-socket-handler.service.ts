@@ -2,6 +2,8 @@ import { GameLobby } from '@common/game-lobby';
 import { Socket } from 'socket.io';
 import { AVATARS } from '@common/avatars';
 import { VIRTUAL_PLAYER_NAMES } from '@app/constants/virtual-player-names';
+import { GameEvents } from '@common/events';
+import { DisplayMessages } from '@app/constants/game-socket-handler-const';
 
 export class ValidationSocketHandlerService {
     constructor(private lobbies: Map<string, GameLobby>) {}
@@ -11,13 +13,13 @@ export class ValidationSocketHandlerService {
 
         if (!lobby) {
             callback({ exists: false });
-            socket.emit('error', "Cette partie n'existe pas.");
+            socket.emit(GameEvents.Error, DisplayMessages.GameNotFound);
             return;
         }
 
         if (lobby.isLocked) {
             callback({ exists: false, isLocked: true });
-            socket.emit('error', 'Cette partie est verrouillée.');
+            socket.emit(GameEvents.Error, DisplayMessages.GameLocked);
             return;
         }
 
@@ -27,12 +29,12 @@ export class ValidationSocketHandlerService {
     verifyAvatars(socket: Socket, lobbyId: string, callback: (data: { avatars: string[] }) => void) {
         const lobby = this.lobbies.get(lobbyId);
         if (!lobby) {
-            socket.emit('error', "Cette partie n'existe pas.");
+            socket.emit(GameEvents.Error, DisplayMessages.GameNotFound);
             return;
         }
 
         if (lobby.isLocked) {
-            socket.emit('error', 'Cette partie est verrouillée.');
+            socket.emit(GameEvents.Error, DisplayMessages.GameLocked);
             return;
         }
 
@@ -42,12 +44,12 @@ export class ValidationSocketHandlerService {
     verifyUsername(socket: Socket, lobbyId: string, callback: (data: { usernames: string[] }) => void) {
         const lobby = this.lobbies.get(lobbyId);
         if (!lobby) {
-            socket.emit('error', "Cette partie n'existe pas.");
+            socket.emit(GameEvents.Error, DisplayMessages.GameNotFound);
             return;
         }
 
         if (lobby.isLocked) {
-            socket.emit('error', 'Cette partie est verrouillée.');
+            socket.emit(GameEvents.Error, DisplayMessages.GameLocked);
             return;
         }
 

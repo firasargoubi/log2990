@@ -2,7 +2,7 @@
 import { GameSocketConstants, gameSocketMessages } from '@app/constants/game-socket-handler-const';
 import { VirtualMovementConfig } from '@app/interfaces/virtual-player.interface';
 import { Coordinates } from '@common/coordinates';
-import { EventType, GameEvents } from '@common/events';
+import { EventsMessages, EventType, GameEvents } from '@common/events';
 import { GameLobby } from '@common/game-lobby';
 import { GameState } from '@common/game-state';
 import { ObjectsTypes, TILE_DELIMITER } from '@common/game.interface';
@@ -253,7 +253,7 @@ export class GameLifecycleService {
                     }
                     updatedGameState.animation = false;
                     this.gameStates.set(lobbyId, updatedGameState);
-                    this.io.to(lobbyId).emit('movementProcessed', { gameState: updatedGameState });
+                    this.io.to(lobbyId).emit(GameEvents.MovementProcessed, { gameState: updatedGameState });
                     return;
                 }
 
@@ -269,12 +269,12 @@ export class GameLifecycleService {
                                 ? (gameState.teams?.team1?.map((p) => p.name).join(', ') ?? 'Unknown')
                                 : (gameState.teams?.team2?.map((p) => p.name).join(', ') ?? 'Unknown');
 
-                        this.io.to(lobbyId).emit('gameOver', { winner: winningTeamPlayers });
+                        this.io.to(lobbyId).emit(GameEvents.GameOver, { winner: winningTeamPlayers });
                     }
                 }
 
                 this.gameStates.set(lobbyId, updatedGameState);
-                this.io.to(lobbyId).emit('movementProcessed', { gameState: updatedGameState });
+                this.io.to(lobbyId).emit(GameEvents.MovementProcessed, { gameState: updatedGameState });
 
                 await this.delay(GameSocketConstants.AnimationDelayMs);
             }
@@ -284,13 +284,13 @@ export class GameLifecycleService {
     }
 
     handleInventoryFull(updatedGameState: GameState, currentPlayer: Player, socket: Socket, lobbyId: string) {
-        socket.emit('inventoryFull', {
+        socket.emit(GameEvents.InventoryFull, {
             item: currentPlayer.pendingItem,
             currentInventory: [...currentPlayer.items],
         });
         updatedGameState.animation = false;
         this.gameStates.set(lobbyId, updatedGameState);
-        this.io.to(lobbyId).emit('movementProcessed', { gameState: updatedGameState });
+        this.io.to(lobbyId).emit(GameEvents.MovementProcessed, { gameState: updatedGameState });
     }
 
     createTeams(lobbyId: string, players: Player[]) {
@@ -317,7 +317,7 @@ export class GameLifecycleService {
     handleSetDebug(socket: Socket, lobbyId: string, debug: boolean) {
         const gameState = this.gameStates.get(lobbyId);
         if (!gameState) {
-            socket.emit('error', 'Game not found.');
+            socket.emit(GameEvents.Error, EventsMessages.GameNotFound);
             return;
         }
 
@@ -327,7 +327,7 @@ export class GameLifecycleService {
         };
 
         this.gameStates.set(lobbyId, updatedGameState);
-        this.io.to(lobbyId).emit('boardModified', { gameState: updatedGameState });
+        this.io.to(lobbyId).emit(GameEvents.BoardModified, { gameState: updatedGameState });
         if (debug) {
             this.emitGlobalEvent(updatedGameState, EventType.DebugActivated, lobbyId);
         } else {

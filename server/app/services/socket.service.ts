@@ -12,6 +12,7 @@ import { GameLifecycleService } from './game-life-cycle.service';
 import { ItemService } from './item.service';
 import { LobbySocketHandlerService } from './lobby-socket-handler.service';
 import { ValidationSocketHandlerService } from './validation-socket-handler.service';
+import { EventsMessages, GameEvents, LobbyEvents } from '@common/events';
 
 @Service()
 export class SocketService {
@@ -133,7 +134,7 @@ export class SocketService {
         gameState.availableMoves = this.boardService.findAllPaths(gameState, playerPosition);
         gameState.shortestMoves = this.boardService.calculateShortestMoves(gameState, playerPosition, gameState.availableMoves);
 
-        this.io.to(data.lobbyId).emit('boardModified', { gameState });
+        this.io.to(data.lobbyId).emit(GameEvents.BoardModified, { gameState });
     }
 
     private handleCancelInventoryChoice(socket: Socket, data: { lobbyId: string }) {
@@ -151,28 +152,28 @@ export class SocketService {
         gameState.availableMoves = this.boardService.findAllPaths(gameState, playerPosition);
         gameState.shortestMoves = this.boardService.calculateShortestMoves(gameState, playerPosition, gameState.availableMoves);
 
-        this.io.to(data.lobbyId).emit('boardModified', { gameState });
+        this.io.to(data.lobbyId).emit(GameEvents.BoardModified, { gameState });
     }
 
     private handleCreateLobby(socket: Socket, game: Game): void {
         if (!game) {
-            socket.emit('error', 'Invalid game data');
+            socket.emit(GameEvents.Error, EventsMessages.InvalidGameData);
             return;
         }
         const lobby = this.lobbyHandler.createLobby(game);
-        socket.emit('lobbyCreated', { lobby });
+        socket.emit(LobbyEvents.LobbyCreated, { lobby });
     }
 
     private handleJoinLobby(socket: Socket, data: { lobbyId: string; player: Player }): void {
         if (!data || !data.player) {
-            socket.emit('error', 'Invalid player data');
+            socket.emit(GameEvents.Error, EventsMessages.InvalidPlayerData);
             return;
         }
         this.lobbyHandler.handleJoinLobbyRequest(socket, data.lobbyId, data.player);
     }
     private handleLeaveLobby(socket: Socket, data: { lobbyId: string; playerName: string }): void {
         if (!data) {
-            socket.emit('error', 'Invalid lobby or player data');
+            socket.emit(GameEvents.Error, EventsMessages.InvalidLobbyOrPlayerData);
             return;
         }
         this.lobbyHandler.leaveLobby(socket, data.lobbyId, data.playerName);
@@ -184,7 +185,7 @@ export class SocketService {
 
     private handleLockLobby(socket: Socket, lobbyId: string): void {
         if (!lobbyId) {
-            socket.emit('error', 'Invalid lobby ID');
+            socket.emit(GameEvents.Error, EventsMessages.InvalidLobbyId);
             return;
         }
         this.lobbyHandler.lockLobby(socket, lobbyId);
@@ -192,7 +193,7 @@ export class SocketService {
 
     private handleGetLobby(socket: Socket, lobbyId: string, callback: (lobby: GameLobby | null) => void): void {
         if (!lobbyId) {
-            socket.emit('error', 'Invalid lobby ID');
+            socket.emit(GameEvents.Error, EventsMessages.InvalidLobbyId);
             callback(null);
             return;
         }
@@ -202,7 +203,7 @@ export class SocketService {
 
     private handleGetGameId(socket: Socket, lobbyId: string, callback: (gameId: string | null) => void): void {
         if (!lobbyId) {
-            socket.emit('error', 'Invalid lobby ID');
+            socket.emit(GameEvents.Error, EventsMessages.InvalidLobbyId);
             callback(null);
             return;
         }
@@ -212,7 +213,7 @@ export class SocketService {
 
     private handleVerifyRoom(socket: Socket, data: { gameId: string }, callback: (response: { exists: boolean; isLocked?: boolean }) => void): void {
         if (!data || !data.gameId) {
-            socket.emit('error', 'Invalid game ID');
+            socket.emit(GameEvents.Error, EventsMessages.InvalidGameId);
             callback({ exists: false });
             return;
         }
@@ -221,7 +222,7 @@ export class SocketService {
 
     private handleVerifyAvatars(socket: Socket, data: { lobbyId: string }, callback: (response: { avatars: string[] }) => void): void {
         if (!data || !data.lobbyId) {
-            socket.emit('error', 'Invalid lobby ID');
+            socket.emit(GameEvents.Error, EventsMessages.InvalidLobbyId);
             callback({ avatars: [] });
             return;
         }
@@ -230,7 +231,7 @@ export class SocketService {
 
     private handleVerifyUsername(socket: Socket, data: { lobbyId: string }, callback: (response: { usernames: string[] }) => void): void {
         if (!data || !data.lobbyId) {
-            socket.emit('error', 'Invalid lobby ID');
+            socket.emit(GameEvents.Error, EventsMessages.InvalidLobbyId);
             callback({ usernames: [] });
             return;
         }
@@ -239,7 +240,7 @@ export class SocketService {
 
     private handleRequestStart(socket: Socket, lobbyId: string): void {
         if (!lobbyId) {
-            socket.emit('error', 'Invalid lobby ID');
+            socket.emit(GameEvents.Error, EventsMessages.InvalidLobbyId);
             return;
         }
         this.gameLifecycleService.handleRequestStart(socket, lobbyId);
@@ -247,7 +248,7 @@ export class SocketService {
 
     private handleEndTurn(socket: Socket, data: { lobbyId: string }): void {
         if (!data || !data.lobbyId) {
-            socket.emit('error', 'Game not found.');
+            socket.emit(GameEvents.Error, EventsMessages.GameNotFound);
             return;
         }
         this.gameLifecycleService.handleEndTurn(socket, data.lobbyId);
@@ -259,7 +260,7 @@ export class SocketService {
 
     private handleRequestMovement(socket: Socket, data: { lobbyId: string; coordinates: Coordinates[] }): void {
         if (!data || !data.coordinates) {
-            socket.emit('error', 'Invalid coordinates');
+            socket.emit(GameEvents.Error, EventsMessages.InvalidCoordinates);
             return;
         }
         this.gameLifecycleService.handleRequestMovement(socket, data.lobbyId, data.coordinates);
@@ -267,7 +268,7 @@ export class SocketService {
 
     private handleOpenDoor(socket: Socket, data: { lobbyId: string; tile: Tile }): void {
         if (!data || !data.lobbyId || !data.tile) {
-            socket.emit('error', 'Invalid door or lobby data');
+            socket.emit(GameEvents.Error, EventsMessages.InvalidDoorOrLobbyData);
             return;
         }
         this.gameActionService.openDoor(socket, data.tile, data.lobbyId);
@@ -275,7 +276,7 @@ export class SocketService {
 
     private handleCloseDoor(socket: Socket, data: { lobbyId: string; tile: Tile }): void {
         if (!data || !data.lobbyId || !data.tile) {
-            socket.emit('error', 'Invalid door or lobby data');
+            socket.emit(GameEvents.Error, EventsMessages.InvalidDoorOrLobbyData);
             return;
         }
         this.gameActionService.closeDoor(socket, data.tile, data.lobbyId);
