@@ -191,17 +191,10 @@ export class PlayingPageComponent implements OnInit, OnDestroy {
     }
 
     abandon() {
-        // if (!this.gameState || !this.currentPlayer) {
-        //     this.router.navigate([PageUrl.Home], { replaceUrl: true });
-        //     return;
-        // }
         const isAnimated = this.gameState.animation || false;
         if (isAnimated) {
             return;
         }
-        // if (this.lobbyId && this.currentPlayer) {
-        //     this.lobbyService.disconnect();
-        // }
         this.router.navigate([PageUrl.Home], { replaceUrl: true });
     }
 
