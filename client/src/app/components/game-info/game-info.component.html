@@ -1,5 +1,4 @@
 <ul class="players-container">
-    <!-- Joueurs actifs -->
     @for (player of players; track player.id) {
     <li [class.active]="gameState?.currentPlayer === player.id" [class.host]="player.isHost">
         <div class="player-header">
@@ -25,10 +24,7 @@
             }
         </div>
     </li>
-    }
-
-    <!-- Joueurs abandonnés -->
-    @for (player of deletedPlayers; track player.id) {
+    } @for (player of deletedPlayers; track player.id) {
     <li class="abandoned">
         <div class="player-header">
             @if (player.isHost) {
