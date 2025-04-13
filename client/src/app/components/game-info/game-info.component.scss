@@ -48,22 +48,6 @@
     z-index: 2; /* passe au-dessus pour éviter d’être coupé */
 }
 
-/* Indicateur visuel du joueur actif */
-.players-container li.active::before {
-    content: '• A le tour';
-    position: absolute;
-    top: 10px;
-    right: 14px;
-    font-size: 0.75rem;
-    color: var(--color-active-border);
-    background-color: rgba(74, 222, 128, 0.15);
-    padding: 5px 10px;
-    border-radius: 12px;
-    font-weight: 600;
-    backdrop-filter: blur(3px);
-    box-shadow: 0 0 10px rgba(74, 222, 128, 0.4);
-}
-
 /* Hôte de la partie */
 .players-container li.host {
     border: 2px solid var(--color-host);
